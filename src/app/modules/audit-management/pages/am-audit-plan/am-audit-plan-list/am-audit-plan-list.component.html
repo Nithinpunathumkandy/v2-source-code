@@ -1,0 +1,135 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navigationBar *mobxAutorun>
+
+    <app-sub-menu></app-sub-menu>
+    <div class="module-name-block module-name-block-space float-left">
+        <a class="dropdown module-title">{{'am_audit_plans'|translate}}</a>
+    </div>
+
+</nav>
+<main class="mt-3 acl-page" *mobxAutorun>
+    <app-filter-menu></app-filter-menu>
+    <div class="container-fluid" *ngIf="AmAuditPlansStore.loaded && AmAuditPlansStore.auditPlanDetails?.length>0">
+        <div class="audit-program-box audit-page-table-main">
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="full-width-table mb-3">
+                        <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                            <thead>
+                                <tr>
+                                    <th class="border-top-0 text-center" width="4%">#</th>
+                                    <th class="border-top-0 pointer" width="10%"
+                                        (click)="setAuditPlanSort('am_annual_plans.reference_code')">
+                                        {{'reference_code'|translate}}
+                                        <img *ngIf="AmAuditPlansStore.orderItem == 'am_annual_plans.reference_code'"
+                                            [attr.src]="AmAuditPlansStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                            class="sort-down-pics">
+                                    </th>
+                                    <th class="border-top-0 pointer" width="35%"
+                                        (click)="setAuditPlanSort('am_audit_categories.title')">
+                                        {{'am_audit_category'|translate}}
+                                        <img *ngIf="AmAuditPlansStore.orderItem == 'am_audit_categories.title'"
+                                            [attr.src]="AmAuditPlansStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                            class="sort-down-pics">
+                                    </th>
+                                    <th class="border-top-0 pointer" width="10%"
+                                        (click)="setAuditPlanSort('am_annual_plans.start_date')">
+                                        {{'start_date'|translate}}
+                                        <img *ngIf="AmAuditPlansStore.orderItem == 'am_annual_plans.start_date'"
+                                            [attr.src]="AmAuditPlansStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                            class="sort-down-pics">
+                                    </th>
+                                    <th class="border-top-0 pointer" width="10%"
+                                        (click)="setAuditPlanSort('am_annual_plans.end_date')">
+                                        {{'end_date'|translate}}
+                                        <img *ngIf="AmAuditPlansStore.orderItem == 'am_annual_plans.end_date'"
+                                            [attr.src]="AmAuditPlansStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                            class="sort-down-pics">
+                                    </th>
+
+                                    <th class="border-top-0 pointer" width="11%"
+                                        (click)="setAuditPlanSort('am_annual_plan_frequency_language.title')">
+                                        {{'am_frequency'|translate}}
+                                        <img *ngIf="AmAuditPlansStore.orderItem == 'am_annual_plan_frequency_language.title'"
+                                            [attr.src]="AmAuditPlansStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                            class="sort-down-pics">
+                                    </th>
+                                    <th class="border-top-0 pointer" width="15%">
+                                        {{'created_by'|translate}}
+                                    </th>
+
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr [ngClass]="AuthStore.getActivityPermission(3900,'AM_ANNUAL_PLAN_DETAILS') ? 'pointer edit-and-delete-main' : 'edit-and-delete-main'"
+                                    *ngFor="let row of AmAuditPlansStore.auditPlanDetails | paginate: {currentPage:AmAuditPlansStore?.currentPage, itemsPerPage:AmAuditPlansStore?.itemsPerPage,totalItems:AmAuditPlansStore?.totalItems}; let num = index">
+                                    <td (click)="gotoDetailsPage(row.id)" class="text-center">
+                                        {{(AmAuditPlansStore?.currentPage -1) * AmAuditPlansStore?.itemsPerPage + (num +
+                                        1)}}</td>
+                                    <td (click)="gotoDetailsPage(row.id)">#{{row.reference_code}}</td>
+                                    <td (click)="gotoDetailsPage(row.id)">{{row.am_audit_category}}</td>
+                                    <td (click)="gotoDetailsPage(row.id)">{{row.start_date|date:
+                                        OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</td>
+                                    <td (click)="gotoDetailsPage(row.id)">{{row.end_date|date:
+                                        OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</td>
+                                    <td (click)="gotoDetailsPage(row.id)">{{row.frequency_title}}</td>
+                                    <td>
+                                        <app-user-popup-box [source]=" getPopupDetails(row)"></app-user-popup-box>
+                                        <div class="edit-option-show"
+                                            *ngIf="row.auditable_item_status_type!='auditable-item-approved' && row.auditable_item_status_type!='in-progress'">
+                                            <a *ngIf="AuthStore.getActivityPermission(3900,'UPDATE_AM_ANNUAL_PLAN')"
+                                                (click)="editAuditPlan(row.id)"><i class="fas fa-pen"></i></a>
+                                            <a *ngIf="AuthStore.getActivityPermission(3900,'DELETE_AM_ANNUAL_PLAN')"
+                                                (click)="deleteAuditPlan(row.id)"><i class="fas fa-trash"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="float-right bold mb-0"
+                        *ngIf="AmAuditPlansStore?.loaded && AmAuditPlansStore.totalItems > 0">{{'total_Items' |
+                        translate}}:{{AmAuditPlansStore?.totalItems}}</p>
+
+                </div>
+
+                <div *ngIf="AmAuditPlansStore.totalItems>AmAuditPlansStore.itemsPerPage" class="col-sm-12">
+                    <ul class="pagination justify-content-center mt-3">
+                        <div class="list">
+                            <pagination-controls [previousLabel]="'previous' | translate"
+                                [nextLabel]="'next' | translate" (pageChange)="pageChange($event)"
+                                class="my-pagination"></pagination-controls>
+                        </div>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <ng-container *mobxAutorun>
+        <app-no-data [border]="false" *ngIf="AmAuditPlansStore.loaded && AmAuditPlansStore.auditPlanDetails?.length==0">
+        </app-no-data>
+    </ng-container>
+
+    <ng-container *mobxAutorun>
+        <div *ngIf="!AmAuditPlansStore.loaded">
+            <app-am-audit-plan-loader></app-am-audit-plan-loader>
+        </div>
+    </ng-container>
+
+</main>
+
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" data-backdrop="static" data-keyboard="false" #deletePopup>
+    <app-delete-popup [source]="deleteObject"></app-delete-popup>
+</div>
+
+<!------------------- Delete Confirmation Modal End --------------------------->
+
+<div class="modal modal-style-1 popup-full-width fade" id="new-audit-programme-popup" data-keyboard="false"
+    data-backdrop="static" #formModal>
+    <app-am-audit-plan-modal *ngIf="auditPlanObject.type" [source]="auditPlanObject">
+    </app-am-audit-plan-modal>
+</div>

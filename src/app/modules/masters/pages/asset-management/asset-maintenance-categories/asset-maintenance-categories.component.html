@@ -1,0 +1,106 @@
+<div class="widget bg-white">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb cursor-pointer">
+            <li class="breadcrumb-item" [routerLink]="['/masters/asset-management']"><a>{{'asset_management' |
+                    translate}}</a></li>
+            <li class="breadcrumb-item active">{{'asset_maintenance_categories' | translate}}</li>
+        </ol>
+    </nav>
+    <!-- Nav tabs -->
+    <table class="table-master table"
+        *ngIf="AssetMaintenanceCategoriesMasterStore?.loaded && AssetMaintenanceCategoriesMasterStore.allItems.length > 0">
+        <tr>
+            <th style="width: 9%; text-align: center;">{{'sl' | translate}}</th>
+            <th (click)="sortTitle('asset_maintenance_categories.title')" class="border-top-0 issue-list-org-tab-three pointer" style="width: 33%;">
+                <span>{{'title' | translate}}</span>
+                <img _ngcontent-twv-c17="" *ngIf="AssetMaintenanceCategoriesMasterStore.orderItem=='asset_maintenance_categories.title'" class="sort-down-pics pl-2" 
+                [attr.src]="AssetMaintenanceCategoriesMasterStore.orderBy=='desc' ? 
+                'assets/images/sort-up.png' : AssetMaintenanceCategoriesMasterStore.orderBy=='asc' ? 
+                'assets/images/sort-down.png' : 'assets/images/sort-empty.png'">
+            </th>
+            <th style="width: 44%;">{{'description' | translate}}</th>
+            <th style="width:14%;">{{'status' | translate}}</th>
+        </tr>
+        <ng-container *mobxAutorun>
+            <tr class="edit-and-delete-main"
+                *ngFor="let row of AssetMaintenanceCategoriesMasterStore?.allItems | paginate: {currentPage:AssetMaintenanceCategoriesMasterStore?.currentPage, itemsPerPage:AssetMaintenanceCategoriesMasterStore?.itemsPerPage,totalItems:AssetMaintenanceCategoriesMasterStore?.totalItems};let num = index">
+                <td style="text-align: center;">{{(AssetMaintenanceCategoriesMasterStore?.currentPage - 1) *
+                    AssetMaintenanceCategoriesMasterStore?.itemsPerPage + (num + 1)}}</td>
+                <td><a (click)="getAssetMaintenanceCategory(row.id)"
+                        [ngStyle]="{ 'pointer-events' : AuthStore.getActivityPermission(1100,'UPDATE_ASSET_MAINTENANCE_CATEGORY') ? '' : 'none'}">{{row.title}}</a>
+                </td>
+                <td>{{row.description}}</td>
+                <td style="padding:0.75rem">
+                    <div [attr.class]="'dot-div '+row.status_label">{{row.status}}</div>
+                    <div class="edit-option-show">
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'UPDATE_ASSET_MAINTENANCE_CATEGORY')"
+                            (click)="getAssetMaintenanceCategory(row.id)" [attr.title]="'edit' | translate"><i
+                                class="fas fa-pen pointer"></i></a>
+
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'DELETE_ASSET_MAINTENANCE_CATEGORY')"
+                            (click)="deleteAssetMaintenanceCategory(row.id)" [attr.title]="'delete' | translate"><i
+                                class="fas fa-trash pointer"></i></a>
+
+                        <a *ngIf="row.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(1100,'ACTIVATE_ASSET_MAINTENANCE_CATEGORY')"
+                            (click)="activate(row.id)" [attr.title]="'activate' | translate"><i
+                                class="fas fa-check pointer"></i></a>
+
+                        <a *ngIf="row.status_id == AppStore.activeStatusId && AuthStore.getActivityPermission(1100,'DEACTIVATE_ASSET_MAINTENANCE_CATEGORY')"
+                            (click)="deactivate(row.id)" [attr.title]="'deactivate' | translate"><i
+                                class="fas fa-ban pointer"></i></a>
+                    </div>
+                </td>
+
+            </tr>
+        </ng-container>
+    </table>
+    <p class="float-right" *ngIf="AssetMaintenanceCategoriesMasterStore?.loaded && AssetMaintenanceCategoriesMasterStore.totalItems > 0"><b>{{'total_Items' | translate}}:{{AssetMaintenanceCategoriesMasterStore?.totalItems}}</b></p>
+
+    <ng-container *mobxAutorun>
+        <div *ngIf="!AssetMaintenanceCategoriesMasterStore?.loaded">
+            <app-table-loader></app-table-loader>
+
+        </div>
+        <app-no-data
+            *ngIf="AssetMaintenanceCategoriesMasterStore.allItems.length == 0 && AssetMaintenanceCategoriesMasterStore.loaded == true">
+        </app-no-data>
+    </ng-container>
+
+    <!-- <div *ngIf = "AssetMaintenanceCategoriesMasterStore.totalItems == 0 && AssetMaintenanceCategoriesMasterStore.loaded == true" class="no-policy-demo-text bg-white d-flex align-items-center w-100 mt-2" style="height: 200px">
+        <div class="no-policy-demo">
+           <div class="no-file-icon">
+             <i class="far fa-file"></i>
+           </div>
+           <h6 class="bold mb-0">Nothing To Show</h6>
+        </div> 
+     </div> -->
+    <div *ngIf="AssetMaintenanceCategoriesMasterStore.totalItems>AssetMaintenanceCategoriesMasterStore.itemsPerPage"
+        class="col-sm-12">
+        <ul class="pagination justify-content-center mt-3">
+            <div class="list">
+                <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+                    (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+            </div>
+        </ul>
+    </div>
+</div>
+
+<!------------------- Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static"
+    #assetMaintenanceCategoriesModal>
+    <app-asset-maintenance-categories-modal *ngIf="assetMaintenanceCategoriesObject.type"
+        [source]="assetMaintenanceCategoriesObject"></app-asset-maintenance-categories-modal>
+
+</div>
+
+<div class="modal modal-style-1 email-popup-new fade" data-backdrop="static" data-keyboard="false"
+    id="email-notification-popup" #mailConfirmationPopup>
+    <app-mail-send-popup [source]="mailConfirmationData"></app-mail-send-popup>
+</div>
+
+<!------------------- Modal End --------------------------->

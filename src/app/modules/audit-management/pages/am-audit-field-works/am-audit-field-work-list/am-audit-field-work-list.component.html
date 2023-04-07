@@ -1,0 +1,116 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navigationBar *mobxAutorun>
+
+    <app-sub-menu></app-sub-menu>
+    <div class="module-name-block module-name-block-space float-left">
+		<a class="dropdown module-title" >{{'am_audit_field_works'|translate}}</a>
+	  </div>
+
+</nav>
+<main class="mt-3 acl-page" *mobxAutorun>
+    <div class="container-fluid">
+       <app-filter-menu></app-filter-menu>
+      <div class="audit-program-box audit-page-table-main">
+        <div class="row" *ngIf="AmAuditFieldWorkStore.loaded && AmAuditFieldWorkStore.auditFieldWorkDetails?.length>0">
+           <div class="col-sm-12">
+              <div class="full-width-table mb-3">
+              <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                 <thead>
+                    <tr>
+                       <th class="border-top-0 text-center" width="2%">#</th>
+                       <th (click)="sortTitle('reference_code')" class="border-top-0 pointer" width="8%"><span>{{'reference_code' | translate}}</span>
+                        <img _ngcontent-twv-c17="" style="margin-left: 6px;" *ngIf="AmAuditFieldWorkStore.orderItem=='reference_code'"
+                                [attr.src]="AmAuditFieldWorkStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"  class="sort-down-pics">
+                       </th>
+                       <!-- am_audits.reference_code -->
+                       <th class="border-top-0" width="37%">{{'audit' | translate}}</th>
+                       <th (click)="sortTitle('start_date')" class="border-top-0 pointer" width="12%"><span>{{'field_work_start_date' | translate}}</span>
+                        <img _ngcontent-twv-c17="" style="margin-left: 6px;" *ngIf="AmAuditFieldWorkStore.orderItem=='start_date'"
+                                [attr.src]="AmAuditFieldWorkStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"  class="sort-down-pics">
+                       </th>
+                       <!-- am_audits.field_work_start_date -->
+                       <th (click)="sortTitle('audit_manager_department')" class="border-top-0 pointer" width="15%"><span>{{'department' | translate}}</span>
+                        <img _ngcontent-twv-c17="" style="margin-left: 6px;" *ngIf="AmAuditFieldWorkStore.orderItem=='audit_manager_department'"
+                                [attr.src]="AmAuditFieldWorkStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"  class="sort-down-pics">
+                       </th>
+                       <th (click)="sortTitle('audit_manager_first_name')" class="border-top-0 pointer" width="18%">{{'audit_manager' | translate}}
+                        <img _ngcontent-twv-c17="" style="margin-left: 6px;" *ngIf="AmAuditFieldWorkStore.orderItem=='audit_manager_first_name'"
+                                [attr.src]="AmAuditFieldWorkStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"  class="sort-down-pics">
+                       </th>
+                       <th class="border-top-0 text-center" width="8%"><span>{{'status' | translate}}</span>
+                        <img _ngcontent-twv-c17="" style="margin-left: 6px;" *ngIf="AmAuditFieldWorkStore.orderItem=='am_audit_status_title'"
+                                [attr.src]="AmAuditFieldWorkStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"  class="sort-down-pics">
+                       </th>
+                       <!-- am_audit_test_plan_status_language.title -->
+                    </tr>
+                 </thead>
+                 <tbody>
+                    <tr class="pointer edit-and-delete-main" *ngFor="let fieldwork of AmAuditFieldWorkStore?.auditFieldWorkDetails | paginate: {currentPage:AmAuditFieldWorkStore?.currentPage, itemsPerPage:AmAuditFieldWorkStore?.itemsPerPage,totalItems:AmAuditFieldWorkStore?.totalItems}; let num = index">
+                       <td class="text-center" (click)="gotoDetailsPage(fieldwork.id)">{{(AmAuditFieldWorkStore?.currentPage -1) * AmAuditFieldWorkStore?.itemsPerPage + (num +
+                        1)}}</td>
+                       <td (click)="gotoDetailsPage(fieldwork.id)">#{{fieldwork.reference_code?fieldwork.reference_code:AppStore.noContentText}}</td>
+                       <td (click)="gotoDetailsPage(fieldwork.id)"><div class="elips-2" [attr.title]="fieldwork.title">{{fieldwork.title ? fieldwork?.title : AppStore.noContentText}}</div></td>
+                       <td (click)="gotoDetailsPage(fieldwork.id)">{{fieldwork.field_work_start_date|date:
+                        OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</td>
+                       <td (click)="gotoDetailsPage(fieldwork.id)">{{fieldwork.department}}</td>
+                       <td>
+                        <app-user-popup-box  [source]=" getPopupDetails(fieldwork)"></app-user-popup-box>
+                        </td>
+                       <td class="text-center"><div [ngClass]="'dot-div '+fieldwork.fieldwork_status_label+'-dot'" (click)="gotoDetailsPage(fieldwork.id)">{{fieldwork.fieldwork_status_title?fieldwork.fieldwork_status_title:'Not Started'}}</div>
+                        <div class="edit-option-show" style="margin: 30px 0 0 0; " *ngIf="fieldwork.created_by==AuthStore.user?.id && fieldwork.fieldwork_status_type!='completed'"><!-- edit-and-delete starts -->
+                           <a (click)="editAuditFieldWork(fieldwork)"><i class="fas fa-pen"></i></a>
+                           <a (click)="deleteAuditFieldWork(fieldwork.id)"><i class="fas fa-trash"></i></a>
+                       </div><!-- edit-and-delete end --> 
+                       </td>
+                    </tr>
+                    
+                 </tbody>
+              </table>
+              </div>
+              <p class="float-right bold mb-0" *ngIf="AmAuditFieldWorkStore?.loaded && AmAuditFieldWorkStore.totalItems > 0">{{'total_Items' | translate}}:{{AmAuditFieldWorkStore?.totalItems}}</p>
+
+           </div>
+           <div *ngIf="AmAuditFieldWorkStore.totalItems>AmAuditFieldWorkStore.itemsPerPage" class="col-sm-12">
+            <ul class="pagination justify-content-center mt-3">
+                <div class="list">
+                    <pagination-controls [previousLabel]="'previous' | translate"
+                        [nextLabel]="'next' | translate" (pageChange)="pageChange($event)"
+                        class="my-pagination"></pagination-controls>
+                </div>
+            </ul>
+        </div>
+        </div>
+        <ng-container *mobxAutorun>
+          <app-no-data [border]="false" *ngIf="AmAuditFieldWorkStore.loaded && AmAuditFieldWorkStore.auditFieldWorkDetails?.length==0">
+          </app-no-data>
+      </ng-container>
+  
+      <ng-container *mobxAutorun>
+          <div *ngIf="!AmAuditFieldWorkStore.loaded">
+              <app-am-audit-plan-loader></app-am-audit-plan-loader>
+          </div>
+      </ng-container>
+      </div>
+
+
+
+    </div>
+  </main>
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" data-backdrop="static" data-keyboard="false" #deletePopup>
+  <app-delete-popup [source]="deleteObject"></app-delete-popup>
+</div>
+
+<!------------------- Delete Confirmation Modal End --------------------------->
+
+
+<div class="modal modal-style-1 popup-full-width fade" id="new-audit-programme-popup" data-keyboard="false"
+  data-backdrop="static" #formModal>
+
+
+  <app-am-audit-field-work-modal *ngIf="auditFieldWorkObject.type" [source]="auditFieldWorkObject">
+
+  </app-am-audit-field-work-modal>
+
+</div>

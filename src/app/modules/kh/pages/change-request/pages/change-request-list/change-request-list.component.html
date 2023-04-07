@@ -1,0 +1,91 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navBar>
+    <div class="module-name-block module-name-block-space float-left">
+        <a class="dropdown module-title">{{'change_request'|translate}}</a>
+    </div>
+    <app-sub-menu></app-sub-menu>
+</nav>
+
+<main class="mt-3 acl-page" *mobxAutorun>
+    <app-filter-menu></app-filter-menu>
+    <div class="container-fluid">
+        <div class="audit-program-box audit-page-table-main">
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="full-width-table mb-3">
+                        <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll"
+                            *ngIf="changeRequestStore?.cRlistLoaded && changeRequestStore.changeRequestList.length > 0 && AuthStore.getActivityPermission(700,'DOCUMENT_CHANGE_REQUEST_LIST')">
+                            <thead>
+                                <tr>
+                                    <th class="border-top-0 text-center" width="2%">#</th>
+                                    <th class="border-top-0 pointer" width="10%" (click)="setControlSort('reference_code')">{{'reference_code' | translate}}
+                                        <img *ngIf="changeRequestStore.orderItem == 'reference_code'" [attr.src]="changeRequestStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" class="sort-down-pics">
+                                    </th>
+                                    <th class="border-top-0 pointer" (click)="setControlSort('reason')" width="15%">{{'document_name' | translate}}
+                                        <img *ngIf="changeRequestStore.orderItem == 'reason'" [attr.src]="changeRequestStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"class="sort-down-pics">
+                                    </th>
+                                    <th class="border-top-0 pointer" (click)="setControlSort('reason')" width="35%">{{'reason' | translate}}
+                                        <img *ngIf="changeRequestStore.orderItem == 'reason'" [attr.src]="changeRequestStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"class="sort-down-pics">
+                                    </th>
+                                    <th class="border-top-0 pointer" width="14%" (click)="setControlSort('Type')">{{'request_type' | translate}}
+                                        <img *ngIf="changeRequestStore.orderItem == 'Type'" [attr.src]="changeRequestStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" class="sort-down-pics">
+                                    </th>
+                                    <th class="border-top-0 pointer" width="14%" (click)="setControlSort('Requested By')">{{'requested_by' | translate}}
+                                        <img *ngIf="changeRequestStore.orderItem == 'Requested By'" [attr.src]="changeRequestStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" class="sort-down-pics">
+                                    </th>
+                                    <th class="border-top-0 pointer text-center" width="10%" (click)="setControlSort('status')">{{'status' | translate}}
+                                        <img *ngIf="changeRequestStore.orderItem == 'status'" [attr.src]="changeRequestStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" class="sort-down-pics">
+                                    </th>                                        
+                                </tr>
+                            </thead>
+                            <tbody *ngIf="AuthStore.getActivityPermission(700,'DOCUMENT_CHANGE_REQUEST_DETAILS')">
+                                <tr class="edit-and-delete-main pointer" (click)="gotoDetails(row?.id)"
+                                    *ngFor="let row of changeRequestStore?.changeRequestList | paginate: {currentPage: changeRequestStore?.currentPage,itemsPerPage: changeRequestStore?.itemsPerPage,  totalItems: changeRequestStore?.totalItems};let num = index">
+                                    <td class="text-center">{{(changeRequestStore?.currentPage - 1) * changeRequestStore?.itemsPerPage +(num + 1)}}</td>
+                                    <td>#{{row?.reference_code}}</td>
+                                    <td *ngIf="row?.document_title" title="{{row?.document_title}}">{{row?.document_title?row.document_title:AppStore.noContentText}}</td>
+                                    <td *ngIf="row?.reason" title="{{row?.reason}}">{{row?.reason?.length > 70 ? row?.reason?.substring(0,70)+'...' :row?.reason}}</td>
+                                    <td *ngIf="!row?.reason" title="{{row?.reason}}">{{AppStore.noContentText}}</td>
+                                    <td class="pointer">{{row?.document_change_request_type_title}}</td>
+                                    <td class="pointer">
+                                        <app-user-popup-box [source]="getPopupDetails(row)"></app-user-popup-box>                                        
+                                    </td>
+                                    <td class="pointer text-center">                                            
+                                        <div [attr.class]="'dot-div '+row?.document_change_request_status_label">
+                                            {{row?.document_change_request_status_title}}
+                                        </div>
+                                        <div class="edit-option-show" *ngIf="row?.document_change_request_status_id==1">
+                                            <a title="Edit" (click)="editChangeRequest(row?.id,$event)" *ngIf="AuthStore.getActivityPermission(700,'UPDATE_DOCUMENT_CHANGE_REQUEST')"><i class="fas fa-pen pointer"></i></a>
+                                            <a title="Delete" (click)="openDeletePopup(row?.id,$event)" *ngIf="AuthStore.getActivityPermission(700,'DELETE_DOCUMENT_CHANGE_REQUEST')"><i class="fas fa-trash pointer"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p class="float-right" *ngIf="changeRequestStore?.cRlistLoaded && changeRequestStore?.changeRequestList.length > 0"><b>{{'total_Items' | translate}}:{{changeRequestStore?.totalItems}}</b></p>
+                    </div>
+                    <ng-container *mobxAutorun>
+                        <div >
+                            <app-table-loader *ngIf="!changeRequestStore?.cRlistLoaded"></app-table-loader>
+                        </div>                        
+                        <app-no-data *ngIf="changeRequestStore?.cRlistLoaded && changeRequestStore?.changeRequestList.length==0"></app-no-data>
+                    </ng-container>
+                </div>
+                <div *ngIf="changeRequestStore.totalItems>changeRequestStore.itemsPerPage && changeRequestStore?.cRlistLoaded"
+                    class="col-sm-12">
+                    <ul class="pagination justify-content-center mt-3">
+                        <div class="list">
+                            <pagination-controls (pageChange)="pageChange($event)" class="my-pagination">
+                            </pagination-controls>
+                        </div>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<!------------------- Delete Confirmation Modal Start --------------------------->
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp>
+    <app-delete-popup [source]="confirmationObject"></app-delete-popup>
+</div>
+<!------------------- Delete Confirmation Modal End --------------------------->

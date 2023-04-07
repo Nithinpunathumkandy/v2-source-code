@@ -1,0 +1,387 @@
+<app-activity-log-loader *ngIf="WorkFlowStore.activityLogLoaded == false"></app-activity-log-loader>
+<button type="button" class="close" (click)="close()" data-dismiss="modal"><i
+      class="lni-close"></i><span>esc</span></button>
+<div class="modal-dialog modal-xl modal-dialog-centered">
+   <div class="modal-content">
+      <!-- Modal Header -->
+      <div class="modal-header">
+         <h4 class="modal-title">Activity Log</h4>
+         <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
+      </div>
+      <!-- Modal body -->
+      <div class="modal-body form-body" *ngIf="WorkFlowStore?.getActivityLog?.length != 0">
+         <p class="head-details">
+         </p>
+         <div class="row">
+            <div class="col-sm-12">
+               <div class="actvity-log-details-loop actvity-log-popup-new">
+                  <div class="actvity-log-details"
+                     *ngFor="let row of WorkFlowStore?.getActivityLog| paginate: {currentPage:WorkFlowStore?.currentActivityPage, itemsPerPage:WorkFlowStore?.itemsPerPageActivity,totalItems:WorkFlowStore?.totalItemsActivity};let num = index">
+                     <div class="clearfix d-flex">
+                        <div class="actvitylog-dtl-left" style="width: 60px;">
+                           <div class="actvitylog-dtl-round">
+                              <i class="fas fa-exchange-alt"></i>
+                           </div>
+                        </div>
+                        <div class="actvitylog-dtl-right bg-white widg-padding-cmn ml-4">
+                           <div class="row">
+                              <div class="col-lg-3 col-sm-12">
+                                 <!-- <p *ngIf="row?.activity_type=='CREATE'" class="font-normal mb-2 time-and-date-small-p">{{row?.data?.document_version_content?.updated_at | date: OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format  }}</p>
+                                 <p *ngIf="row?.activity_type=='UPDATE'" class="font-normal mb-2 time-and-date-small-p">{{row?.data?.document_version?.updated_at | date: OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format  }}</p> -->
+                                 <div class="d-flex flex-row user-list-sm p-0">
+                                    <img
+                                       [attr.src]="row?.created_by_image_token?createImageUrl(row?.created_by_image_token):'/assets/images/user-demo2.png'"
+                                       onerror="this.src='/assets/images/user-demo2.png'" width="30px" height="30px"
+                                       class="rounded-circle">
+                                    <div class="new-size-text">
+                                       <h6 class="mt-0">{{row?.created_by_first_name}} {{row?.created_by_last_name}}
+                                       </h6>
+                                       <span>{{row?.created_by_designation}}</span>
+                                    </div>
+                                 </div>
+                              </div>
+                              <div class="col-lg-9 col-sm-12">
+
+                                 <!-- Document Activities -->
+
+                                 <!-- Create New Document -->
+                                 <div *ngIf="row?.activity_code=='CREATE_DOCUMENT'"
+                                    class="small-user-style-text left-border-and-space">
+
+                                    <p>Created {{row?.activity}} <b>{{row?.data?.document?.title}}</b> at
+                                       {{row?.created_at | date:
+                                       OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format}}</p>
+                                    <!-- <h6>{{row?.activity_type | titlecase }}d</h6> <p>{{row.activity}}</p>
+                                    <span *ngIf="row?.data?.document_version_content?.title" >{{row?.data?.document_version_content?.title}}</span><br>
+                                    <span *ngIf="row?.data?.document_version_content?.description" [innerHTML]="row?.data?.document_version_content?.description"></span> -->
+                                 </div>
+                                 <!-- Document Details Clicked Activity Log -->
+                                 <div *ngIf="row?.activity_code=='DOCUMENT_DETAILS'"
+                                    class="small-user-style-text left-border-and-space">
+                                    <p>Accessed document at {{row?.created_at | date:
+                                       OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format}}</p>
+                                 </div>
+
+                                 <!-- Document Preview Page Details -->
+                                 <div *ngIf="row?.activity_code=='PREVIEW_DOCUMENT_VERSION_DOCUMENT_FILE'"
+                                    class="small-user-style-text left-border-and-space">
+                                    <p>Viewed File Preview at {{row?.created_at | date:
+                                       OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format}}</p>
+                                 </div>
+
+
+                                 <!-- Delete Document -->
+
+                                 <div *ngIf="row?.activity_code=='DELETE_DOCUMENT'"
+                                    class="small-user-style-text left-border-and-space">
+                                    <p>Document <b>Deleted</b> at {{row?.created_at | date:
+                                       OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format}}</p>
+                                 </div>
+
+                                 <!-- Document New Clauses/Sections Activity Log -->
+
+                                 <!-- Document Update Activity Log -->
+                                 <div *ngIf="row?.activity_code=='UPDATE_DOCUMENT'"
+                                    class="small-user-style-text left-border-and-space">
+                                    <p>Updated Document at {{row?.created_at | date:
+                                       OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format}}</p>
+                                    <ng-container *ngIf="row?.detail.length !=0">
+                                       <div *ngFor="let row2 of row?.detail ; let num=index">
+                                          <div *ngIf="row2?.type=='changed'">
+                                             <span>{{num+1}}. It's {{row2?.details | translate}} {{row2.type}} from
+                                             </span>
+                                             <p>
+                                                <b><span [innerHTML]="row2.changed_from"></span></b>
+                                                to
+                                                <b><span [innerHTML]="row2.changed_to"></span></b>
+                                             </p>
+                                          </div>
+                                          <div *ngIf="row2?.type=='Added'">
+                                             <span>
+                                                {{num+1}}.New {{row2?.details | translate}} <b>{{row2?.new_item}}</b>
+                                                added
+                                             </span>
+                                          </div>
+
+                                       </div>
+                                       <!-- <span>{{num+1}}. It's Section title {{row2.type}} from <b><i><span
+                                             [innerHTML]="row2.changed_from" class="image-width-texteditor table table-bordered border-none text-editor-content bullet-point-list ordinary-table"></span></i></b>
+                                    to <b><i><span
+                                       [innerHTML]="row2.changed_to" class="image-width-texteditor table table-bordered border-none text-editor-content bullet-point-list ordinary-table"></span></i></b></span>                                           -->
+                                       <!-- </div>                                        -->
+                                    </ng-container>
+                                 </div>
+
+
+                                 <!-- Document New Version Content -->
+                                 <div *ngIf="row?.activity_code=='CREATE_DOCUMENT_VERSION_CONTENT'"
+                                    class="small-user-style-text left-border-and-space">
+                                    <p>Created {{row?.activity}}
+                                       <b>{{row?.data?.document_version_content?.clause_number}}.{{row?.data?.document_version_content?.title}}</b>
+                                       at {{row?.created_at | date:
+                                       OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format}}
+                                    </p>
+                                 </div>
+
+                                 <div *ngIf="row?.activity_code=='DELETE_DOCUMENT_VERSION_CONTENT'"
+                                 class="small-user-style-text left-border-and-space">
+                                 <p>{{row?.activity_type | titlecase }}d Document Version Content
+                                    <b>{{row?.data?.title}}</b>
+                                 </p>
+                              </div>
+                                 <!-- Document Update Version Content -->
+
+                                 <div *ngIf="row?.activity_code=='UPDATE_DOCUMENT_VERSION_CONTENT'"
+                                    class="small-user-style-text left-border-and-space">
+                                    <p>Updated Document Version Content at {{row?.created_at | date:
+                                       OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format}}</p>
+                                    <ng-container *ngIf="row?.detail.length !=0">
+                                       <div *ngFor="let row2 of row?.detail ; let num=index">
+                                          <div *ngIf="row2?.type=='changed'">
+                                             <span>{{num+1}}. It's {{row2?.details | translate}} {{row2.type}} from
+                                             </span>
+                                             <p>
+                                                <b><span [innerHTML]="row2.changed_from"></span></b>
+                                                to
+                                                <b><span [innerHTML]="row2.changed_to"></span></b>
+                                             </p>
+                                          </div>
+                                          <div *ngIf="row2?.type=='Added'">
+                                             <span>
+                                                {{num+1}}.New {{row2?.details | translate}} <b>{{row2?.new_item}}</b>
+                                                added
+                                             </span>
+                                          </div>
+
+                                       </div>
+                                       <!-- <span>{{num+1}}. It's Section title {{row2.type}} from <b><i><span
+                                             [innerHTML]="row2.changed_from" class="image-width-texteditor table table-bordered border-none text-editor-content bullet-point-list ordinary-table"></span></i></b>
+                                    to <b><i><span
+                                       [innerHTML]="row2.changed_to" class="image-width-texteditor table table-bordered border-none text-editor-content bullet-point-list ordinary-table"></span></i></b></span>                                           -->
+                                       <!-- </div>                                        -->
+                                    </ng-container>
+                                 </div>
+
+                                 <!-- Document Section New Comment -->
+                                 <div *ngIf="row?.activity_code=='CREATE_DOCUMENT_VERSION_CONTENT_COMMENT'"
+                                    class="small-user-style-text left-border-and-space">
+                                    <p>Commented on Document Version Content at {{row?.created_at | date:
+                                       OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format}}</p>
+                                 </div>
+
+
+                                 <!-- Document Section New Notes -->
+                                 <div *ngIf="row?.activity_code=='CREATE_DOCUMENT_VERSION_NOTE'"
+                                    class="small-user-style-text left-border-and-space">
+
+                                    <p>Created {{row?.activity}}
+                                       <b>{{row?.data?.document_version_content_note?.title}}</b> at {{row?.created_at |
+                                       date: OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format}}
+                                    </p>
+
+                                    <div *ngFor="let item of row?.data?.document_version_content_note ; let num=index">
+                                       <span>
+                                          {{num+1}}.New item <b>{{item?.title}}</b> added
+                                       </span>
+                                    </div>
+
+                                 </div>
+                                 <!-- Document Section Edit Notes -->
+                                 <div *ngIf="row?.activity_code=='UPDATE_DOCUMENT_VERSION_NOTE'"
+                                    class="small-user-style-text left-border-and-space">
+
+                                    <p>Updated Document Version Note at {{row?.created_at | date:
+                                       OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format}}</p>
+                                    <ng-container *ngIf="row?.detail.length !=0">
+                                       <div *ngFor="let row2 of row?.detail ; let num=index">
+                                          <div *ngIf="row2?.type=='changed'">
+                                             <span>{{num+1}}. It's {{row2?.details | translate}} {{row2.type}} from
+                                             </span>
+                                             <p>
+                                                <b><span [innerHTML]="row2.changed_from"></span></b>
+                                                to
+                                                <b><span [innerHTML]="row2.changed_to"></span></b>
+                                             </p>
+                                          </div>
+                                       </div>
+                                    </ng-container>
+
+                                 </div>
+                                 <!-- Document Section Delete Notes -->
+                                 <div *ngIf="row?.activity_code=='DELETE_DOCUMENT_VERSION_NOTE'"
+                                    class="small-user-style-text left-border-and-space">
+                                    <p>{{row?.activity_type | titlecase }}d Document Version Note
+                                       <b>{{row?.data?.title}}</b>
+                                    </p>
+                                 </div>
+                                 <!-- Document Checklist New Notes -->
+                                 <div *ngIf="row?.activity_code=='CREATE_DOCUMENT_VERSION_CHECKLIST'"
+                                    class="small-user-style-text left-border-and-space">
+                                    <p>Created {{row?.activity}}
+                                       <b>{{row?.data?.document_version_content_note?.title}}</b> at {{row?.created_at |
+                                       date: OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format}}
+                                    </p>
+                                    <ng-container *ngIf="row?.detail.length !=0">
+                                       <div *ngFor="let row2 of row?.detail ; let num=index">
+                                          <div *ngIf="row2?.type=='changed'">
+                                             <span>{{num+1}}. It's {{row2?.details | translate}} {{row2.type}} from
+                                             </span>
+                                             <p>
+                                                <b><span [innerHTML]="row2.changed_from"></span></b>
+                                                to
+                                                <b><span [innerHTML]="row2.changed_to"></span></b>
+                                             </p>
+                                          </div>
+                                          <div *ngIf="row2?.type=='Added'">
+                                             <span>
+                                                {{num+1}}.New {{row2?.details | translate}} <b>{{row2?.new_item}}</b>
+                                                added
+                                             </span>
+                                          </div>
+
+                                       </div>
+                                    </ng-container>
+                                 </div>
+
+                                 <!-- Document Checklist Delete Notes -->
+                                 <div *ngIf="row?.activity_code=='DELETE_DOCUMENT_VERSION_CHECKLIST'"
+                                    class="small-user-style-text left-border-and-space">
+                                    <p>{{row?.activity_type | titlecase }}d Document Version Checklist
+                                       <b>{{row?.data?.checklist_deleted.title}}</b>
+                                    </p>
+                                 </div>
+
+                                 <!-- Submit Document For Review -->
+                                 <div *ngIf="row?.activity_code=='SUBMIT_DOCUMENT'"
+                                    class="small-user-style-text left-border-and-space">
+                                    <p>Document <b>Submitted</b> for review at {{row?.created_at | date:
+                                       OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format}}</p>
+                                 </div>
+
+                                 <!-- Reverted Document in Review -->
+                                 <div *ngIf="row?.activity_code=='REVERT_DOCUMENT'"
+                                    class="small-user-style-text left-border-and-space">
+                                    <p>Document <b>Reverted</b> at {{row?.created_at | date:
+                                       OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format}}</p>
+                                 </div>
+
+                                 <!-- Approve Document in Review -->
+                                 <div *ngIf="row?.activity_code=='APPROVE_DOCUMENT'"
+                                    class="small-user-style-text left-border-and-space">
+                                    <p>Document <b>Approved</b> at {{row?.created_at | date:
+                                       OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format}}</p>
+                                 </div>
+
+                                 <!-- Reject Document -->
+                                 <div *ngIf="row?.activity_code=='REJECT_DOCUMENT'"
+                                    class="small-user-style-text left-border-and-space">
+                                    <p>Document <b>Rejected</b> at {{row?.created_at | date:
+                                       OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format}}</p>
+                                 </div>
+
+                                 <!-- Checkout Document -->
+                                 <div *ngIf="row?.activity_code=='CHECKOUT_DOCUMENT'"
+                                    class="small-user-style-text left-border-and-space">
+                                    <p>Document <b>Checkout Out</b> at {{row?.created_at | date:
+                                       OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format}}</p>
+                                 </div>
+
+                                 <!-- Download Document -->
+                                 <div *ngIf="row?.activity_code=='DOWNLOAD_DOCUMENT_VERSION_DOCUMENT_FILE'"
+                                    class="small-user-style-text left-border-and-space">
+                                    <p>Document <b>Downloaded</b> at {{row?.created_at | date:
+                                       OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format}}</p>
+                                 </div>
+
+                                 <!-- CheckIn Document -->
+                                 <div *ngIf="row?.activity_code=='CHECKIN_DOCUMENT'"
+                                    class="small-user-style-text left-border-and-space">
+                                    <p>New Document <b>Checked In</b> at {{row?.created_at | date:
+                                       OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format}}</p>
+                                 </div>
+
+
+                                 <!-- CR Activity Logs -->
+
+                                 <!-- New Change Request -->
+                                 <div *ngIf="row?.activity_code=='CREATE_DOCUMENT_CHANGE_REQUEST'"
+                                    class="small-user-style-text left-border-and-space">
+                                    <p>Created <b>{{row?.activity}}</b> created at {{row?.created_at | date:
+                                       OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format}}</p>
+                                 </div>
+
+                                 <!-- Change Request Details Clicked Activity Log -->
+                                 <div *ngIf="row?.activity_code=='DOCUMENT_CHANGE_REQUEST_DETAILS'"
+                                    class="small-user-style-text left-border-and-space">
+                                    <p>Viewed <b>{{row?.activity}}</b> at {{row?.created_at | date:
+                                       OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format}}</p>
+                                 </div>
+
+                                 <!-- Change Request Preview Page Details -->
+                                 <div *ngIf="row?.activity_code=='PREVIEW_DOCUMENT_CHANGE_REQUEST_FILE'"
+                                    class="small-user-style-text left-border-and-space">
+                                    <p>Viewed <b>Change Request File Preview</b> at {{row?.created_at | date:
+                                       OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format}}</p>
+                                 </div>
+                                 <!-- Submit Document For Review -->
+                                 <div *ngIf="row?.activity_code=='SUBMIT_DOCUMENT_CHANGE_REQUEST'"
+                                    class="small-user-style-text left-border-and-space">
+                                    <p>Document <b>Submitted</b> for <b>Change Request review</b> at {{row?.created_at |
+                                       date:
+                                       OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format}}</p>
+                                 </div>
+
+                                 <!-- Reverted Document in Review -->
+                                 <div *ngIf="row?.activity_code=='REVERT_DOCUMENT_CHANGE_REQUEST'"
+                                    class="small-user-style-text left-border-and-space">
+                                    <p>Change Request <b>Reverted</b> at {{row?.created_at | date:
+                                       OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format}}</p>
+                                 </div>
+
+                                 <!-- Approve Document in Review -->
+                                 <div *ngIf="row?.activity_code=='APPROVE_DOCUMENT_CHANGE_REQUEST'"
+                                    class="small-user-style-text left-border-and-space">
+                                    <p>Change Request <b>Approved</b> at {{row?.created_at | date:
+                                       OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format}}</p>
+                                 </div>
+
+                                 <!-- Reject Document -->
+                                 <div *ngIf="row?.activity_code=='REJECT_DOCUMENT_CHANGE_REQUEST'"
+                                    class="small-user-style-text left-border-and-space">
+                                    <p>Change Request <b>Rejected</b> at {{row?.created_at | date:
+                                       OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format}}</p>
+                                 </div>
+
+                                 <!-- Document Version Change -->
+                                 <div *ngIf="row?.activity_code=='DOCUMENT_VERSION_CHANGE'"
+                                    class="small-user-style-text left-border-and-space">
+                                    <p>Document <b>Version Changed</b> at {{row?.created_at | date:
+                                       OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format}}</p>
+                                 </div>
+                                 <!-- <div *ngIf="row?.activity_type=='DELETE'" class="small-user-style-text left-border-and-space">
+                                    <h6>{{row?.activity_type | titlecase }}d</h6>
+                                    <span *ngIf="row?.activity" >{{row?.activity}}</span><br>
+                                    <p>Section <b>{{row?.data?.title}}</b> deleted</p>
+                                </div> -->
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+                  <div *ngIf="WorkFlowStore.totalItemsActivity>WorkFlowStore.itemsPerPageActivity" class="col-sm-12">
+                     <ul class="pagination justify-content-center mt-3">
+                        <div class="list">
+                           <pagination-controls (pageChange)="getActivity($event)" class="my-pagination">
+                           </pagination-controls>
+                        </div>
+                     </ul>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+      <app-no-data-list *ngIf="WorkFlowStore?.getActivityLog?.length == 0" [source]="emptyActivityLog">
+      </app-no-data-list>
+      <!-- Modal footer -->
+   </div>
+</div>

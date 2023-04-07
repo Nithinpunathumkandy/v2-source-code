@@ -1,0 +1,1121 @@
+<div #plainDev></div>
+<main class="mt-3 organization-page " [ngClass]="{'tab-btns-five':isMockDrillFire}">
+    <div class="container-fluid">
+        <div class="organization-form-page" *mobxAutorun>
+            <div [ngStyle]="{'display':!showForm ? 'none' : 'block'}">
+                <form id="regForm" [formGroup]="regForm" class="organization-multi-stup-form multi-stup-form-common"
+                    [ngClass]="{'issue-multi-stup-form':isMockDrillFire}">
+                    <!-- Circles which indicates the steps of the form: -->
+                    <div id="header-sroll-form" class="form-indicates-sec clearfix" #formSteps>
+                        <span class="step active" (click)="changeStep(0)"><span class="multi-form-nbr">1</span>
+                            {{'info' | translate}}</span>
+                        <span class="step" (click)="changeStep(1)" *ngIf="isMockDrillFire"><span
+                                class="multi-form-nbr">2</span>
+                            {{'response_checklist' | translate}}</span>
+                        <span class="step" (click)="changeStep(!isMockDrillFire ? 1 : 2)"><span class="multi-form-nbr">
+                                {{
+                                !isMockDrillFire?'2':'3'}}</span>
+                            {{'participants' | translate}}</span>
+                        <span class="step" (click)="changeStep(!isMockDrillFire ? 2 : 3)"><span class="multi-form-nbr">
+                                {{
+                                !isMockDrillFire?'3':'4'}}</span>
+                            {{'mock_drill_observation' | translate}}</span>
+                        <span class="step" (click)="changeStep(!isMockDrillFire ? 3 : 4)"><span class="multi-form-nbr">
+                                {{ !isMockDrillFire?'4':'5'}}</span>
+                            {{'preview_save' | translate}}</span>
+                    </div>
+                    <!-- One "tab" for each step in the form: -->
+                    <div class="tab" [ngStyle]="{display: !MockDrillStore.mockDrillSettings?.is_info ? 'none':'block'}">
+                        <!-- tab start -->
+                        <div class="row">
+                            <div
+                                [ngClass]="{ 'col-lg-12 col-sm-12' :isMockDrillFire , 'col-lg-6 col-sm-12' : !isMockDrillFire}">
+                                <div class="form-group">
+                                    <label for="name">{{'plan' | translate}}<span class="form-error">*</span></label>
+                                    <div class="clearfix d-flex">
+                                        <div class="multiple-plain-ngselect w-100"
+                                            *ngIf="MockDrillStore.selected?.id==undefined || MockDrillStore.selected?.id ==null">
+                                            <ng-select (open)="getMockDrillPlan()" formControlName="mock_drill_plan_id"
+                                                [placeholder]="'select_plan' | translate" (search)="searchPlan($event)"
+                                                (change)="getMockDrillType($event);" (clear)="getMockDrillPlan()"
+                                                (open)="getMockDrillPlan()" [closeOnSelect]="true">
+                                                <ng-option *ngFor="let item of MockDrillPlanStore.allItems"
+                                                    [value]="item.id">
+                                                    {{item.mock_drill_type +' - '+ item.venue +' -
+                                                    '}}{{(_helperService.processDate(item.date,
+                                                    'join')) | date:
+                                                    OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                </ng-option>
+                                            </ng-select>
+
+                                        </div>
+                                        <input
+                                            *ngIf="MockDrillStore.selected?.id!=undefined && MockDrillStore.selected?.id !=null"
+                                            class="form-control" formControlName="venue" readonly>
+                                    </div>
+                                    <p class="form-error pt-1" *ngIf="formErrors&&formErrors.mock_drill_plan_id">
+                                        {{formErrors.mock_drill_plan_id[0]}}</p>
+                                </div>
+                            </div>
+                            <div class='col-lg-6 col-sm-12' *ngIf="!isMockDrillFire">
+                                <div class="form-group">
+                                    <label for="name">{{'mock_drill_scenario' | translate}}</label>
+                                    <div class="clearfix d-flex">
+                                        <div class="multiple-plain-ngselect w-100">
+                                            <ng-select (open)="getMockDrillScenario()"
+                                                formControlName="mock_drill_scenario_id"
+                                                [placeholder]="'select_scenario' | translate"
+                                                (search)="searchScenario($event)" (clear)="getMockDrillScenario()"
+                                                (open)="getMockDrillScenario()">
+                                                <ng-option *ngFor="let item of MockDrillScenarioMasterStore.allItems"
+                                                    [value]="item.id">
+                                                    {{item.mock_drill_scenario_title}}
+                                                </ng-option>
+                                            </ng-select>
+                                        </div>
+                                    </div>
+                                    <p class="form-error pt-1" *ngIf="formErrors&&formErrors.mock_drill_scenario_id">
+                                        {{formErrors.mock_drill_scenario_id[0]}}</p>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-sm-12">
+                                <div class="form-group">
+                                    <label for="name"> {{'actual_date' | translate}}<span
+                                            class="form-error">*</span></label>
+                                    <div class="input-group date-picker cal-time">
+                                        <div class="input-group">
+                                            <input class="form-control" placeholder="{{'actual_date' | translate}}"
+                                                id="planDate" name="dp" autocomplete="off" ngbDatepicker
+                                                formControlName="actual_date" #d="ngbDatepicker">
+                                            <div class="input-group-append">
+                                                <button class="btn btn-outline-secondary calendar" (click)="d.toggle()"
+                                                    type="button">
+                                                    <i class="fas fa-calendar-alt"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p class="form-error pt-1" *ngIf="formErrors&&formErrors.actual_date">
+                                        {{formErrors.actual_date[0]}}</p>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-sm-12">
+                                <div class="form-group">
+                                    <label for="name"> {{'start_time' | translate}}<span
+                                            class="form-error">*</span></label>
+                                    <div class="clearfix d-flex">
+                                        <div class="w-100">
+                                            <!-- <input type="time" class="form-control" formControlName="start_time"> -->
+                                            <!-- [(ngModel)]="time" -->
+                                            <ngb-timepicker [meridian]="'ON'" [spinners]=false
+                                                formControlName="start_time"></ngb-timepicker>
+                                        </div>
+                                    </div>
+                                    <p class="form-error pt-1" *ngIf="formErrors&&formErrors.start_time">
+                                        {{formErrors.start_time[0]}}</p>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-3 col-sm-12">
+                                <div class="form-group">
+                                    <label for="name"> {{'end_time' | translate}}<span
+                                            class="form-error">*</span></label>
+                                    <div class="clearfix d-flex">
+                                        <div class="w-100">
+                                            <!-- <input type="time" class="form-control" formControlName="end_time"> -->
+                                            <ngb-timepicker [meridian]="'ON'" [spinners]=false
+                                                formControlName="end_time"></ngb-timepicker>
+                                        </div>
+                                    </div>
+                                    <p class="form-error pt-1" *ngIf="formErrors&&formErrors.end_time">
+                                        {{formErrors.end_time[0]}}</p>
+                                </div>
+                            </div>
+                            <div class="col-lg-12 col-sm-12">
+                                <div class="form-group">
+                                    <label for="name"> {{'incident_controller' | translate}}<span
+                                            class="form-error">*</span></label>
+                                    <div class="clearfix d-flex">
+                                        <div class="multiple-plain-ngselect w-100">
+                                            <ng-select [items]="UsersStore.usersList" bindLabel="email" labelForId="id"
+                                                [placeholder]="'select_user' | translate" [closeOnSelect]="true"
+                                                (search)="searchUsers($event)" (clear)="getUsers()" (open)="getUsers()"
+                                                formControlName="incident_controller_id" [clearOnBackspace]="false"
+                                                [searchFn]="customSearchFn">
+                                                <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                                    <img *ngIf="item.image_token" class="ng-select-user-display"
+                                                        height="15" width="15"
+                                                        [attr.src]="createImagePreview('user-profile-picture',item.image_token)"
+                                                        onerror="this.src='/assets/images/user-demo2.png'" />
+                                                    <img *ngIf="!item.image_token" class="ng-select-user-display"
+                                                        height="15" width="15" [attr.src]="getDefaultImage()"
+                                                        onerror="this.src='/assets/images/user-demo2.png'" />
+                                                    <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,'
+                                                        ') | titlecase}}</b>
+                                                    <span aria-hidden="true" (click)="clear(item);" style="border:none;"
+                                                        class="ng-value-icon left">×</span>
+                                                </ng-template>
+
+                                                <ng-template ng-option-tmp let-item="item" let-index="index">
+                                                    <div>
+                                                        <div class="user-post-department-pic">
+                                                            <img *ngIf="item.image_token" class="ng-select-user-display"
+                                                                height="25" width="25"
+                                                                [attr.src]="createImagePreview('user-profile-picture',item.image_token)"
+                                                                onerror="this.src='/assets/images/user-demo2.png'" />
+                                                            <img *ngIf="!item.image_token"
+                                                                class="ng-select-user-display" height="25" width="25"
+                                                                [attr.src]="getDefaultImage()"
+                                                                onerror="this.src='/assets/images/user-demo2.png'" />
+                                                        </div>
+                                                        <div class="user-post-department-div">
+                                                            <b>{{getStringsFormatted([item.first_name,item.last_name],50,'
+                                                                ') |
+                                                                titlecase}}</b>
+                                                            <p class="user-post-department-multiple">
+                                                                {{getStringsFormatted([item.designation_title,'
+                                                                '+item.department],50,',')}}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </ng-template>
+                                            </ng-select>
+                                        </div>
+                                    </div>
+                                    <p class="form-error pt-1" *ngIf="formErrors&&formErrors.incident_controller_id">
+                                        {{formErrors.incident_controller_id[0]}}</p>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-sm-12">
+                                <div class="form-group">
+                                    <label for="name"> {{'no_of_people_within_the_premises' | translate}} </label>
+                                    <input type="number" min="1" class="form-control"
+                                        placeholder="{{'no_of_people_within_the_premises' | translate}}"
+                                        formControlName="premises">
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.premises">
+                                    {{formErrors.premises[0]}}</p>
+                            </div>
+                            <div class="col-lg-6 col-sm-12">
+                                <div class="form-group">
+                                    <label for="name">{{'no_of_participants' | translate}} </label>
+                                    <input type="number" min="1" class="form-control"
+                                        placeholder="{{'no_of_participants' | translate}}"
+                                        formControlName="participants">
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.participants">
+                                    {{formErrors.participants[0]}}</p>
+                            </div>
+
+                        </div>
+                        <!-- tab end -->
+                    </div>
+                    <div class="tab" *ngIf="isMockDrillFire">
+                        <!-- tab start -->
+                        <div class="row process-form-tab mb-4">
+                            <div class="col-sm-12">
+
+                                <div class="clearfix small-tab-small-main">
+                                    <div class="small-list-tab small-tab-small small-list-tab-md">
+                                        <!-- tab menu start -->
+
+                                        <ul class="nav nav-tabs nav-tabs--vertical nav-tabs--left vertical-tab"
+                                            role="navigation"
+                                            *ngFor="let item of MockDrillResponseServiceMasterStore.allItems">
+                                            <li class="nav-item"> <a
+                                                    (click)="setResponsesServiceChecks(item.id);setClass(item.id)"
+                                                    href="#task-tab-one"
+                                                    [ngClass]="item.id===MockDrillStore.responseServiceId ? 'nav-link active' :'nav-link'"
+                                                    data-toggle="tab" role="tab" aria-controls="ipsum"
+                                                    aria-selected="true">{{item.mock_drill_response_service_title |
+                                                    translate}}</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="tab-content min-height-64" *mobxAutorun>
+                                        <div class="tab-pane fade active show p-3" id="tab-one" role="tabpanel"
+                                            *ngIf="tempServiceChecks!=undefined && tempServiceChecks?.length>0">
+                                            <div *ngFor="let item of tempServiceChecks">
+                                                <div class="row">
+                                                    <div class="col-lg-12 col-sm-12">
+                                                        <div class="form-group">
+                                                            <label>{{item?.question}} </label>
+                                                            <textarea class="form-control" rows="2"
+                                                                [ngModelOptions]="{standalone: true}"
+                                                                [(ngModel)]="item.answer" id="comment2"></textarea>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="full-width-table mb-3"
+                                            *ngIf="tempServiceChecks==undefined || tempServiceChecks==null || tempServiceChecks.length==0">
+                                            <ng-container>
+                                                <app-no-data [border]=false [height]=true> </app-no-data>
+                                            </ng-container>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab">
+                        <!-- tab start -->
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div class="icon-with-text-small-tab">
+                                    <ul class="nav nav-tabs">
+                                        <li class="nav-item">
+                                            <a class="nav-link active" data-toggle="tab" href="#small-tab-one"><i
+                                                    class="fas fa-users"></i>{{'users' | translate}}</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" data-toggle="tab" href="#small-tab-two"><i
+                                                    class="fas fa-user-plus"></i>{{'others' |
+                                                translate}}</a>
+                                        </li>
+                                    </ul>
+                                    <div class="row">
+                                        <div class="col-lg-12 col-sm-12">
+                                            <div class="tab-content">
+                                                <div id="small-tab-one" class="tab-pane active">
+                                                    <div class="row">
+                                                        <div class="col-lg-12 col-sm-12">
+                                                            <div class="form-group">
+                                                                <label for="name">{{'users' | translate}}<span
+                                                                        class="form-error">*</span></label>
+                                                                <div class="clearfix w-100">
+                                                                    <div class="multiple-plain-ngselect">
+                                                                        <ng-select [items]="UsersStore.usersList"
+                                                                            bindLabel="email" labelForId="id"
+                                                                            formControlName="participant"
+                                                                            [placeholder]="'select_user' | translate"
+                                                                            multiple="true" [closeOnSelect]="false"
+                                                                            (search)="searchUsers($event)"
+                                                                            [clearable]="false" (clear)="getUsers()"
+                                                                            (open)="getUsers()"
+                                                                            [clearOnBackspace]="false"
+                                                                            [searchFn]="customSearchFn"
+                                                                            (change)="selectTeam($event,false)"
+                                                                            (remove)="selectTeam($event,true)">
+                                                                            <ng-template ng-label-tmp let-item="item"
+                                                                                let-clear="clear">
+                                                                                <img *ngIf="item.image_token"
+                                                                                    class="ng-select-user-display"
+                                                                                    height="15" width="15"
+                                                                                    [attr.src]="createImagePreview('user-profile-picture',item.image_token)"
+                                                                                    onerror="this.src='/assets/images/user-demo2.png'" />
+                                                                                <img *ngIf="!item.image_token"
+                                                                                    class="ng-select-user-display"
+                                                                                    height="15" width="15"
+                                                                                    [attr.src]="getDefaultImage()"
+                                                                                    onerror="this.src='/assets/images/user-demo2.png'" />
+                                                                                <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,'
+                                                                                    ') | titlecase}}</b><span
+                                                                                    aria-hidden="true"
+                                                                                    (click)="clear(item);"
+                                                                                    style="border:none;"
+                                                                                    class="ng-value-icon left">×</span>
+                                                                            </ng-template>
+
+                                                                            <ng-template ng-option-tmp let-item="item"
+                                                                                let-index="index">
+                                                                                <div>
+                                                                                    <div
+                                                                                        class="user-post-department-pic">
+                                                                                        <img *ngIf="item.image_token"
+                                                                                            class="ng-select-user-display"
+                                                                                            height="25" width="25"
+                                                                                            [attr.src]="createImagePreview('user-profile-picture',item.image_token)"
+                                                                                            onerror="this.src='/assets/images/user-demo2.png'" />
+                                                                                        <img *ngIf="!item.image_token"
+                                                                                            class="ng-select-user-display"
+                                                                                            height="25" width="25"
+                                                                                            [attr.src]="getDefaultImage()"
+                                                                                            onerror="this.src='/assets/images/user-demo2.png'" />
+                                                                                    </div>
+                                                                                    <div
+                                                                                        class="user-post-department-div">
+                                                                                        <b>{{getStringsFormatted([item.first_name,item.last_name],50,'
+                                                                                            ') |
+                                                                                            titlecase}}</b>
+                                                                                        <p
+                                                                                            class="user-post-department-multiple">
+                                                                                            {{getStringsFormatted([item.designation_title,'
+                                                                                            '+item.department],50,',')}}
+                                                                                        </p>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </ng-template>
+                                                                        </ng-select>
+                                                                    </div>
+                                                                    <p class="form-error pt-1"
+                                                                        *ngIf="formErrors&&formErrors.participant">
+                                                                        {{formErrors.participant[0]}}</p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-12 col-sm-12"
+                                                            *ngIf="filterExistUser(true)!=undefined && filterExistUser(true)!=null && filterExistUser(true).length>0">
+                                                            <div class="scroll-documents" #tblParticipants
+                                                                style="max-height:300px;">
+                                                                <table
+                                                                    class="table table-bordered ordinary-table audit-page-table mb-4 table-scroll">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <!-- <th class="border-top-0 text-center" width="2%">#</th> -->
+                                                                            <th class="border-top-0" width="50%">
+                                                                                {{'name' |
+                                                                                translate}}<span
+                                                                                    class="form-error">*</span>
+                                                                            </th>
+                                                                            <th class="border-top-0" width="50%">
+                                                                                {{'designation' |
+                                                                                translate}}<span
+                                                                                    class="form-error">*</span>
+                                                                            </th>
+                                                                            <!-- <th class="border-top-0 text-center"
+                                                                                width="40%">
+                                                                                {{'time_taken_for_evacuation' |
+                                                                                translate}}
+                                                                            </th> -->
+                                                                            <!-- <th class="border-top-0" width="10%">Action</th> -->
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        <tr
+                                                                            *ngFor="let item of filterExistUser(true);let num=index">
+                                                                            <td
+                                                                                *ngIf="item.is_exist && !item.is_delete">
+                                                                                <div
+                                                                                    class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol ">
+                                                                                    <img *ngIf="item.image_token"
+                                                                                        class="ng-select-user-display"
+                                                                                        height="35" width="35"
+                                                                                        [attr.src]="createImagePreview('user-profile-picture',item.image_token)"
+                                                                                        onerror="this.src='/assets/images/user-demo2.png'" />
+                                                                                    <img *ngIf="!item.image_token"
+                                                                                        class="ng-select-user-display"
+                                                                                        height="35" width="35"
+                                                                                        [attr.src]="getDefaultImage()"
+                                                                                        onerror="this.src='/assets/images/user-demo2.png'" />
+                                                                                    <div>
+                                                                                        <h6>{{item.name | titlecase}}
+                                                                                        </h6>
+                                                                                        <!-- <span>{{item.name | titlecase}}</span> -->
+                                                                                    </div>
+                                                                                </div>
+                                                                            </td>
+                                                                            <td
+                                                                                *ngIf="item.is_exist && !item.is_delete">
+                                                                                <div class="form-group mb-0">
+                                                                                    <input type="text"
+                                                                                        class="form-control"
+                                                                                        [(ngModel)]="item.designation"
+                                                                                        [ngModelOptions]="{standalone: true}"
+                                                                                        placeholder="{{'designation' | translate}}">
+                                                                                </div>
+                                                                            </td>
+                                                                            <!-- <td class="text-center"
+                                                                                *ngIf="item.is_exist && !item.is_delete">
+                                                                                <div class="form-group mb-0">
+                                                                                    <div class="clearfix">
+                                                                                        <div
+                                                                                            class="multiple-plain-ngselect w-100">
+                                                                                            <input
+                                                                                                [(ngModel)]="item.evacuation_time"
+                                                                                                [ngModelOptions]="{standalone: true}"
+                                                                                                [placeholder]="'time_taken_for_evacuation' | translate"
+                                                                                                class="form-control">
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </td> -->
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div id="small-tab-two" class="tab-pane fade">
+                                                    <div class="row">
+                                                        <div class="col-sm-12">
+                                                            <div class="form-group">
+                                                                <label>{{'users' | translate}}</label>
+                                                                <button type="button"
+                                                                    class="btn btn-active btn-small ml-3"
+                                                                    (click)="showUserPopup()">{{'add_users'
+                                                                    |
+                                                                    translate}}</button>
+                                                            </div>
+
+                                                            <div class="audit-form-table w-100 mb-4">
+                                                                <table
+                                                                    class="table table-bordered ordinary-table cmn-table-style mb-1"
+                                                                    *ngIf="filterExistUser(false)!=null && filterExistUser(false) !=undefined && filterExistUser(false)?.length>0">
+                                                                    <tr>
+                                                                        <th class="border-top-0 text-center" width="2%">
+                                                                            {{'sl'|translate}}
+                                                                        </th>
+                                                                        <th class="border-top-0" width="48%">{{'name' |
+                                                                            translate}}
+                                                                        </th>
+                                                                        <th class="border-top-0" width="48%">
+                                                                            {{'designation'
+                                                                            |
+                                                                            translate}} </th>
+                                                                        <!-- <th class="border-top-0" width="30%">
+                                                                            {{'time_taken_for_evacuation' |
+                                                                            translate}}</th> -->
+                                                                    </tr>
+                                                                    <tr *ngFor="let user of filterExistUser(false);let num=index"
+                                                                        class="edit-and-delete-main">
+                                                                        <td class="text-center"
+                                                                            *ngIf="!user.is_exist && !user.is_delete">
+                                                                            {{num+1}}</td>
+                                                                        <td *ngIf="!user.is_exist && !user.is_delete">
+                                                                            {{user.name?
+                                                                            user.name :
+                                                                            AppStore.noContentText}}
+                                                                        </td>
+                                                                        <td *ngIf="!user.is_exist && !user.is_delete">
+                                                                            <div>
+                                                                                {{user.designation ?
+                                                                                user.designation :
+                                                                                AppStore.noContentText}}
+                                                                            </div>
+                                                                            <div class="edit-option-show"
+                                                                                style="margin: 30px 0 0 0; ">
+                                                                                <a
+                                                                                    (click)="removeSeclectedUser(user,false)"><i
+                                                                                        class="fas fa-trash"></i></a>
+                                                                            </div>
+                                                                        </td>
+                                                                        <!-- <td *ngIf="!user.is_exist && !user.is_delete">
+                                                                            <div class="multiple-plain-ngselect w-100">
+
+                                                                                <input
+                                                                                    [(ngModel)]="user.evacuation_time"
+                                                                                    [ngModelOptions]="{standalone: true}"
+                                                                                    [placeholder]="'time_taken_for_evacuation' | translate"
+                                                                                    class="form-control">
+                                                                            </div>
+                                                                        </td> -->
+                                                                    </tr>
+                                                                </table>
+                                                                <ng-container *mobxAutorun>
+                                                                    <app-no-data-list [source]="criteriaEmptyList"
+                                                                        *ngIf="MockDrillStore.participants?.length == 0">
+                                                                    </app-no-data-list>
+                                                                </ng-container>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- tab end -->
+                    <div class="tab">
+                        <!-- tab start -->
+                        <div class="row">
+                            <div class="col-lg-12 col-sm-12 d-none">
+                                <div class="form-group">
+                                    <label for="name">{{'add_member' | translate}}
+                                        <!-- <span class="form-error">*</span> -->
+                                    </label>
+                                    <div class="multiple-plain-ngselect w-100">
+                                        <ng-select [items]="UsersStore.usersList" bindLabel="email" labelForId="id"
+                                            formControlName="mock_drill_observation_members"
+                                            [placeholder]="'select_user' | translate" multiple="true"
+                                            [clearable]="false" [closeOnSelect]="false" (search)="searchUsers($event)"
+                                            (clear)="getUsers()" (open)="getUsers()" [clearOnBackspace]="false"
+                                            [searchFn]="customSearchFn" (change)="selectObservationMember($event,false)"
+                                            (remove)="selectObservationMember($event,true)">
+                                            <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                                <img *ngIf="item.image_token" class="ng-select-user-display" height="15"
+                                                    width="15"
+                                                    [attr.src]="createImagePreview('user-profile-picture',item.image_token)"
+                                                    onerror="this.src='/assets/images/user-demo2.png'" />
+                                                <img *ngIf="!item.image_token" class="ng-select-user-display"
+                                                    height="15" width="15" [attr.src]="getDefaultImage()"
+                                                    onerror="this.src='/assets/images/user-demo2.png'" />
+                                                <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,'
+                                                    ') | titlecase}}</b><span aria-hidden="true" (click)="clear(item);"
+                                                    style="border:none;" class="ng-value-icon left">×</span>
+                                            </ng-template>
+
+                                            <ng-template ng-option-tmp let-item="item" let-index="index">
+                                                <div>
+                                                    <div class="user-post-department-pic">
+                                                        <img *ngIf="item.image_token" class="ng-select-user-display"
+                                                            height="25" width="25"
+                                                            [attr.src]="createImagePreview('user-profile-picture',item.image_token)"
+                                                            onerror="this.src='/assets/images/user-demo2.png'" />
+                                                        <img *ngIf="!item.image_token" class="ng-select-user-display"
+                                                            height="25" width="25" [attr.src]="getDefaultImage()"
+                                                            onerror="this.src='/assets/images/user-demo2.png'" />
+                                                    </div>
+                                                    <div class="user-post-department-div">
+                                                        <b>{{getStringsFormatted([item.first_name,item.last_name],50,'
+                                                            ') |
+                                                            titlecase}}</b>
+                                                        <p class="user-post-department-multiple">
+                                                            {{getStringsFormatted([item.designation_title,'
+                                                            '+item.department],50,',')}}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </ng-template>
+                                        </ng-select>
+                                    </div>
+                                    <p class="form-error pt-1"
+                                        *ngIf="formErrors&&formErrors.mock_drill_observation_members">
+                                        {{formErrors.mock_drill_observation_members[0]}}</p>
+                                </div>
+                            </div>
+                            <!-- <div class="col-lg-6 col-sm-12">
+                                <div class="form-group">
+                                    <label for="name">{{'head_count' | translate}}<span
+                                            class="form-error">*</span></label>
+                                    <input type="number" min="1" class="form-control" readonly
+                                        placeholder="{{'head_count' | translate}}" formControlName="head_count">
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.head_count">
+                                    {{formErrors.head_count[0]}}</p>
+                            </div> -->
+                            <div class="col-lg-12 col-sm-12">
+                                <div class="form-group">
+                                    <label>{{'mock_drill_observations'| translate}}</label>
+                                    <textarea class="form-control"
+                                        placeholder="{{'mock_drill_observations'| translate}}" rows="2" id="comment2"
+                                        formControlName="observation"></textarea>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.observation">
+                                    {{formErrors.observation[0]}}</p>
+                            </div>
+                            <div class="col-lg-12 col-sm-12">
+                                <div class="row align-items-center mb-3">
+                                    <div class="col-lg-3 col-sm-12">
+                                        <h5 class="mb-0 ">{{'short_comings_of_the_drill'| translate}}</h5>
+                                    </div>
+                                    <div class="col-lg-9 col-sm-12">
+                                        <div class="form-group mb-0">
+                                            <div class="custom-control pt-0 custom-radio">
+
+                                                <input type="radio" class="custom-control-input"
+                                                    formControlName="short_comings_of_the_drill" value='true'
+                                                    id="customRadio1"
+                                                    [checked]="regForm.value.short_comings_of_the_drill==1"
+                                                    (change)="short_comings_drill=true">
+                                                <label class="custom-control-label" style="padding-top: 2px;"
+                                                    for="customRadio1">{{'yes' | translate}}</label>
+
+                                                <span class="ml-5">
+                                                    <input type="radio" class="custom-control-input"
+                                                        formControlName="short_comings_of_the_drill" value='false'
+                                                        id="customRadio2"
+                                                        [checked]="regForm.value.short_comings_of_the_drill==0"
+                                                        (change)="short_comings_drill=false">
+                                                    <label class="custom-control-label" style="padding-top: 2px;"
+                                                        for="customRadio2">{{'no' | translate}}</label>
+                                                </span>
+                                                <span class="pl-5">
+                                                    <p class="form-error pt-1"
+                                                        *ngIf="formErrors&&formErrors.short_comings_of_the_drill">
+                                                        {{formErrors.short_comings_of_the_drill[0]}}</p>
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                                <div class="form-group" *ngIf="short_comings_drill">
+                                    <textarea class="form-control" rows="2" id="comment2"
+                                        placeholder="{{'short_comings_of_the_drill'| translate}}"
+                                        formControlName="description"></textarea>
+                                    <p class="form-error pt-1" *ngIf="formErrors&&formErrors.description">
+                                        {{formErrors.description[0]}}</p>
+                                </div>
+                            </div>
+
+                            <!-- <div class="col-lg-12 col-sm-12" *ngIf="short_comings_drill">
+                                <div class="form-group">
+                                    <label>{{'actions'| translate}}</label>
+                                    <textarea class="form-control" rows="2" formControlName="action"
+                                        placeholder="{{'actions'| translate}}" id="comment2"></textarea>
+                                    <p class="form-error pt-1" *ngIf="formErrors&&formErrors.action">
+                                        {{formErrors.action[0]}}</p>
+                                </div>
+                            </div> -->
+                            <div class="col-lg-12 col-sm-12" *ngIf="!short_comings_drill">
+                                <div class="form-group">
+                                    <label>{{'effectiveness_remark'| translate}}</label>
+                                    <textarea class="form-control" rows="2" formControlName="effectiveness_remark"
+                                        placeholder="{{'effectiveness_remark'| translate}}" id="comment2"></textarea>
+                                    <p class="form-error pt-1" *ngIf="formErrors&&formErrors.effectiveness_remark">
+                                        {{formErrors.effectiveness_remark[0]}}</p>
+                                </div>
+                            </div>
+                            <!-- <div class="col-lg-6 col-sm-12">
+                                <div class="form-group">
+                                    <label for="name">{{'approver'| translate}}<span class="form-error">*</span></label>
+                                    <div class="clearfix d-flex">
+                                        <div class="multiple-plain-ngselect w-100">
+                                            <ng-select [items]="UsersStore.usersList" bindLabel="email" labelForId="id"
+                                                [placeholder]="'select_apporver' | translate" [closeOnSelect]="true"
+                                                (search)="searchUsers($event)" (clear)="getUsers()" (open)="getUsers()"
+                                                formControlName="approver_id" [clearOnBackspace]="false"
+                                                [searchFn]="customSearchFn">
+                                                <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                                    <img *ngIf="item.image_token" class="ng-select-user-display"
+                                                        height="15" width="15"
+                                                        [attr.src]="createImagePreview('user-profile-picture',item.image_token)"
+                                                        onerror="this.src='/assets/images/user-demo2.png'" />
+                                                    <img *ngIf="!item.image_token" class="ng-select-user-display"
+                                                        height="15" width="15" [attr.src]="getDefaultImage()"
+                                                        onerror="this.src='/assets/images/user-demo2.png'" />
+                                                    <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,'
+                                                        ') | titlecase}}</b>
+                                                    <span aria-hidden="true" (click)="clear(item);" style="border:none;"
+                                                        class="ng-value-icon left">×</span>
+                                                </ng-template>
+
+                                                <ng-template ng-option-tmp let-item="item" let-index="index">
+                                                    <div>
+                                                        <div class="user-post-department-pic">
+                                                            <img *ngIf="item.image_token" class="ng-select-user-display"
+                                                                height="25" width="25"
+                                                                [attr.src]="createImagePreview('user-profile-picture',item.image_token)"
+                                                                onerror="this.src='/assets/images/user-demo2.png'" />
+                                                            <img *ngIf="!item.image_token"
+                                                                class="ng-select-user-display" height="25" width="25"
+                                                                [attr.src]="getDefaultImage()"
+                                                                onerror="this.src='/assets/images/user-demo2.png'" />
+                                                        </div>
+                                                        <div class="user-post-department-div">
+                                                            <b>{{getStringsFormatted([item.first_name,item.last_name],50,'
+                                                                ') |
+                                                                titlecase}}</b>
+                                                            <p class="user-post-department-multiple">
+                                                                {{getStringsFormatted([item.designation_title,'
+                                                                '+item.department],50,',')}}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </ng-template>
+                                            </ng-select>
+                                        </div>
+                                    </div>
+                                    <p class="form-error pt-1" *ngIf="formErrors&&formErrors.approver_id">
+                                        {{formErrors.approver_id[0]}}</p>
+                                </div>
+                            </div> -->
+                        </div>
+
+                    </div>
+                    <!-- tab end -->
+                    <div class="tab">
+                        <!-- tab start -->
+                        <div class="audit-program-details-page mt-3">
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <div class="tab-content issuue-new-style p-0">
+                                            <!-- Profille -->
+                                            <div class="tab-pane active" id="info">
+                                                <div class="bg-white">
+                                                    <div class="min-height-64">
+                                                        <div class="row">
+                                                            <div class="col-lg-4 col-sm-6">
+                                                                <h6>{{'plan' | translate}}</h6>
+                                                                <p>{{regForm?.value?.venue}}
+                                                                </p>
+                                                            </div>
+                                                            <div class="col-lg-4 col-sm-6">
+                                                                <h6>{{'actual_date' | translate}}</h6>
+                                                                <p>{{
+                                                                    (_helperService.processDate(regForm.value.actual_date,
+                                                                    'join')) | date:
+                                                                    OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                                </p>
+                                                            </div>
+                                                            <div class="col-lg-4 col-sm-6">
+                                                                <h6>{{'start_time' | translate}}</h6>
+                                                                <p>{{startTime | uppercase}}
+                                                                </p>
+                                                            </div>
+                                                            <div class="col-lg-4 col-sm-6">
+                                                                <h6>{{'end_time' | translate}}</h6>
+                                                                <p>{{endTime | uppercase}}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row">
+                                                            <div class="col-lg-4 col-sm-6">
+                                                                <h6>{{'no_of_people_with_the_premises' |
+                                                                    translate}}
+                                                                </h6>
+                                                                <p>{{!regForm?.value?.premises ?
+                                                                    AppStore.noContentText:regForm?.value?.premises}}
+                                                                </p>
+                                                            </div>
+                                                            <div class="col-lg-4 col-sm-6">
+                                                                <h6>{{'no_of_participants' | translate}}</h6>
+                                                                <p>{{!regForm?.value?.participants?
+                                                                    AppStore.noContentText:regForm?.value?.participants}}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row">
+                                                            <div class="col-lg-6 col-sm-6">
+                                                                <h6>{{'incident_controller' | translate}}</h6>
+                                                                <div class="row">
+                                                                    <div class="col-lg-12 col-sm-12">
+                                                                        <div class="label-and-user-pic">
+                                                                            <div
+                                                                                class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                                                                                <app-user-popup-box
+                                                                                    [source]="getPopupDetails(regForm?.value?.incident_controller_id)"
+                                                                                    [showName]="true">
+                                                                                </app-user-popup-box>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row" *ngIf="isMockDrillFire">
+                                                            <div class="col-lg-12 col-sm-12">
+                                                                <h6>{{'response_service' | translate}}</h6>
+                                                                <!-- common-tab-md starts -->
+                                                                <div class="common-tab-md clearfix mb-3">
+                                                                    <div class="tab-common-left-md">
+                                                                        <div class=" issues-tab">
+                                                                            <!-- tab menu start -->
+                                                                            <ul class="nav nav-tabs nav-tabs--vertical nav-tabs--left vertical-tab"
+                                                                                role="navigation"
+                                                                                *ngFor="let item of MockDrillResponseServiceMasterStore.allItems">
+                                                                                <li class="nav-item"> <a
+                                                                                        (click)="setResponsesServiceChecks(item.id);setClass(item.id)"
+                                                                                        href="#task-tab-one"
+                                                                                        [ngClass]="item.id===MockDrillStore.responseServiceId ? 'nav-link active' :'nav-link'"
+                                                                                        data-toggle="tab" role="tab"
+                                                                                        aria-controls="ipsum"
+                                                                                        aria-selected="true">{{item.mock_drill_response_service_title
+                                                                                        |
+                                                                                        translate}}</a>
+                                                                                </li>
+                                                                            </ul>
+                                                                        </div><!-- tab menu end -->
+                                                                    </div>
+                                                                    <div class="tab-common-left-content-m">
+                                                                        <div
+                                                                            class="tab-content widg-padding-cmn bg-white cmn-bdr">
+                                                                            <div class="tab-pane fade active show"
+                                                                                id="tab-one-ps" role="tabpanel">
+                                                                                <div
+                                                                                    class="audit-program-box audit-page-table-main">
+                                                                                    <div class="row">
+                                                                                        <div class="col-sm-12">
+                                                                                            <div
+                                                                                                class="full-width-table mb-3">
+                                                                                                <table
+                                                                                                    class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll"
+                                                                                                    *ngIf="tempServiceChecks!=undefined && tempServiceChecks!=null && tempServiceChecks.length>0">
+                                                                                                    <thead>
+                                                                                                        <tr>
+                                                                                                            <th class="border-top-0"
+                                                                                                                width="2%">
+                                                                                                                {{'sl'|translate}}
+                                                                                                            </th>
+
+                                                                                                            <th class="border-top-0"
+                                                                                                                width="50%">
+                                                                                                                {{'question'|translate}}
+                                                                                                            </th>
+                                                                                                            <th class="border-top-0"
+                                                                                                                width="48%">
+                                                                                                                {{'answer'|translate}}
+                                                                                                            </th>
+                                                                                                        </tr>
+                                                                                                    </thead>
+                                                                                                    <tbody>
+                                                                                                        <tr
+                                                                                                            *ngFor="let item of tempServiceChecks;let idx=index">
+                                                                                                            <td
+                                                                                                                class="text-center">
+                                                                                                                {{idx+1}}
+                                                                                                            </td>
+                                                                                                            <td>{{item?.question}}
+                                                                                                            </td>
+                                                                                                            <td
+                                                                                                                class="text-center">
+                                                                                                                {{item?.answer
+                                                                                                                == null
+                                                                                                                ||
+                                                                                                                item?.answer
+                                                                                                                == '' ?
+                                                                                                                AppStore.noContentText:
+                                                                                                                item?.answer}}
+
+                                                                                                            </td>
+                                                                                                        </tr>
+                                                                                                    </tbody>
+                                                                                                </table>
+                                                                                                <div class="full-width-table mb-3"
+                                                                                                    *ngIf="tempServiceChecks==undefined || tempServiceChecks==null || tempServiceChecks.length==0">
+                                                                                                    <ng-container>
+                                                                                                        <app-no-data
+                                                                                                            [border]=false
+                                                                                                            [height]=true>
+                                                                                                        </app-no-data>
+                                                                                                    </ng-container>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <!-- common-tab-md end -->
+                                                            </div>
+                                                        </div>
+                                                        <div class="row">
+                                                            <div class="col-lg-12 col-sm-12">
+                                                                <h6>{{'participants' | translate}}</h6>
+                                                                <table
+                                                                    class="table table-bordered ordinary-table audit-page-table mb-4 table-scroll">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th class="border-top-0" width="50%">
+                                                                                {{'name' | translate}}
+                                                                            </th>
+                                                                            <th class="border-top-0" width="50%">
+                                                                                {{'designation' | translate}}
+                                                                            </th>
+                                                                            <!-- <th class="border-top-0 text-center"
+                                                                                width="40%">
+                                                                                {{'time_taken_for_evacuation' |
+                                                                                translate}}
+                                                                            </th> -->
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        <tr
+                                                                            *ngFor="let item of MockDrillStore.participants;let num=index">
+                                                                            <td>
+                                                                                <div
+                                                                                    class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol ">
+                                                                                    <img *ngIf="item.image_token"
+                                                                                        class="ng-select-user-display"
+                                                                                        height="35" width="35"
+                                                                                        [attr.src]="createImagePreview('user-profile-picture',item.image_token)"
+                                                                                        onerror="this.src='/assets/images/user-demo2.png'" />
+                                                                                    <img *ngIf="!item.image_token"
+                                                                                        class="ng-select-user-display"
+                                                                                        height="35" width="35"
+                                                                                        [attr.src]="getDefaultImage()"
+                                                                                        onerror="this.src='/assets/images/user-demo2.png'" />
+                                                                                    <div>
+                                                                                        <h6>{{item.name | titlecase}}
+                                                                                        </h6>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </td>
+                                                                            <td>
+                                                                                <div class="form-group mb-0">
+                                                                                    <label>{{item.designation }}
+                                                                                    </label>
+                                                                                </div>
+                                                                            </td>
+                                                                            <!-- <td class="text-center">
+                                                                                <div class="form-group mb-0">
+                                                                                    <label>
+                                                                                        {{item?.evacuation_time == null
+                                                                                        ||
+                                                                                        item?.evacuation_time == '' ?
+                                                                                        AppStore.noContentText:
+                                                                                        item?.evacuation_time}}
+                                                                                    </label>
+                                                                                </div>
+                                                                            </td> -->
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row d-none"
+                                                            *ngIf="mock_drill_observation_members && mock_drill_observation_members.length>0">
+                                                            <div class="col-lg-12 col-sm-12">
+                                                                <h6>{{'mock_drill_observation_members' | translate}}
+                                                                </h6>
+                                                                <table
+                                                                    class="table table-bordered ordinary-table audit-page-table mb-4 table-scroll">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th class="border-top-0" width="72%">
+                                                                                {{'name' | translate}}
+                                                                            </th>
+                                                                            <th class="border-top-0" width="30%">
+                                                                                {{'designation' | translate}}
+                                                                            </th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        <tr
+                                                                            *ngFor="let item of mock_drill_observation_members;let num=index">
+                                                                            <td *ngIf="!item?.is_delete">
+                                                                                <div
+                                                                                    class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol ">
+                                                                                    <img *ngIf="item.image_token"
+                                                                                        class="ng-select-user-display"
+                                                                                        height="35" width="35"
+                                                                                        [attr.src]="createImagePreview('user-profile-picture',item.image_token)"
+                                                                                        onerror="this.src='/assets/images/user-demo2.png'" />
+                                                                                    <img *ngIf="!item.image_token"
+                                                                                        class="ng-select-user-display"
+                                                                                        height="35" width="35"
+                                                                                        [attr.src]="getDefaultImage()"
+                                                                                        onerror="this.src='/assets/images/user-demo2.png'" />
+                                                                                    <div>
+                                                                                        <h6>{{item.name | titlecase}}
+                                                                                        </h6>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </td>
+                                                                            <td *ngIf="!item?.is_delete">
+                                                                                <div class="form-group mb-0">
+                                                                                    <label>{{item.designation }}
+                                                                                    </label>
+                                                                                </div>
+                                                                            </td>
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                        <!-- <div class="row">
+                                                            <div class="col-lg-12 col-sm-12">
+                                                                <h6>{{'head_count' | translate}}</h6>
+                                                                <p>
+                                                                    {{ regForm?.value?.head_count }}
+                                                                </p>
+                                                            </div>
+                                                        </div> -->
+                                                        <div class="row">
+                                                            <div class="col-lg-12 col-sm-12">
+                                                                <h6>{{'mock_drill_observations' | translate}}</h6>
+                                                                <p>
+                                                                    {{ regForm?.value?.observation ==null ||
+                                                                    regForm?.value?.observation == ''?
+                                                                    AppStore.noContentText
+                                                                    :regForm?.value?.observation }}
+                                                                </p>
+
+                                                            </div>
+                                                        </div>
+                                                        <div class="row" *ngIf="!getMockDrillShortComing()">
+                                                            <div class="col-lg-12 col-sm-12">
+                                                                <h6>{{'effectiveness_remark' | translate}}</h6>
+                                                                <p>
+                                                                    {{ regForm?.value?.effectiveness_remark ==null ||
+                                                                    regForm?.value?.effectiveness_remark == ''?
+                                                                    AppStore.noContentText
+                                                                    :regForm?.value?.effectiveness_remark }}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row" *ngIf="getMockDrillShortComing()">
+                                                            <div class="col-lg-12 col-sm-12">
+                                                                <h6>{{'short_comings_of_the_drill' | translate}}</h6>
+                                                                <p>
+                                                                    {{ regForm?.value?.description ==null ||
+                                                                    regForm?.value?.description == ''?
+                                                                    AppStore.noContentText
+                                                                    :regForm?.value?.description }}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <!-- <div class="row" *ngIf="getMockDrillShortComing()">
+                                                            <div class="col-lg-12 col-sm-12">
+                                                                <h6>{{'actions' | translate}}</h6>
+                                                                <p>
+                                                                    {{ regForm?.value?.action ==null ||
+                                                                    regForm?.value?.action == ''?
+                                                                    AppStore.noContentText
+                                                                    :regForm?.value?.action }}
+                                                                </p>
+                                                            </div>
+                                                        </div> -->
+                                                        <!-- <div class="row">
+                                                            <div class="col-lg-12 col-sm-12">
+                                                                <h6>{{'approver' | translate}}</h6>
+                                                                <div class="label-and-user-pic">
+                                                                    <div
+                                                                        class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                                                                        <app-user-popup-box
+                                                                            [source]="getPopupDetails(regForm?.value?.approver_id)"
+                                                                            [showName]="true">
+                                                                        </app-user-popup-box>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div> -->
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <!-- tab end -->
+                    <div style="overflow:auto;">
+                        <div class="form-next-page-btns" style="float:left;">
+                            <button class="btn btn-active" type="button" id="nextBtn"
+                                [disabled]="AppStore.loading||!checkFormObject() "
+                                (click)="saveTabDetails()">{{AppStore.loading
+                                ? getButtonText('loading') :
+                                getButtonText((isMockDrillFire && currentTab==4) || (!isMockDrillFire && currentTab==3)
+                                ? 'save_close':'save')}}</button>
+
+                            <button class="btn" type="button" id="saveNext" (click)="nextPrev(1)"
+                                [disabled]="AppStore.loading||!checkFormObject()"
+                                *ngIf="(isMockDrillFire && currentTab!=4) || (!isMockDrillFire && currentTab!=3)">{{
+                                AppStore.loading ? getButtonText('loading') : getButtonText(nextButtonText)
+                                }}</button>
+                            <button class="btn" type="button" id="prevBtn" (click)="nextPrev(-1)"
+                                [disabled]="AppStore.loading ">{{
+                                AppStore.loading ? getButtonText('loading') : getButtonText(previousButtonText)
+                                }}</button>
+                            <button class="btn" type="button"
+                                (click)="cancelClicked()">{{getButtonText('cancel')}}</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div [ngStyle]="{'display':!showForm ? 'block' : 'none'}">
+            <app-table-loader></app-table-loader>
+        </div>
+    </div>
+</main>
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopup data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="confirmationObject"></app-delete-popup>
+</div>
+<div class="modal modal-style-1  popup-full-width full-width-edit fade" id="user-popup" #userPopup
+    data-backdrop="static" data-keyboard="false">
+    <app-add-user-mock-drill-modal></app-add-user-mock-drill-modal>
+</div>

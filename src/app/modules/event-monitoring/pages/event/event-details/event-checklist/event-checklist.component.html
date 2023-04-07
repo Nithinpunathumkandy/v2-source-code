@@ -1,0 +1,128 @@
+<div class="col-sm-12 mt-3" *ngIf="EventChecklistStore.allItems.length > 0 && EventChecklistStore.loaded">
+	<div class="tab-content" *mobxAutorun>
+		<div class="tab-edit-class smoal-left-tab-page" id="event-closure">
+			<div class="bg-white widg-padding-cmn min-height-83 edit-and-delete-main">				
+
+				<div class="panel-group panel-drop-sections panel-drop-white mb-3" id="jd" role="tablist" aria-multiselectable="true">
+					<div class="panel panel-default" *ngFor=" let row of EventChecklistStore.allItems;let num = index">
+						<div [ngClass]="selectedIndex == num ? 'panel-heading active' : 'panel-heading'" role="tab" id="headingOne">
+							<div class="panel-title">
+								<a role="button" data-toggle="collapse" (click)="getAccordian(num);getDetails(row?.id)" aria-expanded="false" aria-controls="collapseOne" [ngClass]="selectedIndex == num ?'collapsed':''">
+									<h5 class="width96pc mt-0">
+										<span class="d-flex">
+											<span class="w-100"><span class="mr-2 text-18">
+												<i class="fas fa-question-circle"></i></span>{{row?.event_checklist_title}}</span>
+											<span class="text-right ml-2" style="width: 100px;">
+												<span [ngClass]="row?.event_checklist_status=='Yes' ? 'draft-tag draft-tag-green label-tag-style-tag label-left-arow-tag d-inline-block status-tag-new-one ml-0' : 'draft-tag draft-tag-red label-tag-style-tag label-left-arow-tag d-inline-block status-tag-new-one ml-0' ">{{row?.event_checklist_status}}</span>
+											</span>
+										</span>
+										<span class="drop-down-icone"><i class="fas fa-chevron-down"></i></span>
+									</h5>
+								</a>
+							</div>
+						</div>
+						<div id="checklist-acd-1003" [ngClass]="selectedIndex == num ? 'drop-detail-sec panel-collapse collapse show' : 'drop-detail-sec panel-collapse collapse'" role="tabpanel" aria-labelledby="headingOne" data-parent="#checklist-acd-1003" style="">
+							<div class="panel-body bg-white pb-2 edit-and-delete-main">
+								<div class="edit-option-show" style="margin: 30px 0 0 0; ">                                       
+									<a (click)="editIndividualChecklist(row.id)"><i class="fas fa-pen" [attr.title]="'delete'|translate"></i></a>                         									
+									<a (click)="delete(row.id)"><i class="fas fa-trash" [attr.title]="'delete'|translate"></i></a>									
+								</div>
+								<h6>{{'comments' | translate}}</h6>
+								<p style="white-space:pre-wrap">{{EventChecklistStore?.individualEventChecklist?.comments ? EventChecklistStore?.individualEventChecklist?.comments:AppStore.noContentText}}</p>
+								<h6>{{'attachments' | translate}}</h6>
+								<p *ngIf="EventChecklistStore?.individualEventChecklist?.documents?.length == 0">{{AppStore.noContentText}}</p>
+								<div class="thumb-pics-bg thumb-pics-col-6 clearfix thumb-pics-fix-text">
+									<div class="thumb-pics" *ngFor="let docs of EventChecklistStore?.individualEventChecklist?.documents;let i = index">
+										<div style="margin: 0 -25px 0 0;" *ngIf="!docs.document_id" [ngClass]="AuthStore.getActivityPermission(100,'PREVIEW_EVENT_CHECKLIST_DETAIL_DOCUMENT_FILE') ? 'upload-pics upload-pics-small edit-option pointer' : 'upload-pics upload-pics-small edit-option'"
+											(click)="AuthStore.getActivityPermission(100,'PREVIEW_EVENT_CHECKLIST_DETAIL_DOCUMENT_FILE') ? viewBrochureItem('event-checklist',docs,docs.id,row?.id) : ''">
+											<div class="browse-form-pic" [ngStyle]="{'background': 'url('+createImageUrl('event-checklist',docs?.token)+') no-repeat'}">
+											</div>
+											<div class="browse-form-name clearfix">
+												<div class="float-left">
+													<h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}</h6>
+													<span class="mr-2 cmn-clr"><i class="fas fa-laptop"></i></span>
+													<span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+												</div>
+												<div class="browse-logo">
+													<img *ngIf="checkExtension(docs.ext,'image') != -1"
+														class="folder-picher" src="/assets/images/jpg-icone.png">
+													<img *ngIf="checkExtension(docs.ext,'doc') != -1"
+														class="folder-picher" src="/assets/images/word-icone.png">
+													<img *ngIf="checkExtension(docs.ext,'pdf') != -1"
+														class="folder-picher" src="/assets/images/pdf-icone.png">
+													<img *ngIf="checkExtension(docs.ext,'excel') != -1"
+														class="folder-picher" src="/assets/images/excel-icone.png">
+													<img *ngIf="checkExtension(docs.ext,'video') != -1"
+														class="folder-picher" src="/assets/images/md-video.png">
+													<img *ngIf="checkExtension(docs.ext,'audio') != -1"
+														class="folder-picher" src="/assets/images/md-audio.png">
+													<img *ngIf="checkExtension(docs.ext,'ppt') != -1"
+														class="folder-picher" src="/assets/images/md-ppt.png">
+												</div>
+											</div>
+											<div class="edit-option-show-inner" style="margin: -2px -8px 0 0;">
+												<a *ngIf="AuthStore.getActivityPermission(100,'DOWNLOAD_EVENT_CHECKLIST_DETAIL_DOCUMENT_FILE')"><i class="fas fa-download" (click)="downloadDocumentFile('event-checklist',docs)"></i></a>
+											</div>
+										</div>
+
+
+										<div class="upload-pics edit-option" style="margin: 0 -25px 0 0;" *ngIf="docs.document_id">
+											<div *ngFor="let mainDoc of docs?.kh_document?.versions">
+												<div *ngIf="mainDoc.is_latest" [ngClass]="AuthStore.getActivityPermission(100,'PREVIEW_EVENT_CHECKLIST_DETAIL_DOCUMENT_FILE') ? 'upload-pics upload-pics-small edit-option pointer' : 'upload-pics upload-pics-small edit-option'"
+													(click)="AuthStore.getActivityPermission(100,'PREVIEW_EVENT_CHECKLIST_DETAIL_DOCUMENT_FILE') ? viewBrochureItem('document-version',docs,mainDoc) : ''">
+													<div class="browse-form-pic" [ngStyle]="{'background': 'url('+createImageUrl('document-version',mainDoc?.token)+') no-repeat'}"></div>
+													<div class="browse-form-name clearfix">
+														<div class="float-left">
+															<h6>{{mainDoc.title}}.{{mainDoc.ext}}</h6>
+															<span class="mr-2 cmn-clr"><i class="fas fa-book"></i></span>
+															<span>{{mainDoc.size/1048576 | number:'0.2-2'}}MB</span>
+														</div>
+														<div class="browse-logo">
+															<img *ngIf="checkExtension(mainDoc.ext,'image') != -1" class="folder-picher" src="/assets/images/jpg-icone.png">
+															<img *ngIf="checkExtension(mainDoc.ext,'doc') != -1" class="folder-picher" src="/assets/images/word-icone.png">
+															<img *ngIf="checkExtension(mainDoc.ext,'pdf') != -1" class="folder-picher" src="/assets/images/pdf-icone.png">
+															<img *ngIf="checkExtension(mainDoc.ext,'excel') != -1" class="folder-picher" src="/assets/images/excel-icone.png">
+															<img *ngIf="checkExtension(mainDoc.ext,'video') != -1" class="folder-picher" src="/assets/images/md-video.png">
+															<img *ngIf="checkExtension(mainDoc.ext,'audio') != -1" class="folder-picher" src="/assets/images/md-audio.png">
+															<img *ngIf="checkExtension(mainDoc.ext,'ppt') != -1" class="folder-picher" src="/assets/images/md-ppt.png">
+														</div>
+													</div>
+													<div class="edit-option-show-inner" style="margin: -2px -8px 0 0;">
+														<a *ngIf="AuthStore.getActivityPermission(100,'DOWNLOAD_EVENT_CHECKLIST_DETAIL_DOCUMENT_FILE')"><i class="fas fa-download" (click)="downloadDocumentFile('document-version',docs,mainDoc)"></i></a>
+													</div>
+												</div>
+											</div>
+										</div>
+
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<ng-container *mobxAutorun>
+	<div *ngIf="!EventChecklistStore.loaded">
+		<app-event-closure-checklist-loader></app-event-closure-checklist-loader>
+	</div>
+</ng-container>
+<app-no-data *ngIf="EventChecklistStore.allItems.length == 0"></app-no-data>
+<!-----------------------Form Modal--------------------------->
+<div class="modal modal-style-1 popup-full-width fade" style="overflow-x: hidden;overflow-y: auto;" data-keyboard="false" data-backdrop="static" #checklistModal>
+    <app-add-event-checklist *ngIf="checklistObject.type" [source]="checklistObject"></app-add-event-checklist>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #deleteModal data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+
+ <!-- ---------File Preview-------------- -->
+ <div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup" data-keyboard="false" data-backdrop="static" #filePreviewModal *mobxAutorun>
+    <button type="button" class="close" data-dismiss="modal" (click) = "closePreviewModal($event)"><i class="lni-close"></i><span>esc</span></button>
+    <app-ca-image-preview *ngIf = "previewObject" [source] = "previewObject" (close) = "closePreviewModal($event)"></app-ca-image-preview>
+</div>

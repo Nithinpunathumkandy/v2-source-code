@@ -1,0 +1,142 @@
+<app-project-budget-loader *ngIf="!BudgetStore.loaded"></app-project-budget-loader>
+
+<div class="tab-pane" id="bud-pay">
+    <div class="row">
+      <div class="col-md-3">
+        <div class="full-width-table mb-3">
+        <table *ngIf="BudgetStore.allItems.length > 0" 
+            class="table table-bordered ordinary-table audit-page-table table-scroll mb-1">
+           <thead>
+              <tr>
+                 <th class="border-top-0 text-center" colspan="3">{{'budget' | translate}}({{OrganizationGeneralSettingsStore?.organizationSettings?.currency}}) <button class="btn smbtn-pad float-right" *ngIf="AuthStore.getActivityPermission(3700, 'CREATE_PROJECT_MONITORING_BUDGET') && ProjectMonitoringStore.individualDetails?.project_monitoring_status?.type =='draft' || ProjectMonitoringStore.individualDetails?.project_monitoring_status?.type =='send-back'" (click)="openNewBudgetModal()" data-toggle="modal" data-target="#add-budget">Add</button></th>
+              </tr>
+              <tr>
+                 <th class="border-top-0 text-center" width="4%">#</th>
+                 <th class="border-top-0">{{'year' | translate}}</th>
+                 <th class="border-top-0">{{'amount' | translate}}</th>
+              </tr>
+           </thead>
+           <tbody>
+            <tr class="edit-and-delete-main" *ngFor="let items of BudgetStore.allItems| paginate: {currentPage:BudgetStore.currentPage, itemsPerPage:BudgetStore.itemsPerPage,totalItems:BudgetStore.totalItems};let num=index" >
+                <td>{{(BudgetStore.currentPage - 1) * BudgetStore.itemsPerPage + (num + 1)}}</td>
+                <td>{{items.year? items.year : 'NA'}} </td>
+                <td>{{items.amount? items.amount : 'NA'}}
+                   <div *ngIf="ProjectMonitoringStore.individualDetails?.project_monitoring_status?.type =='draft' || ProjectMonitoringStore.individualDetails?.project_monitoring_status?.type =='send-back'" class="edit-option-show" style="margin: 33px 0px 0px 0px; ">
+                    <a *ngIf="AuthStore.getActivityPermission(3700, 'CREATE_PROJECT_MONITORING_BUDGET')" (click)="editBudget(items)"><i class="fas fa-pen"></i></a>
+                    <a *ngIf="AuthStore.getActivityPermission(3700, 'DELETE_PROJECT_MONITORING_BUDGET')" (click)="delete(items.id)"><i class="fas fa-trash"></i></a>
+                </div>
+                </td>
+            </tr> 
+            <tr>
+               <td colspan="2">{{'grand_total' | translate}}</td>
+               <td>{{getGrandTotalBudget()}}</td>
+             </tr>  
+           </tbody>
+        </table>
+        <ng-container *mobxAutorun>
+            <!-- <div *ngIf="!BudgetStore.loaded">
+                <app-project-budget-loader></app-project-budget-loader>
+           </div> -->
+            <!-- <app-no-data *ngIf = "BudgetStore.allItems.length == 0 && BudgetStore.loaded == true"></app-no-data> -->
+        </ng-container>
+     </div>
+     </div>
+     <div class="col-md-6">
+        <div class="full-width-table mb-3">
+        <table *ngIf="BudgetStore.allItems.length > 0" class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+           <thead>
+              <tr>
+                 <th class="border-top-0 text-center" colspan="8">Payment Allocation({{OrganizationGeneralSettingsStore?.organizationSettings?.currency}}) <button class="btn smbtn-pad float-right" *ngIf="ProjectMonitoringStore.individualDetails?.project_monitoring_status?.type =='draft' || ProjectMonitoringStore.individualDetails?.project_monitoring_status?.type =='send-back'" (click)="openNewPaymentModal()">Add</button></th>
+              </tr>
+              <tr>
+                 <th class="border-top-0 text-center" width="4%">#</th>
+                 <th class="border-top-0">Year</th>
+                 <th class="border-top-0">Milestone</th>
+                 <th class="border-top-0">Q1</th>
+                 <th class="border-top-0">Q2</th>
+                 <th class="border-top-0">Q3</th>
+                 <th class="border-top-0">Q4</th>
+                 <th class="border-top-0">Total</th>
+              </tr>
+           </thead>
+           <tbody>
+              <tr *ngFor="let pay of BudgetStore.payment;let num = index" class="edit-and-delete-main">
+                 <td class="text-center">{{num+1}}</td>
+                 <td>{{pay.year}}</td>
+                 <td>{{pay.project_milestone_title}}</td>
+                 <td>{{pay.q1 ? pay.q1 : 0}}</td>
+                 <td>{{pay.q2 ? pay.q2 : 0}}</td>
+                 <td>{{pay.q3 ? pay.q3 : 0}}</td>
+                 <td>{{pay.q4 ? pay.q4 : 0}}</td>
+                 <td>{{pay.payment_total}}
+                  <div *ngIf="ProjectMonitoringStore.individualDetails?.project_monitoring_status?.type =='draft' || ProjectMonitoringStore.individualDetails?.project_monitoring_status?.type =='send-back'" class="edit-option-show" style="margin: 33px 0px 0 0; "><!-- edit-and-delete starts -->
+                     <a (click)="editPayment(pay)"><i class="fas fa-pen"></i></a>
+                     <a (click)="deletePayment(pay.id)"><i class="fas fa-trash"></i></a>
+                 </div><!-- edit-and-delete end -->  
+                 </td>
+               </tr>
+               <tr *ngIf="BudgetStore.payment.length > 0">
+                  <td class="text-center" colspan="7">{{'grand_total' | translate}}</td>
+                  <td>{{getGrandTotal()}}</td>
+                </tr>
+                <tr *ngIf="BudgetStore.payment.length == 0">
+                  <td class="text-center" colspan="8">{{AppStore.noContentText}}</td>
+                </tr>
+           </tbody>
+        </table>
+     </div>
+      </div>
+      <div class="col-md-3">
+        <div class="bg-white cmn-bdr mb-3 p-3" *ngIf="BudgetStore.allItems.length > 0">
+                              <h6>Payment Status({{OrganizationGeneralSettingsStore?.organizationSettings?.currency}})</h6>
+                              <hr class="mt-0 mb-3" />
+                              
+                              <div [ngClass]="totalPerc() > 50 ?'progress-circle over50 p'+totalPerc():'progress-circle p'+totalPerc()">
+                                  <span>{{totalPerc()}}%</span>
+                                  <div class="left-half-clipper">
+                                      <div class="first50-bar"></div>
+                                      <div class="value-bar"></div>
+                                  </div>
+                              </div>
+                              <div class="budget-total-score-sec text-center mt-3 d-flex align-items-center justify-content-center">
+                                  <h3 class="d-inline"><b>{{totalPayment()}} / {{getBudgetTotal()}}</b></h3>
+                              </div>
+          </div>
+      </div>
+     
+     </div>
+     <ng-container>
+      <app-no-data *ngIf="BudgetStore.allItems.length == 0 && BudgetStore.loaded" ></app-no-data>
+   </ng-container>
+     <div *ngIf="BudgetStore.totalItems>BudgetStore.itemsPerPage"
+        class="col-sm-12">
+        <ul class="pagination justify-content-center mt-3">
+            <div class="list">
+                <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"  class="my-pagination" (pageChange)="pageChange($event)">
+                </pagination-controls>
+            </div>
+        </ul>
+    </div> 
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade"  data-keyboard="false"
+data-backdrop="static" #newBudget>
+   <app-add-project-budget [source] ="newBudgetObject" *ngIf="newBudgetObject.type">
+       
+   </app-add-project-budget>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade"  data-keyboard="false"
+data-backdrop="static" #newPayment>
+   <app-project-payment-add *ngIf="newPaymentObject.type" [source] ="newPaymentObject" ></app-project-payment-add>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+
+
+      

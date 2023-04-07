@@ -1,0 +1,122 @@
+<div #plainDev></div>
+<div class="bg-white">
+<nav class="edit-bar" data-toggle="affix" #navBar>
+    <app-sub-menu>-</app-sub-menu>
+    <ul class="nav nav-pills float-left d-none d-lg-block" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link nav-link-show" [routerLink]="['/event-monitoring/event-tasks']"
+            routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">{{'event_task' | translate}} </a>
+        </li>
+    </ul> 
+</nav>
+</div>
+<main class="mt-3 acl-page">
+    <app-filter-menu></app-filter-menu>
+<div class="common-tab-md clearfix tab-common-left-small mb-3" *mobxAutorun>
+    <div class="audit-program-box audit-page-table-main">
+        <div class="row">
+           <div class="col-sm-12">
+              <div class="full-width-table mb-3">
+                 <table *ngIf="EventTaskStore?.eventTaskList.length > 0 && EventTaskStore.loaded" class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                    <thead>
+                       <tr>
+                          <th class="border-top-0 text-center" width="4%">#</th>
+                          <th style="cursor: pointer;" (click)="sortTitle('event_task.event_reference_code')" class="border-top-0" width="12%">
+                             <span>{{'reference_code' | translate}}</span> 
+                              <img _ngcontent-twv-c17="" style="margin-left: 6px;" *ngIf="EventTaskStore.orderItem=='event_task.event_reference_code'"
+                              [attr.src]="EventTaskStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" 
+                              class="sort-down-pics">
+                            </th>
+                          <th style="cursor: pointer;" (click)="sortTitle('event_task.title')" class="border-top-0" width="20%">
+                             <span>{{'task' | translate}}</span> 
+                             <img _ngcontent-twv-c17="" style="margin-left: 6px;" *ngIf="EventTaskStore.orderItem=='event_task.title'"
+                              [attr.src]="EventTaskStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" 
+                              class="sort-down-pics">
+                            </th>
+                            <th  class="border-top-0" width="10%">
+                                {{'task_phase' | translate}}
+                               
+                              </th>
+                            <th style="cursor: pointer;" (click)="sortTitle('event_task.event_deparment')" class="border-top-0" width="10%">
+                                <span>{{'department' | translate}}</span>
+                                <img _ngcontent-twv-c17="" style="margin-left: 6px;" *ngIf="EventTaskStore.orderItem=='event_task.event_deparment'"
+                                [attr.src]="EventTaskStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" 
+                                class="sort-down-pics">
+                              </th>
+                          <th class="border-top-0" width="15%">
+                              {{'responsible_users' | translate}}
+                            
+                            </th>
+                          <th style="cursor: pointer;" (click)="sortTitle('event_task.start_date')" class="border-top-0" width="10%">
+                              <span>{{'start_date' | translate}}</span>
+                              <img _ngcontent-twv-c17="" style="margin-left: 6px;" *ngIf="EventTaskStore.orderItem=='event_task.start_date'"
+                                [attr.src]="EventTaskStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" 
+                                class="sort-down-pics">
+                            </th>
+                          <th style="cursor: pointer;" (click)="sortTitle('event_task.end_date')" class="border-top-0" width="10%">
+                            <span>{{'end_date' | translate}}</span>
+                            <img _ngcontent-twv-c17="" style="margin-left: 6px;" *ngIf="EventTaskStore.orderItem=='event_task.end_date'"
+                            [attr.src]="EventTaskStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" 
+                            class="sort-down-pics">
+                            </th>
+                          <th class="border-top-0 text-center" width="9%">{{'status' | translate}}</th>
+                       </tr>
+                    </thead>
+                    <tbody>
+                       <ng-container *ngFor="let event of EventTaskStore?.eventTaskList | paginate: {currentPage:EventTaskStore?.currentPage, itemsPerPage:EventTaskStore?.itemsPerPage,totalItems:EventTaskStore?.totalItems}; let num = index">
+                          <tr (click)="gotoDetails(event.id,event?.event_id)" class="pointer edit-option">
+                             <td class="text-center">{{(EventTaskStore?.currentPage - 1) *EventTaskStore?.itemsPerPage +(num + 1)}}</td>
+                             <td>{{event.event_reference_code ? event.event_reference_code : AppStore.noContentText}}-{{event.id}}</td>
+                             <td>{{event?.title}}</td>
+                             <td>{{event?.task_phase_title?event?.task_phase_title:AppStore.noContentText}}</td>
+                             <td>{{event?.event_deparment?event?.event_deparment:AppStore.noContentText}}</td>
+                             <td>
+                                 {{event?.responsible_users ? event?.responsible_users:AppStore.noContentText}}
+
+                                
+                    
+                                </td>
+                             <td>{{event?.start_date | date: OrganizationGeneralSettingsStore?.organizationSettings?.date_format}}</td>
+                             <td>{{event?.end_date | date: OrganizationGeneralSettingsStore?.organizationSettings?.date_format}}</td>
+                             <td class="text-center">
+                                <div [ngClass]="'dot-div '+ event?.event_task_status_label+'-dot'"> {{event?.event_task_status}}</div>
+                                <div class="edit-option-show-inner" style="margin: 30px 0 0 0; ">
+                                   <!-- edit-and-delete starts -->
+                                   <a *ngIf="AuthStore.getActivityPermission(3700,'UPDATE_EVENT_TASK')" (click)="getEventClosure(event.id,event.event_id,$event)"  [attr.title]="'edit' | translate"><i class="fas fa-pen"></i></a>
+                                   <a *ngIf="AuthStore.getActivityPermission(3700,'DELETE_EVENT_TASK')" [attr.title]="'delete'|translate" (click)="delete($event,event.id,event?.event_id)"><i class="fas fa-trash pointer"></i></a>
+                                </div><!-- edit-and-delete end -->
+                             </td>
+                          </tr>
+                       </ng-container>
+                    </tbody>
+                 </table>
+                 <p class="float-right bold mb-0" *ngIf="EventTaskStore.loaded && EventTaskStore.totalItems > 0">{{'total_Items' | translate}}:{{EventTaskStore?.totalItems}}</p>
+                 <ng-container *mobxAutorun>
+                    <div *ngIf="!EventTaskStore.loaded">
+                     <app-nine-column-loader></app-nine-column-loader>
+                    </div>
+                    <app-no-data *ngIf="EventTaskStore?.eventTaskList.length == 0 && EventTaskStore.loaded == true"></app-no-data>
+                 </ng-container>
+                 <div *ngIf="EventTaskStore.totalItems>EventTaskStore.itemsPerPage && EventTaskStore.loaded == true" class="col-sm-12">
+                    <ul class="pagination justify-content-center mt-3">
+                        <div class="list">
+                            <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+                                (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+                        </div>
+                    </ul>
+                </div>
+              </div>
+           </div>
+        </div>
+     </div>
+</div>
+</main>
+
+<div class="modal modal-style-1 popup-full-width fade" style="z-index:99999;overflow: auto;" data-keyboard="false"
+   data-backdrop="static" #taskFormModal>
+   <app-add-event-task *ngIf="taskObject.type" [source]="taskObject"></app-add-event-task>
+</div>
+
+<div class="modal modal-style-1 fade" id="delete-popup" #deleteModal data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+ </div>

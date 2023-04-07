@@ -1,0 +1,221 @@
+<!-- <div class="tab-pane fade active show" id="policies" *mobxAutorun> -->
+
+
+    <button type="button" class="close" data-dismiss="modal" (click)="closeWorkflowModal()"><i
+        class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+  <div class="modal-dialog modal-xl" *mobxAutorun>
+     <div class="modal-content">
+        <div class="modal-body form-body" *ngIf = "checkUrl() == 'event'">
+           <div class="row">
+              <div class="col-sm-12">
+                 <div class="workflow-tab bg-white pt-4">
+                    <div class="work-flow-new-cmn-head-user work-flow-new-cmn" *ngIf="EventWorkflowStore.loaded && EventsStore.eventDetails?.submitted_by!=null">
+                       <div class="work-flow-new-cmn-head-user-inner">
+                          <span class="label-work-flow-audit">{{'submitted_by'|translate}}</span>
+                          <div
+                             class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                             <img
+                                [attr.src]="EventsStore.eventDetails?.submitted_by?.image?.token ? createImageUrl('user-profile-picture',EventsStore.eventDetails?.submitted_by?.image.token) : getDefaultImage('user-logo')"
+                                width="35px" height="35px" class="rounded-circle rounde-hov" onerror="this.src='/assets/images/user-demo2.png'">
+                             <div class="pointer new-size-text text-left">
+                                <h6>{{EventsStore.eventDetails?.submitted_by?.first_name}}
+                                   {{EventsStore.eventDetails?.submitted_by?.last_name}}</h6>
+                                <span>{{EventsStore.eventDetails?.submitted_by?.department}}</span>
+                             </div>
+                          </div>
+                          <span class="l-number-rounde">L0</span>
+  
+                       </div>
+                    </div>
+                    <div *ngIf="EventsStore.eventDetails == null">
+                       <ng-container>
+                          <app-no-data-list [source]="WorkflowEmptyMessage" [border]="false"></app-no-data-list>
+                       </ng-container>
+                    </div>
+                    <div class="work-flow-new-cmn-head" *ngIf="(!EventsStore.eventDetails?.submitted_by || EventsStore.eventDetails?.submitted_by==null) && EventWorkflowStore?.workflowDetails?.length>0">
+                       <h2 class="head-big-18 mb-0">{{'work_flow'|translate}}</h2>
+                    </div>
+  
+                    <div class="work-flow-review-approval-main work-flow-new-cmn" *ngIf="EventWorkflowStore?.workflowDetails?.length>0">
+                     
+  
+                       <div [ngClass]="checkStatus(workflow)"
+                          *ngFor="let workflow of EventWorkflowStore?.workflowDetails">
+                          <span class="label-work-flow-audit">{{workflow.type | titlecase}}</span>
+  
+                          <div *ngIf="workflow.user"
+                             class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                             <img
+                                [attr.src]="workflow.user.image?.token ? createImageUrl('user-profile-picture',workflow.user.image?.token) : getDefaultImage('user-logo')"
+                                width="35px" height="35px" class="rounded-circle rounde-hov" onerror="this.src='/assets/images/user-demo2.png'">
+                             <div class="pointer new-size-text">
+                                <h6>{{workflow.user.first_name}} {{workflow.user.last_name}}</h6>
+                                <span>{{workflow.user.designation}}</span>
+                             </div>
+                          </div>
+                          <p style="white-space: pre-wrap;" *ngIf="workflow.comment" class="mb-2">{{workflow.comment}}</p>
+  
+                          <div *ngIf="workflow.type!='user'"
+                             class="d-flex workflow-department-section align-items-center">
+                             <div class="w-100" *ngIf="workflow.type=='team'">
+                                <ul class="arci-user-tab-dtl workflow-lst-pics-loop clearfix">
+                                   <li class="rounde-hov-bg" *ngFor="let row of workflow.event_workflow_item_users">
+                                      <app-user-popup-box [showName]="false" [source]=" getCreatedByPopupDetails(row)">
+                                      </app-user-popup-box>
+                                   </li>
+                                </ul>
+                             </div>
+                             <div class="w-50 text-left" *ngIf="workflow.type!='team'">
+                                <div>
+                                   <h6 class="mb-0">{{workflow.role?.title}}</h6>
+                                   <!-- <p class="mb-0">Machine Learning</p> -->
+                                </div>
+                             </div>
+                             <div class="w-50" *ngIf="workflow.type!='team'">
+                                <ul class="arci-user-tab-dtl workflow-lst-pics-loop clearfix">
+                                   <li class="rounde-hov-bg" *ngFor="let row of workflow.event_workflow_item_users">
+                                      <app-user-popup-box [showName]="false" [source]=" getCreatedByPopupDetails(row)">
+                                      </app-user-popup-box>
+                                   </li>
+                                </ul>
+                             </div>
+                          </div>
+  
+                          <hr class="mt-1 mb-2">
+                          <div class="clearfix">
+                             <p class="float-left workflow-status-text mb-0">
+                                {{workflow.workflow_status.language[0].pivot.title}}</p>
+                             <p class="float-right mb-0">Created On {{workflow.created_at |date:
+                                OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</p>
+                          </div>
+  
+  
+                          <span class="l-number-rounde">L{{workflow.level}}</span>
+                       </div>
+                      
+                    </div>
+                    <div class="work-flow-review-approval work-flow-approval work-flow-audit-new box-shadow-none approved workflow-no-data"
+                    *ngIf="EventWorkflowStore.loaded && EventWorkflowStore?.workflowDetails?.length==0 && EventsStore.eventDetails?.submitted_by!=null">
+                     <ng-container>
+                        <app-context-no-data [sourceData] = "getNoDataSource('center')" >                    
+                        </app-context-no-data>
+                        </ng-container>
+                    </div>
+                    <div
+                    *ngIf="EventWorkflowStore.loaded && EventWorkflowStore?.workflowDetails?.length==0 && EventsStore.eventDetails?.submitted_by==null">
+                     <ng-container>
+                        <app-no-data-list [source]="WorkflowEmptyMessage" [border]="false"></app-no-data-list>
+                        </ng-container>
+                    </div>
+                 </div>
+              </div>
+           </div>
+        </div>
+        <div class="modal-body form-body" *ngIf = "checkUrl() == 'cr'">
+         <div class="row">
+            <div class="col-sm-12">
+               <div class="workflow-tab bg-white pt-4">
+                  <div class="work-flow-new-cmn-head-user work-flow-new-cmn" *ngIf="EventChangeRequestWorkflowStore.loaded && EventChangeRequestStore.individualChangeRequestItem?.submitted_by!=null">
+                     <div class="work-flow-new-cmn-head-user-inner">
+                        <span class="label-work-flow-audit">{{'submitted_by'|translate}}</span>
+                        <div
+                           class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                           <img
+                              [attr.src]="EventChangeRequestStore.individualChangeRequestItem?.submitted_by?.image?.token ? createImageUrl('user-profile-picture',EventChangeRequestStore.individualChangeRequestItem?.submitted_by?.image.token) : getDefaultImage('user-logo')"
+                              width="35px" height="35px" class="rounded-circle rounde-hov" onerror="this.src='/assets/images/user-demo2.png'">
+                           <div class="pointer new-size-text text-left">
+                              <h6>{{EventChangeRequestStore.individualChangeRequestItem?.submitted_by?.first_name}}
+                                 {{EventChangeRequestStore.individualChangeRequestItem?.submitted_by?.last_name}}</h6>
+                              <span>{{EventChangeRequestStore.individualChangeRequestItem?.submitted_by?.department}}</span>
+                           </div>
+                        </div>
+                        <span class="l-number-rounde">L0</span>
+
+                     </div>
+                  </div>
+                  <div *ngIf="EventChangeRequestStore.individualChangeRequestItem == null">
+                     <ng-container>
+                        <app-no-data-list [source]="WorkflowEmptyMessage" [border]="false"></app-no-data-list>
+                     </ng-container>
+                  </div>
+                  <div class="work-flow-new-cmn-head" *ngIf="(!EventChangeRequestStore.individualChangeRequestItem?.submitted_by || EventChangeRequestStore.individualChangeRequestItem?.submitted_by==null) && EventChangeRequestWorkflowStore?.eventChangeRequestWorkflow?.length>0">
+                     <h2 class="head-big-18 mb-0">{{'work_flow'|translate}}</h2>
+                  </div>
+
+                  <div class="work-flow-review-approval-main work-flow-new-cmn" *ngIf="EventChangeRequestWorkflowStore?.eventChangeRequestWorkflow?.length>0">
+                   
+
+                     <div [ngClass]="checkStatus(workflow)"
+                        *ngFor="let workflow of EventChangeRequestWorkflowStore?.eventChangeRequestWorkflow">
+                        <span class="label-work-flow-audit">{{workflow.type | titlecase}}</span>
+
+                        <div *ngIf="workflow.user"
+                           class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                           <img
+                              [attr.src]="workflow.user.image?.token ? createImageUrl('user-profile-picture',workflow.user.image?.token) : getDefaultImage('user-logo')"
+                              width="35px" height="35px" class="rounded-circle rounde-hov" onerror="this.src='/assets/images/user-demo2.png'">
+                           <div class="pointer new-size-text">
+                              <h6>{{workflow.user.first_name}} {{workflow.user.last_name}}</h6>
+                              <span>{{workflow.user.designation}}</span>
+                           </div>
+                        </div>
+                        <p style="white-space: pre-wrap;" *ngIf="workflow.comment" class="mb-2">{{workflow.comment}}</p>
+
+                        <div *ngIf="workflow.type!='user'"
+                           class="d-flex workflow-department-section align-items-center">
+                           <div class="w-100" *ngIf="workflow.type=='team'">
+                              <ul class="arci-user-tab-dtl workflow-lst-pics-loop clearfix">
+                                 <li class="rounde-hov-bg" *ngFor="let row of workflow.event_change_request_workflow_item_users">
+                                    <app-user-popup-box [showName]="false" [source]=" getCreatedByPopupDetails(row)">
+                                    </app-user-popup-box>
+                                 </li>
+                              </ul>
+                           </div>
+                           <div class="w-50 text-left" *ngIf="workflow.type!='team'">
+                              <div>
+                                 <h6 class="mb-0">{{workflow.role?.title}}</h6>
+                                 <!-- <p class="mb-0">Machine Learning</p> -->
+                              </div>
+                           </div>
+                           <div class="w-50" *ngIf="workflow.type!='team'">
+                              <ul class="arci-user-tab-dtl workflow-lst-pics-loop clearfix">
+                                 <li class="rounde-hov-bg" *ngFor="let row of workflow.event_change_request_workflow_item_users">
+                                    <app-user-popup-box [showName]="false" [source]=" getCreatedByPopupDetails(row)">
+                                    </app-user-popup-box>
+                                 </li>
+                              </ul>
+                           </div>
+                        </div>
+
+                        <hr class="mt-1 mb-2">
+                        <div class="clearfix">
+                           <p class="float-left workflow-status-text mb-0">
+                              {{workflow.workflow_status.language[0].pivot.title}}</p>
+                           <p class="float-right mb-0">Created On {{workflow.created_at |date:
+                              OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</p>
+                        </div>
+
+
+                        <span class="l-number-rounde">L{{workflow.level}}</span>
+                     </div>
+                    
+                  </div>
+                  <div class="work-flow-review-approval work-flow-approval work-flow-audit-new box-shadow-none approved workflow-no-data"
+                  *ngIf="EventWorkflowStore.loaded && EventChangeRequestWorkflowStore?.eventChangeRequestWorkflow?.length==0 && EventChangeRequestStore.individualChangeRequestItem?.submitted_by!=null">
+                   <ng-container>
+                      <app-context-no-data [sourceData] = "getNoDataSource('center')" >                    
+                      </app-context-no-data>
+                      </ng-container>
+                  </div>
+                  <div
+                  *ngIf="EventWorkflowStore.loaded && EventChangeRequestWorkflowStore?.eventChangeRequestWorkflow?.length==0 && EventChangeRequestStore.individualChangeRequestItem?.submitted_by==null">
+                   <ng-container>
+                      <app-no-data-list [source]="WorkflowEmptyMessage" [border]="false"></app-no-data-list>
+                      </ng-container>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+     </div>
+  </div>

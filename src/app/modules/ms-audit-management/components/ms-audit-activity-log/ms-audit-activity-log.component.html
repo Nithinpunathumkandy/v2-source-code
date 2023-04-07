@@ -1,0 +1,154 @@
+<app-audit-plan-activity-log-loader *ngIf="!AuditPlanActivityLogsStore?.loaded"></app-audit-plan-activity-log-loader>
+<button type="button" class="close" (click)="cancel()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+
+<div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header">
+            <h4 class="modal-title">{{'activity_logs' | translate}}</h4>
+        </div>
+        <!-- Modal body -->
+        <div class="modal-body form-body" *ngIf="AuditPlanActivityLogsStore?.loaded && AuditPlanActivityLogsStore.allItems.length > 0">
+            <div class="row">
+                <div class="col-sm-12">
+                <div class="actvity-log-details-loop actvity-log-popup-new">
+                    <div class="actvity-log-details" *ngFor="
+                    let row of AuditPlanActivityLogsStore?.allItems
+                        | paginate
+                        : {
+                            currentPage: AuditPlanActivityLogsStore?.currentPage,
+                            itemsPerPage: AuditPlanActivityLogsStore?.itemsPerPage,
+                            totalItems: AuditPlanActivityLogsStore?.totalItems
+                            };
+                    let num = index
+                    " >
+                        <div class="clearfix d-flex">
+                            <div class="actvitylog-dtl-left" style="width: 60px;">                           
+                            <div class="actvitylog-dtl-round">
+                                <i class="fas fa-sync-alt"></i>
+                            </div>
+                            </div>
+                            <div class="actvitylog-dtl-right bg-white widg-padding-cmn ml-4">
+                            <div class="row">
+                                <div class="col-lg-3 col-sm-12">
+                                    <p *ngIf="!row?.data?.ms_audit?.updated_at" class="font-normal mb-2 time-and-date-small-p">{{row?.data?.ms_audit?.created_at | date: OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format  }}</p>
+                                    <p 
+                                        *ngIf="row?.data?.ms_audit?.updated_at" 
+                                        class="font-normal mb-2 time-and-date-small-p">{{row?.data?.ms_audit?.updated_at | date: OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format  }}</p>
+                                    <div class="d-flex flex-row user-list-sm p-0">
+                                        <img [attr.src]="row?.created_by_image_token?createImageUrl(row?.created_by_image_token):'/assets/images/user-demo2.png'" 
+                                        onerror = "this.src='/assets/images/user-demo2.png'" 
+                                        width="30px" height="30px" 
+                                        class="rounded-circle">
+                                        <div class="new-size-text">
+                                        <h6 class="mt-0">{{row?.created_by_first_name}} {{row?.created_by_last_name}}</h6>
+                                        <span>{{row?.created_by_designation}}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-9 col-sm-12">
+
+                                    <div *ngIf="row?.activity_type=='CREATE'" class="small-user-style-text left-border-and-space">
+                                        <h6 class="mb-2">{{ 'created_act' | translate }}</h6>
+                                        <span *ngIf="row?.activity" >{{row?.activity}}</span><br>
+                                    </div>
+
+                                    <div *ngIf="row?.activity_type=='UPDATE'" class="small-user-style-text left-border-and-space">
+                                        <h6 class="mb-2">{{ 'updated_act' | translate }}</h6>
+                                        <span *ngIf="row?.activity">{{row?.activity}}</span><br>
+                                        <ng-container *ngIf="row?.detail.length !=0">
+                                            <div *ngFor="let row2 of row?.detail ; let num=index">
+
+                                                <!-- value to value -->
+                                                <ng-container *ngIf="row2?.type!='Removed' && row2?.type!='Added'">
+                                                    <span class="ml-2">{{num+1}}. {{'its' | translate}} {{row2?.details  | translate}} {{row2.type}} {{'from_activity' | translate}} </span>  
+                                                   <div class="ml-4">
+                                                        <p class="mb-0">
+                                                            <b><span [innerHTML]="row2.changed_from? dateToOrgnatiztionConvert(row2.changed_from):AppStore.noContentText"></span></b>
+                                                            {{'to'|translate}} 
+                                                            <b><span [innerHTML]="row2.changed_to? dateToOrgnatiztionConvert(row2.changed_to):AppStore.noContentText"></span></b>
+                                                        </p>  
+                                                   </div>
+  
+                                                </ng-container>
+
+                                                <ng-container *ngIf="row2?.type=='Removed'">
+                                                    <span class="ml-2">{{num+1}}. {{'its' | translate}} {{row2?.removed_item  | translate}} {{row2.type}}  </span>  
+                                                   <!-- <div class="ml-4">
+                                                        <p class="mb-0">
+                                                            <b><span [innerHTML]="row2.changed_from? dateToOrgnatiztionConvert(row2.changed_from):AppStore.noContentText"></span></b>
+                                                            {{'to'|translate}} 
+                                                            <b><span [innerHTML]="row2.changed_to? dateToOrgnatiztionConvert(row2.changed_to):AppStore.noContentText"></span></b>
+                                                        </p>  
+                                                   </div> -->
+  
+                                                </ng-container>
+
+                                                <ng-container *ngIf="row2?.type=='Added'">
+                                                    <span class="ml-2">{{num+1}}. {{'its' | translate}} {{row2?.new_item  | translate}} {{row2.type}}  </span>  
+                                                   <!-- <div class="ml-4">
+                                                        <p class="mb-0">
+                                                            <b><span [innerHTML]="row2.changed_from? dateToOrgnatiztionConvert(row2.changed_from):AppStore.noContentText"></span></b>
+                                                            {{'to'|translate}} 
+                                                            <b><span [innerHTML]="row2.changed_to? dateToOrgnatiztionConvert(row2.changed_to):AppStore.noContentText"></span></b>
+                                                        </p>  
+                                                   </div> -->
+  
+                                                </ng-container>
+                                                
+                                                                    
+                                            </div>                                       
+                                        </ng-container>                                                                                                            
+                                    </div>
+
+                                    <div *ngIf="row?.activity_type=='SUBMIT'" class="small-user-style-text left-border-and-space">
+                                        <h6 class="mb-2">{{ 'submited' | translate }}</h6>
+                                        <span *ngIf="row?.activity" >{{row?.activity}}</span><br>
+                                    </div>
+
+                                    <div *ngIf="row?.activity_type=='REVERT'" class="small-user-style-text left-border-and-space">
+                                        <h6 class="mb-2">{{ 'send_back_' | translate }}</h6>
+                                        <span *ngIf="row?.activity" >{{row?.activity}}</span><br>
+                                    </div>
+
+                                    <div *ngIf="row?.activity_type=='APPROVE'" class="small-user-style-text left-border-and-space">
+                                        <h6 class="mb-2">{{ 'approved' | translate }}</h6>
+                                        <span *ngIf="row?.activity" >{{row?.activity}}</span><br>
+                                    </div>
+
+                                    <div *ngIf="row?.activity_type=='REJECT'" class="small-user-style-text left-border-and-space">
+                                        <h6 class="mb-2">{{ 'rejected' | translate }}</h6>
+                                        <span *ngIf="row?.activity" >{{row?.activity}}</span><br>
+                                    </div>
+
+                                    <div *ngIf="row?.activity_type=='PUBLISH'" class="small-user-style-text left-border-and-space">
+                                        <h6 class="mb-2">{{ 'published' | translate }}</h6>
+                                        <span *ngIf="row?.activity" >{{row?.activity}}</span><br>
+                                    </div>
+
+                                    <div *ngIf="!activityType(row?.activity_type)" class="small-user-style-text left-border-and-space">
+                                        <h6 class="mb-2">{{ row?.activity_type | titlecase }}</h6>
+                                        <span *ngIf="row?.activity" >{{row?.activity}}</span><br>
+                                    </div>
+
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div  *ngIf="AuditPlanActivityLogsStore.totalItems > AuditPlanActivityLogsStore.itemsPerPage" class="col-sm-12">
+                        <ul class="pagination justify-content-center mt-3">
+                        <div class="list">
+                            <pagination-controls (pageChange)="pageChange($event)" class="my-pagination">
+                            </pagination-controls>
+                        </div>
+                        </ul>
+                        </div>
+                </div>
+                </div>
+            </div>
+        </div>
+        <app-no-data-list *ngIf = "AuditPlanActivityLogsStore.totalItems == 0 && AuditPlanActivityLogsStore.loaded" [source]="emptyActivityLog"></app-no-data-list>
+        <!-- Modal footer -->
+    </div>
+</div>

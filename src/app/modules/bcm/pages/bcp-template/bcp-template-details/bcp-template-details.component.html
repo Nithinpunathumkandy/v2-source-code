@@ -1,0 +1,141 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navBar>
+    <app-breadcrumb-menu></app-breadcrumb-menu>
+    <div class="dropdown edit-dropdown d-lg-none drop-menu-left-head">
+        <a class="btn btn-primary float-left three-dots-dropdown dropdown-toggle"
+            data-toggle="dropdown">{{AppStore.pageTitle}}<i class="fas fa-chevron-circle-down ml-2"></i></a>
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+            <a class="dropdown-item" data-toggle="pill" routerLinkActive="active"
+                [routerLinkActiveOptions]="{exact: true}" (click)="unCollapseSide()"
+                [routerLink]="['/bcm/business-continuity-plan-template/'+BcmTemplateStore.bcmTemplateDetails?.id]">{{'info'
+                |
+                translate}}</a>
+        </div>
+    </div>
+    <ul class="nav nav-pills float-left d-none d-lg-block" role="tablist">
+        <li class="nav-item" (click)="unCollapseSide()">
+            <a class="nav-link nav-link-show"
+                [routerLink]="['/bcm/business-continuity-plan-template/'+BcmTemplateStore.bcmTemplateDetails?.id]"
+                routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"> {{'info' | translate}}</a>
+        </li>
+    </ul>
+    <app-sub-menu>-</app-sub-menu>
+</nav>
+
+<main class="mt-3 organization-page">
+    <ng-container *mobxAutorun>
+        <app-template-loader *ngIf="!BcmTemplateStore.individualLoaded"></app-template-loader>
+    </ng-container>
+    <div class="container-fluid widget" *mobxAutorun>
+        <div class="row user-main-sec" *ngIf="BcmTemplateStore.individualLoaded">
+            <div class="col-xl-3 col-lg-4 col-md-12 user-side-bar user-side-left work-flow-details-sec-left"
+                #userSideBar>
+                <div class="organization-profile-sidebar p-3">
+                    <div class="min-height-64">
+                    <div class="relative">
+                        <a class="curve-toggle curv-2" (click)="collapseSide()"></a>
+                        <div class="d-flex align-items-center">
+                            <div class="issue-top-sec issuue-new-style p-0">
+                                <div class="clearfix pt-2">
+                                    <h5 class="d-inline-block cmn-head-style label-tag-style mb-1">
+                                        {{BcmTemplateStore.bcmTemplateDetails?.template_title}}</h5>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-sm-12">
+                            <div class="template-pic-box" *ngIf="!(BcmTemplateStore.bcmTemplateDetails.token)"
+                                [ngStyle]="{'background': ' url(' + getDefaultImage('no-preview') + ') no-repeat 0 0 / cover'}">
+                                <div class="box-light-shadow"></div>
+                            </div>
+                            <div class="template-pic-box" *ngIf="BcmTemplateStore.bcmTemplateDetails?.token"
+                                [ngStyle]="{'background': 'url(' + createImageUrl('document-template-document',BcmTemplateStore.bcmTemplateDetails?.token) + ')'}">
+                                <div class="box-light-shadow"></div>
+                            </div>
+                        </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                        <div class="row">
+                            <div class="col-xl-12">
+                                <hr class="mb-2">
+                                <div class="d-flex flex-row user-list-sm">
+                                    <img [attr.src]="BcmTemplateStore.bcmTemplateDetails?.created_by.image.token ? createImageUrl('user-profile-picture',BcmTemplateStore.bcmTemplateDetails?.created_by.image.token) : getDefaultImage('user-logo')"
+                                        width="40px" height="40px" onerror="this.src='/assets/images/user-demo2.png'"
+                                        class="rounded-circle">
+                                    <div>
+                                        <h6>{{BcmTemplateStore.bcmTemplateDetails?.created_by.first_name}}
+                                            {{BcmTemplateStore.bcmTemplateDetails?.created_by.last_name}}</h6>
+                                        <span>{{BcmTemplateStore.bcmTemplateDetails?.created_by.designation}} |
+                                            {{'created_on' |
+                                            translate}} {{
+                                            getTimezoneFormatted(BcmTemplateStore.bcmTemplateDetails?.created_at) |
+                                            date:
+                                            OrganizationGeneralSettingsStore.organizationSettings?.date_time_format
+                                            }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    
+                </div>
+            </div>
+            <div class="col-xl-9 user-right-details user-right-fill work-flow-details-sec-right" #userRightDetails>
+                <div class="row" *mobxAutorun>
+                    <div class="col-md-12 pr-0">
+                        <div class="inner-dtl">
+                            <div class="tab-content">
+                                <div class="tab-pane active" id="profile">
+                                    <div class="bg-white min-height-83 widg-padding-cmn">
+                                    <div class="work-flow-pdf-preview">
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <ng-container
+                                                    *ngFor="let items of BcmTemplateStore.bcmTemplateDetails?.template_content | order_by: 'order';let num = index">
+                                                    <h5 class="cmn-head-style"> {{num+1}}. <span
+                                                            [innerHTML]="items.title ? items.title : ''"></span></h5>
+                                                    <p class="text-editor-content bullet-point-list"
+                                                        [innerHTML]="items.description | safeHtml"></p>
+                                                </ng-container>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <ng-container *mobxAutorun>
+                                        <app-no-data
+                                            *ngIf="BcmTemplateStore.individualLoaded && BcmTemplateStore.bcmTemplateDetails?.template_content.length==0">
+                                        </app-no-data>
+                                    </ng-container>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</main>
+
+<div class="side-bar-round" (click)="unCollapseSide()" #sideBarRound>
+    <figure class="w-100 d-block">
+        <img width="100"
+            [attr.src]="(BcmTemplateStore.bcmTemplateDetails?.created_by?.image.token) ? createImageUrl('user-profile-picture',BcmTemplateStore.bcmTemplateDetails?.created_by?.image.token) : getDefaultImage('general')"
+            class="d-block mx-auto img-fluid rounded-circle" onerror="this.src='/assets/images/placeholder.png'">
+    </figure>
+</div>
+
+<!-- ---------------------Form Modal------------------------- -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+    <app-bcp-template-add-modal *ngIf="templateObject.type" [source]="templateObject"></app-bcp-template-add-modal>
+</div>
+<!--------------------- Ends Here---------------------------- -->
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp>
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+<!------------------- Delete Confirmation Modal End --------------------------->

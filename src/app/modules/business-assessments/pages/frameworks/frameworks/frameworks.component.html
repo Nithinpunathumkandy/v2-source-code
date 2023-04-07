@@ -1,0 +1,140 @@
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" data-backdrop="static" data-keyboard="false" #deletePopup>
+   <app-delete-popup [source]="deleteObject"></app-delete-popup>
+</div>
+
+<!------------------- Delete Confirmation Modal End --------------------------->
+<div #plainDev></div>
+<div class="bg-white">
+   <nav class="edit-bar" data-toggle="affix" #navBar>
+      <app-sub-menu>-</app-sub-menu>
+      <div class="module-name-block module-name-block-space float-left">
+         <a class="dropdown module-title">{{'framework'|translate}}</a>
+      </div>
+   </nav>
+</div>
+
+<main class="mt-3 acl-page" *mobxAutorun>
+   <div class="container-fluid widget" *ngIf="FrameworksStore.loaded && FrameworksStore.frameworkDetails.length>0">
+      <div class="audit-program-box audit-page-table-main">
+         <div class="row">
+            <div class="col-sm-12">
+               <div class="full-width-table">
+
+                  <table *ngIf="AuthStore.getActivityPermission(1900,'BUSINESS_ASSESSMENT_FRAMEWORK_LIST')"
+                     class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                     <thead>
+                        <tr>
+                           <th class="border-top-0 text-center" width="2%">#</th>
+                           <th class="border-top-0 pointer" width="10%"
+                              (click)="setFrameworkSort('business_assessment_frameworks.reference_code')">
+                              {{'reference_code'|translate}}
+                              <img *ngIf="FrameworksStore.orderItem == 'business_assessment_frameworks.reference_code'"
+                                 [attr.src]="FrameworksStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                 class="sort-down-pics">
+                           </th>
+                           <th class="border-top-0 pointer" width="58%"
+                              (click)="setFrameworkSort('business_assessment_frameworks.title')">{{'title'|translate}}
+                              <img *ngIf="FrameworksStore.orderItem == 'business_assessment_frameworks.title'"
+                                 [attr.src]="FrameworksStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                 class="sort-down-pics">
+                           </th>
+                           <th class="border-top-0 pointer" width="20%"
+                              (click)="setFrameworkSort('created_user.first_name')">{{'created_by'|translate}}
+                              <img *ngIf="FrameworksStore.orderItem == 'created_user.first_name'"
+                                 [attr.src]="FrameworksStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                 class="sort-down-pics">
+                           </th>
+                           <th class="border-top-0 pointer text-center" width="10%"
+                              (click)="setFrameworkSort('business_assessment_frameworks.status')">{{'status'|translate}}
+                              <img *ngIf="FrameworksStore.orderItem == 'business_assessment_frameworks.status'"
+                                 [attr.src]="FrameworksStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                 class="sort-down-pics">
+                           </th>
+                        </tr>
+                     </thead>
+                     <tbody>
+                        <tr class="edit-and-delete-main pointer"
+                           *ngFor="let framework of FrameworksStore.frameworkDetails| paginate: {currentPage:FrameworksStore?.currentPage, itemsPerPage:FrameworksStore?.itemsPerPage,totalItems:FrameworksStore?.totalItems};let num = index">
+                           <td class="text-center" (click)="gotoDetails(framework.id)">{{(FrameworksStore?.currentPage -
+                              1) * FrameworksStore?.itemsPerPage + (num + 1)}}</td>
+                           <td (click)="gotoDetails(framework.id)">#{{framework.reference_code}}</td>
+                           <td (click)="gotoDetails(framework.id)">{{framework.title}}</td>
+                           <td class="pointer" (click)="gotoDetails(framework.id)">
+
+                              <!-- <app-user-popup-box [source]="getPopupDetails(framework)"></app-user-popup-box> -->
+                              <div class="d-flex flex-row user-list-sm user-box-smol-round rounde-hov-bg">
+                                 <img data-toggle="modal"
+                                    [attr.src]="framework.created_by_image_token?createImageUrl('user-profile-picture',framework.created_by_image_token):getDefaultImage('user-logo')"
+                                    width="30px" height="30px" class="rounded-circle rounde-hov details-show-popup">
+
+                                 <div>
+                                    <h6>{{framework.created_by_first_name}} {{framework.created_by_last_name}}</h6>
+                                    <span>{{framework.created_by_designation}}</span>
+                                 </div>
+                              </div>
+                           </td>
+                           <td class="text-center">
+                              <div class="pointer" (click)="gotoDetails(framework.id)"
+                                 [attr.class]="'dot-div '+framework.status_label">{{framework.status}}</div>
+                              <div class="edit-option-show" style="margin: 36px 15px 0 0;">
+                                 <!-- edit-and-delete starts -->
+                                 <a *ngIf="AuthStore.getActivityPermission(1900,'UPDATE_BUSINESS_ASSESSMENT_FRAMEWORK')"
+                                    [attr.title]="'edit'|translate" (click)="editFramework(framework.id)"><i
+                                       class="fas fa-pen"></i></a>
+                                 <a *ngIf="AuthStore.getActivityPermission(1900,'DELETE_BUSINESS_ASSESSMENT_FRAMEWORK')"
+                                    [attr.title]="'delete'|translate" (click)="deleteFramework(framework.id)"><i
+                                       class="fas fa-trash"></i></a>
+                                 <a class="pointer" [attr.title]="'activate'|translate"
+                                    *ngIf="framework.status_id!=AppStore.activeStatusId"
+                                    (click)="activateFramework(framework.id)"><i class="fas fa-check"></i></a>
+                                 <a [attr.title]="'deactivate'" class="pointer"
+                                    *ngIf="framework.status_id==AppStore.activeStatusId"
+                                    (click)="deactivateFramework(framework.id)"><i class="fas fa-ban"></i></a>
+                              </div><!-- edit-and-delete end -->
+                           </td>
+                        </tr>
+
+                     </tbody>
+                  </table>
+               </div>
+               <p class="float-right bold mb-0"
+                  *ngIf="FrameworksStore.loaded && FrameworksStore.frameworkDetails.length > 0">{{'total_Items' |
+                  translate}}:{{FrameworksStore?.totalItems}}</p>
+            </div>
+            <div class="col-sm-12" *ngIf="FrameworksStore?.totalItems>FrameworksStore?.itemsPerPage">
+               <ul class="pagination justify-content-center mt-3">
+                  <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+                     (pageChange)="pageChange($event)" class="my-pagination">
+                  </pagination-controls>
+               </ul>
+
+            </div>
+         </div>
+      </div>
+
+
+
+   </div>
+
+   <ng-container *mobxAutorun>
+      <app-no-data [border]="false"
+         *ngIf="FrameworksStore.loaded && FrameworksStore.frameworkDetails.length==0"></app-no-data>
+   </ng-container>
+
+   <ng-container *mobxAutorun>
+      <div *ngIf="!FrameworksStore.loaded">
+         <app-framework-loader></app-framework-loader>
+      </div>
+   </ng-container>
+</main>
+<!-- add-business-framework-popup Start -->
+<div class="modal modal-style-1 fade popup-full-width" id="add-business-framework-popup" data-keyboard="false"
+   data-backdrop="static" #formModal>
+
+   <app-framework-modal *ngIf="frameworkObject.type" [source]="frameworkObject">
+
+   </app-framework-modal>
+
+</div>

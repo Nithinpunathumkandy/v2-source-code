@@ -1,0 +1,120 @@
+<button type="button" class="close" (click)="cancel()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+<div class="modal-dialog modal-xl modal-dialog-centered" #formModal>
+    <div class="modal-content">
+        <div class="modal-header">
+            <!-- <h4>{{strategicModalTitle?.component}}</h4> -->
+            <h4 class="modal-title">{{'findings_modal_title' | translate}} {{findingModalTitle?.component | translate}}</h4>
+        </div>
+        <div class="modal-body form-body add-profie-org-pup">
+            <p class="head-details">{{'select_findings_to_map_with_compliance' | translate}} {{findingModalTitle?.component | translate}}</p>
+            <div class="row"> 
+                <div class="col-sm-12 col-lg-6">
+                    <div class="form-group d-flex">
+                        <form class="form-control issue-select-process-search bg-white search-popup-new">
+                            <input type="text" [(ngModel)] = "searchText" [placeholder]="'search_here'| translate" name="search" class="search-process"
+                                (keyup)="searchInFindingList($event)">
+                            <button type="submit" style="width: 40px;"><i class="fa fa-search"></i></button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class=" audit-page-table-main">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="full-width-table">
+                        <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                            <thead>
+                                <tr>
+                                    <th class="border-top-0" width="6%">
+                                        <label class="container2 float-left"
+                                            style="margin-top: 2px; padding-left: 22px;">
+                                            <input type="checkbox" id="selectall" (change)="selectAllFindings($event)" >
+                                            <span class="checkmark"></span>
+                                        </label>#
+                                    </th>
+                                    <th  (click)="sortTitle('findings.title')" class="border-top-0 issue-list-org-tab-three pointer" style="width: 50%;">
+                                        <span>{{'title' | translate}}</span>
+                                        <img _ngcontent-twv-c17=""  *ngIf="AuditFindingsStore.orderItem=='findings.title'"
+                                        [attr.src]="AuditFindingsStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" 
+                                        class="sort-down-pics">
+                                    </th>
+                                    <th (click)="sortTitle('findings.finding_categories')" class="border-top-0 issue-list-org-tab-three pointer" style="width: 19%;"> 
+                                        <span>{{'audit_category' | translate}}</span> 
+                                        <img _ngcontent-twv-c17=""  *ngIf="AuditFindingsStore.orderItem=='findings.finding_categories'"
+                                        [attr.src]="AuditFindingsStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" 
+                                        class="sort-down-pics">
+                                    </th>
+                                    <th (click)="sortTitle('findings.risk_ratings')" class="border-top-0 issue-list-org-tab-three pointer" style="width: 15%;"><span>{{'risk' | translate}}</span> 
+                                        <img _ngcontent-twv-c17=""  *ngIf="AuditFindingsStore.orderItem=='findings.risk_ratings'"
+                                        [attr.src]="AuditFindingsStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" 
+                                        class="sort-down-pics">
+                                    </th>
+                                    <th style="width: 10%;">{{'status' | translate}}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <ng-container *mobxAutorun>
+                                    <tr *ngFor="
+                                        let row of AuditFindingsStore?.allItems
+                                            | paginate
+                                            : {id: 'objective',
+                                                currentPage: AuditFindingsStore?.currentPage,
+                                                itemsPerPage: AuditFindingsStore?.itemsPerPage,
+                                                totalItems: AuditFindingsStore?.totalItems
+                                                };
+                                        let num = index
+                                        ">
+                                        <td class="pointer">
+                                            <label class="container2 float-left"
+                                                style="margin-top: 2px; padding-left: 22px;">
+                                                <input class="pointer" type="checkbox" [checked]="findingPresent(row)"
+                                                    (change)="findingSelected(row)" class="case" name="case" />
+                                                <span class="checkmark"></span>
+                                            </label>
+                                            {{(AuditFindingsStore?.currentPage - 1) *
+                                                AuditFindingsStore?.itemsPerPage +
+                                                (num + 1)}}</td>
+                                                <td title="{{ row?.title}}">{{row?.title }}</td>
+                                                <td title="{{row?.finding_categories}}">{{row?.finding_categories?.length > 20 ? row?.finding_categories?.substring(0,20)+' ...' : row?.finding_categories}}</td>
+                                                <td class="text-center">
+                                                    <div class="dot-div {{row?.risk_rating_label}}-dot">{{row?.risk_ratings}} </div>
+                                                </td>
+                                                <td class="text-center">
+                                                    <div class="dot-div {{row?.finding_status_label}}">{{row?.finding_status_title}}</div>
+                                                </td>
+                                    </tr>
+                                </ng-container>
+                            </tbody>
+                        </table>
+                    </div>
+                    </div>
+                </div>
+            </div>
+
+            <div *ngIf="AuditFindingsStore.totalItems > AuditFindingsStore.itemsPerPage && AuditFindingsStore.loaded"
+                class="col-sm-12">
+                <ul class="pagination justify-content-center mt-3">
+                    <div class="list">
+                        <pagination-controls [previousLabel]="'previous' | translate"  [nextLabel]="'next' | translate" (pageChange)="pageChange($event)" class="my-pagination" id="objective">
+                        </pagination-controls>
+                    </div>
+                </ul>
+            </div>
+            <app-no-data-list *ngIf="AuditFindingsStore.totalItems == 0 && AuditFindingsStore.loaded == true" [source]="'no_audit_findings_available'"></app-no-data-list>
+
+            <div class="row mt-4">
+                <div class="col-sm-12">
+                    <div class="d-block justify-content-left border-0 mt-3">
+                        <button type="button" data-toggle="modal" (click)="save()" data-target="#signal-lost"
+                            class="btn ordinary-btn mr-3 btn-active">{{'add' | translate}}</button>
+                        <button type="button" data-toggle="modal" data-target="#signal-lost" (click)="save(true)"
+                            class="btn ordinary-btn mr-3">{{'add' | translate}} &amp; {{'close' | translate}}</button>
+                        <button type="button" data-toggle="modal" data-target="#error-message" (click)="cancel()"
+                            class="btn ordinary-btn mr-2">{{'cancel' | translate}}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

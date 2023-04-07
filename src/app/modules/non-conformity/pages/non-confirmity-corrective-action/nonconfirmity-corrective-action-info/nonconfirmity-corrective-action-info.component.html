@@ -1,0 +1,322 @@
+<main class="audit-program-details-page mt-3" *ngIf="FindingCorrectiveActionStore.individualLoaded">
+    <div class="container-fluid widget" *mobxAutorun>
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="row">
+                    <div class="col-lg-8 col-sm-12 padding-right-0">
+                        <div class="bg-white widg-padding-cmn">
+                            <div class=" min-height-64">
+                                <div class="widget-body-light issuue-new-style p-0">
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <div class="issue-top-sec">
+                                                <div class="clearfix">
+                                                    <h5 class="d-inline-block cmn-head-style label-tag-style"><span
+                                                            class="issue-smoal-head-text">#
+                                                            {{FindingCorrectiveActionStore?.correctiveActionDetails?.reference_code}}</span>
+                                                        {{FindingCorrectiveActionStore?.correctiveActionDetails?.title}}
+                                                    </h5>
+                                                    <a [ngClass]="'draft-tag label-tag-style-tag draft-tag-'+ labelDot(FindingCorrectiveActionStore?.correctiveActionDetails?.corrective_action_status?.label)+' label-left-arow-tag d-inline-block'">
+                                                        {{FindingCorrectiveActionStore?.correctiveActionDetails?.corrective_action_status?.language[0]?.pivot?.title}}</a>
+                                                </div>
+                                                <div class="clearfix">
+                                                    <p class="label-tag-style"><i
+                                                            class="fas fa-calendar-alt date-pics-two"></i>
+                                                        {{FindingCorrectiveActionStore?.correctiveActionDetails?.start_date
+                                                        |
+                                                        date:
+                                                        OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                        To
+                                                        {{FindingCorrectiveActionStore?.correctiveActionDetails?.target_date
+                                                        |
+                                                        date:
+                                                        OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                        <span  *ngIf="FindingCorrectiveActionStore.correctiveActionDetails?.corrective_action_status?.type!='resolved' && FindingCorrectiveActionStore.correctiveActionDetails?.corrective_action_status?.type!='closed'" class="blinking">( {{getDaysRemaining()}}
+                                                            {{'days remaining' | translate}} )
+                                                        </span>
+                                                        <!-- <span class="ml-2 mr-2"
+                                                        *ngIf="FindingCorrectiveActionStore.correctiveActionDetails?.corrective_action_status?.type!='resolved'&&FindingCorrectiveActionStore.correctiveActionDetails?.corrective_action_status?.type!='closed'">|</span> -->
+                                                    <span class="small-text pt-1 pl-2"
+                                                        *ngIf="FindingCorrectiveActionStore.correctiveActionDetails?.corrective_action_status?.type!='resolved' && FindingCorrectiveActionStore.correctiveActionDetails?.corrective_action_status?.type!='closed'">{{FindingCorrectiveActionStore.correctiveActionDetails?.finding_corrective_action_update.slice(-1)[0]?.percentage?FindingCorrectiveActionStore.correctiveActionDetails?.finding_corrective_action_update.slice(-1)[0]?.percentage:0}}
+                                                        %
+                                                        {{'completed' | translate}}
+                                                    </span>
+                                                    </p>
+                                                </div>
+                                                <p style="white-space: pre-line;"
+                                                    *ngIf="FindingCorrectiveActionStore?.correctiveActionDetails?.description">
+                                                    {{FindingCorrectiveActionStore?.correctiveActionDetails?.description}}
+                                                </p>
+                                            </div>
+                                            <div class="label-and-user-pic">
+                                                <h6>{{'responsible_user'|translate}}</h6>
+                                                <app-user-popup-box
+                                                    [source]="assignUserValues(FindingCorrectiveActionStore?.correctiveActionDetails?.responsible_user)">
+                                                </app-user-popup-box>
+                                                <div
+                                                    *ngIf="!FindingCorrectiveActionStore?.correctiveActionDetails?.responsible_user">
+                                                    {{AppStore.noContentText}}</div>
+                                            </div>
+                                            <h6>{{'support_files' | translate}}</h6>
+                                            <p
+                                                *ngIf="FindingCorrectiveActionStore?.correctiveActionDetails?.documents?.length == 0">
+                                                {{AppStore.noContentText}}</p>
+                                            <div class="thumb-pics-bg thumb-pics-col-4 thumb-pics-fix-text"
+                                                style="padding-top: 0">
+                                                <div class="thumb-pics"
+                                                    *ngFor="let docs of FindingCorrectiveActionStore?.correctiveActionDetails?.documents;let i = index">
+                                                    <!-- System Files Starts Here -->
+                                                    <div class="upload-pics edit-option" *ngIf="!docs.document_id">
+                                                        <div class="browse-form-pic"
+                                                            [ngStyle]="{'background': 'url('+createImageUrl('corrective-action',docs.token)+') no-repeat'}"
+                                                            (click)="viewAttachments('corrective-action',docs)">
+                                                        </div>
+                                                        <div class="browse-form-name clearfix">
+                                                            <div class="float-left">
+                                                                <h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                                                </h6>
+                                                                <span>{{docs.size/1048576 |
+                                                                    number:'0.2-2'}}MB</span><span
+                                                                    class="text-blue bold pl-2">System</span>
+                                                            </div>
+                                                            <div class="browse-logo">
+                                                                <img *ngIf="checkExtension(docs.ext,'image') != -1"
+                                                                    class="folder-picher"
+                                                                    src="/assets/images/jpg-icone.png">
+                                                                <img *ngIf="checkExtension(docs.ext,'doc') != -1"
+                                                                    class="folder-picher"
+                                                                    src="/assets/images/word-icone.png">
+                                                                <img *ngIf="checkExtension(docs.ext,'pdf') != -1"
+                                                                    class="folder-picher"
+                                                                    src="/assets/images/pdf-icone.png">
+                                                                <img *ngIf="checkExtension(docs.ext,'excel') != -1"
+                                                                    class="folder-picher"
+                                                                    src="/assets/images/excel-icone.png">
+                                                                <img *ngIf="checkExtension(docs.ext,'video') != -1"
+                                                                    class="folder-picher"
+                                                                    src="/assets/images/md-video.png">
+                                                                <img *ngIf="checkExtension(docs.ext,'audio') != -1"
+                                                                    class="folder-picher"
+                                                                    src="/assets/images/md-audio.png">
+                                                                <img *ngIf="checkExtension(docs.ext,'ppt') != -1"
+                                                                    class="folder-picher"
+                                                                    src="/assets/images/md-ppt.png">
+                                                            </div>
+                                                        </div>
+                                                        <div class="edit-option-show-inner" style="margin: 0 -9px 0 0;">
+                                                            <a><i class="fas fa-download"
+                                                                    (click)="downloadDocument('corrective-action',docs)"></i></a>
+                                                        </div>
+                                                    </div>
+                                                    <!-- KnowledgeHub Files Starts Here -->
+                                                    <div class="upload-pics edit-option" *ngIf="docs.document_id">
+
+                                                        <div *ngFor="let mainDoc of docs.kh_document.versions">
+                                                            <div *ngIf="mainDoc.is_latest">
+                                                                <div class="browse-form-pic"
+                                                                    (click)="viewAttachments('document-version',docs,mainDoc)"
+                                                                    [ngStyle]="{'background': 'url('+createImageUrl('document-version',mainDoc?.token)+') no-repeat'}">
+                                                                </div>
+                                                                <div class="browse-form-name clearfix">
+                                                                    <div class="float-left">
+                                                                        <h6>{{mainDoc.title}}.{{mainDoc.ext}}
+                                                                        </h6>
+                                                                        <span>{{mainDoc.size/1048576 |
+                                                                            number:'0.2-2'}}MB</span><span
+                                                                            class="text-blue bold pl-2">Knowledge
+                                                                            Hub</span>
+                                                                    </div>
+                                                                    <div class="browse-logo">
+                                                                        <img *ngIf="checkExtension(mainDoc.ext,'image') != -1"
+                                                                            class="folder-picher"
+                                                                            src="/assets/images/jpg-icone.png">
+                                                                        <img *ngIf="checkExtension(mainDoc.ext,'doc') != -1"
+                                                                            class="folder-picher"
+                                                                            src="/assets/images/word-icone.png">
+                                                                        <img *ngIf="checkExtension(mainDoc.ext,'pdf') != -1"
+                                                                            class="folder-picher"
+                                                                            src="/assets/images/pdf-icone.png">
+                                                                        <img *ngIf="checkExtension(mainDoc.ext,'excel') != -1"
+                                                                            class="folder-picher"
+                                                                            src="/assets/images/excel-icone.png">
+                                                                        <img *ngIf="checkExtension(mainDoc.ext,'video') != -1"
+                                                                            class="folder-picher"
+                                                                            src="/assets/images/md-video.png">
+                                                                        <img *ngIf="checkExtension(mainDoc.ext,'audio') != -1"
+                                                                            class="folder-picher"
+                                                                            src="/assets/images/md-audio.png">
+                                                                        <img *ngIf="checkExtension(mainDoc.ext,'ppt') != -1"
+                                                                            class="folder-picher"
+                                                                            src="/assets/images/md-ppt.png">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="edit-option-show-inner" style="margin: 0 -9px 0 0;">
+                                                                    <a><i class="fas fa-download"
+                                                                            (click)="downloadDocument('document-version',docs,mainDoc)"></i></a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <!-- KnowledgeHub Files Ends Here -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="clearfix"></div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <h6>{{'finding'|translate}}</h6>
+                                            <p>#{{FindingsStore.findingDetails?.reference_code}}
+                                                {{FindingsStore.findingDetails?.title?FindingsStore.findingDetails?.title:AppStore.noContentText}}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <h6>{{'finding_description'|translate}}</h6>
+                                            <p 
+                                                [innerHTML]="FindingsStore.findingDetails?.description?FindingsStore.findingDetails?.description:AppStore.noContentText">
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <h6>{{'risk_rating' | translate}}</h6>
+                                            <p
+                                                [attr.class]="'dot-div-new font-normal dot-'+FindingsStore.findingDetails?.risk_rating?.label">
+                                                {{FindingsStore?.findingDetails?.risk_rating?.language[0]?.pivot?.title}}
+                                            </p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <h6>{{'finding_category' | translate}}</h6>
+                                            <p>{{FindingsStore.findingDetails?.finding_category?.title}}</p>
+                                        </div>
+                                        <div class="col-md-4"
+                                            *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_division">
+                                            <h6>{{'divisions' | translate}}</h6>
+                                            <p>{{FindingsStore.findingDetails?.divisions.length>0?getArrayFormatedString('title',FindingsStore.findingDetails?.divisions):AppStore.noContentText}}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4"
+                                            *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_department">
+                                            <h6>{{'departments' | translate}}</h6>
+                                            <p>{{FindingsStore.findingDetails?.departments.length>0?getArrayFormatedString('title',FindingsStore.findingDetails?.departments):AppStore.noContentText}}
+                                            </p>
+                                        </div>
+                                        <div class="col-md-4"
+                                            *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_section">
+                                            <h6>{{'sections' | translate}}</h6>
+                                            <p>{{FindingsStore.findingDetails?.sections.length>0?getArrayFormatedString('title',FindingsStore.findingDetails?.sections):AppStore.noContentText}}
+                                            </p>
+                                        </div>
+                                        <div class="col-md-4"
+                                            *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_sub_section">
+                                            <h6>{{'sub_sections' | translate}}</h6>
+                                            <p>{{FindingsStore.findingDetails?.sub_sections.length>0?getArrayFormatedString('title',FindingsStore.findingDetails?.sub_sections):AppStore.noContentText}}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xl-12">
+                                    <hr class="mb-2">
+                                    <!-- <div class="d-flex flex-row user-list-sm"> -->
+                                    <app-user-popup-box
+                                        [source]=" getCreatedByPopupDetails(FindingCorrectiveActionStore?.correctiveActionDetails?.created_by, FindingCorrectiveActionStore?.correctiveActionDetails?.created_at)">
+                                    </app-user-popup-box>
+                                    <!-- </div> -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4 col-sm-12"
+                        *ngIf="FindingCorrectiveActionStore?.correctiveActionDetails?.finding_corrective_action_update!=null">
+                        <!-- && FindingCorrectiveActionStore?.correctiveActionDetails?.finding_corrective_action_update[finding_corrective_action_update.length-1]?.finding_corrective_action_status_id!=2 -->
+                        <div class="bg-white widg-padding-cmn-small mb-3 pb-2">
+
+                            <h6>{{'corrective_action'|translate}} % {{'completed' | translate}}</h6>
+                            <hr class="mt-0 mb-3">
+                            <div
+                                [ngClass]="FindingCorrectiveActionStore?.correctiveActionDetails?.finding_corrective_action_update.slice(-1)[0]?.percentage > 50 ?'progress-circle progress-circle-big-one over50 p'+FindingCorrectiveActionStore?.correctiveActionDetails?.finding_corrective_action_update.slice(-1)[0]?.percentage:'progress-circle progress-circle-big-one p'+FindingCorrectiveActionStore?.correctiveActionDetails?.finding_corrective_action_update.slice(-1)[0]?.percentage">
+                                <span>{{FindingCorrectiveActionStore?.correctiveActionDetails?.finding_corrective_action_update.slice(-1)[0]?.percentage>0?FindingCorrectiveActionStore?.correctiveActionDetails?.finding_corrective_action_update.slice(-1)[0]?.percentage:0}}%</span>
+                                <div class="left-half-clipper">
+                                    <div class="first50-bar"></div>
+                                    <div class="value-bar"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white widg-padding-cmn-small mb-3">
+                            <h6>
+                                {{'days_remaining' | translate}}</h6>
+                            <hr class="mt-0 mb-3">
+                            <div class="clearfix">
+                                <div class="mb-3">
+                                    <p class="dot-div-new mb-0 dot-green d-block font-normal">{{'remaining_days'|translate}}
+                                        ({{getDaysRemaining()}}{{' days'}})
+                                    </p><p class="dot-div-new dot-red d-block font-normal">{{'total_days'|translate}}
+                                        ({{getTotaldays()}}{{' days'}})
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="vertical-progress-v2">
+                                <div class="progress-bg-sec">
+                                    <div class="progress-inner-color"
+                                        [style.height.%]="(getDaysRemaining()/getTotaldays())*100">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<ng-container *mobxAutorun>
+    <div *ngIf="!FindingCorrectiveActionStore.individualLoaded">
+        <app-corrective-action-loader></app-corrective-action-loader>
+    </div>
+</ng-container>
+
+<!-- preview component for image preview -->
+<div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup" data-keyboard="false"
+    data-backdrop="static" #filePreviewModal *mobxAutorun>
+    <app-non-confirmity-preview *ngIf="previewObject" [source]="previewObject">
+    </app-non-confirmity-preview>
+</div>
+<!-- preview modal end -->
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #AddCAformModal>
+    <app-add-finding-corrective-action *ngIf="correctiveActionObject.type" [source]="correctiveActionObject">
+    </app-add-finding-corrective-action>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+
+<!-- ---------------- CA Resolve Form ------------------------ -->
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #CaResolveformModal>
+    <app-corrective-action-resolve-modal *ngIf="correctiveActionResolveObject.type"
+        [source]="correctiveActionResolveObject">
+    </app-corrective-action-resolve-modal>
+</div>
+
+<!----------------------- Ca Update ----------------------->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #UpdateCAformModal>
+    <app-corrective-action-update-modal *ngIf="caUpdateObject.type" [source]="caUpdateObject">
+    </app-corrective-action-update-modal>
+</div>
+
+<!----------------------- Ca History ----------------------->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #historyPopup>
+    <app-corrective-action-history-modal>
+    </app-corrective-action-history-modal>
+</div>

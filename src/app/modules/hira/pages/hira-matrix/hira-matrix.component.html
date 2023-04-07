@@ -1,0 +1,273 @@
+<nav class="edit-bar" data-toggle="affix">
+    <div class="module-name-block module-name-block-space float-left">
+       <a class="dropdown module-title">
+          {{'risk_matrix' | translate}}
+       </a>
+    </div>
+    <div class="dropdown edit-dropdown d-xl-none" *ngIf="AuthStore.getActivityPermission(900,'CREATE_RISK_MATRIX_CONFIGURATION')">
+       <a class="btn btn-primary float-right three-dots-dropdown dropdown-toggle" data-toggle="dropdown"><i
+             class="fas fa-ellipsis-v"></i></a>
+       <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+          <a class="dropdown-item" (click)="gotoConfiguration()"><i class="fas fa-cog"></i> {{'configuration' |
+             translate}}</a>
+       </div>
+    </div>
+    <!-- <div class="dropdown edit-dropdown d-lg-none">
+       <a class="btn btn-primary float-left three-dots-dropdown dropdown-toggle" data-toggle="dropdown"><i
+             class="fas fa-ellipsis-v"></i></a>
+ 
+    </div> -->
+ 
+    <ul class="nav nav-pills edit-icons float-right d-none d-xl-block" role="tablist" *ngIf="AuthStore.getActivityPermission(900,'CREATE_RISK_MATRIX_CONFIGURATION')">
+ 
+       <li class="mr-4">
+          <a (click)="gotoConfiguration()" class="btn btn-active btn-a-menu"><i class="fas fa-cog"></i> {{'configuration'
+             | translate}}</a>
+       </li>
+ 
+    </ul>
+ </nav>
+ 
+ <main class="audit-program-details-page mt-3" *mobxAutorun>
+    <div class="container-fluid widget"
+       *ngIf="LikelihoodStore.loaded&&ImpactStore.loaded && HiraScoreStore.loaded && LikelihoodStore.likelihoodDetails.length>0 && ImpactStore?.impactDetails.length>0 && HiraScoreStore.hiraScoreDetails && AuthStore.getActivityPermission(900,'RISK_MATRIX_CONFIGURATION_LIST')">
+       <div class="bg-white risk-matrix-page-main mb-3">
+          <div class="risk-matrix-new-type-table">
+             <div class="risk-matrix-new-type-table-inner">
+                <div class="risk-matrix-table-main clearfix d-flex">
+                   <div class="header-not-fixed-table risk-matrix-table-name risk-matrix-table-left">
+                      <h4 class="risk-table-graph risk-table-graph-left">{{'likelihood_cap' | translate}}</h4>
+                      <table class="ordinary-table cmn-table-style">
+                         <tr *ngFor="let likelihood of LikelihoodStore.likelihoodDetails;let num=index">
+                            <td>{{likelihood.risk_matrix_likelihood_title}}<span
+                                  class="risk-table-nbr">{{likelihood.score}}</span></td>
+                         </tr>
+ 
+                      </table>
+                   </div>
+                   <div class="widget-body header-not-fixed-table audit-program-box risk-matrix-table">
+                      <div class="fix-table">
+                         <table class="table table-bordered ordinary-table cmn-table-style mb-0">
+                            <tbody>
+                               <tr *ngFor="let score of HiraScoreStore.hiraScoreDetails">
+                                  <td *ngFor="let rating of score" data-toggle="tooltip"
+                                     [style.width.%]="100/score.length">
+                                     <!-- <div [ngClass]="'circle-status matrix-'+rating.rating.color"><span
+                                           *ngIf="rating.rating?.rating_level">{{rating.rating?.rating_level}}
+                                           ({{rating.score}})</span></div> -->
+                                           <div *ngIf="rating.rating?.rating_level" [ngClass]="'dot-div '+rating.rating.color+'-dot'">
+                                              {{rating.rating?.rating_level}} ({{rating.score}})</div>
+                                  </td>
+                               </tr>
+ 
+                            </tbody>
+                         </table>
+                      </div>
+                      <div class="header-not-fixed-table risk-matrix-table-name risk-matrix-table-bottom">
+                         <table class="ordinary-table cmn-table-style">
+                            <tr>
+                               <td *ngFor="let impact of ImpactStore?.impactDetails"
+                                  [style.width.%]="100/ImpactStore?.impactDetails.length"><span
+                                     class="risk-table-nbr">{{impact.score}}</span>{{impact.risk_matrix_impact_title}}
+                               </td>
+ 
+                            </tr>
+                         </table>
+                         <h4 class="risk-table-graph risk-table-graph-btm">{{'IMPACT' | translate}}</h4>
+                      </div>
+                   </div>
+ 
+                </div>
+             </div>
+          </div>
+       </div>
+          <div class="bg-white risk-matrix-page-main">
+ 
+          <div class="row mt-5">
+             <div class="col-md-12">
+                <div class="panel-group panel-drop-sections pt-0" id="jd" role="tablist" aria-multiselectable="true">
+                   <div class="panel panel-default"
+                      *ngIf="AuthStore.getActivityPermission(900,'RISK_MATRIX_CALCULATION_METHOD_LIST')">
+                      <div [ngClass]="activeTab=='score'?'panel-heading active':'panel-heading'" role="tab" id="headingOne" (click)="setActiveTab('score')">
+                         <div class="panel-title">
+                            <a role="button" data-toggle="collapse" href="#ceo502" aria-expanded="false"
+                               aria-controls="collapseOne" class="collapsed">
+                               <h5 class="width96pc bold mt-0"> {{'risk_score' | translate}} (L{{RisksStore.calculationMethod?.is_addition?'+':RisksStore.calculationMethod?.is_multiplication?'x':RisksStore.calculationMethod?.is_substraction?'-':'/'}}I) <span
+                                     class="drop-down-icone"><i class="fas fa-chevron-down"></i></span> </h5>
+                            </a>
+                         </div>
+                      </div>
+                      <div id="ceo502" *ngIf="activeTab=='score'" class="drop-detail-sec panel-collapse" role="tabpanel"
+                         aria-labelledby="headingOne" data-parent="#ceo502" >
+                         <div class="panel-body bg-white">
+                            <div class="risk-score-box">
+                               <h6 class="bold">{{'risk_score' | translate}} = ({{'likelihood' | translate}} {{RisksStore.calculationMethod?.is_addition?'+':RisksStore.calculationMethod?.is_multiplication?'x':RisksStore.calculationMethod?.is_substraction?'-':'/'}}
+                                  {{'impact' | translate}})</h6>
+                               <h5 class="font-normal" *ngFor="let score of RiskRatingMasterStore.allItems"><span *ngIf="score.risk_rating_values"
+                                     [ngClass]="'risk-score-indication bg-'+score.label"></span><span *ngIf="score.risk_rating_values">{{score.title}}
+                                  ({{getFormatedValue(',',score.risk_rating_values)}})</span></h5>
+                               <!-- <h5><span class="risk-score-indication bg-dark-orange"></span>{{'risk_medium' | translate}} (11-15)</h5>
+                                     <h5><span class="risk-score-indication bg-dark-red"></span>{{'risk_high' | translate}} (16-25)</h5> -->
+                            </div>
+ 
+                         </div>
+                      </div>
+                   </div>
+                   <div class="panel panel-default"
+                      *ngIf="RiskRatingMasterStore.loaded && AuthStore.getActivityPermission(900,'RISK_MATRIX_RATING_LEVEL_LIST')">
+                      <div [ngClass]="activeTab=='treatment'?'panel-heading active':'panel-heading'" role="tab" id="headingOne"  (click)="setActiveTab('treatment')">
+                         <div class="panel-title">
+                            <a role="button" data-toggle="collapse" href="#ceo504" aria-expanded="false"
+                               aria-controls="collapseOne" class="collapsed">
+                               <h5 class="width96pc bold mt-0"> {{'risk_treatment' | translate}} <span
+                                     class="drop-down-icone"><i class="fas fa-chevron-down"></i></span> </h5>
+                            </a>
+                         </div>
+                      </div>
+                      <div id="ceo504" *ngIf="activeTab=='treatment'" class="drop-detail-sec panel-collapse" role="tabpanel"
+                         aria-labelledby="headingOne" data-parent="#ceo504" >
+                         <div class="panel-body bg-white">
+                            <div class="risk-matrix-table-accodion full-width-table">
+                               <table
+                                  class="table table-bordered ordinary-table cmn-table-style mb-1 table-scroll">
+                                  <tr *ngFor="let score of RiskRatingMasterStore.allItems">
+                                     <td *ngIf="score.risk_treatment"
+                                        [ngClass]="'bg-'+score.label+' text-white risk-treatment-table-one text-center'">
+                                        {{score?.title}}</td>
+                                     <td class="risk-treatment-table-two" *ngIf="score.risk_treatment">{{score.risk_treatment}}</td>
+                                  </tr>
+ 
+                               </table>
+                            </div>
+ 
+                         </div>
+                      </div>
+                   </div>
+                   <div class="panel panel-default"
+                      *ngIf="AuthStore.getActivityPermission(900,'RISK_MATRIX_LIKELIHOOD_LIST') && OrganizationModulesStore.checkIndividualSubModule(900,24601)" >
+                      <div [ngClass]="activeTab=='likelihood'?'panel-heading active':'panel-heading'" role="tab" id="headingOne" (click)="setActiveTab('likelihood')">
+                         <div class="panel-title">
+                            <a role="button" data-toggle="collapse" href="#ceo506" aria-expanded="false"
+                               aria-controls="collapseOne" class="collapsed">
+                               <h5 class="width96pc bold mt-0"> {{'likelihood' | translate}} <span
+                                     class="drop-down-icone"><i class="fas fa-chevron-down"></i></span> </h5>
+                            </a>
+                         </div>
+                      </div>
+                      <div id="ceo506" *ngIf="activeTab=='likelihood'" class="drop-detail-sec panel-collapse" role="tabpanel"
+                         aria-labelledby="headingOne" data-parent="#ceo506" >
+                         <div class="panel-body bg-white">
+                            <div class="risk-matrix-table-accodion full-width-table">
+                               <table class="table table-bordered ordinary-table cmn-table-style mb-1 table-scroll">
+                                  <tr>
+                                     <th style="width: 25%;">{{'likelihood' | translate}}</th>
+                                     <th style="width: 50%;">{{'timeframe' | translate}}</th>
+                                     <th style="width: 25%;">{{'probability' | translate}} %</th>
+                                  </tr>
+                                  <tr *ngFor="let likelihood of LikelihoodStore.likelihoodDetails;let num=index">
+                                     <td>{{likelihood.risk_matrix_likelihood_title}} ({{likelihood.score}})</td>
+                                     <td>
+                                        {{likelihood.risk_matrix_likelihood_timeframe?likelihood.risk_matrix_likelihood_timeframe:AppStore.noContentText}}
+                                     </td>
+                                     <td>{{likelihood.probability}}</td>
+                                  </tr>
+ 
+                               </table>
+                            </div>
+                         </div>
+                      </div>
+                   </div>
+                   <div class="panel panel-default"
+                      *ngIf="AuthStore.getActivityPermission(900,'RISK_MATRIX_IMPACT_LIST') && OrganizationModulesStore.checkIndividualSubModule(900,24701)">
+                      <div [ngClass]="activeTab=='impact'?'panel-heading active':'panel-heading'" role="tab" id="headingOne"  (click)="setActiveTab('impact')">
+                         <div class="panel-title">
+                            <a role="button" data-toggle="collapse" href="#ceo507" aria-expanded="false"
+                               aria-controls="collapseOne" class="collapsed">
+                               <h5 class="width96pc bold mt-0"> {{'impact' | translate}} <span class="drop-down-icone"><i
+                                        class="fas fa-chevron-down"></i></span> </h5>
+                            </a>
+                         </div>
+                      </div>
+                      <div id="ceo507" *ngIf="activeTab=='impact'" class="drop-detail-sec panel-collapse" role="tabpanel"
+                         aria-labelledby="headingOne" data-parent="#ceo507" >
+                         <div class="panel-body bg-white">
+                            <div class="risk-matrix-table-accodion full-width-table">
+                               <table
+                                  class="table table-bordered ordinary-table cmn-table-style mb-1 table-scroll">
+                                  <tr>
+                                     <th style="width: 25%;">{{'impact' | translate}}</th>
+                                     <th style="width: 75%;">{{'description' | translate}}</th>
+                                  </tr>
+                                  <tr *ngFor="let impact of ImpactStore?.impactDetails">
+                                     <td>{{impact.risk_matrix_impact_title}} ({{impact.score}})</td>
+                                     <td>
+                                        <div class="text-editor-content bullet-point-list pt-1"
+                                           [innerHTML]="impact.risk_matrix_impact_description | safeHtml"></div>
+                                     </td>
+ 
+                                  </tr>
+ 
+                               </table>
+                            </div>
+                         </div>
+                      </div>
+                   </div>
+ 
+                   <div class="panel panel-default"
+                      *ngIf="AuthStore.getActivityPermission(900,'RISK_MATRIX_IMPACT_LIST')">
+                      <div [ngClass]="activeTab=='guideline'?'panel-heading active':'panel-heading'" role="tab" id="headingOne" (click)="setActiveTab('guideline')">
+                         <div class="panel-title">
+                            <a role="button" data-toggle="collapse" href="#ceo508" aria-expanded="false"
+                               aria-controls="collapseOne" class="collapsed">
+                               <h5 class="width96pc bold mt-0">{{'impact_guidelines' | translate}}  <span class="drop-down-icone"><i
+                                        class="fas fa-chevron-down"></i></span> </h5>
+                            </a>
+                         </div>
+                      </div>
+                      <div id="ceo508" *ngIf="activeTab=='guideline'" class="drop-detail-sec panel-collapse" role="tabpanel"
+                         aria-labelledby="headingOne" data-parent="#ceo508" >
+                         <div class="panel-body bg-white">
+                            <div class="risk-matrix-table-accodion full-width-table">
+                               <table *ngIf="RiskImpactGuidelineMasterStore?.RiskRatingImpactGuideline?.length > 0 && RiskImpactGuidelineMasterStore?.RiskRatingImpactGuideline[0]?.risk_categories?.length > 0"
+                                  class="table table-bordered ordinary-table cmn-table-style mb-1 table-scroll">
+                                  <tr>
+                                     <th style="width: 10%;">{{'categories' | translate}}</th>
+                                     <th [style.width.%]="90/RiskImpactGuidelineMasterStore?.RiskRatingImpactGuideline[0]?.risk_categories?.length" *ngFor="let category of RiskImpactGuidelineMasterStore?.RiskRatingImpactGuideline[0]?.risk_categories">{{category?.risk_category}}</th>
+                                  </tr>
+                                  <tr *ngFor="let rating of RiskImpactGuidelineMasterStore?.RiskRatingImpactGuideline">
+                                     <td class="text-bold">{{rating?.risk_matrix_impact}}</td>
+                                        <td *ngFor="let description of rating?.risk_categories">{{description.description}} </td>
+                                  </tr>
+ 
+                               </table>
+                            </div>
+                         </div>
+                      </div>
+                   </div>
+ 
+ 
+                </div>
+             </div>
+          </div>
+ 
+       </div>
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+    </div>
+    <ng-container>
+       <app-no-data
+          *ngIf="(LikelihoodStore.loaded&&ImpactStore.loaded && HiraScoreStore.loaded) && (LikelihoodStore.likelihoodDetails.length==0 || ImpactStore?.impactDetails.length==0 || !HiraScoreStore.hiraScoreDetails)">
+       </app-no-data>
+    </ng-container>
+    <ng-container *mobxAutorun>
+       <div *ngIf="!LikelihoodStore.loaded || !ImpactStore.loaded || !HiraScoreStore.loaded">
+           <app-risk-matrix-loader></app-risk-matrix-loader>
+       </div>
+   </ng-container>
+ </main>

@@ -1,0 +1,101 @@
+<button type="button" class="close" data-dismiss="modal" (click)="closeWorkflowModal()"><i
+    class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+<div class="modal-dialog modal-xl" *mobxAutorun>
+ <div class="modal-content">
+    <div class="modal-body form-body">
+       <div class="row">
+          <div class="col-sm-12">
+             <div class="workflow-tab bg-white pt-4">
+               <div class="work-flow-new-cmn-head" *ngIf="AuditPlanWorkflowStore.loaded && AuditPlanWorkflowStore?.workflowDetails?.submitted_by!=null" >
+                  <h2 class="head-big-18 mb-0">{{'work_flow'|translate}}</h2>
+               </div>
+                <div class="work-flow-new-cmn-head-user work-flow-new-cmn" *ngIf="AuditPlanWorkflowStore.loaded && MsAuditPlansStore.individualMsAuditPlansDetails?.submitted_by!=null">
+                   <div class="work-flow-new-cmn-head-user-inner">
+                      <span class="label-work-flow-audit">{{'submitted_by'|translate}}</span>
+                      <div
+                         class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol">
+                         <img
+                            [attr.src]="MsAuditPlansStore.individualMsAuditPlansDetails?.submitted_by?.image?.token ? createImageUrl('user-profile-picture',MsAuditPlansStore.individualMsAuditPlansDetails?.submitted_by?.image?.token) : getDefaultImage('user-logo')"
+                            onerror = "this.src='/assets/images/user-demo2.png'" width="30px" height="30px" class="rounded-circle rounde-hov">
+                         <div class="new-size-text text-left">
+                            <h6>{{MsAuditPlansStore.individualMsAuditPlansDetails?.submitted_by?.first_name}}
+                               {{MsAuditPlansStore.individualMsAuditPlansDetails?.submitted_by?.last_name}}</h6>
+                            <span>{{MsAuditPlansStore.individualMsAuditPlansDetails?.submitted_by?.department}}</span>
+                         </div>
+                      </div>
+                      <span class="l-number-rounde">L0</span>
+
+                   </div>
+                </div>
+                <div class="work-flow-new-cmn-head" *ngIf="(!MsAuditPlansStore.individualMsAuditPlansDetails?.submitted_by || MsAuditPlansStore.individualMsAuditPlansDetails?.submitted_by==null) && AuditPlanWorkflowStore?.workflowDetails?.length>0">
+                   <h2 class="head-big-18 mb-0">{{'work_flow'|translate}}</h2>
+                </div>
+
+                <div class="work-flow-review-approval-main work-flow-new-cmn" *ngIf="AuditPlanWorkflowStore?.workflowDetails?.length>0">
+
+
+                   <div [ngClass]="checkStatus(workflow)"
+                      *ngFor="let workflow of AuditPlanWorkflowStore?.workflowDetails">
+                      <span class="label-work-flow-audit" *ngIf="workflow.type == 'user-type'">{{workflow.user_type?.type | titlecase}}</span>
+                      <span class="label-work-flow-audit" *ngIf="workflow.type != 'user-type'">{{workflow.type | titlecase}}</span>
+
+                      <div *ngIf="workflow.user"
+                         class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol">
+                         <img
+                            [attr.src]="workflow.user.image?.token ? createImageUrl('user-profile-picture',workflow.user.image?.token) : getDefaultImage('user-logo')"
+                            onerror = "this.src='/assets/images/user-demo2.png'"
+                            width="30px" height="30px" class="rounded-circle rounde-hov">
+                         <div class="new-size-text">
+                            <h6>{{workflow.user.first_name}} {{workflow.user.last_name}}</h6>
+                            <span>{{workflow.user.designation}}</span>
+                         </div>
+                      </div>
+                      <p style="white-space: pre-line;" *ngIf="workflow.comment" class="mb-2">{{workflow.comment}}</p>
+
+                      <div *ngIf="workflow.type!='user'"
+                         class="d-flex workflow-department-section align-items-center">
+                         <div class="w-100" *ngIf="workflow.type=='team'">
+                            <ul class="arci-user-tab-dtl workflow-lst-pics-loop clearfix">
+                               <li class="rounde-hov-bg" *ngFor="let row of workflow.users">
+                                  <app-user-popup-box [showName]="false" [source]=" getCreatedByPopupDetails(row)">
+                                  </app-user-popup-box>
+                               </li>
+                            </ul>
+                         </div>
+                         <div class="w-50 text-left" *ngIf="workflow.type!='team'">
+                            <div>
+                               <h6 class="mb-0">{{workflow.role?.title}}</h6>
+                               <!-- <p class="mb-0">Machine Learning</p> -->
+                            </div>
+                         </div>
+                         <div class="w-50" *ngIf="workflow.type!='team'">
+                            <ul class="arci-user-tab-dtl workflow-lst-pics-loop clearfix">
+                               <li class="rounde-hov-bg" *ngFor="let row of workflow.users">
+                                  <app-user-popup-box [showName]="false" [source]=" getCreatedByPopupDetails(row)">
+                                  </app-user-popup-box>
+                               </li>
+                            </ul>
+                         </div>
+                      </div>
+
+                      <hr class="mt-1 mb-2">
+                      <div class="clearfix">
+                         <p class="float-left workflow-status-text mb-0">
+                            {{workflow.workflow_status.language[0].pivot.title}}</p>
+                         <p class="float-right mb-0">Created On {{workflow.created_at |date:
+                            OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</p>
+                      </div>
+
+
+                      <span class="l-number-rounde">L{{workflow.level}}</span>
+                   </div>
+                </div>
+                <ng-container *ngIf="AuditPlanWorkflowStore.loaded && AuditPlanWorkflowStore?.workflowDetails?.length==0">
+                <app-no-data-list [source]="WorkflowEmptyMessage" [border]="false"></app-no-data-list>
+                </ng-container>
+             </div>
+          </div>
+       </div>
+    </div>
+ </div>
+</div>

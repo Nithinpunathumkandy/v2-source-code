@@ -1,0 +1,234 @@
+<button type="button" class="close" (click)="closeFormModal()">
+    <i class="lni-close"></i><span>{{ "esc" | translate }}</span>
+  </button>
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <h4 class="modal-title">
+          {{ 'add_erm_report' | translate }}
+        </h4>
+      </div>
+      <!-- Modal body -->
+      <form [formGroup]="ermDetailForm" id="ermDetail_form">
+        <div class="modal-body form-body">
+          <p class="head-details">
+            {{ 'erm_reports_description' | translate }}
+          </p>
+          <div class="row">
+            <div class="col-lg-6 col-sm-12">
+              <div class="form-group">
+                <label for="name"
+                  >{{ "start_date" | translate }}<sup>*</sup></label
+                >
+                <div class="input-group date-picker input-clear-btn-main">
+                  <input
+                    formControlName="start_date"
+                    class="form-control bg-white"
+                    placeholder="yyyy-mm-dd"
+                    id="start_date"
+                    [readonly]="true"
+                    ngbDatepicker
+                    #startInput="ngbDatepicker"
+                  /><span
+                    *ngIf="ermDetailForm.value.start_date"
+                    aria-hidden="true"
+                    (click)="clear('start_date')"
+                    style="border: none"
+                    class="input-clear-btn"
+                    >×</span
+                  >
+  
+                  <div class="input-group-append">
+                    <button
+                      class="btn btn-outline-secondary calendar"
+                      (click)="startInput.toggle()"
+                      type="button"
+                    >
+                      <i class="fas fa-calendar-alt"></i>
+                    </button>
+                  </div>
+                </div>
+                <p
+                  class="form-error pt-1"
+                  *ngIf="formErrors && formErrors.start_date"
+                >
+                  {{ formErrors.start_date[0] }}
+                </p>
+              </div>
+            </div>
+            <div class="col-lg-6 col-sm-12">
+              <div class="form-group">
+                <label for="name">{{ "end_date" | translate }}<sup>*</sup></label>
+                <div class="input-group date-picker input-clear-btn-main">
+                  <input
+                    formControlName="end_date"
+                    class="form-control bg-white"
+                    placeholder="yyyy-mm-dd"
+                    id="end_date"
+                    ngbDatepicker
+                    [readonly]="true"
+                    [minDate]="{
+                      year: this.ermDetailForm.value.start_date?.year,
+                      month: this.ermDetailForm.value.start_date?.month,
+                      day: this.ermDetailForm.value.start_date?.day
+                    }"
+                    #endInput="ngbDatepicker"
+                  /><span
+                    aria-hidden="true"
+                    *ngIf="ermDetailForm.value.end_date"
+                    (click)="clear('end_date')"
+                    style="border: none"
+                    class="input-clear-btn"
+                    >×</span
+                  >
+                  <div class="input-group-append">
+                    <button
+                      class="btn btn-outline-secondary calendar"
+                      (click)="endInput.toggle()"
+                      type="button"
+                    >
+                      <i class="fas fa-calendar-alt"></i>
+                    </button>
+                  </div>
+                </div>
+                <p
+                  class="form-error pt-1"
+                  *ngIf="formErrors && formErrors.end_date"
+                >
+                  {{ formErrors.end_date[0] }}
+                </p>
+              </div>
+            </div>
+            <div
+              class="col-sm-6"
+              [ngStyle]="{
+                display: !OrganizationLevelSettingsStore.organizationLevelSettings
+                  ?.is_division
+                  ? 'none'
+                  : 'block'
+              }"
+            >
+              <div class="form-group">
+                <label for="name"
+                  >{{ "division" | translate
+                  }}<span class="form-error">*</span></label
+                >
+                <div class="clearfix">
+                  <div
+                    class="multiple-plain-ngselect"
+                    *ngIf="
+                      OrganizationLevelSettingsStore.organizationLevelSettings
+                        ?.is_division
+                    "
+                  >
+                    <ng-select
+                      [placeholder]="'division' | translate"
+                      [multiple]="false"
+                      searchable="true"
+                      (search)="searchDivision($event)"
+                      formControlName="division_id"
+                      (change)="getDepartment()"
+                      (clear)="getDivision()"
+                      (open)="getDivision()"
+                      bindLabel="id"
+                    >
+                      <ng-option
+                        [value]="type.id"
+                        *ngFor="let type of DivisionStore.allItems"
+                      >
+                        {{ type.title }}
+                      </ng-option>
+                    </ng-select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label for="name"
+                  >{{ "department" | translate
+                  }}</label
+                >
+                <div class="clearfix">
+                  <div
+                    class="multiple-plain-ngselect"
+                    *ngIf="
+                      OrganizationLevelSettingsStore.organizationLevelSettings
+                        ?.is_department
+                    "
+                  >
+                    <ng-select
+                      [placeholder]="'department' | translate"
+                      [multiple]="false"
+                      searchable="true"
+                      (search)="searchDepartment($event)"
+                      formControlName="department_id"
+                      (clear)="getDepartment()"
+                      (open)="getDepartment()"
+                      bindLabel="id"
+                    >
+                      <ng-option
+                        [value]="type.id"
+                        *ngFor="let type of DepartmentStore.allItems"
+                      >
+                        {{ type.title }}
+                      </ng-option>
+                    </ng-select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+  
+          <div class="row">
+            <div class="col-sm-12">
+              <div class="d-block justify-content-left border-0 mt-3">
+                <button
+                  type="submit"
+                  class="btn btn-active"
+                  (click)="saveErm()"
+                  [disabled]="ermDetailForm.invalid || AppStore.loading"
+                >
+                  {{
+                    AppStore.loading
+                      ? getButtonText("loading")
+                      : getButtonText("save")
+                  }}
+                </button>
+                <button
+                  type="button"
+                  data-toggle="modal"
+                  data-target="#signal-lost"
+                  class="btn"
+                  (click)="saveErm(true)"
+                  [disabled]="ermDetailForm.invalid || AppStore.loading"
+                >
+                  {{
+                    AppStore.loading
+                      ? getButtonText("loading")
+                      : getButtonText("save_close")
+                  }}
+                </button>
+                <button
+                  type="button"
+                  data-toggle="modal"
+                  data-target="#error-message"
+                  class="btn"
+                  (click)="closeFormModal()"
+                >
+                  {{
+                    AppStore.loading
+                      ? getButtonText("loading")
+                      : getButtonText("cancel")
+                  }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+      <!-- Modal footer -->
+    </div>
+  </div>
+  

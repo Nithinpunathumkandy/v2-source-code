@@ -1,0 +1,445 @@
+
+
+<ng-container *ngIf="MeetingsStore.PlanInsideindividualLoaded" >
+    <div class="tab-pane active" id="assessment" *mobxAutorun>
+        <div class="row" *ngIf="MeetingsStore.individualMeetingsDetails && AuthStore.getActivityPermission(1600,'MEETING_PLAN_DETAILS')">
+            <div class="col-lg-8 col-sm-12 padding-right-none">
+                <div class="widg-padding-cmn bg-white">
+                    <div class="issue-top-sec">
+                        <div class="clearfix">
+                            <h5 class="d-inline-block cmn-head-style label-tag-style mr-2">
+                                <span class="issue-smoal-head-text">
+                                    # {{MeetingsStore.individualMeetingsDetails?.reference_code ? MeetingsStore.individualMeetingsDetails?.reference_code : AppStore.noContentText}}</span> 
+                                    {{MeetingsStore.individualMeetingsDetails?.title ? MeetingsStore.individualMeetingsDetails?.title : AppStore.noContentText}}
+                                    </h5><!-- <span class="draft-tag label-tag-style-tag label-left-arow-tag" style="float: left !important;"> Approval</span> -->
+                        </div>
+                        <div class="clearfix">
+                            <p class="label-tag-style" *ngIf="MeetingsStore.individualMeetingsDetails?.start"><i class="fas fa-calendar-alt date-pics-two"></i>
+                            {{getTimezoneFormatted(MeetingsStore.individualMeetingsDetails?.start) | date: OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format}} - 
+                            {{getTimezoneFormatted(MeetingsStore.individualMeetingsDetails?.end) | date: OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format}}
+                            <span class="blinking">(  {{MeetingsStore.individualMeetingsDetails?.duration}} )</span>
+                            </p>
+                            <p *ngIf="!MeetingsStore.individualMeetingsDetails?.start">{{AppStore.noContentText}}</p>
+                        </div>
+                        <p *ngIf="MeetingsStore.individualMeetingsDetails?.description" style="white-space: pre-line;"> {{MeetingsStore.individualMeetingsDetails?.description ? MeetingsStore.individualMeetingsDetails?.description: AppStore.noContentText}}</p>
+                        </div>
+    
+                        <h6 *ngIf="MeetingsStore.individualMeetingsDetails?.venue?.title">{{'venue' | translate}}</h6>
+                        <p *ngIf="MeetingsStore.individualMeetingsDetails?.venue?.title">{{MeetingsStore.individualMeetingsDetails?.venue?.title ?MeetingsStore.individualMeetingsDetails?.venue?.title : AppStore.noContentText}}</p>
+                        
+                        <h6 *ngIf="MeetingsStore.individualMeetingsDetails?.meeting_types?.length">{{'meeting_types' | translate}}</h6>
+                        <p *ngIf="MeetingsStore.individualMeetingsDetails?.meeting_types">
+                            <span *ngFor="let types of MeetingsStore.individualMeetingsDetails?.meeting_types; last as islast">
+                                {{types.type}}<span *ngIf="!islast">,</span>
+                            </span>
+                        </p>
+                        <h6 *ngIf="MeetingsStore.individualMeetingsDetails?.meeting_link">{{'meeting_link' | translate}}</h6>
+
+                        <a class="text-blue" style="text-decoration:underline" target="_blank" *ngIf="MeetingsStore.individualMeetingsDetails?.meeting_link" href="{{MeetingsStore.individualMeetingsDetails?.meeting_link}}">
+                        {{MeetingsStore.individualMeetingsDetails?.meeting_link}}
+                        </a>
+                        <!-- <p *ngIf="MeetingsStore.individualMeetingsDetails?.meeting_types?.length==0">{{AppStore.noContentText}}</p> -->
+                        <!-- <h6>Meeting Type</h6>
+                        <p>Online Zoom Link : <a href="#" class="text-light-blue ml-2">https://meet.google.com/woj-rxoh-ufd</a></p> -->
+
+                        <!-- <div class="no-fixed-table col-8 mb-4"
+                        *ngIf="MeetingsStore.individualMeetingsDetails?.meeting_minutes.length>0"> -->
+                        <h6>{{'minutes_of_the_meeting' | translate}}</h6> 
+                        <div class="audit-form-table w-100 not-fixed-table mb-3">
+                            <table  *ngIf="MeetingsStore.individualMeetingsDetails?.meeting_minutes.length>0" class="table table-bordered ordinary-table cmn-table-style mb-1 word-break">
+                                <tr>
+                                    <th class="border-top-0 text-center">{{'sl' | translate}}</th>
+                                    <th class="border-top-0">{{'agenda' | translate}}</th>
+                                    <th class="border-top-0">{{'mom' | translate}}</th>
+                                    <th class="border-top-0" width="20%">{{'target_date' | translate}}</th>
+                                    <th class="border-top-0" width="20%">{{'responsible_user' | translate}}</th>
+                                </tr>
+                                <tr class="edit-and-delete-main"
+                                    *ngFor="let row of MeetingsStore.individualMeetingsDetails.meeting_minutes; let MOMIndex=index">
+                                    <td class="text-center">{{MOMIndex+1}}</td>
+                                    <td>{{row?.agenda.title?row.agenda.title: AppStore.noContentText }}</td>
+                                    <td>{{row?.title?row.title: AppStore.noContentText }}</td>
+                                    <td *ngIf="row?.action_plan.length > 0">{{row.action_plan[0].target_date| date:OrganizationGeneralSettingsStore?.organizationSettings?.date_format}}</td>
+                                    <td *ngIf="row.action_plan.length==0">{{AppStore.noContentText}}</td>
+                                    <td *ngIf="row?.action_plan.length > 0">
+                                        <app-user-popup-box [source]="assignUserValues(row.action_plan[0].responsible_user)">
+                                        </app-user-popup-box>
+                                    </td> 
+                                    <td *ngIf="row.action_plan.length==0">
+                                        <div *ngIf="!row.responsible_user_id">
+                                            {{AppStore.noContentText}}</div>
+                                    </td>                               
+                                </tr>                 
+                            </table>                 
+                        </div>
+                    <!-- </div> -->
+                    <p *ngIf="!MeetingsStore.individualMeetingsDetails?.meeting_minutes || MeetingsStore.individualMeetingsDetails?.meeting_minutes?.length==0">{{AppStore.noContentText}}</p>
+
+                    <!-- <div class="no-fixed-table col-8 mb-4"  *ngIf="!MeetingsStore.individualMeetingsDetails?.is_unplanned && MeetingPlanStore.individualMeetingPlanDetails?.meeting_plan_meeting_agendas.length>0"> -->
+                        <h6>{{'agendas' | translate}}</h6>
+                        <table  *ngIf="!MeetingsStore.individualMeetingsDetails?.is_unplanned && MeetingPlanStore.individualMeetingPlanDetails?.meeting_plan_meeting_agendas.length>0" class="table table-bordered ordinary-table cmn-table-style mb-1 word-break"
+                           >
+                            <tr>
+                                <th class="border-top-0" width="5%">{{'sl' | translate}}</th>
+                                <th class="border-top-0" width="30%">{{'title' | translate}}</th>
+                                <th class="border-top-0" width="20%">{{'description' | translate}}</th>
+                                <th class="border-top-0" width="10%">{{'time' | translate}}</th>
+                                <th class="border-top-0" width="10%">{{'duration' | translate}}</th>
+                                <th class="border-top-0" width="10%">{{'agenda_type' | translate}}</th>
+                                <th class="border-top-0" width="15%">{{'owner' | translate}}</th>
+                            </tr>
+                            <tr class="edit-and-delete-main"
+                            *ngFor="let row of MeetingPlanStore.individualMeetingPlanDetails?.meeting_plan_meeting_agendas; let list=index">
+                            <td class="text-center">{{list+1}}</td>
+                            <td >{{row?.title?row.title: AppStore.noContentText }}</td>
+                            <td >{{row?.description?row.description:AppStore.noContentText}}</td>
+                            <td >
+                                {{row?.start_time?processTime(row.start_time):AppStore.noContentText}}
+                            </td>
+                            <td>
+                                {{row?.duration?row.duration:AppStore.noContentText}}
+                            </td>
+                            <td>
+                                {{row?.meeting_agenda_type?row.meeting_agenda_type.title:AppStore.noContentText}}
+          
+                            </td>
+                            <td>
+                                <div class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg p-0" *ngIf="row?.owner">
+                                    <img [attr.src]="row?.owner?.image_token?createUserImageUrl(row?.owner?.image_token):'/assets/images/user-demo.png'"
+                                
+                                    class="rounded-circle rounde-hov" width="35px" height="35px"> 
+                                    <div class="pointer new-size-text text-left">
+                                        <p class="mb-0">{{row?.owner?.first_name}} {{row?.owner?.last_name}}  </p>
+                                    </div>
+                                    
+                                </div>
+                                <div *ngIf="!row.owner">
+                                    {{AppStore.noContentText}}
+                                 </div>
+                            </td>
+                        </tr>
+          
+                        </table>
+          
+                    <!-- </div> -->
+                        <!-- <div class="drop-detail-sec">
+                        <h6>{{'minutes_of_the_meeting' | translate}}</h6>                     
+                        <ng-container
+                            *ngTemplateOutlet="replyThread; context: { $implicit: MeetingsStore.individualMeetingsDetails?.meeting_minutes }"
+                        ></ng-container>
+                        <ng-template #replyThread let-childReplies>
+                            <ul class="banking-issue">
+                            <li style="padding-left: 15px;" class="clearfix" *ngFor="let reply of childReplies">
+                                <a> {{ reply.title }}</a>
+                                <ng-container *ngIf="reply.children">
+                                <ng-container
+                                    *ngTemplateOutlet="
+                                    replyThread;
+                                    context: { $implicit: reply.children }
+                                    "
+                                ></ng-container>
+                                </ng-container>
+                            </li>
+                            </ul>
+                        </ng-template>
+                        <p *ngIf="!MeetingsStore.individualMeetingsDetails?.meeting_minutes || MeetingsStore.individualMeetingsDetails?.meeting_minutes?.length==0">{{AppStore.noContentText}}</p>
+                    </div> -->
+    
+                    <!-- <h6 class="mt-3 text-left">{{'attachments' | translate}}</h6>
+                    <p *ngIf="!MeetingsStore?.individualMeetingsDetails?.documents || MeetingsStore?.individualMeetingsDetails?.documents.length==0">{{AppStore.noContentText}}</p> -->
+                   
+                    <!-- <div class="thumb-pics-bg thumb-pics-col-4 clearfix edit-and-delete-main">
+                    <div class="edit-option-show" style="margin: -10px -25px 0 0;">
+                        <a ><i class="fas fa-download pointer" [attr.title]="'download_all' | translate" (click) = "downloadAllAttachments(MeetingsStore.individualMeetingsDetails.id)"></i></a>
+                    </div>
+                    <div class="thumb-pics" 
+                                    *ngFor="let doc of MeetingsStore?.individualMeetingsDetails?.documents">
+                                    <div class="upload-pics upload-pics-small edit-option"   (click)="viewMRMDocument('viewDocument',MeetingsStore?.individualMeetingsDetails,doc)">
+                                        
+                                        
+                                        <div class="browse-form-pic"
+                                            [ngStyle]="{'background': 'url(' + createPrevImageUrl('meetings-document',doc.token) + '), url(' + getDefaultImage('no-preview',doc.token) + ') no-repeat 0 0 / cover '}">
+                                        </div>
+                                        <div class="browse-form-name clearfix">
+                                            <div class="float-left">
+                                                <h6 [attr.title]="doc.title">
+                                                    {{doc.title.length > 25 ? doc.title.substring(0,25)+' ...': doc.title}}
+                                                </h6>
+                                                <span>{{doc.size/1048576 | number:'0.2-2'}}MB</span>
+                                            </div>
+                                            <div class="browse-logo">
+                                                <img *ngIf="checkExtension(doc.ext,'image') != -1"
+                                                    src="/assets/images/md-jpg.png">
+                                                <img *ngIf="checkExtension(doc.ext,'doc') != -1"
+                                                    src="/assets/images/word-icone.png">
+                                                <img *ngIf="checkExtension(doc.ext,'pdf') != -1"
+                                                    src="/assets/images/pdf-icone.png">
+                                                <img *ngIf="checkExtension(doc.ext,'excel') != -1"
+                                                    src="/assets/images/excel-icone.png">
+                                                <img *ngIf="checkExtension(doc.ext,'video') != -1"
+                                                    src="/assets/images/md-video.png">
+                                                <img *ngIf="checkExtension(doc.ext,'audio') != -1"
+                                                    src="/assets/images/md-audio.png">
+                                                <img *ngIf="checkExtension(doc.ext,'ppt') != -1"
+                                                    src="/assets/images/md-ppt.png">
+                                            </div>
+                                        </div>
+                                        <div class="edit-option-show-inner">
+                                            <a><i class="fas fa-download" title="Download Report"
+                                                    (click)="downloadMeetingPlanDocument('downloadMeetingsDocument',MeetingsStore?.individualMeetingsDetails,doc,$event)"></i></a>
+                                        </div>
+                                    </div>
+                                </div>
+                    </div> -->
+                    <!-- <div class="thumb-pics-bg thumb-pics-col-4 thumb-pics-fix-text clearfix" style="padding-top: 0">
+                        <div class="thumb-pics" *ngFor="let docs of MeetingsStore?.individualMeetingsDetails?.documents;let i = index">
+        
+                           
+                            <div class="upload-pics edit-option" *ngIf="!docs.document_id"  (click) =  "viewDocument('meetings-document',docs,docs)">
+                              <div class="browse-form-pic"  [ngStyle]="{'background': 'url('+createImageUrl('meetings-document',docs?.token)+') no-repeat'}">
+                              </div>
+                               <div class="browse-form-name clearfix">
+                                <div class="float-left">
+                                 <h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                 </h6>
+                                 <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span><span class="text-blue bold pl-2">System</span>
+                                </div>
+                                <div class="browse-logo">
+                                 <img *ngIf="checkExtension(docs.ext,'image') != -1"
+                                     class="folder-picher" src="/assets/images/jpg-icone.png">
+                                 <img *ngIf="checkExtension(docs.ext,'doc') != -1"
+                                     class="folder-picher" src="/assets/images/word-icone.png">
+                                 <img *ngIf="checkExtension(docs.ext,'pdf') != -1"
+                                     class="folder-picher" src="/assets/images/pdf-icone.png">
+                                 <img *ngIf="checkExtension(docs.ext,'excel') != -1"
+                                     class="folder-picher" src="/assets/images/excel-icone.png">
+                                 <img *ngIf="checkExtension(docs.ext,'video') != -1"
+                                     class="folder-picher" src="/assets/images/md-video.png">
+                                 <img *ngIf="checkExtension(docs.ext,'audio') != -1"
+                                     class="folder-picher" src="/assets/images/md-audio.png">
+                                 <img *ngIf="checkExtension(docs.ext,'ppt') != -1"
+                                     class="folder-picher" src="/assets/images/md-ppt.png">
+                             </div>
+                               </div>
+                               <div class="edit-option-show">
+                                 <a><i class="fas fa-download" (click) = "downloadDocumentFile('meetings-document',docs)"></i></a>
+                              </div>
+                            </div> 
+        
+        
+                            <div class="upload-pics edit-option" *ngIf="docs.document_id">
+        
+                              <div *ngFor="let mainDoc of docs.kh_document.versions" (click) =  "viewDocument('document-version',docs,mainDoc)">
+                                 <div *ngIf="mainDoc.is_latest">
+                                    <div  class="browse-form-pic"  [ngStyle]="{'background': 'url('+createImageUrl('document-version',mainDoc?.token)+') no-repeat'}">
+                                    </div>
+                                     <div class="browse-form-name clearfix">
+                                      <div class="float-left">
+                                       <h6>{{mainDoc.title}}.{{mainDoc.ext}}
+                                       </h6>
+                                       <span>{{mainDoc.size/1048576 | number:'0.2-2'}}MB</span><span class="text-blue bold pl-2">Knowledge Hub</span>
+                                      </div>
+                                      <div class="browse-logo">
+                                       <img *ngIf="checkExtension(mainDoc.ext,'image') != -1"
+                                           class="folder-picher" src="/assets/images/jpg-icone.png">
+                                       <img *ngIf="checkExtension(mainDoc.ext,'doc') != -1"
+                                           class="folder-picher" src="/assets/images/word-icone.png">
+                                       <img *ngIf="checkExtension(mainDoc.ext,'pdf') != -1"
+                                           class="folder-picher" src="/assets/images/pdf-icone.png">
+                                       <img *ngIf="checkExtension(mainDoc.ext,'excel') != -1"
+                                           class="folder-picher" src="/assets/images/excel-icone.png">
+                                       <img *ngIf="checkExtension(mainDoc.ext,'video') != -1"
+                                           class="folder-picher" src="/assets/images/md-video.png">
+                                       <img *ngIf="checkExtension(mainDoc.ext,'audio') != -1"
+                                           class="folder-picher" src="/assets/images/md-audio.png">
+                                       <img *ngIf="checkExtension(mainDoc.ext,'ppt') != -1"
+                                           class="folder-picher" src="/assets/images/md-ppt.png">
+                                   </div>
+                                     </div>
+                                     <div class="edit-option-show">
+                                       <a><i class="fas fa-download" (click) = "downloadDocumentFile('document-version',docs,mainDoc)"></i></a>
+                                    </div>
+                                 </div>
+                              </div>
+        
+                            
+                            </div>
+        
+        
+                         </div>
+                     </div> -->
+                    <div class="row sm-row">
+                        <div class="col-sm-12 col-lg-6 sm-col">
+                            <div class="bg-white widg-padding-cmn-small mb-3">
+                            <h5 class="cmn-head-style">{{'action_plans_status' | translate}}</h5>
+                            <hr class="mt-0 mb-3">
+                                        <div class="dpt-pic-ceo w-100" *ngIf="actionChartEnable">
+                                            <div id="actionPlanDiv" style="width: 100%; height: 350px">
+                                                {{chart1?createPieChartForActionPlan(true):''}}
+                                            </div>
+                                        </div>
+                                        <div class="dpt-pic-ceo w-100" *ngIf="!actionChartEnable">
+                                            <app-no-chart-data [source]="'pie'" style="width: 100%; height: 200px" ></app-no-chart-data>
+                                        </div>
+            
+                            </div>
+                        </div>
+                        <div class="col-sm-12 col-lg-6 sm-col">
+                            <div class="bg-white widg-padding-cmn-small mb-3">
+                                <h5 class="cmn-head-style">{{'meeting_mapped_data' | translate}}</h5>
+                                <hr class="mt-0 mb-3">
+                            
+                                <div class="col-sm-12">
+                                    <div class="full-width-table mb-3">
+                                    <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                                        <thead>
+                                            <th class="border-top-0 ">{{'item' | translate}}</th>
+                                            <th class="border-top-0 ">{{'count' | translate}}</th>                         
+                                        </thead>
+                                        <tbody>
+                                        <ng-container>
+                                            <tr *ngIf="AuthStore.getActivityPermission(100,'RISK_LIST')">
+                                                <td> {{'risks' | translate}}</td>
+                                                <td>{{MeetingPlanStore.individualMeetingPlanDetails?.risks_count}}</td>                              
+                                            </tr>
+                                            <tr *ngIf="AuthStore.getActivityPermission(100,'PROCESS_LIST')">
+                                                <td> {{'processes' | translate}}</td>
+                                                <td>{{MeetingPlanStore.individualMeetingPlanDetails?.process_count? MeetingPlanStore.individualMeetingPlanDetails?.process_count:0}}</td>                              
+                                            </tr>
+                                            <tr *ngIf="AuthStore.getActivityPermission(100,'PROJECT_LIST')">
+                                                <td> {{'projects' | translate}}</td>
+                                                <td>{{MeetingPlanStore.individualMeetingPlanDetails?.projects_count? MeetingPlanStore.individualMeetingPlanDetails?.projects_count:0}}</td>                              
+                                            </tr>
+                                            <tr *ngIf="AuthStore.getActivityPermission(100,'PRODUCT_LIST')">
+                                                <td> {{'products' | translate}}</td>
+                                                <td>{{MeetingPlanStore.individualMeetingPlanDetails?.products_count? MeetingPlanStore.individualMeetingPlanDetails?.products_count:0}}</td>                              
+                                            </tr>
+                                            <tr *ngIf="AuthStore.getActivityPermission(100,'CUSTOMER_LIST')">
+                                                <td> {{'customers' | translate}}</td>
+                                                <td>{{MeetingPlanStore.individualMeetingPlanDetails?.customers_count? MeetingPlanStore.individualMeetingPlanDetails?.customers_count:0}}</td>                              
+                                            </tr>
+                                            <tr *ngIf="AuthStore.getActivityPermission(100,'CONTROL_LIST')">
+                                                <td> {{'controls' | translate}}</td>
+                                                <td>{{MeetingPlanStore.individualMeetingPlanDetails?.controls_count? MeetingPlanStore.individualMeetingPlanDetails?.controls_count:0}}</td>                              
+                                            </tr>
+                                            <tr *ngIf="AuthStore.getActivityPermission(100,'STRATEGIC_OBJECTIVE_LIST')">
+                                                <td> {{'strategic_objectives' | translate}}</td>
+                                                <td>{{MeetingPlanStore.individualMeetingPlanDetails?.strategic_objectives_count?MeetingPlanStore.individualMeetingPlanDetails?.strategic_objectives_count:0}}</td>                              
+                                            </tr>
+                                            <tr *ngIf="AuthStore.getActivityPermission(100,'FINDING_LIST')" >
+                                                <td>{{'audit_findings' | translate}}</td>
+                                                <td>{{MeetingPlanStore.individualMeetingPlanDetails?.findings_count? MeetingPlanStore.individualMeetingPlanDetails?.findings_count:0}}</td>
+                                            </tr>
+                                            <tr *ngIf="AuthStore.getActivityPermission(100,'ORGANIZATION_ISSUE_LIST')" >                      
+                                                <td>{{'issues' | translate}} </td>
+                                                <td> {{MeetingPlanStore.individualMeetingPlanDetails?.organization_issues_count?MeetingPlanStore.individualMeetingPlanDetails?.organization_issues_count:0}}</td>
+                                            </tr>
+                                            <tr *ngIf="AuthStore.getActivityPermission(100,'FINDINGS_LIST')">
+                                                <td> {{'non-conformity' | translate}}</td>
+                                                <td> {{MeetingPlanStore.individualMeetingPlanDetails?.nocFindings_count? MeetingPlanStore.individualMeetingPlanDetails?.nocFindings_count:0}}</td>
+                                            </tr>
+                                        </ng-container>
+                                        </tbody>
+                                    </table>       
+                                </div>    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                    <div class="col-xl-12">
+                        <hr class="mb-2">
+                        <div *ngIf="MeetingsStore.individualMeetingsDetails?.created_by?.first_name" class="d-flex flex-row user-list-sm">
+                            <app-user-popup-box [source]=" getEmployeePopupDetails( MeetingsStore.individualMeetingsDetails?.created_by, MeetingsStore.individualMeetingsDetails?.created_at)"></app-user-popup-box>
+                        </div>
+                        </div>
+                    </div>
+    
+                </div>
+            </div>
+            <div class="col-lg-4 col-sm-12">
+    
+            <div class="bg-white widg-padding-cmn-small mb-3">
+                <h6 class="text-left">{{'meeting_hours' | translate}}</h6>
+                <hr class="mt-0 mb-3">
+                    <h3 class="text-light-blue bold mb-0" *ngIf="MeetingsStore.individualMeetingsDetails?.duration==1 ">{{MeetingsStore.individualMeetingsDetails?.duration}} Hour </h3>
+                    <h3 class="text-light-blue bold mb-0" *ngIf="MeetingsStore.individualMeetingsDetails?.duration > 1 ">{{MeetingsStore.individualMeetingsDetails?.duration}} Hours </h3>
+                    
+    
+                </div>
+    
+                <div class="bg-white widg-padding-cmn-small text-left mb-3">
+                    <h6 class="text-left">{{'attendance' | translate}}</h6>
+                    <hr class="mt-0 mb-3">
+                    <div class="mb-3">
+                    <div class="attendance-chart-pic text-center" 
+                    *ngIf="MeetingsStore.individualMeetingsDetails?.meeting_participants.length>0">
+                        <div id="piechartdiv" style="width: 100%; height: 300px">{{pieChart?getPieChartAttendance(true):''}}</div>
+                    </div>
+                    <div class="attendance-chart-pic text-center" 
+                    *ngIf="!MeetingsStore.individualMeetingsDetails?.meeting_participants||MeetingsStore.individualMeetingsDetails?.meeting_participants.length==0">
+                        <app-no-chart-data [source]="'pie'"></app-no-chart-data>
+                    </div>
+    
+                    <!-- <div class="d-flex "> -->
+                        <!-- <div style="width: 100px;">
+                        <div class="dot-div green-dot">Present</div>
+                        <div class="dot-div red-dot">Absent</div>
+                    </div> -->
+                    <!-- <h3 class="text-light-blue pt-1">85%</h3> -->
+                    <!-- </div> -->
+                </div>
+                <h5><span class="mr-2 text-light-blue"><i class="far fa-check-circle"></i></span>{{'present' | translate}}</h5>
+                    <ul class="arci-user-tab-dtl workflow-lst-pics-loop clearfix">
+                        <ng-container *ngFor="let users of MeetingsStore.individualMeetingsDetails?.meeting_participants;let i=index">
+                        <div *ngIf="users.is_present">
+                        <li class="rounde-hov-bg" >
+                            <app-user-popup-box [source]="getEmployeePopupDetails(users.user)" [showName]="false"></app-user-popup-box>
+                            </li>
+                        </div>
+                        </ng-container>
+                    </ul>
+                <h5 class="mt-3"><span class="mr-2 text-red"><i class="far fa-times-circle"></i></span>{{'absent' | translate}}</h5>
+                    <ul class="arci-user-tab-dtl workflow-lst-pics-loop clearfix">
+                        <ng-container *ngFor="let users of MeetingsStore.individualMeetingsDetails?.meeting_participants;let i=index">
+                        <div *ngIf="!users.is_present">
+                        <li class="rounde-hov-bg" >
+                            <app-user-popup-box [source]="getEmployeePopupDetails(users.user)" [showName]="false"></app-user-popup-box>
+                            </li>
+                        </div>
+                        </ng-container>
+                    </ul>
+    
+                    
+                </div>
+                
+    
+    
+            </div>
+        </div>
+        <div class="widget" *ngIf="!MeetingsStore.individualMeetingsDetails">
+            <div>
+                <ng-container *mobxAutorun>
+                    <app-no-data [border]='false'></app-no-data>
+                </ng-container>
+            </div>
+        </div>
+    </div>
+    
+</ng-container>
+
+<ng-container *ngIf="!MeetingsStore.PlanInsideindividualLoaded">
+    <app-plan-detail-info-loader></app-plan-detail-info-loader>
+</ng-container>
+<!-- ---------File Preview-------------- -->
+<div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup" data-keyboard="false"
+    data-backdrop="static" #filePreviewModal *mobxAutorun>
+    <button type="button" class="close" data-dismiss="modal" (click)="closePreviewModal($event)"><i
+        class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+            <app-preview *ngIf="previewObject" [source]="previewObject" (close)="closePreviewModal($event)"></app-preview>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+<div class="modal modal-style-1 fade" id="delete-popup" data-backdrop="static" data-keyboard="false" #deletePopup>
+    <app-delete-popup [source] = "deleteObject"></app-delete-popup>
+</div>

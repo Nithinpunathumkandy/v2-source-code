@@ -1,0 +1,192 @@
+<button type="button" class="close" (click)="closemsFormModal('close')"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered" #formModal>
+   <div class="modal-content" *mobxAutorun>
+    
+      <div class="modal-header">
+         <h4 class="modal-title" *ngIf = "!ControlCategoryMasterStore.addOrEditFlag">{{'add_control' | translate}}</h4>
+         <h4 class="modal-title" *ngIf = "ControlCategoryMasterStore.addOrEditFlag">{{'edit_control' | translate}}</h4>    
+      </div>
+   
+      <div class="modal-body form-body">       
+        <form [formGroup]="controlForm">  
+          <div class="row">
+            <div class="col-sm-3">
+              <div class="form-group">
+                <label for="title">{{'reference_code' | translate}}<span class="form-error">*</span></label>
+                <input type="text" formControlName="reference_code" class="form-control" [attr.placeholder]="'reference_code' | translate">
+                <p class="form-error pt-1" *ngIf="controlFormErrors"> {{controlFormErrors.reference_code}}</p>
+              </div>
+            </div>
+          <!-- </div> -->
+            <!-- <div class="row"> -->
+              <div class="col-sm-9">
+                <div class="form-group">
+                  <label for="title">{{'title' | translate}}<span class="form-error">*</span></label>
+                  <input type="text" formControlName="title" class="form-control"  [attr.placeholder]="'title' | translate"
+                    id="cctitle">
+                  <!-- <p class="form-error pt-1" *ngIf="controlFormErrors"> {{controlFormErrors.title}}</p> -->
+                  <p class="form-error pt-1" *ngIf="controlForm.value.title && controlForm.value.title.length>500 && !controlFormErrors">
+                    {{'maximum_500_characters' | translate}}</p>
+                  <p class="form-error pt-1" *ngIf="controlFormErrors&&controlFormErrors.title">
+                    {{controlFormErrors.title}}</p>
+                </div>
+              </div>
+            </div>
+   
+            <div class="row">
+              <div class="col-sm-12">
+  
+                <div class="form-group add-kpi-textarea">
+                  <span class="text-grey"
+                    style="float: right;">{{controlForm?.value.description != null ? controlForm?.value.description?.length : 0}}
+                    {{'characters' | translate}}</span>
+                  <label>{{'description' | translate}}</label>
+                  <textarea class="form-control" rows="11" id="ccdescription" [attr.placeholder]="'description' | translate"
+                    formControlName="description"></textarea>
+                    <p class="form-error pt-1" *ngIf="controlFormErrors"> {{controlFormErrors.description}}</p>
+                </div>
+    
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-sm-6">
+                <div class="form-group">
+                    <label for="cntrl_type_id">{{'control_category' | translate}}</label>
+                    <div class="clearfix d-flex">
+                      <div class="multiple-plain-ngselect select-new-width">
+                        <ng-select [placeholder]="'control_category' | translate"  [multiple]="false" formControlName="control_category_id"                      
+                           (change)="eventChange($event)"
+                          (open)="getControlCategories()">
+                          <ng-option [value]="controlCategory.id" *ngFor="let controlCategory of ControlCategoryMasterStore.controlCategories">
+                              {{controlCategory.title.length > 80 ? controlCategory.title.substring(0,80)+' ...' : controlCategory.title }}
+                           </ng-option>
+      
+                        </ng-select>
+                      </div>
+                      <button class="btn multi-add-user ml-2" style="width: 38px;" (click) = "addControlCategory()"><i class="fas fa-plus"></i></button>
+                    </div>
+                  </div>
+              </div>
+            <!-- </div> -->
+
+            <!-- <div class="row"> -->
+              <div class="col-sm-6">
+                <div class="form-group">
+                    <label for="cntrl_type_id">{{'control_sub_category' | translate}}</label>
+                    <div class="clearfix d-flex">
+                      <div class="multiple-plain-ngselect select-new-width">
+                        <ng-select [placeholder]="'control_sub_category' | translate" [multiple]="false" formControlName="control_sub_category_id"
+                        (open)="getControlSubCategories()"
+                      >         
+                          <ng-option [value]="controlSubCategory.id" *ngFor="let controlSubCategory of ControlSubcategoryMasterStore.controlSubCategories">
+                              {{controlSubCategory.title.length > 80 ? controlSubCategory.title.substring(0,80)+' ...' : controlSubCategory.title }}
+                           </ng-option>
+      
+                        </ng-select>
+                      </div>
+                      <button class="btn multi-add-user ml-2" style="width: 38px;" (click) = "addControlSubCategory()"><i class="fas fa-plus"></i></button>
+                    </div>
+                  </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-sm-12">
+                <div class="form-group">
+                  <label for="cntrl_type_id">{{'control_type' | translate}}<span class="form-error">*</span></label>
+                  <div class="clearfix">
+                    <div class="multiple-plain-ngselect select-new-width">
+                      <ng-select [placeholder]="'control_type' | translate" [multiple]="false" formControlName="control_type_id"
+                         (clear)="getControlTypes()"
+                        (open)="getControlTypes()">
+                        <ng-option [value]="controlType.id" *ngFor="let controlType of ControlTypesMasterStore.controlTypes">
+                            {{controlType.title.length > 80 ? controlType.title.substring(0,80)+' ...' : controlType.title }}
+                         </ng-option>
+    
+                      </ng-select>
+                    </div>
+                    <button class="btn multi-add-user" (click) = "addControlTypes()"><i class="fas fa-plus"></i></button>
+                  </div>
+                  <p class="form-error pt-1" *ngIf="controlFormErrors && controlFormErrors.control_type_id">{{'select_any_type' | translate}}</p>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+            <div class="col-sm-12">
+              <div class="form-group">
+                <label for="name">{{'control_objectives' | translate}}</label>
+                <div class="clearfix">
+                  <div class="select-new-width">
+                  <input type="text" formControlName="control_objectives" class="form-control" [attr.placeholder]="'control_objectives' | translate">
+                <p class="form-error pt-1" *ngIf="controlFormErrors"> {{controlFormErrors.control_objectives}}</p>
+              </div>
+                  <button  [disabled]='!controlForm.value.control_objectives' class="btn multi-add-user" (click)=addObjectives()><i class="fas fa-plus"></i></button>
+                </div>
+     
+              <div *ngIf = "sortedObjectivesData.length > 0 "  #objectiveItemsDiv style="max-height: 100px;" class="delete-bullet-point mt-2">
+                <ul class="arrowlist ml-0 pl-0">
+                  <li *ngFor = "let objectives of sortedObjectivesData; let it = index">{{objectives}} 
+                     <Button type="button" (click) = "removeObjectives(it)" class="btn btn-small float-right btn-small-delete" style="border: none;"><i class="fas fa-trash"></i></Button>
+                  </li>
+               </ul>
+              </div>
+              <p class="form-error pt-1" *ngIf="objectiveError"> {{objectiveError}}</p>
+            </div>
+            </div>
+          </div>
+          
+  
+  
+          <div class="clearfix"></div>
+  
+          <div class="row">
+            <div class="col-sm-12">
+              <div class="d-block justify-content-left border-0 mt-3">
+                <button type="submit" class="btn btn-active" (click)="saveControl()"
+                  [disabled]="controlForm.invalid || AppStore.loading">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save') }}</button>
+                <button type="button" data-toggle="modal" data-target="#signal-lost" class="btn"
+                  (click)="saveControl(true)"
+                  [disabled]="controlForm.invalid || AppStore.loading">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save_close') }}</button>
+                <button type="button" data-toggle="modal" data-target="#error-message" class="btn"
+                  (click)="closemsFormModal('close')">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('cancel') }}</button>
+  
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+   
+   </div>
+</div>
+
+
+
+<!-- Control Category Modal -->
+<div class="modal modal-style-1 popup-full-width fade"  data-keyboard="false"
+data-backdrop="static" #controlCategoryFormModal *mobxAutorun>
+<button type="button" class="close" data-dismiss="modal" (click) ="closeCategoryModal()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+<app-control-category-modal *ngIf = "ControlCategoryMasterStore.add_conrol_category_modal"></app-control-category-modal>
+</div>
+
+<!-- Control Category Modal  Ends Here -->
+
+<!-- Control Sub-Category Modal -->
+<div class="modal modal-style-1 popup-full-width fade"  data-keyboard="false"
+data-backdrop="static" #controlSubCategoryFormModal *mobxAutorun>
+<button type="button" class="close" data-dismiss="modal" (click) ="closeSubCategoryModal()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+<app-control-subcategory-modal *ngIf = "ControlSubcategoryMasterStore.add_conrol_sub_category_modal" ></app-control-subcategory-modal>
+</div>
+
+<!-- Control Sub-Category Modal  Ends Here -->
+
+<!-- Control Category Modal  Ends Here -->
+
+<!-- Control Types Modal -->
+<div class="modal modal-style-1 popup-full-width fade"  data-keyboard="false"
+data-backdrop="static" #controlTypesFormModal *mobxAutorun>
+<button type="button" class="close" data-dismiss="modal" objectiveItemsDiv><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+<app-control-types-modal *ngIf = "ControlTypesMasterStore.add_conrol_type_modal" ></app-control-types-modal>
+</div>
+
+<!-- Control Types Modal  Ends Here -->

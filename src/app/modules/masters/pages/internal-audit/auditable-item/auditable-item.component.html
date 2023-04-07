@@ -1,0 +1,94 @@
+<div class="widget bg-white">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item pointer" [routerLink]="['/masters/internal-audit']"><a>{{'internal_audit' | translate}}</a></li>
+            <li class="breadcrumb-item active">{{'auditable_items' | translate}}</li>
+        </ol>
+    </nav>
+
+    <table class="table-master table" *ngIf="AuditableItemMasterStore?.loaded && AuditableItemMasterStore.allItems.length > 0">
+
+
+        <tr>
+            <th style="width: 10%; text-align: center;" >{{'sl' | translate}}</th>
+            <th (click)="sortTitle('auditable_items.title')" class="border-top-0 issue-list-org-tab-three pointer" style="width: 50%;"><span>{{'title' | translate}}</span>
+                <img _ngcontent-twv-c17="" *ngIf="AuditableItemMasterStore.orderItem=='auditable_items.title'" class="sort-down-pics pl-2" 
+                [attr.src]="AuditableItemMasterStore.orderBy=='desc' ? 
+                'assets/images/sort-up.png' : AuditableItemMasterStore.orderBy=='asc' ? 
+                'assets/images/sort-down.png' : 'assets/images/sort-empty.png'">
+            </th>
+
+            <th>{{'audit_item_category' | translate}}</th>
+
+
+            <th style="width: 16%;" >{{'status' | translate}}</th>
+
+        </tr>
+        <ng-container *mobxAutorun>
+
+
+
+            <tr class="edit-and-delete-main"
+                *ngFor="let row of AuditableItemMasterStore.allItems| paginate: {currentPage:AuditableItemMasterStore.currentPage, itemsPerPage:AuditableItemMasterStore.itemsPerPage,totalItems:AuditableItemMasterStore.totalItems};let num=index ">
+                <td style="text-align: center;">{{(AuditableItemMasterStore.currentPage - 1) * AuditableItemMasterStore.itemsPerPage + (num + 1)}}</td>
+                <td><a (click)=" getAuditableItem(row.id)" [ngStyle] = "{ 'pointer-events' : AuthStore.getActivityPermission(1100,'UPDATE_AUDITABLE_ITEM') ? '' : 'none'}">{{row.title}}</a></td>
+                <td>{{row.auditable_item_category}}</td>
+                <td style="padding:0.75rem;" >{{row.status}}
+                    <div class="edit-option-show">
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'UPDATE_AUDITABLE_ITEM')" (click)=" getAuditableItem(row.id)" [attr.title]="'edit' | translate"><i class="fas fa-pen pointer"></i></a>
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'DELETE_AUDITABLE_ITEM')" (click)="delete(row.id)" [attr.title]="'delete' | translate"><i class="fas fa-trash pointer"></i></a>
+                        <a *ngIf="row.status=='Inactive' && AuthStore.getActivityPermission(1100,'ACTIVATE_AUDITABLE_ITEM')" (click)="activate(row.id)" [attr.title]="'activate' | translate"><i
+                                class="fas fa-check pointer"></i></a>
+                        <a *ngIf="row.status=='Active' && AuthStore.getActivityPermission(1100,'DEACTIVATE_AUDITABLE_ITEM')" (click)="deactivate(row.id)" [attr.title]="'deactivate' | translate"><i
+                                class="fas fa-ban pointer"></i></a>
+                    </div>
+                </td>
+
+
+            </tr>
+        </ng-container>
+    </table>
+    <ng-container *mobxAutorun>
+        <div *ngIf="!AuditableItemMasterStore.loaded">
+            <app-table-loader></app-table-loader>
+        </div>
+        <app-no-data *ngIf = "AuditableItemMasterStore.allItems.length == 0 && AuditableItemMasterStore.loaded == true"></app-no-data>
+   
+    </ng-container>
+
+    <!-- <div *ngIf = "AuditableItemMasterStore.totalItems == 0 && AuditableItemMasterStore.loaded == true" class="no-policy-demo-text bg-white d-flex align-items-center w-100 mt-2" style="height: 200px">
+        <div class="no-policy-demo">
+           <div class="no-file-icon">
+             <i class="far fa-file"></i>
+           </div>
+           <h6 class="bold mb-0">Nothing To Show</h6>
+        </div>
+     </div> -->
+
+    <div *ngIf="AuditableItemMasterStore.totalItems>AuditableItemMasterStore.itemsPerPage" class="col-sm-12">
+        <ul class="pagination justify-content-center mt-3">
+            <div class="list">
+                <pagination-controls [previousLabel]="'previous' | translate"  [nextLabel]="'next' | translate" (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls> 
+            </div>
+        </ul>
+    </div>
+</div>
+
+
+<!-- Modal part -->
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+    <app-auditable-item-modal *ngIf="auditableItemObject.type" [source]="auditableItemObject">
+    </app-auditable-item-modal>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+
+<div class="modal modal-style-1 email-popup-new fade" data-backdrop="static" data-keyboard="false"
+  id="email-notification-popup" #mailConfirmationPopup>
+  <app-mail-send-popup [source] = "mailConfirmationData"></app-mail-send-popup>
+</div>

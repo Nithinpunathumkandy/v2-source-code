@@ -1,0 +1,277 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navBar>
+    <div class="module-name-block module-name-block-space float-left">
+        <a class="dropdown module-title">{{'event_report_details'|translate}}</a>
+      </div>
+    <app-sub-menu></app-sub-menu>
+</nav>
+<main class="audit-program-details-page mt-3">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="tab-content">
+                    <div class="tab-pane active" id="info">
+
+
+                        <div class="widget bg-white widg-padding-cmn min-height-83">
+
+                            <div class="row"
+                                *ngIf="EventReportStore?.listloaded && EventReportStore.EventItemsDetails.length > 0">
+
+
+                                <div class="col-md-12 text-center">
+
+                                    <h5>{{AuthStore.user.organization?.title}}</h5>
+                                    <h4 class="bold">
+                                        {{EventReportStore.geteventReportDetailsListingTableTitle |
+                                        translate}}
+                                    </h4>
+                                    <div *ngIf="filterDateObject.startDate != null">
+                                        <p class="mb-0"><i class="fas fa-calendar-alt date-pics-two"></i>{{'from' |
+                                            translate}} <i class="bold">{{filterDateObject.startDate | date:
+                                                OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</i>
+                                            {{'to' | translate}} <i class="bold">{{filterDateObject.endDate | date:
+                                                OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</i>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="col-md-12 mt-4"
+                                    *ngIf="EventReportStore.selectedReportObject.reportType == 'eventRegister'">
+
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                        <div class="full-width-table">
+                                               
+                                            <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll" >
+                                                <thead>
+                                                    <tr>
+                                                      <th class="border-top-0" width="5%">#</th>
+                                                      <th style="width: 8%;" class="border-top-0">
+                                                        {{'ref_id' | translate}}
+                                                      </th>
+                                                      <th style="width: 20%;" class="border-top-0">
+                                                        {{'title' | translate}}</th>
+                                                      <th class="border-top-0 " style="width: 20%;">{{'department' | translate}}</th>
+                                                      <th class="border-top-0 " style="width: 20%;">{{'event_owner' | translate}}</th>
+                                                      <th class="border-top-0 " style="width: 20%;">{{'duration' | translate}}</th>
+                                                      <th class="border-top-0 "width="7%" >{{'status' | translate}}</th>
+                      
+                                                     </tr>
+                                                </thead>
+                                                <ng-container *mobxAutorun>
+                                                    <tr class="pointer edit-and-delete-main"
+                                                        *ngFor="let row of EventReportStore.EventItemsDetails| paginate: {currentPage:EventReportStore.currentPage, itemsPerPage:EventReportStore.itemsPerPage,totalItems:EventReportStore.totalItems};let num=index "
+                                                        (click)="getRisk(row.id)">
+
+                                                        <td class="text-center">{{(EventReportStore.currentPage - 1) * EventReportStore.itemsPerPage + (num + 1)}}</td>
+                                                        <td >{{row?.reference_code}}
+                                                            <p *ngIf="!row.reference_code">{{AppStore.noContentText}}</p>
+                                                        </td>
+                                                        <td >{{row?.title}}
+                                                            <p *ngIf="!row.title">{{AppStore.noContentText}}</p>
+                                                        </td>
+                                                        <td>{{row?.event_deparment}}
+                                                            <p *ngIf="!row.event_deparment">{{AppStore.noContentText}}</p>
+                                                        </td>
+                                                        <td>
+                                                            <div *ngIf="row?.owner_firstname" class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                                                                <img *ngIf="row.owner_image_token" data-toggle="modal" data-target="#user02" data-ui-class="a-zoom"
+                                                                [attr.src]="createImagePreview('user-profile-picture',row.owner_image_token)"
+                                                                width="30px" height="30px" class="rounded-circle rounde-hov details-show-popup"
+                                                                onerror="this.src='/assets/images/user-demo2.png'">
+                                                             <img *ngIf="!row.owner_image_token" [attr.src]="getDefaultImage('user-logo')" width="30px" height="30px" class="rounded-circle" onerror="this.src='/assets/images/user-demo2.png'">    
+                                                                <div class="pointer" >
+                                                                    <h6 class="elips-1">{{row?.owner_firstname}} {{row?.owner_lastname}}</h6>
+                                                                    <span>{{row.event_owner_designation ? row.event_owner_designation : AppStore.noContentText}}</span>
+                                                                </div>
+            
+                                                            </div>
+                                                            
+                                                                <p *ngIf="!row.owner_firstname">{{AppStore.noContentText}}</p>
+                                                            
+                                                        </td>
+                                                        <td >{{row?.start_date | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}} - {{row?.end_date | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                        </td>
+                                                        <td>
+                                                                <div *ngIf="row.event_status_title" [attr.class]="'dot-div '+row?.event_status_label+'-dot'" [ngClass]="row.event_status_label ? 'dot-div '+row.event_status_label : ''"> {{row?.event_status_title}}</div>
+                                                                <p *ngIf="!row.event_status_title">{{AppStore.noContentText}}</p>
+                                                        </td>
+                                                    </tr>
+                                                </ng-container>
+                                            </table>
+                                        </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-12 mt-4"
+                                    *ngIf="EventReportStore.selectedReportObject.reportType == 'eventTreatment'">
+
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <div class="full-width-table">
+                                            <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll" >
+                                                <thead>
+                                                    <tr>
+                                                        <th class="border-top-0" width="5%">#</th>
+                                                        <th class="border-top-0 pointer" width="8%">{{'ref_id' | translate}}
+                                                        </th>
+                                                        <th class="border-top-0 pointer" width="20%">{{'event_title' | translate}}
+                                                        </th>
+                                                        <th class="border-top-0 pointer" width="20%">{{'requested_by' | translate}}
+                                                        </th>
+                                                        <th class="border-top-" width="20%">{{'department' | translate}}</th>
+                                                        <th class="border-top-0 pointer" width="20%">{{'version' | translate}}
+                                                        </th> 
+                                                        <th class="border-top-0" width="7%" >{{'status' | translate}}
+                                                        </th>
+                                                    </tr>
+                                                  
+                                                </thead>
+                                                <ng-container *mobxAutorun>
+                                                    <tr class="pointer edit-and-delete-main"
+                                                        *ngFor="let row of EventReportStore.EventItemsDetails| paginate: {currentPage:EventReportStore.currentPage, itemsPerPage:EventReportStore.itemsPerPage,totalItems:EventReportStore.totalItems};let num=index "
+                                                        (click)="getRisk(row.id)">
+
+                                                        <td style="text-align: center;" class="cursor-pointer">
+                                                            {{(EventReportStore.currentPage - 1) *
+                                                            EventReportStore.itemsPerPage +
+                                                            (num + 1)}}
+                                                        </td>
+                                                        <td>#{{row?.event_change_request_reference_code}}
+                                                            <p *ngIf="!row.event_change_request_reference_code">{{AppStore.noContentText}}</p>
+                                                        </td>
+                                                        <td>{{row?.event_title}}
+                                                            <p *ngIf="!row.event_title">{{AppStore.noContentText}}</p>
+                                                        </td>
+                                                        <td>
+                                                            <div *ngIf="row?.created_by_first_name" class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                                                                <img *ngIf="row.created_by_image_token" data-toggle="modal" data-target="#user02" data-ui-class="a-zoom"
+                                                                [attr.src]="createImagePreview('user-profile-picture',row.created_by_image_token)"
+                                                                width="30px" height="30px" class="rounded-circle rounde-hov details-show-popup"
+                                                                onerror="this.src='/assets/images/user-demo2.png'">
+                                                             <img *ngIf="!row.created_by_image_token" [attr.src]="getDefaultImage('user-logo')" width="30px" height="30px" class="rounded-circle" onerror="this.src='/assets/images/user-demo2.png'">                                   
+                                                                <div class="pointer" >
+                                                                    <h6>{{row?.created_by_first_name}} {{row?.created_by_last_name}}</h6>
+                                                                    <span>{{row.created_by_designation ? row.created_by_designation : AppStore.noContentText}}</span>
+                                                                </div>
+                                
+                                                            </div>
+                                                            <p *ngIf="!row.created_by_first_name">{{AppStore.noContentText}}</p>
+                                                         </td>
+                                                        <td>{{row?.created_by_department}}
+                                                            <p *ngIf="!row.created_by_department">{{AppStore.noContentText}}</p>
+                                                        </td>
+                                                        <td>V{{row?.version_no}}
+                                                            <p *ngIf="!row.version_no">{{AppStore.noContentText}}</p>
+                                                        </td>
+                                                        <td >
+                                                            <div *ngIf="row.event_monitor_change_request_status_language_title" [attr.class]="'dot-div '+row.label"> {{row?.event_monitor_change_request_status_language_title}}</div>
+                                                            <p *ngIf="!row.event_monitor_change_request_status_language_title">{{AppStore.noContentText}}</p>
+                                                        </td>
+                                                    </tr>
+                                                </ng-container>
+                                            </table>
+                                        </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-12 mt-4"
+                                    *ngIf="EventReportStore.selectedReportObject.reportType == 'eventClosure'">
+
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <div class="full-width-table">
+                                            <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="border-top-0" width="5%">#</th>
+                                                        <th class="border-top-0 pointer" width="8%">{{'ref_id' | translate}}
+                                                        </th>
+                                                        <th class="border-top-0 pointer" width="20%">{{'event_title' | translate}}
+                                                        </th>
+                                                        <th class="border-top-0 pointer" width="20%">{{'created_by' | translate}}
+                                                        </th>
+                                                        <th class="border-top-" width="20%">{{'department' | translate}}</th>
+                                                        <th class="border-top-0 pointer" width="20%">{{'date' | translate}}
+                                                        </th> 
+                                                        <th class="border-top-0" width="7%" >{{'status' | translate}}
+                                                        </th>
+                                                    </tr>
+                                                  
+                                                </thead>
+                                                <ng-container *mobxAutorun>
+                                                    <tr class="pointer edit-and-delete-main"
+                                                        *ngFor="let row of EventReportStore.EventItemsDetails| paginate: {currentPage:EventReportStore.currentPage, itemsPerPage:EventReportStore.itemsPerPage,totalItems:EventReportStore.totalItems};let num=index "
+                                                        (click)="getRisk(row.id)">
+
+                                                        <td style="text-align: center;" class="cursor-pointer">
+                                                            {{(EventReportStore.currentPage - 1) *
+                                                            EventReportStore.itemsPerPage +
+                                                            (num + 1)}}
+                                                        </td>
+                                                        <td>#{{row?.event_reference_code}}
+                                                            <p *ngIf="!row.event_reference_code">{{AppStore.noContentText}}</p>
+                                                        </td>
+                                                        <td>{{row?.event_title}}
+                                                            <p *ngIf="!row.event_title">{{AppStore.noContentText}}</p>
+                                                        </td>
+                                                        <td>
+                                                            <div *ngIf="row?.created_by_first_name" class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                                                                <img *ngIf="row.created_by_image_token" data-toggle="modal" data-target="#user02" data-ui-class="a-zoom"
+                                                                [attr.src]="createImagePreview('user-profile-picture',row.created_by_image_token)"
+                                                                width="30px" height="30px" class="rounded-circle rounde-hov details-show-popup"
+                                                                onerror="this.src='/assets/images/user-demo2.png'">
+                                                             <img *ngIf="!row.created_by_image_token" [attr.src]="getDefaultImage('user-logo')" width="30px" height="30px" class="rounded-circle" onerror="this.src='/assets/images/user-demo2.png'">                                   
+                                                                <div class="pointer" >
+                                                                    <h6>{{row?.created_by_first_name}} {{row?.created_by_last_name}}</h6>
+                                                                    <span>{{row.created_by_designation ? row.created_by_designation : AppStore.noContentText}}</span>
+                                                                </div>
+                                
+                                                            </div>
+                                                            <p *ngIf="!row.created_by_first_name">{{AppStore.noContentText}}</p>
+                                                         </td>
+                                                        <td>{{row?.created_by_department}}
+                                                            <p *ngIf="!row.created_by_department">{{AppStore.noContentText}}</p>
+                                                        </td>
+                                                        <td>{{row?.created_at | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</td>
+                                                        <td >
+                                                            <div *ngIf="row.created_by_status" [ngClass]="row.event_closure_status_label ? 'dot-div '+row.event_closure_status_label : ''"> {{row?.created_by_status}}</div>
+                                                            <p *ngIf="!row.created_by_status">{{AppStore.noContentText}}</p>
+                                                        </td>
+                                                    </tr>
+                                                </ng-container>
+                                            </table>
+                                        </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <ng-container *mobxAutorun>
+                                <div *ngIf="!EventReportStore?.listloaded">
+                                    <app-table-loader></app-table-loader>
+                                </div>
+                                <app-no-data
+                                    *ngIf="EventReportStore.EventItemsDetails.length == 0 && EventReportStore.listloaded == true">
+                                </app-no-data>
+                            </ng-container>
+                            <div *ngIf="EventReportStore.totalItems>EventReportStore.itemsPerPage" class="col-sm-12">
+                                <ul class="pagination justify-content-center mt-4">
+                                    <div class="list">
+                                        <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+                                            (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+                                    </div>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- </div> -->
+
+<div class="modal modal-style-1 fade email-popup-new" id="custom-date-popup" #confirmationPopUp>
+<app-custom-date-popup (dateEvent)="passDates($event)"></app-custom-date-popup>
+</div>

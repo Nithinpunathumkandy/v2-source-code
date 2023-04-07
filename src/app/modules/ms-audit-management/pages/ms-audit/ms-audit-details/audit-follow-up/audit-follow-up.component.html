@@ -1,0 +1,102 @@
+<div class="tab-pane tab-edit-class smoal-left-tab-page" id="finds">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="full-width-table mb-3" *ngIf="AuthStore.getActivityPermission(100,'MS_AUDIT_FINDING_LIST') ">
+                <table *ngIf="AuditNonConfirmityStore.loaded && AuditNonConfirmityStore.msAuditNonConfirmity.length > 0"
+                    class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                    <thead>
+                        <tr>
+                            <th class="border-top-0" width="2%">#</th>
+                            <th class="border-top-0" width="8%" (click)="sortTitle('ms_audit_findings.reference_code')">
+                                <span>{{'ref_id'|translate}}</span>
+                                <img _ngcontent-twv-c17="" style="margin-left: 6px;" *ngIf="AuditNonConfirmityStore.orderItem=='ms_audit_findings.reference_code'"
+                                [attr.src]="AuditNonConfirmityStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" 
+                                class="sort-down-pics">
+                            </th>
+                            <th class="border-top-0" width="15%" (click)="sortTitle('ms_audit_findings.date')">
+                                <span>{{'date'|translate}}</span>
+                                <img _ngcontent-twv-c17="" style="margin-left: 6px;" *ngIf="AuditNonConfirmityStore.orderItem=='ms_audit_findings.date'"
+                                [attr.src]="AuditNonConfirmityStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" 
+                                class="sort-down-pics">
+                            </th>
+                            <th class="border-top-0" width="21%">{{'clause'|translate}}</th>
+                            <th class="border-top-0" width="30%" (click)="sortTitle('ms_audit_findings.description')">
+                                <span>{{'description'|translate}}</span>
+                                <img _ngcontent-twv-c17="" style="margin-left: 6px;" *ngIf="AuditNonConfirmityStore.orderItem=='ms_audit_findings.description'"
+                                [attr.src]="AuditNonConfirmityStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" 
+                                class="sort-down-pics">
+                            </th>
+                            <!-- <th class="border-top-0" width="8%">Status</th> -->
+                            <th class="border-top-0" width="15%">{{'agreed_date'|translate}}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <tr class="pointer edit-and-delete-main" *ngFor="let items of AuditNonConfirmityStore.msAuditNonConfirmity| paginate: 
+                        {currentPage:AuditNonConfirmityStore.currentPage, 
+                        itemsPerPage:AuditNonConfirmityStore.itemsPerPage,
+                        totalItems:AuditNonConfirmityStore.totalItems};
+                        let num=index" (click)="getDetails(items.id)">
+                            <td class="text-center pointer">{{(AuditNonConfirmityStore.currentPage - 1) *
+                                AuditNonConfirmityStore.itemsPerPage + (num + 1)}}</td>
+                            <td>#{{items.reference_code}}</td>
+                            <td>{{items.date | date:
+                                OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</td>
+                            <td>
+                                <ul class="arrowlist m-0 p-0" *ngIf="items?.document_version_content_title">
+                                    <li *ngFor="let clause of items?.document_version_content_title.split(',') ">
+                                        {{clause}}</li>
+                                </ul>
+                                <p *ngIf="!items?.document_version_content_title">{{AppStore.noContentText}}</p>
+                            </td>
+                            <td style="white-space: pre-wrap;">{{items.description ? items.description :
+                                AppStore.noContentText}}</td>
+
+                            <td *ngIf="items.agreed_date">{{items.agreed_date | date:
+                                OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+
+                            </td>
+                            <td *ngIf="!items.agreed_date">{{AppStore.noContentText}}
+
+                            </td>
+
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="float-right bold mb-0"
+                *ngIf="AuditNonConfirmityStore?.loaded && AuditNonConfirmityStore.totalItems > 0">{{'total_Items' |
+                translate}}:{{AuditNonConfirmityStore?.totalItems}}</p>
+            <ng-container *mobxAutorun>
+                <div *ngIf="!AuditNonConfirmityStore.loaded">
+                    <app-loader-list></app-loader-list>
+                </div>
+            </ng-container>
+            <app-no-data
+                *ngIf="AuditNonConfirmityStore.msAuditNonConfirmity?.length == 0 && AuditNonConfirmityStore.loaded == true">
+            </app-no-data>
+        </div>
+        <!-- pagination -->
+        <div *ngIf="AuditNonConfirmityStore.totalItems>AuditNonConfirmityStore.itemsPerPage && AuditNonConfirmityStore.loaded && AuditNonConfirmityStore.msAuditNonConfirmity.length > 0"
+            class="col-sm-12">
+            <ul class="pagination justify-content-center mt-3">
+                <div class="list">
+                    <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+                        class="my-pagination" (pageChange)="pageChange($event)">
+                    </pagination-controls>
+                </div>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" #nonConformity data-keyboard="false" data-backdrop="static">
+    <app-new-audit-non-confirmity *ngIf="nonConformityObject.type" [source]="nonConformityObject">
+    </app-new-audit-non-confirmity>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>

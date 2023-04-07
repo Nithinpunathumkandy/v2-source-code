@@ -1,0 +1,348 @@
+<button type="button" class="close" (click)="closeFormModal()">
+  <i class="lni-close"></i><span>{{ "esc" | translate }}</span>
+  </button>
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+     <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header">
+           <h4 class="modal-title">
+              {{ 'new_training' | translate }}
+           </h4>
+        </div>
+        <!-- Modal body -->
+        <div class="modal-body form-body">
+         <p class="head-details">{{'training_form_message' | translate}}
+         </p>
+           <form [formGroup]="trainingForm" *mobxAutorun>
+           <!-- </div> -->
+           <div class="row">
+              <div class="col-md-6">
+                 <div class="form-group">
+                    <label>{{'training_name' | translate}}<span class="form-error">*</span></label>
+                    <input type="text" formControlName="title" class="form-control"
+                       [placeholder]="'training_name_placeholder' | translate">
+                    <p class="pt-1" style="color: red;" *ngIf="trainingFormError && trainingFormError.title">
+                       {{trainingFormError.title}}
+                    </p>
+                    <p class="form-error pt-1" *ngIf = "!trainingFormError && trainingForm.get('title').invalid && (trainingForm.controls.title.dirty || trainingForm.controls.title.touched)">
+                       {{ trainingForm.hasError('required', ['title']) ? 'Title required' : 'Maximum 500 characters allowed' }}
+                    </p>
+                 </div>
+              </div>
+
+              <div class="col-md-6">
+                 <div class="form-group">
+                    <label for="name">{{'training_category' | translate}}<span class="form-error">*</span></label>
+                    <div class="clearfix d-flex">
+                       <div class="multiple-plain-ngselect w-100">
+                          <ng-select
+                          [items]="TrainingCategoryMasterStore?.allItems"
+                          bindLabel="title"
+                          [placeholder]="'select_training_category_placeholder' | translate"
+                          formControlName="training_category_id"
+                          (search) = "searchTrainingCategory($event)"
+                          (open)="getCategory()"
+                          [multiple]="false"
+                          >
+                          <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                             {{item.title?.length > 60 ? (item.title | slice:0:60)+' ...' :
+                             item.title}}<span aria-hidden="true" (click)="clear(item)"
+                                style="border:none;" class="ng-value-icon left">×</span>
+                          </ng-template>
+                          <ng-template ng-option-tmp let-item="item" let-index="index">
+                             {{item.title?.length > 80 ? (item.title | slice:0:80)+' ...' :
+                             item.title}}
+                          </ng-template>
+                          </ng-select>
+                       </div>
+                       <button class="btn multi-add-user ml-2" style="width: 42px;"
+                       (click)="trainingCategoryAdd()"><i class="fas fa-plus"></i></button>
+                    </div>
+                    <p class="form-error pt-1" *ngIf="trainingFormError && trainingFormError.training_category_id"> {{trainingFormError.training_category_id}}</p>
+                 </div>
+              </div>
+
+              <div class="col-md-12">
+                 <div class="form-group">
+                    <label>
+                       <div class="custom-control custom-radio">
+                          <input type="radio" (click)="changeVenueWeb(true)"  class="custom-control-input" id="customRadio1" name="example1" 
+                          value="venue" #customRadio1
+                          [checked]="venueVisible ? true : false" >
+                    <label class="custom-control-label" for="customRadio1" style="padding-top: 2px;">{{'training_venue' | translate}}<span class="form-error">*</span> <sup></sup></label>
+                    <span class="pl-5"><input type="radio" [checked]="!venueVisible ? true : false"  
+                    (click)="changeVenueWeb(false)" class="custom-control-input" 
+                    id="customRadio2" name="example1" value="web" #customRadio2>
+                    <label class="custom-control-label" for="customRadio2" style="padding-top: 2px;">{{'training_web_URL' | translate}}<span class="form-error">*</span> <sup></sup></label></span>
+                    </div>
+                    </label>  
+                    <input *ngIf="venueVisible" type="text" formControlName="venue" class="form-control" [placeholder]="'training_enter_venue_placeholder' | translate">
+                    <input *ngIf="!venueVisible" type="text" formControlName="web_url" class="form-control" [placeholder]="'training_enter_web_url_placeholder' | translate">
+                    <p class="form-error pt-1" *ngIf = "!trainingFormError && trainingForm.get('web_url').invalid && (trainingForm.controls.web_url.dirty || trainingForm.controls.web_url.touched)">
+                       {{ trainingForm.hasError('', ['web_url']) ? '' : 'Please enter a valid website url' }}
+                    </p>
+                    <p class="pt-1" style="color: red;" *ngIf="trainingFormError && trainingFormError.venue">
+                     {{trainingFormError.venue}}
+                  </p>
+                  <p class="pt-1" style="color: red;" *ngIf="trainingFormError && trainingFormError.web_url">
+                     {{trainingFormError.web_url}}
+                  </p>
+                 </div>
+              </div>
+
+              <div class="col-md-6">
+                 <div class="form-group">
+                    <label for="name">{{'training_start_date/time' | translate}}<span
+                       class="form-error">*</span></label>
+                    <div class="input-group date-picker cal-time">
+                       <div class="input-group date-picker">
+                          <input class="form-control" formControlName="start_date" [owlDateTime]="dt1"
+                          [owlDateTimeTrigger]="dt1" [min]="todayDate"
+                          [max]="trainingForm.value.end_date"
+                          [placeholder]="'training_start_date/time_placeholder' | translate">
+                          <owl-date-time [hour12Timer]="true" #dt1></owl-date-time>
+                          <div class="input-group-append">
+                             <button [owlDateTimeTrigger]="dt1"
+                                class="btn btn-outline-secondary calendar" type="button"><i
+                                class="fas fa-calendar-alt"></i></button>
+                          </div>
+                       </div>
+                       <p class="pt-1" style="color: red;" *ngIf="trainingFormError && trainingFormError.start_date">
+                          {{trainingFormError.start_date}}
+                       </p>
+                    </div>
+                 </div>
+              </div>
+
+              <div class="col-md-6">
+                 <div class="form-group">
+                    <label for="name">{{'training_end_date/time' | translate}}<span
+                       class="form-error">*</span></label>
+                    <div class="input-group date-picker cal-time">
+                       <div class="input-group date-picker">
+                          <input class="form-control" [owlDateTime]="dt2" formControlName="end_date"
+                           [owlDateTimeTrigger]="dt2"
+                          [placeholder]="'training_end_date/time_placeholder' | translate" [min]="trainingForm.value.start_date ? trainingForm.value.start_date : todayDate">
+                          <owl-date-time [hour12Timer]="true" #dt2></owl-date-time>
+                          <div class="input-group-append">
+                             <button [owlDateTimeTrigger]="dt2"
+                                class="btn btn-outline-secondary calendar" type="button"><i
+                                class="fas fa-calendar-alt"></i></button>
+                          </div>
+                       </div>
+                       <p class="pt-1" style="color: red;" *ngIf="trainingFormError && trainingFormError.end_date">
+                          {{trainingFormError.end_date}}
+                       </p>
+                    </div>
+                 </div>
+              </div>
+
+              <div class="col-sm-12">
+                 <div class="form-group">
+                    <span style="float: right" class="text-grey"
+                       >{{
+                    trainingForm?.value.description != null
+                    ? getDescriptionLength()
+                    : 0
+                    }} Characters</span>
+                    <label for="name">{{ "training_description" | translate }}
+                    </label>
+                    <ckeditor id="description" (change)="descriptionValueChange($event)" [editor]="Editor" formControlName="description"></ckeditor>
+                 </div>
+              </div>
+
+              <div class="col-md-12">
+                 <div class="form-group">
+                    <label for="name">{{'training_competency_group' | translate}}<span class="form-error">*</span></label>
+                    <div class="clearfix d-flex">
+                       <div class="multiple-plain-ngselect w-100">
+                          <ng-select
+                          [items]="CompetencyGroupMasterStore?.competencyGroups"
+                          [placeholder]="'training_select_competency_group_placeholder' | translate"
+                          formControlName="competency_group_id"
+                          (search) = "searchCompetencyGroup($event)"
+                          (open)="getCompetencyGroup()"
+                          (change)="clearCompetency($event)"
+                          bindLabel="title"
+                          [multiple]="false"
+                          >
+                          <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                             {{item.title?.length > 60 ? (item.title | slice:0:60)+' ...' :
+                             item.title}}<span aria-hidden="true" (click)="clear(item)"
+                                style="border:none;" class="ng-value-icon left">×</span>
+                          </ng-template>
+                          <ng-template ng-option-tmp let-item="item" let-index="index">
+                             {{item.title?.length > 80 ? (item.title | slice:0:80)+' ...' :
+                             item.title}}
+                          </ng-template>
+                          </ng-select>
+                       </div>
+                       <button class="btn multi-add-user ml-2" style="width: 42px;"
+                       (click)="CompetencyGroupAdd()"><i class="fas fa-plus"></i></button>
+                    </div>
+                    <p class="form-error pt-1" *ngIf="trainingFormError && trainingFormError.competency_group_id"> 
+                      {{trainingFormError.competency_group_id}}</p>
+                 </div>
+              </div>
+
+              <div class="col-md-12">
+                 <div class="form-group">
+                    <label for="name">{{'training_competencies' | translate}}<span class="form-error">*</span></label>
+                    <div class="clearfix d-flex">
+                       <div class="multiple-plain-ngselect w-100">
+                          <ng-select
+                          [items]="CompetencyMasterStore?.competencies"
+                          [placeholder]="'training_select_competencies_placeholder' | translate"
+                          formControlName="competency_ids"
+                          (search) = "searchCompetencies($event)"
+                          (open)="getCompetencies()"
+                          bindLabel="title"
+                          multiple="true"
+                          >
+                          <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                             {{item.title?.length > 60 ? (item.title | slice:0:60)+' ...' :
+                             item.title}}<span aria-hidden="true" (click)="clear(item)"
+                                style="border:none;" class="ng-value-icon left">×</span>
+                          </ng-template>
+                          <ng-template ng-option-tmp let-item="item" let-index="index">
+                             {{item.title?.length > 80 ? (item.title | slice:0:80)+' ...' :
+                             item.title}}
+                          </ng-template>
+                          </ng-select>
+                       </div>
+                       <button *ngIf="trainingForm.value.competency_group_id" class="btn multi-add-user ml-2" style="width: 42px;"
+                       (click)="competencyAdd()"><i class="fas fa-plus"></i></button>
+                    </div>
+                    <p class="form-error pt-1" *ngIf="trainingFormError && trainingFormError.competency_ids"> 
+                      {{trainingFormError.competency_ids}}</p>
+                 </div>
+              </div>
+
+              <div class="col-sm-12 col-lg-6">
+                 <div class="form-group">
+                    <label>{{'training_trainer' | translate}}<span class="form-error">*</span></label>
+                    <input type="text" formControlName="trainer" class="form-control"
+                       [placeholder]="'training_enter_trainer_placeholder' | translate">
+                       <p class="form-error pt-1" *ngIf="trainingFormError && trainingFormError.trainer">
+                        {{trainingFormError.trainer}}
+                     </p>
+                 </div>
+              </div>
+              
+              <div class="col-sm-12 col-lg-6">
+                 <div class="form-group">
+                    <label>{{'training_trainer_description' | translate}}<span class="form-error">*</span></label>
+                    <input type="text" formControlName="trainer_description" class="form-control"
+                       [placeholder]="'training_enter_trainer_description_placeholder' | translate">
+                    <p class="pt-1" style="color: red;" *ngIf="trainingFormError && trainingFormError.trainer_description">
+                       {{trainingFormError.trainer_description}}
+                    </p>
+                    <p class="form-error pt-1" *ngIf = "!trainingFormError && trainingForm.get('trainer_description').invalid && (trainingForm.controls.trainer_description.dirty || trainingForm.controls.trainer_description.touched)">
+                       {{ trainingForm.hasError('', ['trainer_description']) ? 'Trainer description required' : 'Maximum 500 characters allowed' }}
+                    </p>
+                 </div>
+              </div>
+
+              <div class="col-sm-12">
+                 <div class="form-group">
+                    <label for="name">{{'training_participants' | translate}}<span class="form-error">*</span></label>
+                    <div class="clearfix">
+                       <div class="multiple-plain-ngselect">
+                          <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                          [placeholder]="'training_participants_placeholder' | translate " formControlName="training_participants" 
+                          (clear)="getUsers()" (search)="searchUers($event)" multiple="true"
+                          (open)="getUsers()" (add)="addParticipant($event,'add')"
+                          (remove)="addParticipant($event,'remove')" [searchFn]="customSearchFn">
+                          <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                             <img *ngIf = "item?.image_token" class="ng-select-user-display" height="15" width="15" [attr.src]="createImagePreview('user-profile-picture',item.image_token)" onerror = "this.src='/assets/images/user-demo2.png'"/>
+                             <img *ngIf = "!item?.image_token" class="ng-select-user-display" height="15" width="15" [attr.src]="getDefaultImage('user-logo')"/>
+                             <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b><span aria-hidden="true" (click) = "clear(item)" style="border:none;" class="ng-value-icon left">×</span>
+                          </ng-template>
+                          <ng-template ng-option-tmp let-item="item" let-index="index">
+                             <div class="user-post-department-pic">
+                                <img *ngIf = "item?.image_token" class="ng-select-user-display" height="25" width="25" [attr.src]="createImagePreview('user-profile-picture',item.image_token)" onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                <img *ngIf = "!item?.image_token" class="ng-select-user-display" height="25" width="25" [attr.src]="getDefaultImage('user-logo')"/>
+                             </div>
+                             <div class="user-post-department-div">
+                                <b>{{getStringsFormatted([item.first_name,item.last_name],35,' ') | titlecase}}</b>
+                                <p class="user-post-department-multiple">{{getStringsFormatted([item.designation_title,' '+item.department],35,',')}}</p>
+                             </div>
+                          </ng-template>
+                          </ng-select>
+                       </div>
+                    </div>
+                    <p class="form-error pt-1" *ngIf="trainingFormError && trainingFormError.training_participants">
+                       {{trainingFormError.training_participants}}
+                    </p>
+                 </div>
+              </div>
+
+              <div class="col-lg-12 col-sm-12">
+                 <div class="form-group">
+                    <a class="text-light-blue" data-toggle="modal" (click)="organisationChanges()" style="border-bottom: 1px solid;">{{'change_organization_unit' | translate}}</a>
+                 </div>
+              </div>
+              
+           </div>
+           </form>
+         <div class="row">
+            <div class="col-sm-12">
+               <div class="d-block justify-content-left border-0 mt-3">
+                  <button type="submit" class="btn btn-active" (click)="saveTraining()"
+                     [disabled]="trainingForm.invalid || AppStore.loading">
+                     {{
+                     AppStore.loading
+                     ? getButtonText("loading")
+                     : getButtonText("save")
+                     }}
+                  </button>
+                  <button type="button" data-toggle="modal" class="btn" (click)="saveTraining(true)"
+                     >
+                     {{
+                     AppStore.loading
+                     ? getButtonText("loading")
+                     : getButtonText("save_close")
+                     }}
+                  </button>
+                  <button type="button" data-toggle="modal" class="btn" (click)="closeFormModal()">
+                     {{
+                     AppStore.loading
+                     ? getButtonText("loading")
+                     : getButtonText("cancel")
+                     }}
+                  </button>
+               </div>
+            </div>
+         </div>
+        </div>
+        <!-- Modal footer -->
+     </div>
+  </div>
+
+  <!-----------------------Form Modal Start--------------------------->
+  <div  class="modal modal-style-1 popup-full-width fade"  data-keyboard="false"
+     data-backdrop="static" #organisationChangeFormModal *mobxAutorun>
+     <app-organisation-change-modal *ngIf = "openModelPopup" [source] = "trainingForm.value" 
+     (organizationChangeEvent)="closeModal($event)"></app-organisation-change-modal>
+  </div>
+    <!-----------------------Form Modal End--------------------------->
+
+   <!-----------------------Training Category Form Modal Start--------------------------->
+   <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #addTrainingCategory>
+      <app-training-category-modal>
+      </app-training-category-modal>
+   </div>
+   <!-----------------------Training Category Form Modal End--------------------------->
+
+   <!-----------------------Competency group Form Modal Start--------------------------->
+      <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #addCompetencyGroup>
+         <app-competency-group-modal>
+         </app-competency-group-modal>
+      </div>
+   <!-----------------------Competency group Form Modal End--------------------------->
+
+   <!-----------------------Training Category Form Modal Start--------------------------->
+      <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #addCompetency>
+      <app-competency-modal *ngIf="openCompetency == true" [CompetencyGroup]="trainingForm.value.competency_group_id?.id"></app-competency-modal>
+      </div>
+   <!-----------------------Competency Form Modal End--------------------------->

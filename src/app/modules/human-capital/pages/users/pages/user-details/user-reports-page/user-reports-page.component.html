@@ -1,0 +1,307 @@
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" data-backdrop="static" data-keyboard="false" #deletePopup>
+  <app-delete-popup [source]="deleteObject"></app-delete-popup>
+</div>
+
+<!------------------- Delete Confirmation Modal End --------------------------->
+<ng-container *mobxAutorun>
+<div class="tab-pane" id="services" *ngIf="UserReportStore.loaded && UserReportStore.reportDetails.length>0">
+  <div class="row user-box-adjut-screen" >
+    <div class="col-sm-12" >
+      <div class="widget line-tab"
+        *ngIf="AuthStore.getActivityPermission(200,'USER_USER_REPORT_LIST')">
+        <!-- Nav tabs -->
+        <div class="row widget-heading mb-2">
+          <div class="col-sm-12">
+            <div class="bg-white clearfix">
+              <ul class="nav nav-tabs">
+                <li class="nav-item" *ngFor="let reportFrequency of UserReportStore.reportDetails;let k=index"
+                  (click)="activateFrequency(k)"> <a
+                    [attr.class]="UserReportStore.frequencyIndex==k?'nav-link active':'nav-link'" data-toggle="tab"
+                    (click)="getReport(reportFrequency.report_frequency_id,true)"
+                    #navLink>{{reportFrequency.report_frequency|titlecase}}</a> </li>
+
+              </ul>
+            </div>
+          </div>
+        </div>
+        <!-- Tab panes -->
+        <div class="widget-body-light tab-content-body pt-0 border-none">
+          <div class="tab-content">
+
+            <div id="home" class="tab-pane active">
+
+              <div class="panel-group panel-drop-sections panel-drop-white" id="m-report" role="tablist"
+                aria-multiselectable="true">
+                <div class="panel panel-default"
+                  *ngFor="let report of UserReportStore?.individualReportDetails?.reports;let j=index">
+                  <div [attr.class]="UserReportStore.currentIndex==j?'panel-heading active':'panel-heading'" role="tab"
+                    [attr.id]="j" (click)="activateIndex(j,report)">
+                    <div class="panel-title">
+                      <a role="button" data-toggle="collapse" [attr.href]="'#report'+j" aria-expanded="true"
+                        aria-controls="collapseOne" class="collapsed">
+                        <h5 class="width96pc mt-0"
+                          [attr.title]="report.user_report.title.length>35?report.user_report.title:''">
+                          {{report.user_report.title.length>35?report.user_report.title.substring(0,35)+'...':report.user_report.title|titlecase}}
+                          <span class="drop-down-icone"><i class="fas fa-chevron-down"></i></span> </h5>
+
+                      </a>
+                    </div>
+                  </div>
+                  <div [attr.id]="'report'+j"
+                    [attr.class]="UserReportStore.currentIndex==j?'drop-detail-sec panel-collapse collapse show':'drop-detail-sec panel-collapse collapse'"
+                    role="tabpanel" [attr.aria-labelledby]="j" [attr.data-parent]="'#m-report'+j">
+                    <div class="panel-body bg-white edit-and-delete-main">
+                      <div class="edit-option-show" style="margin: -17px 20px 0 0;">
+
+                        <a class="pointer" [attr.title]="'delete'|translate" (click)="deleteReport(report.id,j)"
+                          *ngIf="AuthStore.getActivityPermission(200,'DELETE_USER_USER_REPORT')"><i
+                            class="fas fa-trash"></i></a>
+                        <a class="pointer" [attr.title]="'deactivate'|translate"
+                          *ngIf="report.status.id== AppStore.activeStatusId && AuthStore.getActivityPermission(200,'DEACTIVATE_USER_USER_REPORT')"
+                          (click)="updateStatus('deactivate',report.id)"><i class="fas fa-ban"></i></a>
+                        <a class="pointer" [attr.title]="'activate'|translate"
+                          *ngIf="report.status.id != AppStore.activeStatusId && AuthStore.getActivityPermission(200,'ACTIVATE_USER_USER_REPORT')"
+                          (click)="updateStatus('activate',report.id)"><i class="fas fa-check-circle"></i></a>
+
+                      </div>
+                      <div class="row">
+                        <div class="col-sm-12">
+                          <button class="btn mb-3" (click)="navigateToReport()">{{'view_report'|translate}}</button>
+                        </div>
+                      </div>
+                      <!-- <div class="row" *ngIf="report.user_report.description">
+                        <div class="col-sm-12" style="white-space: pre-wrap;">
+                          <p class="mb-1">{{report.user_report.description}}
+
+                          </p>
+
+                        </div>
+                      </div> -->
+
+                      <p class="text-editor-content bullet-point-list" [innerHTML] = "report?.user_report?.description | safeHtml"></p>
+                      <div class="row" *ngIf="report.user_report.documents?.length>0">
+                        <div class="col-sm-12 mt-2">
+                          <h6>{{'documents'|translate}}</h6>
+                          <div class="thumb-pics-bg clearfix thumb-pics-fix-text thump-pics-full">
+                            <div class="thumb-pics" *ngFor="let document of report.user_report.documents">
+                              <div class="upload-pics upload-pics-small edit-option">
+                                <div class="browse-form-pic"
+                                  [ngStyle]="{'background': 'url(' + createImageUrl('user-reports',document.token) + '), url(' + getDefaultImage('no-preview') + ') no-repeat 0 0 / cover'}"
+                                  (click)="viewDocument(document,j)">
+                                </div>
+                                <div class="browse-form-name clearfix">
+                                  <div class="float-left">
+                                    <h6 [attr.title]="document.title.length > 10 ? document.title:''">
+                                      {{document.title.length > 10 ? document.title.substring(0,10)+' ...': document.title}}
+                                    </h6>
+                                    <span>{{document.size/1048576 | number:'0.2-2'}}MB</span>
+                                  </div>
+                                  <div class="browse-logo">
+                                    <img *ngIf="checkExtension(document.ext,'image') != -1"
+                                      src="/assets/images/md-jpg.png">
+                                    <img *ngIf="checkExtension(document.ext,'doc') != -1"
+                                      src="/assets/images/md-doc.png">
+                                    <img *ngIf="checkExtension(document.ext,'pdf') != -1"
+                                      src="/assets/images/pdf-icone.png">
+                                    <img *ngIf="checkExtension(document.ext,'excel') != -1"
+                                      src="/assets/images/md-xl.png">
+                                    <img *ngIf="checkExtension(document.ext,'video') != -1"
+                                      src="/assets/images/md-video.png">
+                                    <img *ngIf="checkExtension(document.ext,'audio') != -1"
+                                      src="/assets/images/md-audio.png">
+                                    <img *ngIf="checkExtension(document.ext,'ppt') != -1"
+                                      src="/assets/images/md-ppt.png">
+
+                                  </div>
+                                </div>
+                                <div class="edit-option-show-inner">
+                                  <a [attr.title]="'download'|translate" *ngIf = "AuthStore.getActivityPermission(200,'DOWNLOAD_USER_KPI_DOCUMENT')"
+                                    (click)="downloadDocument(document.user_report_id,document.title,document.id,document)"><i
+                                      class="fas fa-download"></i></a>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div [ngClass]="report.user_report.documents?.length>0?'row mt-3 edit-option-inner-full':'row edit-option-inner-full'">
+                        <div class="col-sm-12">
+                          <div class="edit-option-show-inner-full">
+                            <a [attr.title]="'add_reporting_user'|translate" (click)="addSubmittedTo(j)"
+                              *ngIf="AuthStore.getActivityPermission(200,'ADD_USER_USER_REPORT_SUBMITTED_TO_USERS')"><i
+                                class="fas fa-plus"></i></a>
+                          </div>
+                          <h6>{{'reporting_to'|translate}}</h6>
+
+                          <div class="row">
+                            <div class="col-sm-6 col-lg-6 col-xl-4 animation-pulse edit-option"
+                              *ngFor="let submitted of report.submitted_to_users">
+                              <div class="edit-option-show-inner">
+                                <a [attr.title]="'delete'|translate" (click)="deleteSubmittedTo(report.id,submitted.id)"
+                                  *ngIf="AuthStore.getActivityPermission(200,'DELETE_USER_USER_REPORT_SUBMITTED_TO_USERS')"><i
+                                    class="fas fa-trash"></i></a>
+                              </div>
+                              <!-- <div class="d-flex flex-row user-list-sm">
+
+                                <img
+                                  [attr.src]="submitted.image.token?createImageUrl('user-profile-picture',submitted.image.token):'/assets/images/user-demo2.png'"
+                                  width="30px" height="30px" class="rounded-circle rounde-hov">
+                                <div>
+                                  <h6>{{submitted.first_name}} {{submitted.last_name}}</h6>
+                                  <span>{{submitted.designation}}</span>
+                                </div>
+                              </div> -->
+                              <app-user-popup-box [source]="getPopupDetails(submitted,j)"></app-user-popup-box>
+                                    
+
+                            </div>
+                          </div>
+                        </div>
+
+
+                      </div>
+                     
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</ng-container>
+<div *ngIf="!UserReportStore.loaded">
+  <app-user-report-loader></app-user-report-loader>
+</div>
+
+
+<ng-container *mobxAutorun>
+  <app-no-data *ngIf = "UserReportStore.loaded && UserReportStore.reportDetails.length == 0"></app-no-data>
+</ng-container>
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+  <button type="button" class="close" (click)="closeFormModal()"><i class="lni-close"></i><span>{{'esc'|translate}}</span></button>
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <h4 class="modal-title">{{'user_reports'|translate}}</h4>
+
+      </div>
+      <!-- Modal body -->
+      <div class="modal-body form-body">
+        <p class="head-details">{{'report_form_message' | translate}}</p>
+        <form [formGroup]="form" *mobxAutorun>
+          <div class="row">
+            <div class="col-sm-12">
+              <div *ngIf="!editFlag" class="form-group">
+                <label for="name">{{'report_name'|translate}}<sup>*</sup></label>
+                <div class="clearfix">
+                  <div class="multiple-plain-ngselect select-new-width">
+
+                    <ng-select [placeholder]="'select_report'|translate" [multiple]="false" searchable="true"
+                      formControlName="user_report_id" (clear)="getReports()" (search)="searchReport($event)"
+                      (open)="getReports()">
+                      <ng-option [value]="type.id" [disabled]="editFlag" *ngFor="let type of ReportMasterStore.reports">
+                        {{type.title}} - {{type.report_frequency}}
+                      </ng-option>
+                    </ng-select>
+
+                  </div>
+                  <button class="btn multi-add-user" [disabled]="editFlag" (click)="openReportModal()"><i class="fas fa-plus"></i></button>
+
+                </div>
+                <p style="color: red;" *ngIf="formErrors&&formErrors.user_report_id">
+                  {{formErrors.user_report_id[0]}}</p>
+              </div>
+
+
+
+              <div class="form-group">
+                <label for="name">{{'submitted_to'|translate}}<sup>*</sup></label>
+                <div class="clearfix">
+                  <div class="multiple-plain-ngselect">
+                    <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                      placeholder="Select Submitted To User" multiple="true" formControlName="submitted_to_user_ids"
+                      (clear)="getUsers()" (search)="searchUers($event)" (open)="getUsers()" [searchFn]="customSearchFn">
+                      <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                        <img *ngIf="item.image_token" height="15" width="15"
+                          [attr.src]="createImageUrl('user-profile-picture',item.image_token)" 
+                          onerror = "this.src='/assets/images/user-demo2.png'"/>
+                        <img *ngIf="!item.image_token" height="15" width="15"
+                          [attr.src]="getDefaultImage('user-logo')" 
+                          onerror = "this.src='/assets/images/user-demo2.png'"/>
+                        <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b><span aria-hidden="true" (click)="clear(item)"
+                          style="border:none;" class="ng-value-icon left">×</span>
+                      </ng-template>
+                      <ng-template ng-option-tmp let-item="item" let-index="index">
+                        <div class="user-post-department-pic">
+                          <img *ngIf="item.image_token" height="25" width="25"
+                            [attr.src]="createImageUrl('user-profile-picture',item.image_token)" 
+                            onerror = "this.src='/assets/images/user-demo2.png'"/>
+                          <img *ngIf="!item.image_token" height="25" width="25"
+                            [attr.src]="getDefaultImage('user-logo')" 
+                            onerror = "this.src='/assets/images/user-demo2.png'"/>
+                        </div>
+                        <div class="user-post-department-div">
+                          <b>{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b>
+                          <p class="user-post-department-multiple">{{getStringsFormatted([item.designation_title,' '+item.department],50,',')}}</p>
+                        </div>
+                      </ng-template>
+                    </ng-select>
+                  </div>
+
+                  <p style="color: red;" *ngIf="formErrors&&formErrors.submitted_to_user_ids">
+                    {{formErrors.submitted_to_user_ids}}</p>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="row">
+            <div class="col-sm-12">
+              <div class="d-block justify-content-left border-0 mt-3">
+                <button type="submit" class="btn ordinary-btn mr-3 btn-active" (click)="editFlag?saveReporting():save()"
+                  [disabled]="form.invalid || AppStore.loading">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save') }}</button>
+                <button type="button" data-toggle="modal" class="btn ordinary-btn mr-3"
+                  (click)="editFlag?saveReporting(true):save(true)"
+                  [disabled]="form.invalid || AppStore.loading">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save_close') }}</button>
+                <button type="button" data-toggle="modal" class="btn ordinary-btn mr-2"
+                  (click)="closeFormModal()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('cancel') }}</button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <!-- Modal footer -->
+    </div>
+  </div>
+</div>
+
+
+
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #reportModal>
+  <app-user-report-modal *ngIf="userDocumentObject.type" [source]="userDocumentObject">
+
+  </app-user-report-modal>
+</div>
+
+
+
+<!-- preview component for image preview -->
+<div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup" data-keyboard="false"
+  data-backdrop="static" #filePreviewModal *mobxAutorun>
+  <button type="button" class="close" data-dismiss="modal" (click)="closePreviewModal($event)"><i
+      class="lni-close"></i><span>{{'esc'|translate}}</span></button>
+  <app-previewcomponent *ngIf="previewObject" [source]="previewObject" (close)="closePreviewModal($event)">
+  </app-previewcomponent>
+</div>
+<!-- preview modal end -->

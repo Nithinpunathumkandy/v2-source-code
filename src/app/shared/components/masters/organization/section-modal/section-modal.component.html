@@ -1,0 +1,196 @@
+<button type="button" class="close" (click)="cancel()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header">
+            <h4 class="modal-title">{{'section' | translate}}</h4>
+            <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
+        </div>
+        <!-- Modal body -->
+        <div class="modal-body form-body">
+
+            <p class="head-details"></p>
+
+            <form [formGroup]="form" *mobxAutorun>
+
+                 <div class="row" >
+                    <div class="col-sm-12">
+                       <div class="form-group">
+                           <label for="name">{{'section_organization_form_title' | translate}}<sup>*</sup></label>
+                           <div class="clearfix">
+                             <div class="multiple-plain-ngselect ">
+                                <ng-select
+                                    placeholder="{{'section_organization_form_title_placeholder' | translate}}"
+                                    [multiple]="false"
+                                    formControlName="organization_id"
+                                    (search) = "searchOrganization($event)"
+                                    (change)="eventChange('organization')"
+                                    (open)="getOrganization()"
+                                    >
+                                    <ng-option [value]="org.id" *ngFor="let org of SubsidiaryStore.subsidiaryList" >
+                                        {{org.title.length > 80 ? org.title.substring(0,80)+' ...' : org.title}}
+                                    </ng-option>
+                                 </ng-select>
+                                 <p style="color: red;" *ngIf="formErrors"> {{formErrors.organization_id}}</p>
+                             </div>
+                         </div>
+                        </div>
+                       
+
+                    </div>
+                 </div>
+
+                <div class="row" [ngStyle] = "{display: !OrganizationLevelSettingsStore.organizationLevelSettings.is_division ? 'none':'block'}">
+                    <div class="col-sm-12">
+                       <div class="form-group">
+                           <label for="name">{{'section_division_form_title' | translate}}<sup>*</sup></label>
+                           <div class="clearfix">
+                             <div class="multiple-plain-ngselect ">
+                                <ng-select
+                                    placeholder="{{'section_division_form_title_placeholder' | translate}}"
+                                    [multiple]="false"
+                                    [(ngModel)]="divisionId"
+                                    [ngModelOptions]="{standalone: true}"
+                                    (search) = "searchDivision($event)"
+                                    (change)="eventChange('division')"
+                                    (open)="getDivision()"
+                                    >
+                                    <ng-option [value]="division.id" *ngFor="let division of DivisionMasterStore.allItems" >
+                                        {{division.title}}
+                                    </ng-option>
+                                 </ng-select>
+                                 <p style="color: red;" *ngIf="formErrors"> {{formErrors.division_id}}</p>
+                             </div>
+                         </div>
+                        </div>
+                       
+
+                    </div>
+                 </div>
+
+
+
+                 <div class="row" [ngStyle] = "{display: !OrganizationLevelSettingsStore.organizationLevelSettings.is_department ? 'none':'block'}">
+                    <div class="col-sm-12">
+                       <div class="form-group">
+                           <label for="name">{{'section_department_form_title' | translate}}<sup>*</sup></label>
+                           <div class="clearfix">
+                             <div class="multiple-plain-ngselect ">
+                                <ng-select
+                                    placeholder="{{'section_department_form_title_placeholder' | translate}}"
+                                    [multiple]="false"
+                                    formControlName="department_id"
+                                    (search) = "searchDepartment($event)"
+                                    (open)="getDepartment()"
+                                    (change)="eventChange('department')">
+                                    <ng-option [value]="dept.id" *ngFor="let dept of DepartmentMasterStore.allItems" >
+                                        {{dept.title.length > 80 ? dept.title.substring(0,80)+' ...' : dept.title}}
+                                    </ng-option>
+                                 </ng-select>
+                                 <p style="color: red;" *ngIf="formErrors"> {{formErrors.department_id}}</p>
+                             </div>
+                         </div>
+                        </div>
+                       
+
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label for="title">{{'section_form_title' | translate}}<sup>*</sup></label>
+                            <input type="text" formControlName="title" class="form-control"
+                                placeholder="{{'section_form_title_placeholder' | translate}}" id="title" #titleInput>
+                            <p style="color: red;" *ngIf="formErrors"> {{formErrors.title}}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label for="title">{{'code' | translate}}<sup>*</sup></label>
+                            <input type="text" formControlName="code" class="form-control"
+                                placeholder="{{'department_code_placeholder' | translate}}" id="code">
+                            <p style="color: red;" *ngIf="formErrors"> {{formErrors.code}}</p>
+                        </div>
+                    </div>
+                </div>
+                 
+                <div class="row" [ngClass] = "form.value.id ? '' : 'disable-div'">
+                    <div class="col-sm-12">
+                       <div class="form-group">
+                           <label for="name">{{'section_head' | translate}}</label>
+                           <div class="clearfix">
+                            <div class="multiple-plain-ngselect">
+                              <ng-select [items]="UsersStore.usersList" bindLabel="email" placeholder="{{'select_section_head' | translate}}"
+                                formControlName="head_id" searchable="true" 
+                                (search)="searchUsers($event)" (clear)="getUsers()" (open)="getUsers()"
+                                [searchFn]="customSearchFn"
+                                [disabled] = "">
+                                <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                  <img class="ng-select-user-display" *ngIf="item.image_token" height="15" width="15"
+                                    [attr.src]="createImagePreview('user-profile-picture',item.image_token)" />
+                                  <img class="ng-select-user-display" *ngIf="!item.image_token" height="15" width="15"
+                                    [attr.src]="getDefaultImage()" />
+                                  <b style="padding-left: 3px;">{{item.first_name | titlecase}}
+                                    {{item.last_name | titlecase}}</b><span aria-hidden="true" (click)="clear(item)"
+                                    style="border:none;" class="ng-value-icon left">×</span>
+                                </ng-template>
+                                <ng-template ng-option-tmp let-item="item" let-index="index">
+                                  <div class="user-post-department-pic">
+                                    <img class="ng-select-user-display" *ngIf="item.image_token" height="25" width="25"
+                                      [attr.src]="createImagePreview('user-profile-picture',item.image_token)" />
+                                    <img class="ng-select-user-display" *ngIf="!item.image_token" height="25" width="25"
+                                      [attr.src]="getDefaultImage()" />
+                                  </div>
+                                  <div class="user-post-department-div">
+                                    <b>{{item.first_name | titlecase}} {{item.last_name | titlecase}}</b>
+                                    <p class="user-post-department-multiple">{{item.designation_title}}<span
+                                        *ngIf="item.department">,{{item.department}}</span></p>
+                                  </div>
+                                </ng-template>
+                              </ng-select>
+                            </div>
+                          </div>
+                        </div>
+                    </div>
+                 </div>
+
+                <div class="setting-item">
+                    <div class="row align-items-center">
+                        <div class="col-sm-7">
+                            <h5 class="mb-0">{{'section_color_form_title' | translate}}</h5>
+                            <!-- <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod.</p> -->
+                        </div>
+                        <div class="col-sm-5 d-flex justify-content-end align-items-center">
+                            <div class="costmz-color" [(colorPicker)]="color" [style.background]="color"> </div>
+                            <div class="form-group hexa-color mb-0">
+                                <input class="form-control color-header-new" [value]="color">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="clearfix"></div>
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="d-block justify-content-left border-0 mt-3">
+                            <button type="submit" class="btn btn-active" (click)="save()"
+                                [disabled]="form.invalid || AppStore.loading">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save') }}</button>
+                            <button type="button" data-toggle="modal" data-target="#signal-lost"
+                                class="btn" (click)="save(true)"
+                                [disabled]="form.invalid || AppStore.loading">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save_close') }}</button>
+                            <button type="button" data-toggle="modal" data-target="#error-message"
+                                class="btn"
+                                (click)="cancel()">{{  AppStore.loading  ? getButtonText('loading') : getButtonText('cancel') }}</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <!-- Modal footer -->
+    </div>
+</div>

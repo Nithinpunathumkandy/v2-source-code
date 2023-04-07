@@ -1,0 +1,138 @@
+<nav class="edit-bar">
+	<div class="module-name-block module-name-block-space float-left">
+		<a class="dropdown module-title">Closure Checklist Info</a>
+	</div>
+	<app-sub-menu></app-sub-menu>
+</nav>
+<div class="col-sm-12 mt-3" *ngIf="EventClosureStore.individualLoaded">
+	<div class="tab-content" *mobxAutorun>
+		<div class="tab-edit-class smoal-left-tab-page" id="event-closure">
+			<div class="bg-white widg-padding-cmn min-height-83 edit-and-delete-main">
+				<div class="row">
+					<div class="col-lg-4 col-sm-6">
+						<h6>Planned Event Completion</h6>
+						<p>{{EventClosureStore.indivitualEventClosure?.actual_event_completion_date | date: OrganizationGeneralSettingsStore?.organizationSettings?.date_format }}</p>
+					</div>
+					<div class="col-lg-4 col-sm-6">
+						<h6>Actual Event Completion</h6>
+						<p>{{EventClosureStore.indivitualEventClosure?.event?.start_date | date: OrganizationGeneralSettingsStore?.organizationSettings?.date_format }}</p>
+					</div>
+				</div>
+
+				<div class="panel-group panel-drop-sections panel-drop-white mb-3" id="jd" role="tablist" aria-multiselectable="true">
+					<div class="panel panel-default" *ngFor=" let row of EventClosureStore.indivitualEventClosure?.checklist;let num = index">
+						<div [ngClass]="selectedIndex == num ? 'panel-heading active' : 'panel-heading'" role="tab" id="headingOne">
+							<div class="panel-title">
+								<a role="button" data-toggle="collapse" (click)="getAccordian(num)" aria-expanded="false" aria-controls="collapseOne" [ngClass]="selectedIndex == num ?'collapsed':''">
+									<h5 class="width96pc mt-0">
+										<span class="d-flex">
+											<span class="w-100"><span class="mr-2 text-18">
+												<i class="fas fa-question-circle"></i></span>{{row?.event_closure_checklist?.language[0]?.pivot?.title}}</span>
+											<span class="text-right ml-2" style="width: 100px;">
+												<span [ngClass]="row?.event_closure_checklist_status=='Yes' ? 'draft-tag draft-tag-green label-tag-style-tag label-left-arow-tag d-inline-block status-tag-new-one ml-0' : 'draft-tag draft-tag-red label-tag-style-tag label-left-arow-tag d-inline-block status-tag-new-one ml-0' ">{{row?.event_closure_checklist_status}}</span>
+											</span>
+										</span>
+										<span class="drop-down-icone"><i class="fas fa-chevron-down"></i></span>
+									</h5>
+								</a>
+							</div>
+						</div>
+						<div id="checklist-acd-1003" [ngClass]="selectedIndex == num ? 'drop-detail-sec panel-collapse collapse show' : 'drop-detail-sec panel-collapse collapse'" role="tabpanel" aria-labelledby="headingOne" data-parent="#checklist-acd-1003" style="">
+							<div class="panel-body bg-white pb-2">
+								<h6>Comment</h6>
+								<p>{{row?.comment ? row?.comment:AppStore.noContentText}}</p>
+								<h6>Attachment</h6>
+								<div class="thumb-pics-bg thumb-pics-col-5 clearfix thumb-pics-fix-text">
+									<div class="thumb-pics" *ngFor="let docs of row?.documents;let i = index">
+										<div style="margin: 0 -25px 0 0;" *ngIf="!docs.document_id" [ngClass]="AuthStore.getActivityPermission(100,'PREVIEW_INCIDENT_DOCUMENT_FILE') ? 'upload-pics upload-pics-small edit-option pointer' : 'upload-pics upload-pics-small edit-option'"
+											(click)="AuthStore.getActivityPermission(100,'PREVIEW_INCIDENT_DOCUMENT_FILE') ? viewBrochureItem('event-file',docs,docs.id) : ''">
+											<div class="browse-form-pic" [ngStyle]="{'background': 'url('+createImageUrl('event-file',docs?.token)+') no-repeat'}">
+											</div>
+											<div class="browse-form-name clearfix">
+												<div class="float-left">
+													<h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}</h6>
+													<span class="mr-2 cmn-clr"><i class="fas fa-laptop"></i></span>
+													<span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+												</div>
+												<div class="browse-logo">
+													<img *ngIf="checkExtension(docs.ext,'image') != -1"
+														class="folder-picher" src="/assets/images/jpg-icone.png">
+													<img *ngIf="checkExtension(docs.ext,'doc') != -1"
+														class="folder-picher" src="/assets/images/word-icone.png">
+													<img *ngIf="checkExtension(docs.ext,'pdf') != -1"
+														class="folder-picher" src="/assets/images/pdf-icone.png">
+													<img *ngIf="checkExtension(docs.ext,'excel') != -1"
+														class="folder-picher" src="/assets/images/excel-icone.png">
+													<img *ngIf="checkExtension(docs.ext,'video') != -1"
+														class="folder-picher" src="/assets/images/md-video.png">
+													<img *ngIf="checkExtension(docs.ext,'audio') != -1"
+														class="folder-picher" src="/assets/images/md-audio.png">
+													<img *ngIf="checkExtension(docs.ext,'ppt') != -1"
+														class="folder-picher" src="/assets/images/md-ppt.png">
+												</div>
+											</div>
+											<div class="edit-option-show-inner" style="margin: -2px -8px 0 0;">
+												<a *ngIf="AuthStore.getActivityPermission(100,'DOWNLOAD_INCIDENT_DOCUMENT_FILE')"><i class="fas fa-download" (click)="downloadDocumentFile('event-file',docs)"></i></a>
+											</div>
+										</div>
+
+
+										<div class="upload-pics edit-option" style="margin: 0 -25px 0 0;" *ngIf="docs.document_id">
+											<div *ngFor="let mainDoc of docs?.kh_document?.versions">
+												<div *ngIf="mainDoc.is_latest" [ngClass]="AuthStore.getActivityPermission(100,'PREVIEW_INCIDENT_DOCUMENT_FILE') ? 'upload-pics upload-pics-small edit-option pointer' : 'upload-pics upload-pics-small edit-option'"
+													(click)="AuthStore.getActivityPermission(100,'PREVIEW_INCIDENT_DOCUMENT_FILE') ? viewBrochureItem('document-version',docs,mainDoc) : ''">
+													<div class="browse-form-pic" [ngStyle]="{'background': 'url('+createImageUrl('document-version',mainDoc?.token)+') no-repeat'}"></div>
+													<div class="browse-form-name clearfix">
+														<div class="float-left">
+															<h6>{{mainDoc.title}}.{{mainDoc.ext}}</h6>
+															<span class="mr-2 cmn-clr"><i class="fas fa-book"></i></span>
+															<span>{{mainDoc.size/1048576 | number:'0.2-2'}}MB</span>
+														</div>
+														<div class="browse-logo">
+															<img *ngIf="checkExtension(mainDoc.ext,'image') != -1" class="folder-picher" src="/assets/images/jpg-icone.png">
+															<img *ngIf="checkExtension(mainDoc.ext,'doc') != -1" class="folder-picher" src="/assets/images/word-icone.png">
+															<img *ngIf="checkExtension(mainDoc.ext,'pdf') != -1" class="folder-picher" src="/assets/images/pdf-icone.png">
+															<img *ngIf="checkExtension(mainDoc.ext,'excel') != -1" class="folder-picher" src="/assets/images/excel-icone.png">
+															<img *ngIf="checkExtension(mainDoc.ext,'video') != -1" class="folder-picher" src="/assets/images/md-video.png">
+															<img *ngIf="checkExtension(mainDoc.ext,'audio') != -1" class="folder-picher" src="/assets/images/md-audio.png">
+															<img *ngIf="checkExtension(mainDoc.ext,'ppt') != -1" class="folder-picher" src="/assets/images/md-ppt.png">
+														</div>
+													</div>
+													<div class="edit-option-show-inner" style="margin: -2px -8px 0 0;">
+														<a *ngIf="AuthStore.getActivityPermission(100,'DOWNLOAD_INCIDENT_DOCUMENT_FILE')"><i class="fas fa-download" (click)="downloadDocumentFile('document-version',docs,mainDoc)"></i></a>
+													</div>
+												</div>
+											</div>
+										</div>
+
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<ng-container *mobxAutorun>
+	<div *ngIf="!EventClosureStore.individualLoaded">
+		<app-event-closure-checklist-loader></app-event-closure-checklist-loader>
+	</div>
+</ng-container>
+
+<div class="modal modal-style-1 popup-full-width fade" id="process-popup" data-keyboard="false" data-backdrop="static" #workflowModal *mobxAutorun>
+	<app-event-closure-workflow *ngIf="workflowModalOpened == true"></app-event-closure-workflow>
+</div>
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+	<app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #commentModal>
+	<app-event-closure-comments [source]="commentFormObject" *ngIf="commentFormObject.type"></app-event-closure-comments>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #workflowHistory>
+	<app-event-closure-workflow-history *ngIf="workflowHistoryOpened"></app-event-closure-workflow-history>
+</div>

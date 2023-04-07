@@ -1,0 +1,102 @@
+<div class="control-program-box control-page-table-main" *mobxAutorun>
+  <div class="row">
+    <div class="col-sm-12">
+      <app-filter-menu></app-filter-menu>
+      <div class="full-width-table">
+        <table *ngIf="FindingMasterStore?.loaded && AuthStore.getActivityPermission(1900,'EA_FINDING_LIST')"
+          class="table table-bordered ordinary-table control-page-table mb-4 table-scroll">
+          <thead *ngIf="FindingMasterStore.allItems.length>0">
+            <tr class="cursor-pointer">
+              <th class="border-top-0" width="3%" style="text-align: center;">{{'sl' | translate}}</th>
+
+              <th width="10%"> {{'ref_no' | translate}}</th>
+
+              <th style="width: 50%;"> {{'title' | translate}} </th>
+
+              <th style="width: 16%;">{{'finding_category' | translate}}</th>
+
+              <th style="width: 10%; text-align: center;">{{'risk' | translate}}</th>
+
+              <th style="width: 10%; text-align: center;">{{'status' | translate}}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *mobxAutorun>
+              <tr
+                (click)="AuthStore.getActivityPermission(1700,'EA_FINDING_DETAILS') ? getAuditFindingDetails(row.id) : ''"
+                [ngClass]="AuthStore.getActivityPermission(1700,'EA_FINDING_DETAILS') ? 'cursor-pointer' : ''"
+                class="tr-action edit-and-delete-main" *ngFor=" let row of FindingMasterStore?.allItems
+                            | paginate
+                              : {
+                                  currentPage: FindingMasterStore?.currentPage,
+                                  itemsPerPage: FindingMasterStore?.itemsPerPage,
+                                  totalItems: FindingMasterStore?.totalItems
+                                };
+                          let num = index
+                        ">
+                <td style="text-align: center;" style="padding:0.75rem">
+                  {{
+                  (FindingMasterStore?.currentPage - 1) *
+                  FindingMasterStore?.itemsPerPage +
+                  (num + 1)
+                  }}
+                </td>
+
+                <td style="padding:0.75rem">{{row.reference_code}}</td>
+
+                <td style="padding:0.75rem" title="{{row.title}}"><a class="cursor-pointer">{{row.title }}</a></td>
+
+                <td style="padding:0.75rem" title="{{row.finding_categories}}">{{row.finding_categories.length > 20 ?
+                  row.finding_categories.substring(0,10)+' ...' : row.finding_categories}}</td>
+
+                <td style="padding:0.75rem; text-align: center;">
+                  <div [attr.class]="'dot-div '+row.risk_rating_label+'-dot'">{{row.risk_ratings ? row.risk_ratings : AppStore.noContentText}} </div>
+                </td>
+
+                <td class="edit-and-delete-main" style="text-align: center">
+                  <div [attr.class]="'dot-div ' + row.finding_status_label">{{row.finding_status_title}}</div>
+                  <div class="edit-option-show">
+                    <a *ngIf="AuthStore.getActivityPermission(1700,'UPDATE_EA_FINDING') && row.finding_status_id==1"
+                      [attr.title]="'edit' | translate" (click)="getAuditFinding(row.id)"><i
+                        class="fas fa-pen pointer"></i></a>
+                    <a *ngIf="AuthStore.getActivityPermission(1700,'DELETE_EA_FINDING')"
+                      [attr.title]="'delete' | translate" (click)="delete(row.id)"><i
+                        class="fas fa-trash pointer"></i></a>
+                  </div>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+      <p class="float-right bold mb-0" *ngIf="FindingMasterStore.allItems.length>0 && FindingMasterStore.loaded">
+        {{'total_Items' | translate}}:{{FindingMasterStore?.totalItems}}</p>
+      <ng-container *mobxAutorun>
+        <div *ngIf="!FindingMasterStore?.loaded">
+          <app-external-audit-loader></app-external-audit-loader>
+        </div>
+
+        <app-no-data *ngIf="FindingMasterStore.totalItems == 0 && FindingMasterStore.loaded == true"></app-no-data>
+      </ng-container>
+
+      <div *ngIf="FindingMasterStore.totalItems > FindingMasterStore.itemsPerPage" class="col-sm-12">
+        <ul class="pagination justify-content-center mt-3">
+          <div class="list">
+            <pagination-controls (pageChange)="getFindings($event)" class="my-pagination"></pagination-controls>
+          </div>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+  <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>

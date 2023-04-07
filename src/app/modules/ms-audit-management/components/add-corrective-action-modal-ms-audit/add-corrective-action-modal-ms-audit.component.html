@@ -1,0 +1,287 @@
+<button type="button" class="close" (click)="cancel()"><i class="lni-close"></i><span>{{'esc' |
+    translate}}</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered">
+ <div class="modal-content">
+    <!-- Modal Header -->
+    <div class="modal-header">
+       <!-- <h4 class="modal-title">{{'corrective_actions' | translate}}</h4> -->
+       <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
+       <h4 class="modal-title" *ngIf="CaSource?.type=='Add'">{{'new_corrective_action' | translate}}</h4>
+       <h4 class="modal-title" *ngIf="CaSource?.type=='Edit'">{{'edit_corrective_action' | translate}}</h4>
+    </div>
+    <!-- Modal body -->
+    <div class="modal-body form-body">
+      <p class="head-details">{{'ms_audit_ca_description' | translate}}</p>
+       <p></p>
+
+       <form [formGroup]="correctiveActionForm" *mobxAutorun>
+          <div class="row">
+
+
+
+
+
+
+
+             <div class="col-sm-12">
+                <div class="form-group">
+                   <label for="name">{{'finding' | translate}}<span class="form-error">*</span></label>
+                   <div class="clearfix d-flex">
+                      <div class="multiple-plain-ngselect w-100">
+
+                         <ng-select [placeholder]="'select_audit_finding'| translate"
+                            [items]="AuditNonConfirmityStore.msAuditNonConfirmity" (change)="getFindingDetails()"
+                            [multiple]="false" bindLabel="title"
+                            [readonly]="AuditCorrectiveActionStore.hideSubMenu" formControlName="finding_id"
+                            (search)="searchFindings($event)" (clear)="getFindings()" (open)="getFindings()">
+                         </ng-select>
+                         <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.finding_id">
+                            {{formErrors.finding_id[0]}}
+                         </p>
+                         <p style="color: red;" class="pt-1" *ngIf="AuditNonConfirmityStore?.individualMsAuditNonConfirmityDetails?.ms_audit_finding_status?.type=='close'"> {{'selected_finding_is_closed' | translate}}</p>
+                      </div>
+                   </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="name">{{'rca' | translate}}</label>
+                  <div class="clearfix d-flex">
+                     <div class="multiple-plain-ngselect w-100">
+
+                        <ng-select [placeholder]="'select_rca'| translate"
+                           
+                           [multiple]="false" bindLabel="title"
+                           [readonly]="true" formControlName="rca_title"
+                           >
+                        </ng-select>
+                       
+                        
+                     </div>
+                  </div>
+               </div>
+             </div>
+             <!-- <div class="col-sm-12" *ngIf="correctiveActionForm.value.finding_id">
+                <div class="form-group">
+                   <div class="cmn-bdr border-radius p-3">
+                      <div class="issue-top-sec">
+                         <div class="clearfix">
+                            <h5 class="d-inline-block cmn-head-style label-tag-style"><span
+                                  class="issue-smoal-head-text">#{{AuditNonConfirmityStore.individualMsAuditNonConfirmityDetails?.reference_code}}</span>
+                               {{AuditNonConfirmityStore.individualMsAuditNonConfirmityDetails?.title}}</h5>
+                         </div>
+                         <p style="white-space: pre-line;" *ngIf="AuditNonConfirmityStore.individualMsAuditNonConfirmityDetails?.description"
+                            [innerHTML]="AuditNonConfirmityStore.individualMsAuditNonConfirmityDetails?.description | safeHtml">
+                         </p>
+                         <p style="white-space: pre-line;" *ngIf="!AuditNonConfirmityStore.individualMsAuditNonConfirmityDetails?.description">
+                            {{AppStore.noContentText}}</p>
+                      </div>
+                     
+                   </div>
+                </div>
+             </div> -->
+             <div class="col-sm-12">
+                <div class="form-group">
+                   <label>{{'title' | translate}}<span class="form-error">*</span></label>
+                   <input type="text" class="form-control" [placeholder]="'Title_of_the_corrective_action' | translate"
+                      formControlName="title">
+                   <p style="color: red;" *ngIf="formErrors"> {{formErrors.title}}</p>
+
+                </div>
+                <div class="form-group add-kpi-textarea">
+                   <label>{{'description' | translate}}</label>
+                   <span style="float: right;">
+                      <p class="text-grey mb-0">{{correctiveActionForm?.value.description != null ?
+                         correctiveActionForm?.value.description?.length : 0}}
+                         {{'characters' | translate}}</p>
+                   </span>
+                   <textarea class="form-control" rows="11" formControlName="description" id="comment2"
+                      [placeholder]="'finding_ca_add_description' | translate"></textarea>
+                </div>
+             </div>
+
+             <div class="col-sm-6">
+                <div class="form-group">
+                   <label for="name">{{'start_date' | translate}}<span class="form-error">*</span></label>
+                   <div class="input-group date-picker">
+                      <input class="form-control cal4" formControlName="start_date" [placeholder]="'ea_ca_add_start_date_placeholder' | translate"
+                         (click)="startDateInput.toggle()" id="start_date" ngbDatepicker
+                         #startDateInput="ngbDatepicker">
+
+                      <div class="input-group-append">
+                         <button class="btn btn-outline-secondary calendar" (click)="startDateInput.toggle()"
+                            type="button"><i class="fas fa-calendar-alt"></i></button>
+                      </div>
+                   </div>
+                   <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.start_date">
+                      {{formErrors.start_date}}</p>
+                </div>
+             </div>
+             
+             <div class="col-sm-6">
+                <div class="form-group">
+                   <label for="name">{{'target_date' | translate}}<span class="form-error">*</span></label>
+                   <div class="input-group date-picker">
+                      <input class="form-control cal4" formControlName="target_date"
+                         [placeholder]="'ea_ca_add_target_date_placeholder' | translate"
+                         (click)="targetDateInput.toggle()" id="target_date" ngbDatepicker
+                         #targetDateInput="ngbDatepicker"
+                         [minDate]="correctiveActionForm.value.start_date?{year: this.correctiveActionForm.value.start_date.year, month: this.correctiveActionForm.value.start_date.month, day: this.correctiveActionForm.value.start_date.day}:''">
+
+                      <div class="input-group-append">
+                         <button class="btn btn-outline-secondary calendar" (click)="targetDateInput.toggle()"
+                            type="button"><i class="fas fa-calendar-alt"></i></button>
+                      </div>
+                   </div>
+                   <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.target_date">
+                      {{formErrors.target_date}}</p>
+                </div>
+             </div>
+
+             <div class="col-sm-12">
+                <div class="form-group">
+                   <label>{{'responsible_user' | translate}}<span class="form-error">*</span></label>
+                   <div class="clearfix">
+                      <div class="multiple-plain-ngselect">
+                         <ng-select [items]="UsersStore.usersList" bindValue="id"
+                            [placeholder]="'select_responsible_user' | translate" [multiple]="false"
+                            formControlName="responsible_user_id" (search)="searchUsers($event)"
+                            (open)="getResponsibleUsers()" [searchFn]="customSearchFn">
+                            <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                               <img *ngIf="item.image_token" height="15" width="15"
+                                  [attr.src]="createImagePreview('user-profile-picture',item.image_token)"
+                                  onerror = "this.src='/assets/images/user-demo2.png'" />
+                               <img *ngIf="!item.image_token" height="15" width="15"
+                                  [attr.src]="getDefaultImage('user-logo')" 
+                                  onerror = "this.src='/assets/images/user-demo2.png'"/>
+                               <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,'
+                                  ') | titlecase}}</b><span aria-hidden="true" (click)="clear(item)"
+                                  style="border:none;" class="ng-value-icon left">×</span>
+                            </ng-template>
+                            <ng-template ng-option-tmp let-item="item" let-index="index">
+                               <div class="user-post-department-pic">
+                                  <img *ngIf="item.image_token" height="25" width="25"
+                                     [attr.src]="createImagePreview('user-profile-picture',item.image_token)" 
+                                     onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                  <img *ngIf="!item.image_token" height="25" width="25"
+                                     [attr.src]="getDefaultImage('user-logo')" 
+                                     onerror = "this.src='/assets/images/user-demo2.png'"/>
+                               </div>
+                               <div class="user-post-department-div">
+                                  <b>{{getStringsFormatted([item.first_name,item.last_name],50,' ') |
+                                     titlecase}}</b>
+                                  <p class="user-post-department-multiple">
+                                     {{getStringsFormatted([item.designation_title,'
+                                     '+item.department],50,',')}}</p>
+                               </div>
+                            </ng-template>
+                         </ng-select>
+                         <p style="color: red;" *ngIf="formErrors">
+                            {{formErrors.responsible_user_id}}</p>
+                      </div>
+                   </div>
+                </div>
+             </div>
+          </div>
+          <label class="label-style">{{'support_files' | translate}}</label>
+
+
+
+          <div #uploadArea>
+             <div class="thumb-pics-bg thumb-pics-col-3 clearfix thumb-pics-fix-text" style="padding-top: 0;">
+                <div class="thumb-pics">
+                   <div class="question-circle-inp" style="margin-right: 7px;">
+                      <i class="far fa-question-circle"></i>
+                      <div class="message-password-inp">
+                         <p class="mb-0">{{'allowed_file_types' | translate}}
+                            {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                         </p>
+                      </div>
+                   </div>
+                   <div class="form-group form-group-upload">
+                      <div class="darag-dropifile-upload">
+                         <div class="d-flex justify-content-center align-items-center text-center">
+                            <div>
+                               <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                               <div class="drag-file-name"> {{'select_or_upload_your_file_here' | translate}}</div>
+                               <div class="upload-btn-wrapper">
+                                  <button (click)="openFileUploadModal()" type="button" class="btn">{{'browse_files' |
+                                     translate}}</button>
+                               </div>
+                            </div>
+                         </div>
+                      </div>
+                   </div>
+                </div>
+
+                <div class="thumb-pics" *ngFor="let docs of fileUploadPopupStore.displayFiles ;let i = index">
+                   <div class="upload-pics edit-option" data-toggle="modal">
+                      <div *ngIf="docs.id && !docs.preview" class="browse-form-pic"
+                         [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                      </div>
+                      <div *ngIf="docs.preview" class="browse-form-pic"
+                         [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">
+                      </div>
+                      <div class="browse-form-name clearfix">
+                         <div class="float-left">
+                            <h6>
+                               {{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                            </h6>
+                            <span *ngIf="docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-book"></i></span>
+                            <span *ngIf="!docs.is_kh_document" class="mr-2 cmn-clr"><i
+                                  class="fas fa-laptop"></i></span>
+                            <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                         </div>
+                         <div class="browse-logo">
+                            <img *ngIf="checkExtension(docs.ext,'image') != -1" class="folder-picher"
+                               src="/assets/images/jpg-icone.png">
+                            <img *ngIf="checkExtension(docs.ext,'doc') != -1" class="folder-picher"
+                               src="/assets/images/word-icone.png">
+                            <img *ngIf="checkExtension(docs.ext,'pdf') != -1" class="folder-picher"
+                               src="/assets/images/pdf-icone.png">
+                            <img *ngIf="checkExtension(docs.ext,'excel') != -1" class="folder-picher"
+                               src="/assets/images/excel-icone.png">
+                            <img *ngIf="checkExtension(docs.ext,'video') != -1" class="folder-picher"
+                               src="/assets/images/md-video.png">
+                            <img *ngIf="checkExtension(docs.ext,'audio') != -1" class="folder-picher"
+                               src="/assets/images/md-audio.png">
+                            <img *ngIf="checkExtension(docs.ext,'ppt') != -1" class="folder-picher"
+                               src="/assets/images/md-ppt.png">
+                         </div>
+                      </div>
+                      <div class="edit-option-show">
+                         <a (click)="removeDocument(docs)"><i class="fas fa-trash"></i></a>
+                      </div>
+                   </div>
+                </div>
+             </div>
+          </div>
+
+          <div class="row">
+             <div class="col-sm-12">
+                <div class="d-block justify-content-left border-0 mt-3">
+                   <button type="submit" class="btn btn-active" (click)="save()"
+                      [disabled]="correctiveActionForm.invalid || AppStore.loading || checkFileIsUploading() || AuditNonConfirmityStore?.individualMsAuditNonConfirmityDetails?.ms_audit_finding_status?.type=='close'">{{
+                      AppStore.loading ? getButtonText('loading') : getButtonText('save') }}</button>
+                   <button type="button" data-toggle="modal" data-target="#signal-lost" class="btn "
+                      (click)="save(true)"
+                      [disabled]="correctiveActionForm.invalid || AppStore.loading || checkFileIsUploading()">{{
+                      AppStore.loading ? getButtonText('loading') : getButtonText('save_close') }}</button>
+                   <button type="button" data-toggle="modal" data-target="#error-message" class="btn"
+                      (click)="cancel()">{{ AppStore.loading ? getButtonText('loading') : getButtonText('cancel') }}</button>
+                </div>
+             </div>
+          </div>
+
+       </form>
+    </div>
+    <!-- Modal footer -->
+ </div>
+</div>
+
+
+
+<!-- * Documetn Attach/Upload Common Component Starts Here -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #fileUploadModal>
+ <app-file-upload-popup *ngIf="fileUploadPopupStore.openPopup"></app-file-upload-popup>
+</div>
+<!-- * Documetn Attach/Upload Common Component Ends Here -->

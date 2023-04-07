@@ -1,0 +1,104 @@
+<div #plainDev></div>
+<div class="widget">
+    <nav class="edit-bar" data-toggle="affix" #navBar>
+        <app-sub-menu>-</app-sub-menu>
+        <div class="module-name-block module-name-block-space float-left">
+            <a class="dropdown module-title">{{'workflow_engine'|translate}}</a>
+        </div>
+    </nav>
+    <main class="mt-3 acl-page">
+        <div class="container-fluid" *ngIf="MrmWorkflowStore.loaded && MrmWorkflowStore.allItems.length != 0">
+            <div class="audit-program-box audit-page-table-main" *mobxAutorun>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class=" full-width-table mb-3">
+                        <table *ngIf="MrmWorkflowStore?.allItems"
+                            class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                            <thead>
+                                <tr>
+                                    <th class="border-top-0 text-center" width="5%">#</th>
+                                    <!-- <th class="border-top-0" width="8%">Ref. No</th> -->
+                                    <th class="border-top-0" width="25%"  (click)="sortTitle('workflow.title')" >
+                                        <span>{{'title' | translate}}</span>
+                                        <img _ngcontent-twv-c17="" style="margin-left: 6px;" *ngIf="MrmWorkflowStore.orderItem=='workflow.title'"
+                                        [attr.src]="MrmWorkflowStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" 
+                                        class="sort-down-pics">
+                                    </th>
+                                    <th class="border-top-0" width="22%" (click)="sortTitle('workflow.module_group')" >
+                                        <span>{{'module' | translate}}</span>
+                                        <img _ngcontent-twv-c17="" style="margin-left: 6px;" *ngIf="MrmWorkflowStore.orderItem=='workflow.module_group'"
+                                        [attr.src]="MrmWorkflowStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" 
+                                        class="sort-down-pics">
+                                    </th>
+                                    <th class="border-top-0" width="38%">{{'description' | translate}}</th>
+                                    <th class="border-top-0 text-center" width="15%">{{'status' | translate}}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <ng-container *mobxAutorun>
+                                    <tr [ngClass]="AuthStore.getActivityPermission(1600,'MEETING_WORKFLOW_DETAILS') ? 'cursor-pointer edit-and-delete-main' : 'edit-and-delete-main'"
+                                        (click)="AuthStore.getActivityPermission(1600,'MEETING_WORKFLOW_DETAILS') ? gotToMrmWorkflowDetails(row.id): ''"
+                                        *ngFor="let row of MrmWorkflowStore.allItems| paginate: {currentPage:MrmWorkflowStore.currentPage, itemsPerPage:MrmWorkflowStore.itemsPerPage,totalItems:MrmWorkflowStore.totalItems};let num=index ">
+                                        <td class="text-center">{{ (MrmWorkflowStore?.currentPage - 1) * MrmWorkflowStore?.itemsPerPage +
+                                            (num + 1)}}</td>
+                                        <!-- <td style="padding:0.75rem">12345</td> -->
+                                        <td style="padding:0.75rem">{{ row.title}}</td>
+                                        <td style="padding:0.75rem">{{ row.module_title}}</td>
+                                        <td style="padding:0.75rem">{{ row.description ? row.description : AppStore.noContentText}}</td>
+                                        <td style="padding:0.75rem" class="text-center">
+                                            <div [attr.class]="'dot-div '+row.status_label">{{row.status}}</div>
+                                            <div class="edit-option-show">
+                                                <a [attr.title]="'edit' | translate" (click)="edit(row.id)" *ngIf="AuthStore.getActivityPermission(600,'UPDATE_MEETING_WORKFLOW')"><i
+                                                        class="fas fa-pen pointer"></i></a>
+                                                <a [attr.title]="'delete' | translate" (click)="deleteConfirm(row.id,row.status)"
+                                                    *ngIf="AuthStore.getActivityPermission(600,'DELETE_MEETING_WORKFLOW')"><i
+                                                        class="fas fa-trash pointer"></i></a>
+                                                <a [attr.title]="'activate' | translate"
+                                                    *ngIf="row.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(600,'ACTIVATE_MEETING_WORKFLOW')"
+                                                    (click)="activateConfirm(row.id)"><i
+                                                        class="fas fa-check pointer"></i></a>
+                                                <a [attr.title]="'deactivate' | translate"
+                                                    *ngIf="row.status_id == AppStore.activeStatusId && AuthStore.getActivityPermission(600,'DEACTIVATE_MEETING_WORKFLOW')"
+                                                    (click)="deactivateConfirm(row.id)"><i
+                                                        class="fas fa-ban pointer"></i></a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </ng-container>
+                            </tbody>
+                        </table>
+                    </div>
+                        <p class="float-right" *ngIf="MrmWorkflowStore.loaded && MrmWorkflowStore.totalItems > 0"><b>{{'total_Items' | translate}}:{{MrmWorkflowStore?.totalItems}}</b></p>
+                    
+                    <div *ngIf="MrmWorkflowStore.totalItems > MrmWorkflowStore.itemsPerPage && MrmWorkflowStore?.loaded"
+                        class="col-sm-12">
+                        <ul class="pagination justify-content-center mt-3">
+                            <div class="list">
+                                <pagination-controls (pageChange)="pageChange($event)" class="my-pagination">
+                                </pagination-controls>
+                            </div>
+                        </ul>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+        <ng-container *mobxAutorun>
+            <app-no-data *ngIf="MrmWorkflowStore.loaded && MrmWorkflowStore.allItems.length == 0" [border]='false'></app-no-data>
+        </ng-container>
+        <ng-container *mobxAutorun>
+            <div *ngIf="!MrmWorkflowStore?.loaded">
+                <app-meeting-list-loader></app-meeting-list-loader>
+            </div>
+        </ng-container>
+    </main>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+    <app-mrm-workflow-add-modal *ngIf="workFlowObject.type" [source]="workFlowObject">
+    </app-mrm-workflow-add-modal>
+</div>
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp>
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>

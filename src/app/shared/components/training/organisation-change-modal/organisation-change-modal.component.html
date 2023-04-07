@@ -1,0 +1,230 @@
+<button type="button" class="close" (click)="cancel()"><i class="lni-close"></i><span>{{'esc' |
+        translate}}</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header">
+            <h4 class="modal-title">{{ 'change_organization_unit' | translate }}</h4>
+        </div>
+        <!-- Modal body -->
+        <div class="modal-body form-body">
+            <!-- <form [formGroup]="form"> -->
+            <p class="head-details">{{'organization_change_form_message' | translate}}</p>
+            <form [formGroup]="form" *mobxAutorun>
+                <div class="row">
+                    <div class="col-lg-6 col-sm-12"
+                        *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_subsidiary">
+                        <div class="form-group">
+                            <label
+                                for="name">{{OrganizationalSettingsStore.isMultiple?getButtonText('organizations'):getButtonText('organization')}}<sup>*</sup></label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect">
+
+                                    <ng-select [items]="SubsidiaryStore.subsidiaryList"
+                                        [placeholder]="getPlaceholder('organization')"
+                                        [multiple]="OrganizationalSettingsStore.isMultiple" searchable="true"
+                                        bindLabel="title" formControlName="organization_ids"
+                                        (search)="searchSubsidiary($event)" (clear)="getSubsidiary()"
+                                        (open)="getSubsidiary()" (add)="getDivision()"
+                                        (change)="setNull('organization')" [closeOnSelect]="false"
+                                        autocomplete="new-password">
+
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            {{item.title?.length > 29 ? (item.title | slice:0:29)+' ...' :
+                                            item.title}}<span aria-hidden="true" (click)="clear(item)"
+                                                style="border:none;" class="ng-value-icon left">×</span>
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            {{item.title?.length > 33 ? (item.title | slice:0:33)+' ...' :
+                                            item.title}}
+                                        </ng-template>
+                                    </ng-select>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.organization_id">
+                                    {{formErrors.organization_id[0]}}</p>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- [ngStyle]="{ display: (!OrganizationalSettingsStore?.showBranch || !OrganizationLevelSettingsStore.organizationLevelSettings?.is_branch) ? 'none' : 'block' }" -->
+                    <div class="col-sm-6"
+                        *ngIf="OrganizationalSettingsStore?.showBranch && OrganizationLevelSettingsStore.organizationLevelSettings?.is_branch">
+                        <div class="form-group">
+                            <label
+                                for="name">{{OrganizationalSettingsStore.isMultiple?getButtonText('branches'):getButtonText('branch')}}</label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect">
+                                    <ng-select [items]="BranchesStore.branchDetails"
+                                        [placeholder]="getPlaceholder('branch')"
+                                        [multiple]="OrganizationalSettingsStore.isMultiple" searchable="true"
+                                        bindLabel="title" formControlName="branch_ids" [closeOnSelect]="false"
+                                        (open)="getBranches()" (search)="searchBranches($event)" (add)="getDivision()"
+                                        autocomplete="new-password">
+
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            {{item.title?.length > 29 ? (item.title | slice:0:29)+' ...' :
+                                            item.title}}<span aria-hidden="true" (click)="clear(item)"
+                                                style="border:none;" class="ng-value-icon left">×</span>
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            {{item.title?.length > 33 ? (item.title | slice:0:33)+' ...' :
+                                            item.title}}
+                                        </ng-template>
+                                    </ng-select>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.branch_ids">
+                                    {{formErrors.branch_ids}}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6 col-sm-12"
+                        [ngStyle]="{ display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_division ? 'none' : 'block' }">
+                        <div class="form-group">
+                            <label
+                                for="name">{{OrganizationalSettingsStore.isMultiple?getButtonText('divisions'):getButtonText('division')}}<sup>*</sup></label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect">
+                                    <ng-select [items]="DivisionStore.allItems"
+                                        [placeholder]="getPlaceholder('division')"
+                                        [multiple]="OrganizationalSettingsStore.isMultiple" searchable="true"
+                                        bindLabel="title" (search)="searchDivision($event)"
+                                        formControlName="division_ids" [closeOnSelect]="false" (clear)="getDivision()"
+                                        (open)="getDivision()" (change)="setNull('division')" (add)="getDepartment()"
+                                        autocomplete="new-password">
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            {{item.title?.length > 29 ? (item.title | slice:0:29)+' ...' :
+                                            item.title}}<span aria-hidden="true" (click)="clear(item)"
+                                                style="border:none;" class="ng-value-icon left">×</span>
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            {{item.title?.length > 33 ? (item.title | slice:0:33)+' ...' :
+                                            item.title}}
+                                        </ng-template>
+                                    </ng-select>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.division_id">
+                                    {{formErrors.division_id}}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6 col-sm-12"
+                        *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_department">
+                        <div class="form-group">
+                            <label
+                                for="name">{{OrganizationalSettingsStore.isMultiple?getButtonText('departments'):getButtonText('department')}}<sup>*</sup></label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect">
+                                    <ng-select [items]="DepartmentStore.allItems"
+                                        [placeholder]="getPlaceholder('department')"
+                                        [multiple]="OrganizationalSettingsStore.isMultiple" searchable="true"
+                                        bindLabel="title" (search)="searchDepartment($event)"
+                                        formControlName="department_ids" (clear)="getDepartment()"
+                                        [closeOnSelect]="false" (open)="getDepartment()"
+                                        (change)="setNull('department')" (add)="getSection()">
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            {{item.title?.length > 29 ? (item.title | slice:0:29)+' ...' :
+                                            item.title}}<span aria-hidden="true" (click)="clear(item)"
+                                                style="border:none;" class="ng-value-icon left">×</span>
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            {{item.title?.length > 33 ? (item.title | slice:0:33)+' ...' :
+                                            item.title}}
+                                        </ng-template>
+                                    </ng-select>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.department_id">
+                                    {{formErrors.department_id}}</p>
+
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <div class="col-lg-6 col-sm-12"
+                        [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_section ? 'none':'block'}">
+                        <div class="form-group">
+                            <label
+                                for="name">{{OrganizationalSettingsStore.isMultiple?getButtonText('sections'):getButtonText('section')}}<sup>*</sup></label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect">
+                                    <ng-select [items]="SectionStore.allItems" [placeholder]="getPlaceholder('section')"
+                                        [multiple]="OrganizationalSettingsStore.isMultiple" searchable="true"
+                                        bindLabel="title" (search)="searchSection($event)" formControlName="section_ids"
+                                        (clear)="getSection()" [closeOnSelect]="false" (open)="getSection()"
+                                        (add)="getSubSection()" (change)="setNull('section')"
+                                        autocomplete="new-password">
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            {{item.title?.length > 29 ? (item.title | slice:0:29)+' ...' :
+                                            item.title}}<span aria-hidden="true" (click)="clear(item)"
+                                                style="border:none;" class="ng-value-icon left">×</span>
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            {{item.title?.length > 33 ? (item.title | slice:0:33)+' ...' :
+                                            item.title}}
+                                        </ng-template>
+                                    </ng-select>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.section_id">
+                                    {{formErrors.section_id}}</p>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6 col-sm-12"
+                        [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_sub_section ? 'none':'block'}">
+                        <div class="form-group">
+                            <label
+                                for="name">{{OrganizationalSettingsStore.isMultiple?getButtonText('sub_sections'):getButtonText('sub_section')}}<sup>*</sup></label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect">
+                                    <ng-select [items]="SubSectionStore.allItems"
+                                        [placeholder]="getPlaceholder('sub_section')"
+                                        [multiple]="OrganizationalSettingsStore.isMultiple" searchable="true"
+                                        bindLabel="title" formControlName="sub_section_ids" (clear)="getSubSection()"
+                                        (search)="searchSubSection($event)" (open)="getSubSection()"
+                                        [closeOnSelect]="false" autocomplete="new-password">
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            {{item.title?.length > 29 ? (item.title | slice:0:29)+' ...' :
+                                            item.title}}<span aria-hidden="true" (click)="clear(item)"
+                                                style="border:none;" class="ng-value-icon left">×</span>
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            {{item.title?.length > 33 ? (item.title | slice:0:33)+' ...' :
+                                            item.title}}
+                                        </ng-template>
+                                    </ng-select>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.sub_section_id">
+                                    {{formErrors.sub_section_id}}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="clearfix"></div>
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="d-block justify-content-left border-0 mt-3">
+                            <!-- <button type="submit" class="btn btn-active" (click)="save()"
+                                [disabled]="form.invalid || AppStore.loading">{{  AppStore.loading  ? getButtonText('loading') : getButtonText('save')  }}</button> -->
+                            <button type="button" data-toggle="modal" data-target="#signal-lost" class="btn btn-active"
+                                (click)="save(true)" [disabled]="form.invalid || AppStore.loading">{{ AppStore.loading ?
+                                getButtonText('loading') : getButtonText('add_close') }}</button>
+                            <button type="button" data-toggle="modal" data-target="#error-message" class="btn"
+                                (click)="cancel()">{{ AppStore.loading ? getButtonText('loading') :
+                                getButtonText('cancel') }}</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <!-- </form> -->
+        </div>
+        <!-- Modal footer -->
+    </div>
+</div>

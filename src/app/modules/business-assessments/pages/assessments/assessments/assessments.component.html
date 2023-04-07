@@ -1,0 +1,232 @@
+<ng-container *mobxAutorun>
+    <app-grid-view-loader *ngIf="!AssessmentsStore.loaded && AssessmentsStore.listStyle=='grid'"></app-grid-view-loader>
+    <div class="tab-pane active" id="tab-page-one"
+        *ngIf="AssessmentsStore?.loaded && AssessmentsStore?.assessmentDetails.length>0">
+        <!-- !Grid View Starts -->
+        <div *ngIf="AssessmentsStore.listStyle=='grid'"
+            [ngClass]="AssessmentsStore.listStyle=='grid'?'tab-pane tab-edit-class active' : 'tab-pane tab-edit-class fade'">
+            <div class="bg-white p-3">
+                <div class="clearfix d-flex">
+                    <div class="folder-section">
+                        <div id="maindiv" *mobxAutorun>
+                            <div id="dragdiv">
+                                <!-- !Grid Loader -->
+                                <ul id="allItems" runat="server" class="folder-loop folder-main-page folder-main-page-assessment clearfix w-100">
+                                    <!-- *ngIf="AssessmentsStore.loaded" folder sec starts -->
+                                    <li title="{{docs.title}}"
+                                        *ngFor="let docs of AssessmentsStore.assessmentDetails | paginate: {currentPage: AssessmentsStore?.currentPage,itemsPerPage: AssessmentsStore?.itemsPerPage,totalItems: AssessmentsStore?.totalItems} ;let i = index"
+                                        class="folder-box-document" id="node1">
+                                        <!--(contextmenu)="openOptions(i)"-->
+                                        <span *ngIf="!docs.is_folder"
+                                            class="document-label-folder bg-light-blue">{{docs.business_assessment_status_title?docs.business_assessment_status_title:'NA'}}</span>
+
+                                        <!-- !Document -->
+                                        <a class="folder-one folder-documents" (click)="gotoDetails(docs.id)">
+                                            <!--(click)="gotoFolder(docs.is_folder,docs.id,docs.title)" *ngIf="!docs.is_folder"-->
+                                            <img *ngIf="docs.document_version_token"
+                                                [attr.src]="createImageUrl('document-version',docs.document_version_token)"
+                                                onerror="this.src='/assets/images/no-image-popup-icon.png'"
+                                                style="height: 110px;" class="folder-picher">
+                                            <img *ngIf="!docs.document_version_token" style="height: 110px;"
+                                                src="/assets/images/no-image-popup-icon.png" class="folder-picher">
+                                            <!-- <button  [ngClass]="docs.is_starred?'btn-folder btn-stars active':'btn-folder btn-stars'">
+                                    <i class="fas fa-star"></i></button> -->
+                                            <!--*ngIf="AssessmentsStore.selectedSideMenu!='trash'" type="text" (click)="starDocument(docs.is_folder,docs.is_starred,docs.id)"-->
+                                            <!-- <span class="icon-indication-folder"><i [ngClass]="docs.document_access_type_icon_class"></i></span> -->
+                                        </a>
+                                        <p class="elips-1">
+                                            {{docs.title?.length > 13 ? docs.title.substring(0,13)+' ...' : docs.title
+                                            }}
+                                        </p>
+                                        <h5 class="elips-1">{{docs.created_at | date :'MMM d, y'}}</h5>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <p class="float-right bold mb-0" *ngIf="AssessmentsStore.loaded && AssessmentsStore.assessmentDetails.length > 0">{{'total_Items' | translate}}:{{AssessmentsStore?.totalItems}}</p>
+                        <div class="row mt-4">
+                            <div *ngIf="AssessmentsStore.totalItems > AssessmentsStore.itemsPerPage && AssessmentsStore?.loaded"
+                                class="col-sm-12 ">
+                                <ul class="pagination justify-content-center mt-3">
+                                    <div class="list">
+                                        <pagination-controls (pageChange)="pageChange($event)" class="my-pagination">
+                                        </pagination-controls>
+                                    </div>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+
+        </div>
+        <!-- !Grid View Ends -->
+        <div class="row" *ngIf="AssessmentsStore.listStyle=='table'">
+            <div class="col-sm-12 audit-page-table-main full-width-table">
+                <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll"
+                    *ngIf="AuthStore.getActivityPermission(1900,'BUSINESS_ASSESSMENT_LIST')">
+                    <thead>
+                        <tr>
+                            <th class="border-top-0" width="2%">#</th>
+                            <th class="border-top-0 pointer" width="8%"
+                                (click)="setAssessmentSort('business_assessments.reference_code')">
+                                {{'ref_id'|translate}}
+                                <img *ngIf="AssessmentsStore.orderItem == 'business_assessments.reference_code'"
+                                    [attr.src]="AssessmentsStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                    class="sort-down-pics">
+                            </th>
+                            <th class="border-top-0 pointer" width="15%"
+                                (click)="setAssessmentSort('business_assessments.title')">{{'title'|translate}}
+                                <img *ngIf="AssessmentsStore.orderItem == 'business_assessments.title'"
+                                    [attr.src]="AssessmentsStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                    class="sort-down-pics">
+                            </th>
+                            <th class="border-top-0" width="13%">{{'departments'|translate}}
+
+
+                            </th>
+                            <th class="border-top-0" width="10%">{{'ms_types'|translate}}
+
+                            </th>
+                            <th class="border-top-0 pointer" width="12%"
+                                (click)="setAssessmentSort('business_assessment_frameworks.title')">
+                                {{'framework'|translate}}
+                                <img *ngIf="AssessmentsStore.orderItem == 'business_assessment_frameworks.title'"
+                                    [attr.src]="AssessmentsStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                    class="sort-down-pics">
+                            </th>
+                            <th class="border-top-0 pointer" width="16%"
+                                (click)="setAssessmentSort('created_user.first_name')">{{'created_by'|translate}}
+                                <img *ngIf="AssessmentsStore.orderItem == 'created_user.first_name'"
+                                    [attr.src]="AssessmentsStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                    class="sort-down-pics">
+                            </th>
+                            <th class="border-top-0 pointer" width="11%"
+                                (click)="setAssessmentSort('business_assessments.created_at')">{{'date'|translate}}
+                                <img *ngIf="AssessmentsStore.orderItem == 'business_assessments.created_at'"
+                                    [attr.src]="AssessmentsStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                    class="sort-down-pics">
+                            </th>
+                            <th class="border-top-0 pointer" width="5%"
+                                (click)="setAssessmentSort('business_assessments.score')">{{'score'|translate}}
+                                <img *ngIf="AssessmentsStore.orderItem == 'business_assessments.score'"
+                                    [attr.src]="AssessmentsStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                    class="sort-down-pics">
+                            </th>
+                            <th class="text-center border-top-0 pointer" width="8%"
+                                (click)="setAssessmentSort('business_assessments.status')">{{'status'|translate}}
+                                <img *ngIf="AssessmentsStore.orderItem == 'business_assessments.status'"
+                                    [attr.src]="AssessmentsStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                    class="sort-down-pics">
+                            </th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="edit-and-delete-main"
+                            *ngFor="let assessment of AssessmentsStore?.assessmentDetails | paginate: {currentPage:AssessmentsStore?.currentPage, itemsPerPage:AssessmentsStore?.itemsPerPage,totalItems:AssessmentsStore?.totalItems};let num = index">
+                            <td class="pointer">
+                                {{(AssessmentsStore?.currentPage - 1) * AssessmentsStore?.itemsPerPage + (num + 1)}}
+                            </td>
+                            <td class="pointer" (click)="gotoDetails(assessment.id)">#{{assessment.reference_code}}</td>
+                            <td class="pointer" (click)="gotoDetails(assessment.id)">{{assessment.title}}
+                            </td>
+                            <td class="pointer" (click)="gotoDetails(assessment.id)">{{assessment.departments}}</td>
+                            <td class="pointer" (click)="gotoDetails(assessment.id)">
+                                {{assessment.ms_types?assessment.ms_types:AppStore.noContentText}}</td>
+                            <td class="pointer" (click)="gotoDetails(assessment.id)">
+                                {{assessment.business_assessment_framework_title}}
+                            </td>
+                            <td class="pointer" (click)="gotoDetails(assessment.id)">
+                                <div class="d-flex flex-row user-list-sm user-box-smol-round rounde-hov-bg">
+                                    <img data-toggle="modal"
+                                        [attr.src]="assessment.created_by_image_token?createImageUrl('user-profile-picture',assessment.created_by_image_token):getDefaultImage('user-logo')"
+                                        width="30px" height="30px" class="rounded-circle rounde-hov details-show-popup">
+
+                                    <div>
+                                        <h6>{{assessment.created_by_first_name}} {{assessment.created_by_last_name}}
+                                        </h6>
+                                        <span>{{assessment.created_by_designation}}</span>
+                                    </div>
+                                </div>
+                                <!-- <app-user-popup-box [source]="getPopupDetails(assessment)"></app-user-popup-box> -->
+                            </td>
+                            <td class="pointer" (click)="gotoDetails(assessment.id)">
+                                {{assessment.created_at|date :
+                                OrganizationGeneralSettingsStore?.organizationSettings?.date_format}}
+                            </td>
+                            <td class="text-center pointer" (click)="gotoDetails(assessment.id)">
+                                {{assessment.score}}
+                            </td>
+
+                            <td class="text-center">
+
+                                <div class="row" class="pt-3 pb-2">
+                                    <div class="edit-option-show" style="margin:6px 0 0 0">
+
+                                        <a *ngIf="assessment.business_assessment_status_id==1 && AuthStore.getActivityPermission(1900,'UPDATE_BUSINESS_ASSESSMENT')"
+                                            [attr.title]="'edit'|translate" (click)="editDetails(assessment.id)"><i
+                                                class="fas fa-pen"></i></a>
+                                        <a *ngIf="AuthStore.getActivityPermission(1900,'DELETE_BUSINESS_ASSESSMENT')"
+                                            [attr.title]="'delete'|translate"
+                                            (click)="deleteAssessment(assessment.id)"><i class="fas fa-trash"></i></a>
+
+
+                                    </div>
+                                    <div [attr.class]="'dot-div '+assessment.business_assessment_status_label+'-dot'"
+                                        class="pointer" (click)="gotoDetails(assessment.id)">
+                                        {{assessment.business_assessment_status_title}}
+
+                                    </div>
+                                </div>
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+                </table>
+                <p class="float-right bold mb-0" *ngIf="AssessmentsStore.loaded && AssessmentsStore.assessmentDetails.length > 0">{{'total_Items' | translate}}:{{AssessmentsStore?.totalItems}}</p>
+            </div>
+
+            <div class="col-sm-12" *ngIf="(AssessmentsStore?.totalItems>AssessmentsStore?.itemsPerPage)">
+                <ul class="pagination justify-content-center mt-3">
+                    <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+                        (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+</ng-container>
+
+<ng-container *mobxAutorun>
+    <app-no-data *ngIf="AssessmentsStore?.loaded && AssessmentsStore?.assessmentDetails.length==0" [border]="false">
+    </app-no-data>
+</ng-container>
+
+<ng-container *mobxAutorun>
+    <div *ngIf="!AssessmentsStore?.loaded && AssessmentsStore.listStyle=='table'">
+        <app-assessments-list-loader></app-assessments-list-loader>
+    </div>
+</ng-container>
+
+<!-- work-flow-popup Start -->
+<div class="modal modal-style-1 popup-full-width fade" id="new-assessments-popup" data-keyboard="false"
+    data-backdrop="static" #formModal>
+
+    <app-assessment-modal *ngIf="assessmentObject.type" [source]="assessmentObject">
+
+    </app-assessment-modal>
+</div>
+
+
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" data-backdrop="static" data-keyboard="false" #deletePopup>
+    <app-delete-popup [source]="deleteObject"></app-delete-popup>
+</div>
+
+<!------------------- Delete Confirmation Modal End --------------------------->

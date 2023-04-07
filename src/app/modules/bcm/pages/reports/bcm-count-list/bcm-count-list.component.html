@@ -1,0 +1,129 @@
+<!-- <div> -->
+    <div #plainDev></div>
+    <nav class="edit-bar" data-toggle="affix" #navBar>
+        <div class="module-name-block float-left drop-menu-left-head">
+            <a class="nav-link current-page border-right-0"
+                [routerLink]="['/bcm/reports', bcmCountType]">
+                <i class="fas fa-chevron-left"></i>{{'bcm_report_details' | translate}}</a>
+        </div>
+        <ul class="nav nav-pills float-left d-none d-lg-block" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link nav-link-show" [routerLink]="['/bcm/reports', bcmCountType, id]"
+                    routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">{{'bcm' | translate}}</a>
+            </li>
+        </ul>
+        <app-sub-menu></app-sub-menu>
+    </nav>
+    <main class="audit-program-details-page mt-3">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="tab-content">
+                        <div class="tab-pane active" id="info">
+                            <div class="widget bg-white widg-padding-cmn min-height-83">
+                                <div class="row"
+                                    *ngIf="BCMReportStore?.listloaded && BCMReportStore.BCMReportsItemsDetails.length > 0">
+                                    <div class="col-md-12 text-center">
+                                        <h5>{{AuthStore.user.organization?.title}}</h5>
+                                        <h4 class="bold">
+                                            {{BCMReportStore.getBCMReportDetailsListingTableTitle |
+                                            translate}}
+                                        </h4>
+                                        <div *ngIf="filterDateObject != null">
+                                            <p class="mb-0"><i class="fas fa-calendar-alt date-pics-two"></i>{{'from' |
+                                                translate}} <i class="bold">{{filterDateObject.startDate | date:
+                                                    OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</i>
+                                                {{'to' | translate}} <i class="bold">{{filterDateObject.endDate | date:
+                                                    OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</i>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12 mt-4"
+                                        *ngIf="BCMReportStore.selectedReportObject.reportType == 'bcm'">
+                                        
+                                        <div class="row">
+                                            <div class="col-sm-12">
+                                                <div class="full-width-table">
+                                                <table
+                                                class="table table-bordered ordinary-table audit-page-table mb-4 table-scroll"
+                                                >
+                                                <thead>
+                                                    <tr>
+                                                        <th class="border-top-0 text-center" width="5%">#</th>
+                                                        <th class="border-top-0 " width="21%">{{'title' | translate}}
+                                                        </th>
+                                                        <th class="border-top-0 " width="21%">{{'bcm_category' | translate}}</th>
+                                                            <th class="border-top-0 " width="14%">{{'bcp' | translate}}</th>
+                                                            <th class="border-top-0 " width="12%">{{'start_date' |
+                                                                translate}}</th>
+                                                            <th class="border-top-0 issue-list-org-tab-three pointer" width="12%">
+                                                                <span>{{'end_date' | translate }}</span>&nbsp;
+                                                            </th>
+                                                            <th class="border-top-0 " width="15%">{{'status' |
+                                                                translate}}</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <ng-container *mobxAutorun>
+                                                        <tr class="pointer edit-and-delete-main"
+                                                            *ngFor="let row of BCMReportStore.BCMReportsItemsDetails| paginate: {currentPage:BCMReportStore.currentPage, itemsPerPage:BCMReportStore.itemsPerPage,totalItems:BCMReportStore.totalItems};let num=index "
+                                                            (click)="getRisk(row.id)">
+                                                            <td style="text-align: center;" class="cursor-pointer">
+                                                                {{(BCMReportStore.currentPage - 1) *
+                                                                    BCMReportStore.itemsPerPage +
+                                                                    (num + 1)}}
+                                                                </td>
+                                                                <td>{{row.title}}</td>
+                                                                <td>{{row}}</td>
+                                                                <td>{{row.bcp}}</td>
+                                                            <td>{{row.start_date | date:
+                                                                OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                                <p *ngIf="!row.start_date">{{AppStore.noContentText}}
+                                                                </p></td>
+                                                            <td>{{row.end_date | date:
+                                                                OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                                <p *ngIf="!row.end_date">{{AppStore.noContentText}}
+                                                                </p>
+                                                            </td>
+                                                            <td>
+
+                                                                <div *ngIf="row.status" [attr.class]="'dot-div '+row?.status_label+'-dot'">
+                                                                    {{row?.status}}</div>
+                                                                <p *ngIf="!row.status">{{AppStore.noContentText}}</p> 
+                                                            </td>
+                                                          
+                                                        </tr>
+                                                    </ng-container>
+                                                </table>
+                                            </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <ng-container *mobxAutorun>
+                                    <div *ngIf="!BCMReportStore?.listloaded">
+                                        <app-table-loader></app-table-loader>
+                                    </div>
+                                    <app-no-data
+                                        *ngIf="BCMReportStore.BCMReportsItemsDetails.length == 0 && BCMReportStore.listloaded == true">
+                                    </app-no-data>
+                                </ng-container>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <div *ngIf="BCMReportStore.totalItems>BCMReportStore.itemsPerPage" class="col-sm-12">
+        <ul class="pagination justify-content-center mt-3">
+            <div class="list">
+                <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+                    (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+            </div>
+        </ul>
+    </div>
+<!-- </div> -->
+
+<div class="modal modal-style-1 fade email-popup-new" id="custom-date-popup" #confirmationPopUp>
+    <app-custom-date-popup (dateEvent)="passDates($event)"></app-custom-date-popup>
+</div>

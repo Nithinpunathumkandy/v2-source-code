@@ -1,0 +1,421 @@
+<main class="mt-3 acl-page">
+    <div class="container-fluid" *mobxAutorun>
+        <div class="organization-form-page mt-4 pt-4">
+            <form [formGroup]="form">
+                <div class="row">
+                    <div class="col-lg-12 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'preplan' | translate}}<span class="form-error">*</span></label>
+                            <div class="multiple-plain-ngselect w-100">
+                                <ng-select [placeholder]="'preplan' | translate" [multiple]="false"
+                                    formControlName="preplan_id" [clearOnBackspace]="false"
+                                    (search)="searchPreplan($event)" bindLabel="title"
+                                    [clearable]="false"
+                                    [readonly]="MockDrillPlanStore?.individualMockDrillPlanDetails?.preplan_id">
+                                    <ng-option [value]="preplan"
+                                        *ngFor="let preplan of MockDrillProgramStore?.preplanList">
+                                        {{preplan?.title?.length > 30 ?
+                                            preplan?.title.substring(0,30)
+                                        + '...' : preplan?.title}}
+                                    </ng-option>
+                                </ng-select>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- <div class="col-lg-12 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'mock_drill_type' | translate}}<span class="form-error">*</span></label>
+                            <div class="custom-control pt-2 custom-radio d-flex">
+                                <span *ngFor="let item of MockDrillTypesMasterStore.allItems;let idx=index"
+                                    [ngClass]="{'ml-5':idx>0}">
+                                    <div>
+                                        <input type="radio" class="custom-control-input" value='{{item.id}}'
+                                            id="{{'rbtn'+ idx}}"
+                                            [checked]="item.id==form.value.mock_drill_type_id ? true : false"
+                                            (change)="mockdrillTypeChanged(item.id)">
+                                        <label class="custom-control-label" style="padding-top: 2px;"
+                                            for="{{'rbtn'+ idx}}">{{item.mock_drill_type_title}}</label>
+                                    </div>
+                                </span>
+                            </div>
+                        </div>
+                    </div> -->
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'plan_date' | translate}}<span class="form-error">*</span></label>
+                            <!-- <div class="input-group date-picker cal-time">
+                                <div class="input-group date-picker">
+                                    <div class="input-group">
+                                        <input class="form-control" placeholder="yyyy-mm-dd" id="planDate" name="dp"
+                                            autocomplete="off" ngbDatepicker formControlName="date" #d="ngbDatepicker">
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-secondary calendar" (click)="d.toggle()"
+                                                type="button">
+                                                <i class="fas fa-calendar-alt"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div> -->
+                            <div class="input-group date-picker cal-time">
+                                <div class="input-group date-picker">
+                                    <!-- (ngModelChange)="changeDate()" -->
+                                    <input class="form-control"  [owlDateTime]="dt1"
+                                        [owlDateTimeTrigger]="dt1" 
+                                     
+                                        [placeholder]="'plan_date'| translate" formControlName="date">
+                                    <owl-date-time [hour12Timer]="true" #dt1></owl-date-time>
+                                    <div class="input-group-append">
+                                        <button [owlDateTimeTrigger]="dt1" class="btn btn-outline-secondary calendar"
+                                            type="button"><i class="fas fa-calendar-alt"></i></button>
+                                    </div>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors && formErrors.incident_at">
+                                    {{formErrors.incident_at}}</p>
+                            </div>
+                            <!-- <p class="form-error pt-1" *ngIf="formErrors&&formErrors.date">
+                        {{formErrors.date[0]}}</p> -->
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'venue' | translate}}<span class="form-error">*</span></label>
+                            <input type="text" class="form-control" id="planVenue" formControlName="venue"
+                                autocomplete="off" [placeholder]="'venue' | translate">
+                            <p class="form-error pt-1" *ngIf="formErrors&&formErrors.venue">
+                                {{formErrors.venue[0]}}</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-12 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'leader' | translate}}<span class="form-error">*</span></label>
+                            <div class="clearfix d-flex">
+                                <div class="multiple-plain-ngselect w-100">
+                                    <ng-select [items]="UsersStore.usersList" bindLabel="email" labelForId="id"
+                                        formControlName="leader_id"
+                                        [placeholder]="'select_responsible_person' | translate" [closeOnSelect]="true"
+                                        (search)="searchUsers($event)" (clear)="getUsers()" (open)="getUsers()"
+                                        [clearOnBackspace]="false" [searchFn]="customSearchFn">
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            <img *ngIf="item.image_token" class="ng-select-user-display" height="15"
+                                                width="15"
+                                                [attr.src]="createImagePreview('user-profile-picture',item.image_token)"
+                                                onerror="this.src='/assets/images/user-demo2.png'" />
+                                            <img *ngIf="!item.image_token" class="ng-select-user-display" height="15"
+                                                width="15" [attr.src]="getDefaultImage()"
+                                                onerror="this.src='/assets/images/user-demo2.png'" />
+                                            <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,'
+                                                ') | titlecase}}</b>
+                                            <span aria-hidden="true" (click)="clear(item);" style="border:none;"
+                                                class="ng-value-icon left">×</span>
+                                        </ng-template>
+
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            <div>
+                                                <div class="user-post-department-pic">
+                                                    <img *ngIf="item.image_token" class="ng-select-user-display"
+                                                        height="25" width="25"
+                                                        [attr.src]="createImagePreview('user-profile-picture',item.image_token)"
+                                                        onerror="this.src='/assets/images/user-demo2.png'" />
+                                                    <img *ngIf="!item.image_token" class="ng-select-user-display"
+                                                        height="25" width="25" [attr.src]="getDefaultImage()"
+                                                        onerror="this.src='/assets/images/user-demo2.png'" />
+                                                </div>
+                                                <div class="user-post-department-div">
+                                                    <b>{{getStringsFormatted([item.first_name,item.last_name],50,' ') |
+                                                        titlecase}}</b>
+                                                    <p class="user-post-department-multiple">
+                                                        {{getStringsFormatted([item.designation_title,'
+                                                        '+item.department],50,',')}}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </ng-template>
+                                    </ng-select>
+                                </div>
+
+                            </div>
+                            <p class="form-error pt-1" *ngIf="formErrors&&formErrors.leader_id">
+                                {{formErrors.leader_id[0]}}</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-12 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'evacuation_team' | translate}}</label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect">
+                                    <ng-select [items]="UsersStore.usersList" bindLabel="email" labelForId="id"
+                                        formControlName="evacuation_teams" [placeholder]="'select_user' | translate"
+                                        multiple="true" [closeOnSelect]="false" (search)="searchUsers($event)"
+                                        (clear)="getUsers()" [clearable]="false" (open)="getUsers()"
+                                        [clearOnBackspace]="false" [searchFn]="customSearchFn"
+                                        (change)="selectTeam($event,false)" (remove)="selectTeam($event,true)">
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            <img *ngIf="item.image_token" class="ng-select-user-display" height="15"
+                                                width="15"
+                                                [attr.src]="createImagePreview('user-profile-picture',item.image_token)"
+                                                onerror="this.src='/assets/images/user-demo2.png'" />
+                                            <img *ngIf="!item.image_token" class="ng-select-user-display" height="15"
+                                                width="15" [attr.src]="getDefaultImage()"
+                                                onerror="this.src='/assets/images/user-demo2.png'" />
+                                            <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,'
+                                                ') | titlecase}}</b><span aria-hidden="true" (click)="clear(item);"
+                                                style="border:none;" class="ng-value-icon left">×</span>
+                                        </ng-template>
+
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            <div>
+                                                <div class="user-post-department-pic">
+                                                    <img *ngIf="item.image_token" class="ng-select-user-display"
+                                                        height="25" width="25"
+                                                        [attr.src]="createImagePreview('user-profile-picture',item.image_token)"
+                                                        onerror="this.src='/assets/images/user-demo2.png'" />
+                                                    <img *ngIf="!item.image_token" class="ng-select-user-display"
+                                                        height="25" width="25" [attr.src]="getDefaultImage()"
+                                                        onerror="this.src='/assets/images/user-demo2.png'" />
+                                                </div>
+                                                <div class="user-post-department-div">
+                                                    <b>{{getStringsFormatted([item.first_name,item.last_name],50,' ') |
+                                                        titlecase}}</b>
+                                                    <p class="user-post-department-multiple">
+                                                        {{getStringsFormatted([item.designation_title,'
+                                                        '+item.department],50,',')}}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </ng-template>
+                                    </ng-select>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.evacuation_teams">
+                                    {{formErrors.evacuation_teams[0]}}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-12 col-sm-12 audit-page-table-main"
+                        *ngIf="evacuation_team!=undefined && evacuation_team?.length>0">
+                        <div class="row">
+                            <div class="col-sm-12 full-width-table">
+                                <table class="table table-bordered ordinary-table audit-page-table mb-4 table-scroll">
+                                    <thead>
+                                        <tr>
+                                            <th class="border-top-0 text-center" width="2%">{{'sl'|translate}}</th>
+                                            <th class="border-top-0" width="30%">{{'name' | translate}}</th>
+                                            <th class="border-top-0" width="25%">{{'roles' | translate}}</th>
+                                            <th class="border-top-0 text-center" width="15%">{{'floor' | translate}}
+                                            </th>
+                                            <th class="border-top-0" width="30%">{{'responsibility' | translate}}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let item of filteredTeam();let num=index">
+                                            <td class="text-center" *ngIf="!item.is_delete">{{num+1}}</td>
+                                            <td class="pointer" *ngIf="!item.is_delete">
+                                                <div
+                                                    class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                                                    <!-- <div class="user-post-department-pic"><img
+                                                            class="ng-select-user-display" height="25" width="25"
+                                                            [attr.src]="patchUserDetails(item.user_id,'img')"
+                                                            onerror="this.src='/assets/images/user-demo2.png'" />
+                                                    </div>
+                                                    <div class="pointer">
+                                                        <h6>{{patchUserDetails(item.user_id,'name') | titlecase}} </h6>
+                                                        <span> {{patchUserDetails(item.user_id,'title')}}</span>
+                                                    </div> -->
+                                                    <app-user-popup-box [source]="getPopupDetails(item.user)"
+                                                        [showName]="true"></app-user-popup-box>
+                                                </div>
+                                            </td>
+                                            <td *ngIf="!item.is_delete">
+                                                <div class="form-group mb-0">
+                                                    <div class="multiple-plain-ngselect w-100">
+                                                        <ng-select [placeholder]="'select_role' | translate"
+                                                            [multiple]="false" [ngModelOptions]="{standalone: true}"
+                                                            [searchable]="true"
+                                                            [(ngModel)]="item.mock_drill_evacuation_role_id"
+                                                            (open)="getEvacuationRoleService()"
+                                                            (search)="searchRole($event)"
+                                                            (clear)="getEvacuationRoleService()">
+                                                            <ng-option
+                                                                *ngFor="let item of MockDrillEvacuationRoleMasterStore.allItems"
+                                                                [value]="item.id">
+                                                                {{item.mock_drill_evacuation_role_title|
+                                                                titlecase}}
+                                                            </ng-option>
+                                                        </ng-select>
+                                                    </div>
+
+                                                </div>
+                                            </td>
+                                            <td class="text-center" *ngIf="!item.is_delete">
+                                                <div class="form-group mb-0">
+                                                    <div class="clearfix">
+                                                        <div class="multiple-plain-ngselect w-100">
+                                                            <ng-select [(ngModel)]="item.floor"
+                                                                [ngModelOptions]="{standalone: true}"
+                                                                [placeholder]="'select_floor' | translate">
+                                                                <ng-option [value]=1> 1 </ng-option>
+                                                                <ng-option [value]=2> 2 </ng-option>
+                                                                <ng-option [value]=3> 3 </ng-option>
+                                                                <ng-option [value]=4> 4 </ng-option>
+                                                                <ng-option [value]=5> 5 </ng-option>
+                                                                <ng-option [value]=6> 6 </ng-option>
+                                                                <ng-option [value]=7> 7 </ng-option>
+                                                                <ng-option [value]=8> 8 </ng-option>
+                                                                <ng-option [value]=9> 9 </ng-option>
+                                                                <ng-option [value]=10> 10 </ng-option>
+                                                                <ng-option [value]=11> 11 </ng-option>
+                                                                <ng-option [value]=12> 12 </ng-option>
+                                                                <ng-option [value]=13> 13 </ng-option>
+                                                                <ng-option [value]=14> 14 </ng-option>
+                                                                <ng-option [value]=15> 15 </ng-option>
+                                                                <ng-option [value]=16> 16 </ng-option>
+                                                                <ng-option [value]=17> 17 </ng-option>
+                                                                <ng-option [value]=18> 18 </ng-option>
+                                                                <ng-option [value]=19> 19 </ng-option>
+                                                                <ng-option [value]=20> 20 </ng-option>
+                                                                <ng-option [value]=21> 21 </ng-option>
+                                                                <ng-option [value]=22> 22 </ng-option>
+                                                                <ng-option [value]=23> 23 </ng-option>
+                                                                <ng-option [value]=24> 24 </ng-option>
+                                                                <ng-option [value]=25> 25 </ng-option>
+                                                                <ng-option [value]=26> 26 </ng-option>
+                                                                <ng-option [value]=27> 27 </ng-option>
+                                                                <ng-option [value]=28> 28 </ng-option>
+                                                                <ng-option [value]=29> 29 </ng-option>
+                                                                <ng-option [value]=30> 30 </ng-option>
+                                                                <ng-option [value]=31> 31 </ng-option>
+                                                                <ng-option [value]=32> 32 </ng-option>
+                                                                <ng-option [value]=33> 33 </ng-option>
+                                                                <ng-option [value]=34> 34 </ng-option>
+                                                                <ng-option [value]=35> 35 </ng-option>
+                                                                <ng-option [value]=36> 36 </ng-option>
+                                                                <ng-option [value]=37> 37 </ng-option>
+                                                                <ng-option [value]=38> 38 </ng-option>
+                                                                <ng-option [value]=39> 39 </ng-option>
+                                                                <ng-option [value]=40> 40 </ng-option>
+                                                                <ng-option [value]=41> 41 </ng-option>
+                                                                <ng-option [value]=42> 42 </ng-option>
+                                                                <ng-option [value]=43> 43 </ng-option>
+                                                                <ng-option [value]=44> 44 </ng-option>
+                                                                <ng-option [value]=45> 45 </ng-option>
+                                                                <ng-option [value]=46> 46 </ng-option>
+                                                                <ng-option [value]=47> 47 </ng-option>
+                                                                <ng-option [value]=48> 48 </ng-option>
+                                                                <ng-option [value]=49> 49 </ng-option>
+                                                                <ng-option [value]=50> 50 </ng-option>
+                                                            </ng-select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td *ngIf="!item.is_delete">
+                                                <div class="form-group mb-0">
+                                                    <input type="text" class="form-control"
+                                                        [ngModelOptions]="{standalone: true}"
+                                                        placeholder="{{'responsibility' | translate}}"
+                                                        [(ngModel)]="item.resposibility" autocomplete="off">
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-12 col-sm-12">
+                        <div class="form-group mb-0">
+                            <label for="name">{{'stake_holders' | translate}}</label>
+                        </div>
+                    </div>
+                    <div class="col-lg-12 col-sm-12">
+                        <div class="row">
+                            <div class="col-lg-6 col-sm-12">
+                                <div class="form-group">
+                                    <!-- <label for="name">{{'title' | translate}}</label> -->
+                                    <input type="text" class="form-control" id="title" formControlName="title"
+                                        autocomplete="off" [placeholder]="'title' | translate">
+                                    <p class="form-error pt-1" *ngIf="formErrors&&formErrors.title">
+                                        {{formErrors.title[0]}}</p>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-sm-12">
+                                <div class="form-group">
+                                    <!-- <label for="name">{{'communication' | translate}}</label> -->
+                                    <div class="d-flex">
+                                        <input type="text" class="form-control w-100" id="planVenue"
+                                            formControlName="communication" autocomplete="off"
+                                            [placeholder]="'communication' | translate">
+                                        <button type="button" class="btn multi-add-user ml-2" style="width: 42px;"
+                                            [disabled]="!validateStakeholder()" (click)="addStakeHolder()"><i
+                                                class="fas fa-plus"></i></button>
+                                    </div>
+                                    <p class="form-error pt-1" *ngIf="formErrors&&formErrors.communication">
+                                        {{formErrors.communication[0]}}</p>
+                                </div>
+                            </div>
+                            <!-- <div class="col-lg-2 col-sm-12">
+                                <button class="btn float-left" [disabled]="!validateStakeholder()"
+                                    (click)="addStakeHolder()">{{'add'|translate}}</button>
+                            </div> -->
+                        </div>
+                    </div>
+                    <div class="col-lg-12 col-sm-12 audit-page-table-main mt-2"
+                        *ngIf="filteredStakeHolder()!=undefined && filteredStakeHolder()?.length>0">
+                        <div class="row">
+                            <div class="col-sm-12 full-width-table">
+                                <table class="table table-bordered ordinary-table audit-page-table mb-4 table-scroll">
+                                    <thead>
+                                        <tr>
+                                            <th class="border-top-0 text-center" width="2%">{{'sl'|translate}}</th>
+                                            <th class="border-top-0" width="49%">{{'title' | translate}}</th>
+                                            <th class="border-top-0" width="49%">{{'communication' | translate}}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let item of filteredStakeHolder();let num=index"
+                                            class="edit-and-delete-main">
+                                            <td class="text-center" *ngIf="!item?.is_delete">{{num+1}}</td>
+                                            <td *ngIf="!item?.is_delete">
+                                                {{item?.title}}
+                                            </td>
+                                            <td *ngIf="!item?.is_delete">
+                                                <div>
+                                                    {{item?.communication}}
+                                                </div>
+                                                <div class="edit-option-show" style="margin: 30px 0 0 0; ">
+                                                    <a [attr.title]="'delete' | translate"
+                                                        (click)="deleteStakeHolder(item,num)"><i
+                                                            class="fas fa-trash pointer"></i></a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </form>
+            <div style="overflow:auto;">
+                <div class="form-next-page-btns" style="float:left;">
+                    <button class="btn btn-active" type="button" (click)="save(false)"
+                        [disabled]="AppStore.loading || form.invalid">
+                        <!-- {{'save' | translate}} -->
+                        {{ (AppStore.loading ? getButtonText('loading') : getButtonText('save'))| translate
+                        }}
+                    </button>
+                    <button class="btn btn-active" type="button" (click)="save(true)"
+                        [disabled]="AppStore.loading || form.invalid"> {{ (AppStore.loading ? getButtonText('loading') :
+                        getButtonText('save_close'))| translate
+                        }}</button>
+                    <button class="btn" type="button" (click)="cancelClicked()">{{'cancel' | translate}}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopup data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="confirmationObject"></app-delete-popup>
+</div>

@@ -1,0 +1,237 @@
+<button type="button" class="close" (click)="cancel()" data-dismiss="modal"><i
+        class="lni-close"></i><span>esc</span></button>
+<div class="modal-dialog popup-medium-width step-popup-modal">
+    <div class="modal-content" *mobxAutorun>
+        <!-- Modal body -->
+        <div class="modal-body form-body">
+
+
+            <!-- multistep form -->
+            <div class="step-form-small">
+                <form id="msform" [formGroup]="form">
+                    <!-- progressbar -->
+                    <div class="small-step-progressbar-main small-step-progressbar-full-width">
+                        <ul id="progressbar">
+                            <li class="active"></li>
+                            <li *ngFor="let row of TestAndExerciseChecklistMasterStore.TestAndExerciseChecklist"></li>
+                            <!-- <li></li> -->
+                        </ul>
+                    </div>
+                    <!-- fieldsets -->
+                    <ng-container
+                        *ngIf="TestAndExerciseChecklistMasterStore.loaded&&TestAndExerciseChecklistMasterStore.TestAndExerciseChecklist.length!=0">
+                        <fieldset style="width: 750px;"
+                            *ngFor="let row of TestAndExerciseChecklistMasterStore.TestAndExerciseChecklist;let i=index;">
+                            <h2 class="fs-title">BCP Effectiveness</h2>
+
+                            <div class="mb-4">
+                                <div class="issuue-new-style p-0">
+                                    <div class="issue-top-sec">
+                                        <div class="clearfix">
+                                            <h5 class="cmn-head-style mt-1">{{row.title}}<span
+                                                    class="form-error">*</span></h5>
+                                        </div>
+                                        <div class="mb-3 btn-loop-start-audit">
+                                            <button type="button" (click)="selectChecklist(i,1)"
+                                                [ngClass]="typeCast(row.answer)==1?'btn-small btn-active':'btn-small'">{{'yes'|translate}}</button>
+                                            <button type="button" (click)="selectChecklist(i,0)"
+                                                [ngClass]="typeCast(row.answer)==0?'btn-small btn-active':'btn-small'">{{'no'|translate}}</button>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-sm-12">
+                                                <div class="form-group">
+                                                    <label for="name">{{'remarks'|translate}}</label>
+                                                    <textarea class="form-control" [(ngModel)]="row['remarks'+i]"
+                                                        rows="3" id="comment" placeholder="Enter remarks"
+                                                        [ngModelOptions]="{standalone: true}"></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="button" name="next" [disabled]="nextTab(i)"
+                                class="next action-button btn-active" value="Next" />
+                            <input type="button" *ngIf="i != 0" name="previous" id="prevBtn"
+                                class="previous action-button" value="Previous" #prevBtn />
+                            <input type="button" name="cancel" (click)="cancel()" data-dismiss="modal" class="cancel action-button"
+                                value="Cancel" />
+                        </fieldset>
+                    </ng-container>
+                    <fieldset style="width: 750px;">
+                        <h2 class="fs-title">BCP Effectiveness</h2>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label for="name">Recovery Time<span class="form-error">*</span></label>
+                                    <input type="text" class="form-control" formControlName="recovery_time"
+                                        placeholder="Enter Recover Time">
+                                    <p class="form-error" *ngIf="formErrors&&formErrors.recovery_time">
+                                        {{formErrors.recovery_time}}</p>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label for="name">Actual
+                                        Cost({{OrganizationGeneralSettingsStore?.organizationSettings?.currency}})</label>
+                                    <input type="number" class="form-control" formControlName="actual_cost"
+                                        placeholder="Enter Actual Cost">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label for="name">Recovery Level<span class="form-error">*</span></label>
+                                    <div class="clearfix">
+                                        <div class="multiple-plain-ngselect full-width-multiple w-100">
+                                            <ng-select placeholder="Select Recovery Level" [multiple]="false"
+                                                searchable="true" (search)="searchRecoveryLevel($event)"
+                                                formControlName="recovery_level" (clear)="clearRecoveryLevel()"
+                                                (open)="getRecoveryLevel()" (change)="recoveryLevelChange()">
+                                                <ng-option [value]="type.id"
+                                                    *ngFor="let type of TestAndExerciseRecoveryLevelMasterStore.TestAndExerciseRecoveryLevel">
+                                                    {{type.title}}
+                                                </ng-option>
+                                            </ng-select>
+                                            <p class="form-error" *ngIf="formErrors&&formErrors.recovery_level">
+                                                {{formErrors.recovery_level}}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-sm-12">
+                                <div>
+                                    <div class="form-group">
+                                        <label for="name">{{'description' | translate}}</label>
+                                        <textarea formControlName="type_description" class="form-control" disabled rows="4"
+                                            id="comment" [placeholder]="'recovery_level_description_placeholder'| translate"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-12 col-sm-12">
+                                <div class="form-group">
+                                    <label for="name">What Went Well<span class="form-error">*</span></label>
+                                    <ckeditor [config]="config" id="description" (ready)="onReady($event)"
+                                        (change)="descriptionValueChange($event)" [editor]="Editor"
+                                        formControlName="what_went_well"></ckeditor>
+                                    <p class="form-error" *ngIf="formErrors&&formErrors.what_went_well">
+                                        {{formErrors.what_went_well}}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-12 col-sm-12">
+                                <div class="form-group">
+                                    <label for="name">What Could Be Improved</label>
+                                    <ckeditor [config]="config" id="description" (ready)="onReady($event)"
+                                        (change)="descriptionValueChange($event)" [editor]="Editor"
+                                        formControlName="improvements"></ckeditor>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-12 col-sm-12">
+                                <div class="form-group">
+                                    <label for="name">Remarks</label>
+                                    <textarea class="form-control" rows="3" id="comment" formControlName="remarks"
+                                        placeholder="Write a short remarks of the outcome."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <label for="name" class="label-style mb-0">{{'documents' | translate}}</label>
+                        <!-- Common File Upload Starts Here -->
+                        <div class="scroll-documents" #uploadArea>
+                            <div class="thumb-pics-bg thumb-pics-col-3 clearfix thumb-pics-fix-text"
+                                style="padding-top: 0;">
+                                <div class="thumb-pics">
+                                    <div class="question-circle-inp"
+                                        *ngIf="OrganizationGeneralSettingsStore.organizationSettings?.logo_allowed_types.length > 0"
+                                        style="margin-right: 7px;">
+                                        <i class="far fa-question-circle"></i>
+                                        <div class="message-password-inp">
+                                            <p class="mb-0">{{'allowed_file_types' | translate}}
+                                                {{OrganizationGeneralSettingsStore.organizationSettings?.logo_allowed_types.toString()}}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="form-group form-group-upload">
+                                        <div class="darag-dropifile-upload">
+                                            <div class="d-flex justify-content-center align-items-center text-center">
+                                                <div>
+                                                    <img src="/assets/images/drag-pic.png" alt="image"
+                                                        class="drag-pic-files">
+                                                    <div class="drag-file-name"> Select or Upload Your File Here
+                                                    </div>
+                                                    <div class="upload-btn-wrapper">
+                                                        <button (click)="openFileUploadModal()" type="button"
+                                                            class="btn">{{'browse_files' | translate}}</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="thumb-pics"
+                                    *ngFor="let docs of fileUploadPopupStore.displayFiles ;let i = index">
+                                    <div class="upload-pics edit-option" data-toggle="modal">
+                                        <div *ngIf="docs.id && !docs.preview" class="browse-form-pic"
+                                            [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                                        </div>
+                                        <div *ngIf="docs.preview" class="browse-form-pic"
+                                            [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">
+                                        </div>
+                                        <div class="browse-form-name clearfix">
+                                            <div class="float-left">
+                                                <h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                                </h6>
+                                                <span *ngIf="docs.is_kh_document" class="mr-2 cmn-clr"><i
+                                                        class="fas fa-book"></i></span>
+                                                <span *ngIf="!docs.is_kh_document" class="mr-2 cmn-clr"><i
+                                                        class="fas fa-laptop"></i></span>
+                                                <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                                            </div>
+                                            <div class="browse-logo">
+                                                <img *ngIf="checkExtension(docs.ext,'image') != -1"
+                                                    class="folder-picher" src="/assets/images/jpg-icone.png">
+                                                <img *ngIf="checkExtension(docs.ext,'doc') != -1" class="folder-picher"
+                                                    src="/assets/images/word-icone.png">
+                                                <img *ngIf="checkExtension(docs.ext,'pdf') != -1" class="folder-picher"
+                                                    src="/assets/images/pdf-icone.png">
+                                                <img *ngIf="checkExtension(docs.ext,'excel') != -1"
+                                                    class="folder-picher" src="/assets/images/excel-icone.png">
+                                                <img *ngIf="checkExtension(docs.ext,'video') != -1"
+                                                    class="folder-picher" src="/assets/images/md-video.png">
+                                                <img *ngIf="checkExtension(docs.ext,'audio') != -1"
+                                                    class="folder-picher" src="/assets/images/md-audio.png">
+                                                <img *ngIf="checkExtension(docs.ext,'ppt') != -1" class="folder-picher"
+                                                    src="/assets/images/md-ppt.png">
+                                            </div>
+                                            <div class="edit-option-show">
+                                                <a (click)="removeBrochure(docs)"><i class="fas fa-trash"></i></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="submit" (click)="save()" name="submit"
+                            [disabled]="form.invalid || AppStore.loading" class="submit action-button btn-active"
+                            value="Save" />
+                            <input type="button" name="previous" id="prevBtn" #prevBtn class="previous action-button"
+                            value="Previous" />
+                        <input type="button" name="cancel" (click)="cancel()" data-dismiss="modal" class="cancel action-button"
+                            value="Cancel" />
+                        
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #fileUploadModal>
+    <app-file-upload-popup *ngIf="fileUploadPopupStore.openPopup"></app-file-upload-popup>
+</div>

@@ -1,0 +1,83 @@
+<div class="widget bg-white">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item pointer" [routerLink]="['/masters/bcm']"><a>{{'bcm' | translate}}</a></li>
+            <li class="breadcrumb-item active">{{'business_continuity_strategy_type' | translate}}</li>
+        </ol>
+    </nav>
+
+    <table class="table-master table" *ngIf="BcsTypesMasterStore?.loaded && BcsTypesMasterStore.allItems.length > 0">
+
+
+        <tr>
+            <th style="width: 10%; text-align: center;">{{'sl' | translate}}</th>
+            <th (click)="sortTitle('business_continuity_strategy_types.title')" class="border-top-0 issue-list-org-tab-three pointer" style="width: 30%;"><span>{{'title' | translate}}</span>
+                <img _ngcontent-twv-c17="" *ngIf="BcsTypesMasterStore.orderItem=='business_continuity_strategy_types.title'" class="sort-down-pics pl-2" 
+                [attr.src]="BcsTypesMasterStore.orderBy=='desc' ? 
+                'assets/images/sort-up.png' : BcsTypesMasterStore.orderBy=='asc' ? 
+                'assets/images/sort-down.png' : 'assets/images/sort-empty.png'">
+
+
+            </th>
+
+            <th>{{'description' | translate}}</th>
+            <th style="width: 15%;">{{'status' | translate}}</th>
+        </tr>
+        <ng-container *mobxAutorun>
+
+
+
+            <tr class="edit-and-delete-main"
+                *ngFor="let row of BcsTypesMasterStore.allItems| paginate: {currentPage:BcsTypesMasterStore.currentPage, itemsPerPage:BcsTypesMasterStore.itemsPerPage,totalItems:BcsTypesMasterStore.totalItems};let num=index ">
+                <td style="text-align: center;">{{(BcsTypesMasterStore.currentPage - 1) * BcsTypesMasterStore.itemsPerPage + (num + 1)}}</td>
+                <td><a  [ngStyle] = "{ 'pointer-events' : AuthStore.getActivityPermission(1100,'UPDATE_BUSINESS_CONTINUITY_STRATEGY_TYPE') ? '' : 'none'}" >{{row.title}}</a></td>
+                <td>{{row.description ? row?.description : AppStore.noContentText}}</td>
+                <td style="padding:0.75rem;" >
+                    <div [attr.class]="'dot-div '+row.status_label">{{row.status}}</div>
+                    <div class="edit-option-show">
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'UPDATE_BUSINESS_CONTINUITY_STRATEGY_TYPE')" (click)="getBcsTypes(row.id)" [attr.title]="'edit' | translate" ><i class="fas fa-pen pointer"></i></a>
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'DELETE_BUSINESS_CONTINUITY_STRATEGY_TYPE')" (click)="delete(row.id)" [attr.title]="'delete' | translate"><i class="fas fa-trash pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(1100,'ACTIVATE_BUSINESS_CONTINUITY_STRATEGY_TYPE')" (click)="activate(row.id)" [attr.title]="'activate' | translate"><i
+                                class="fas fa-check pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.activeStatusId && AuthStore.getActivityPermission(1100,'DEACTIVATE_BUSINESS_CONTINUITY_STRATEGY_TYPE')" (click)="deactivate(row.id)" [attr.title]="'deactivate' | translate"><i
+                                class="fas fa-ban pointer"></i></a>
+                    </div>
+                </td>
+
+            </tr>
+        </ng-container>
+    </table>
+    <p class="float-right" *ngIf="BcsTypesMasterStore?.loaded && BcsTypesMasterStore.totalItems > 0"><b>{{'total_Items' | translate}}:{{BcsTypesMasterStore?.totalItems}}</b></p>
+
+    <ng-container *mobxAutorun>
+        <div *ngIf="!BcsTypesMasterStore.loaded">
+            <app-table-loader></app-table-loader>
+        </div>
+       
+
+
+        <app-no-data *ngIf = "BcsTypesMasterStore.totalItems == 0 && BcsTypesMasterStore.loaded == true"></app-no-data>
+    </ng-container>
+
+    <div *ngIf="BcsTypesMasterStore.totalItems>BcsTypesMasterStore.itemsPerPage" class="col-sm-12">
+        <ul class="pagination justify-content-center mt-3">
+            <div class="list">
+                <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate" (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls> 
+            </div>
+        </ul>
+    </div>
+</div>
+
+<!-- Modal part -->
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+    <app-bcs-type-modal *ngIf="bcsTypesObject.type" [source]="bcsTypesObject">
+    </app-bcs-type-modal>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+

@@ -1,0 +1,131 @@
+<div class="audit-program-box audit-page-table-main" *mobxAutorun>
+    <div class="row" *ngIf="CAActionPlanStore.loaded && CAActionPlanStore?.CAActionPlans.length">
+        <div class="col-sm-12">
+            <div class="full-width-table">
+                <table class="table table-bordered ordinary-table table-hover issue-list-table-org mb-1"
+                    *ngIf="CAActionPlanStore?.loaded">
+                    <tr *ngIf="CAActionPlanStore.CAActionPlans.length>0">
+                        <th style="width: 2%;" style="text-align: center;">{{'sl' | translate}}</th>
+                        <!-- <th style="width: 8%;"> {{'ref_id' | translate}}</th> -->
+                        <th class="border-top-0 issue-list-org-tab-three pointer" width="8%"
+                            (click)="sortTitle('corrective_actions.reference_code')">
+                            <span>{{'ref_id' |translate}}</span>
+                            <img *ngIf="CAActionPlanStore.orderItem == 'corrective_actions.reference_code'"
+                                [attr.src]="CAActionPlanStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                class="sort-down-pics">
+                        </th>
+                        <th class="border-top-0 issue-list-org-tab-three pointer" width="20%"
+                            (click)="sortTitle('corrective_actions.title')">
+                            <span>{{'title' |translate}}</span>
+                            <img *ngIf="CAActionPlanStore.orderItem=='corrective_actions.title'"
+                                [attr.src]="CAActionPlanStore.orderBy=='desc' ? 'assets/images/sort-up.png' : CAActionPlanStore.orderBy=='asc' ? 'assets/images/sort-down.png' : 'assets/images/sort-empty.png'"
+                                class="sort-down-pics">
+                        </th>
+                        <th style="width: 15%;"><span>{{'assessment' | translate}}</span></th>
+                        <th style="width: 10%;"><span>{{'clause' | translate}}</span></th>
+                        <th style="width: 15%;"><span>{{'control' | translate}}</span></th>
+                        
+                        <th style="width: 10%;"><span>{{'start_date' | translate}}</span></th>
+                        <th style="width: 10%;"><span>{{'target_date' | translate}}</span></th>
+                        <th style="width: 10%;" class="text-center">{{'status' | translate}}</th>
+                    </tr>
+                    <ng-container *mobxAutorun>
+                        <tr  (click)="getDetails(row);" class="cursor-pointer" *ngFor="
+                                      let row of CAActionPlanStore?.CAActionPlans| paginate
+                                      : {
+                                          currentPage: CAActionPlanStore?.currentPage,
+                                          itemsPerPage: CAActionPlanStore?.itemsPerPage,
+                                          totalItems: CAActionPlanStore?.totalItems
+                                        };
+                                      let num = index
+                                    " class="cursor-pointer tr-action edit-and-delete-main">
+                            <td style="text-align: center;">
+                                {{
+                                (CAActionPlanStore?.currentPage - 1) *
+                                CAActionPlanStore?.itemsPerPage +
+                                (num + 1)
+                                }}
+                            </td>
+
+                            <td>{{row.reference_code}}</td>
+
+                            <td title="{{row.title}}"><a class="cursor-pointer">{{row.title }}</a></td>
+                            <td title="{{row.control_assessment_title}}"><a class="cursor-pointer">{{row.control_assessment_title }}</a></td>
+                            <td title="{{row.title}}"><a class="cursor-pointer">
+                                <div *ngIf="row?.document_version_content_title">{{row.document_version_content_clause_number }} - {{row?.document_version_content_title}}</div>
+                                <div *ngIf="!row?.document_version_content_title">{{ AppStore.noContentText }}</div>
+                            </a>
+                            </td>
+                            <td title="{{row.title}}"><a class="cursor-pointer">
+                                <div *ngIf="row?.control_title">{{row.control_title }} </div>
+                                <div *ngIf="!row?.control_title">{{ AppStore.noContentText }}</div>
+                            </a>
+                            </td>
+
+                           
+                          
+                           
+                            <td>{{row.start_date | date:
+                                OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</td>
+                            <td>
+                                {{row.target_date | date:
+                                OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                            </td>
+                            <td class="text-center">
+                                <div
+                                    [ngClass]="row.control_assessment_action_plan_status_label ? 'dot-div '+row.control_assessment_action_plan_status_label : ''">
+                                    {{row.control_assessment_action_plan_status_language_title}}</div>
+                                <div class="edit-option-show"
+                                    >
+                                    
+                                    <a [attr.title]="'edit'|translate"
+                                        
+                                        (click)="edit(row.id,$event)"><i
+                                            class="fas fa-pen pointer"></i></a>
+                                    <a [attr.title]="'delete'|translate"
+                                       
+                                        (click)="deleteActionPlan(row.id,$event)"><i class="fas fa-trash pointer"></i></a>
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-container>
+                </table>
+                <p class="float-right bold mb-0"
+                    *ngIf="CAActionPlanStore.CAActionPlans.length>0 && CAActionPlanStore?.loaded">
+                    {{'total_Items' | translate}}:{{CAActionPlanStore?.totalItems}}
+                </p>
+            </div>
+
+           
+
+            <div *ngIf="CAActionPlanStore.totalItems>CAActionPlanStore.itemsPerPage"
+                class="col-sm-12">
+                <ul class="pagination justify-content-center mt-3">
+                    <div class="list">
+                        <pagination-controls (pageChange)="pageChange($event)" class="my-pagination">
+                        </pagination-controls>
+                    </div>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <ng-container *mobxAutorun>
+        <div *ngIf="!CAActionPlanStore.loaded">
+           
+            <app-five-column-loader ></app-five-column-loader>
+        </div>
+        <app-no-data
+            *ngIf="CAActionPlanStore.CAActionPlans.length == 0 && CAActionPlanStore.loaded == true">
+        </app-no-data>
+    </ng-container>
+</div>
+
+<div class="modal modal-style-1 fade popup-full-width" id="add-business-framework-popup" data-keyboard="false"
+   data-backdrop="static" #formModal>
+   <app-add-action-plan-control-assessment *ngIf="actionPlanModalObject.type" [source]="actionPlanModalObject">
+
+   </app-add-action-plan-control-assessment>
+</div>
+<div class="modal modal-style-1 fade" id="delete-popup" #deletePopup data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="deleteObject"></app-delete-popup>
+</div>

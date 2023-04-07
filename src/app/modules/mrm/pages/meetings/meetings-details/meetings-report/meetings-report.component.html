@@ -1,0 +1,541 @@
+<ng-container *mobxAutorun>
+   <div *ngIf="!ReportStore?.reportDetailsLoaded">
+      <app-report-details-loader></app-report-details-loader>
+   </div>
+</ng-container>
+
+<div class="widget" *mobxAutorun>
+   <div class="mrm-report-page" id="capture-report"
+      *ngIf="ReportStore.reportDetailsLoaded && ReportStore.reportDetails && AuthStore.getActivityPermission(1600,'MEETING_REPORT_DETAILS')">
+      <div class="widg-padding-cmn pb-0 min-height-70">
+         <!-- style="background: url(assets/images/mrm-report-banner.jpg) no-repeat;" -->
+         <div class="mrm-report-top-sec" 
+            [style.background]="ReportStore.reportDetails?.cover_page?.data?.token ? 'url(' + this.createImageUrl(ReportStore.reportDetails?.cover_page?.data?.token,'report-cover-page') + ') no-repeat 0 0' :  'url(assets/images/mrm-report-banner.jpg)' ">
+            <div class="mrm-report-logos-sec clearfix">
+
+               <!-- <img src="assets/images/xiro-logo-white.png"  class="img-fluid float-left mrm-report-logo-one" style="width: 80px;"> -->
+               <!-- <img *ngIf="ReportStore.reportDetails?.cover_page?.data?.token" [attr.src]="ReportStore.reportDetails?.cover_page?.data.token?createImageUrl(ReportStore.reportDetails.cover_page.data.token,'report-cover-page'):'/assets/images/xiro-logo-white.png'"  class="img-fluid float-left mrm-report-logo-one" style="width: 80px;"> -->
+               <img src="assets/images/logo.png" class="img-fluid float-right mrm-report-logo-two" style="width: 105px;">
+            </div>
+            <div class="mrm-report-header-texts">
+               <div class="transparent-box-bg">
+                  <h5 class="mb-1" *ngIf="ReportStore.reportDetails?.reference_code?.data">
+                     #{{ReportStore.reportDetails?.reference_code?.data}}
+                  </h5>
+                  <h5 *ngIf="ReportStore.reportDetails?.title?.data">
+                     {{ReportStore.reportDetails?.title?.data}}
+                  </h5>
+                  <p class="mb-2" *ngIf="ReportStore.reportDetails?.date?.data"><i class="fas fa-calendar-alt date-pics-two" style="margin-right: 4px;"></i>
+                     {{ReportStore.reportDetails?.date?.data?.start_date | date: OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format}} {{'to'| translate}}
+                     {{ReportStore.reportDetails?.date?.data?.end_date | date: OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format}}
+                  </p>
+                  
+                  <h6 *ngIf="ReportStore?.reportDetails?.location?.data"><span><i
+                           class="fas fa-map-marker-alt date-pics-two"></i></span>{{ReportStore.reportDetails?.location? ReportStore.reportDetails?.location?.data:AppStore.noContentText}}
+                  </h6>
+               </div>
+            </div>
+         </div>
+      </div>
+
+      <div class="widg-padding-cmn mb-4">
+         <div class="row">
+            <div class="col-lg-3 col-sm-6" *ngIf="ReportStore.reportDetails?.leader?.data">
+               <h6>{{ReportStore.reportDetails.leader?.label?.label | translate}}</h6>
+               <div
+                  class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg p-0">
+                  <app-user-popup-box [source]="getEmployeePopupDetails(ReportStore.reportDetails?.leader?.data)"
+                     [showDepartment]='true'></app-user-popup-box>
+               </div>
+
+            </div>
+            <div class="col-lg-3 col-sm-6" *ngIf="ReportStore.reportDetails?.follow_up_meeting?.data">
+               <h6>{{ReportStore.reportDetails?.follow_up_meeting?.label?.label | translate}}</h6>
+               <p>{{ReportStore.reportDetails?.follow_up_meeting?.data? ReportStore.reportDetails?.follow_up_meeting?.data?.title: AppStore.noContentText}}
+               </p>
+            </div>
+            <div class="col-lg-3 col-sm-6" *ngIf="ReportStore.reportDetails?.meeting_report_category?.data">
+               <h6>{{ReportStore.reportDetails?.meeting_report_category?.label?.label | translate}}</h6>
+               <p>{{ReportStore.reportDetails?.meeting_report_category?.data}}</p>
+            </div>
+
+            <!-- <div  [ngStyle] = "{display: !OrganizationGeneralSettingsStore?.organizationSettings?.is_ms_type ? 'none':'block'}" class="col-lg-3 col-sm-6" *ngIf="ReportStore.reportDetails?.ms_type?.data">
+               <h6 *ngIf=" ReportStore.reportDetails?.ms_type?.data?.length>0">{{ReportStore.reportDetails?.ms_type?.label?.label | translate}}</h6>
+               <p >
+                  <span *ngFor="let types of ReportStore.reportDetails?.ms_type?.data; last as islast">
+                      {{types.ms_type?.title}}<span *ngIf="!islast">, </span>
+                  </span>
+               </p>
+            </div> -->
+
+            <div class="mb-2 mt-2" [ngStyle] = "{display: !OrganizationGeneralSettingsStore?.organizationSettings?.is_ms_type ? 'none':'block'}"> 
+               <h6 *ngIf="ReportStore.reportDetails?.ms_type?.data?.length>0">{{ReportStore.reportDetails?.ms_type?.label?.label | translate}} </h6>
+               <label *ngFor="let types of ReportStore.reportDetails?.ms_type?.data; last as islast" class="outline-tag">{{types?.ms_type?.title}} <span>{{types?.ms_type_version?.title}}</span></label> 
+           </div>
+
+         </div>
+         <h6 *ngIf="ReportStore.reportDetails?.participants?.data?.length>0" class="mt-3">
+            {{ReportStore.reportDetails?.participants?.label?.label | translate}}</h6>
+         <div class="row" *ngIf="ReportStore.reportDetails?.participants?.data">
+            <div class="col-lg-3 col-sm-6" *ngFor="let user of ReportStore.reportDetails.participants.data">
+               <div
+                  class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol p-0 mb-3">
+                  <app-user-popup-box *ngIf="!ReportStore.reportDetails?.mode_of_meeting?.is_unplanned" [source]="getEmployeePopupDetails(user.user,null,user?.is_present)" [showDepartment]='true' [present]="true"  [classIssue]="true">
+                  </app-user-popup-box>
+
+                  <app-user-popup-box *ngIf="ReportStore.reportDetails?.mode_of_meeting?.is_unplanned" [source]="getEmployeePopupDetails(user.user,null,1)" [showDepartment]='true' [present]="true"  [classIssue]="true">
+                  </app-user-popup-box>
+               </div>
+            </div>
+         </div>
+
+         <div class="row">
+            <div class="col-lg-6 col-sm-12" *ngIf="ReportStore.reportDetails?.criteria?.data?.length > 0">
+               <h6 class="mt-3">{{ReportStore.reportDetails.criteria.label.label | translate}} </h6>
+               <ul class="arrowlist pl-0 mt-0" *ngFor="let criteria of ReportStore.reportDetails.criteria.data">
+                  <li>{{criteria.title}}</li>
+               </ul>
+            </div>
+
+            <div class="col-lg-6 col-sm-12" *ngIf="ReportStore.reportDetails?.meeting_report_objectives?.data?.length > 0">
+               <h6 class="mt-3">{{ReportStore.reportDetails.meeting_report_objectives.label.label | translate}}
+               </h6>
+               <ul class="arrowlist pl-0 mt-0"
+                  *ngFor="let objectives of ReportStore.reportDetails.meeting_report_objectives.data">
+                  <li>{{objectives.title}}</li>
+               </ul>
+            </div>
+
+            <div class="col-lg-6 col-sm-12"
+               *ngIf="ReportStore.reportDetails?.meeting_report_agendas?.data?.length > 0">
+               <h6 class="mt-3">{{ReportStore.reportDetails.meeting_report_agendas.label.label | translate}} </h6>
+               <ul class="arrowlist pl-0 mt-0"
+                  *ngFor="let agendas of ReportStore.reportDetails.meeting_report_agendas.data">
+                  <li>{{agendas.title}}</li>
+               </ul>
+            </div>
+
+            <div class="col-lg-6 col-sm-12"
+               *ngIf="ReportStore.reportDetails?.meeting_report_minutes_of_meeting?.data?.length > 0">
+               <h6 class="mt-3">{{ReportStore.reportDetails.meeting_report_minutes_of_meeting.label.label |
+                  translate}}</h6>
+
+               <ul class="arrowlist m-0 p-0">
+                  <div *ngFor="let items of ReportStore.reportDetails.meeting_report_minutes_of_meeting.data">
+                     <li>
+                        {{items.title}}
+                     </li>
+                     <app-report-mom-recursive-modal *ngIf="items?.children?.length > 0" [details]="items.children">
+                     </app-report-mom-recursive-modal>
+                  </div>
+                  <li *ngIf="ReportStore.reportDetails?.meeting_report_minutes_of_meeting.data?.length==0">
+                     {{AppStore.noContentText}}</li>
+               </ul>
+
+            </div>
+         </div>
+         <div class="row">
+
+            <div class="col-lg-4 col-sm-12" *ngIf="ReportStore.reportDetails?.discussion?.data">
+               <h6 class="mt-3">{{ReportStore.reportDetails.discussion.label.label | translate}} </h6>
+               <p style="white-space: pre-wrap;">
+                  {{ReportStore.reportDetails.discussion.data}}
+               </p>
+            </div>
+
+            <div class="col-lg-4 col-sm-12" *ngIf="ReportStore.reportDetails?.conclusion?.data">
+               <h6 class="mt-3">{{ReportStore.reportDetails.conclusion.label.label | translate}} </h6>
+               <p style="white-space: pre-wrap;">
+                  {{ReportStore.reportDetails.conclusion.data}}
+               </p>
+            </div>
+
+
+            <div class="col-lg-4 col-sm-12" *ngIf="ReportStore.reportDetails?.mode_of_meeting?.data">
+               <h6 class="mt-3">{{ReportStore.reportDetails.mode_of_meeting.label.label | translate}} </h6>
+               <p>{{getArrayFormatedString('type',ReportStore.reportDetails?.mode_of_meeting?.data) | titlecase}}
+               </p>
+            </div>
+
+         </div>
+
+         <div class="row" *ngIf="ReportStore.reportDetails?.meeting_report_action_plans?.data?.length>0">
+            <div class="col-sm-12">
+               <h6>{{ReportStore.reportDetails.meeting_report_action_plans.label.label | translate}}</h6>
+               <div class="audit-form-table w-100 mb-3">
+                  <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                     <thead>
+                        <tr>
+                           <th class="border-top-0 text-center" width="3%">#</th>
+                           <th class="border-top-0" width="10%">{{'ref_id' | translate}}</th>
+                           <th class="border-top-0" width="32%">{{'title' | translate}}</th>
+                           <th class="border-top-0" width="15%">{{'responsible' | translate}}</th>
+                           <th class="border-top-0" width="15%">{{'start_date' | translate}}</th>
+                           <th class="border-top-0" width="15%">{{'target_date' | translate}}</th>
+                           <th class="border-top-0 text-center" width="10%">{{'status' | translate}}</th>
+                        </tr>
+                     </thead>
+                     <tbody>
+                        <tr
+                           *ngFor="let row of ReportStore.reportDetails.meeting_report_action_plans.data;let list=index">
+                           <td class="text-center">{{list+1}}</td>
+                           <td>#{{row.reference_code}}</td>
+                           <td>{{row.title}}</td>
+                           <td>
+                              <div
+                                 class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg p-0">
+                                 <img
+                                    [attr.src]="row.responsible_user.image?.token? createImageUrl(row.responsible_user.image.token):'/assets/images/user-demo.png'"
+                                    class="rounded-circle rounde-hov" width="35px" height="35px">
+                                 <div class="pointer new-size-text text-left">
+                                    <p class="mb-0">{{row.responsible_user.first_name}}
+                                       {{row.responsible_user.last_name}}</p>
+                                    <span>{{row.responsible_user.designation}}</span>
+                                 </div>
+                              </div>
+                           </td>
+                           <td>{{getTimezoneFormatted(row.start_date) | date:
+                              OrganizationGeneralSettingsStore.organizationSettings?.date_time_format}}</td>
+                           <td>{{getTimezoneFormatted(row.target_date) | date:
+                              OrganizationGeneralSettingsStore.organizationSettings?.date_time_format}}</td>
+                           <td class="text-center">
+                              <div [attr.class]="'dot-div '+row.meeting_action_plan_status?.label">
+                                 {{row.meeting_action_plan_status?.language[0]?.pivot?.title}}
+                              </div>
+                           </td>
+                        </tr>
+                     </tbody>
+                  </table>
+
+               </div>
+
+            </div>
+         </div>
+
+         <div class="row" *ngIf="ReportStore.reportDetails?.meeting_report_related_issues?.data?.length>0">
+            <div class="col-sm-12">
+               <h6>{{ReportStore.reportDetails.meeting_report_related_issues.label.label | translate}}</h6>
+               <div class="audit-form-table w-100 mb-3">
+                  <table class="table table-bordered ordinary-table audit-page-table mb-1 word-break table-scroll">
+                     <thead>
+                        <tr>
+                           <th class="border-top-0 text-center" width="3%">#</th>
+                           <th class="border-top-0" width="10%">{{'ref_id' | translate}}</th>
+                           <th class="border-top-0" width="27%">{{'issue' | translate}}</th>
+                           <th class="border-top-0" width="15%">{{'issue_types' | translate}}</th>
+                           <th class="border-top-0" width="15%">{{'issue_categories' | translate}}</th>
+                           <th class="border-top-0" width="15%">{{'issue_domains' | translate}}</th>
+                           <th class="border-top-0" width="15%">{{'departments' | translate}}</th>
+                        </tr>
+                     </thead>
+                     <tbody>
+                        <tr
+                           *ngFor="let row of ReportStore.reportDetails.meeting_report_related_issues.data;let list=index">
+                           <td class="text-center">{{list+1}}</td>
+                           <td>#{{row.reference_code}}</td>
+                           <td>{{row.title}}</td>
+                           <td *ngIf="row.organization_issue_types?.length>0"> <span
+                                 *ngFor="let types of passOrganizationIssueIypes(row.organization_issue_types)"
+                                 class="risk-type-bx risk-type-bx-drop">
+                                 <i><img
+                                       [attr.src]="types == 'Internal' ? 'assets/images/risk-type-icon.png' : 'assets/images/risk-type-icon-two.png'"></i>&nbsp;{{types}}
+                              </span>
+                           </td>
+                           <td *ngIf="row.organization_issue_types?.length==0">{{AppStore.noContentText}}</td>
+                           <td>
+                              {{ passOrganizationIssueCategories(row.organization_issue_categories)?
+                              passOrganizationIssueCategories(row.organization_issue_categories):AppStore.noContentText}}
+                           </td>
+                           <td>
+                              {{
+                              passIssueDomains(row.organization_issue_domains)?passIssueDomains(row.organization_issue_domains):AppStore.noContentText}}
+                           </td>
+                           <td>
+                              {{passdepartments(row.organization_issue_departments) }}
+                           </td>
+                        </tr>
+                     </tbody>
+                  </table>
+
+               </div>
+
+            </div>
+         </div>
+
+         <div class="row" *ngIf="ReportStore.reportDetails?.meeting_report_risk?.data?.length>0">
+            <div class="col-sm-12">
+               <h6>{{ReportStore.reportDetails.meeting_report_risk.label.label | translate}}</h6>
+               <div class="audit-form-table w-100 mb-3">
+                  <table class="table table-bordered ordinary-table audit-page-table mb-1 word-break table-scroll">
+                     <thead>
+                        <tr>
+                           <th class="border-top-0 text-center" width="3%">#</th>
+                           <th class="border-top-0" width="8%">{{'ref_id' | translate}}</th>
+                           <th class="border-top-0" width="25%">{{'risk' | translate}}</th>
+                           <th class="border-top-0" width="25%">{{'department' | translate}}</th>
+                           <th class="border-top-0" width="25%">{{'risk_category' | translate}}</th>
+                           <th class="border-top-0" width="25%">{{'risk_type' | translate}}</th>
+                        </tr>
+                     </thead>
+                     <tbody>
+                        <tr *ngFor="let row of ReportStore.reportDetails.meeting_report_risk.data;let list=index">
+                           <td class="text-center">{{list+1}}</td>
+                           <td>{{row.reference_code}}</td>
+                           <td>{{row.title}}</td>
+                           <td> {{checkDepartment(row.departments)}}
+                           </td>
+                           <td>{{ checkRiskCategory(row.risk_category?.title
+                              ?row.risk_category?.title:row.risk_category_title)}}</td>
+                           <td>{{checkRiskType(row.risk_types)}}
+                           </td>
+                        </tr>
+                     </tbody>
+                  </table>
+
+               </div>
+
+            </div>
+         </div>
+
+         <div class="row" *ngIf="ReportStore.reportDetails?.meeting_report_strategic_objective?.data?.length>0">
+            <div class="col-sm-12">
+               <h6>{{ReportStore.reportDetails.meeting_report_strategic_objective.label.label | translate}}</h6>
+               <div class="audit-form-table w-100 mb-3">
+                  <table class="table table-bordered ordinary-table audit-page-table mb-1 word-break table-scroll">
+                     <thead>
+                        <tr>
+                           <th class="border-top-0 text-center" width="3%">#</th>
+                           <th class="border-top-0" width="57%">{{'title' | translate}}</th>
+                           <th class="border-top-0" width="40%">{{'description' | translate}}</th>
+                        </tr>
+                     </thead>
+                     <tbody>
+                        <tr *ngFor="let row of ReportStore.reportDetails.meeting_report_strategic_objective.data;let list=index">
+                           <td class="text-center">{{list+1}}</td>
+                           <td>{{row.title}}</td>
+                           <td>{{row.description?row.description:AppStore.noContentText}}</td>
+                        </tr>
+                     </tbody>
+                  </table>
+
+               </div>
+
+            </div>
+         </div>
+
+         <div class="row" *ngIf="ReportStore.reportDetails?.meeting_report_project?.data?.length>0">
+            <div class="col-sm-12">
+               <h6>{{ReportStore.reportDetails.meeting_report_project.label.label | translate}}</h6>
+               <div class="audit-form-table w-100 mb-3">
+                  <table class="table table-bordered ordinary-table audit-page-table mb-1 word-break table-scroll">
+                     <thead>
+                        <tr>
+                           <th class="border-top-0 text-center" width="3%">#</th>
+                           <th class="border-top-0" width="31%">{{'title' | translate}}</th>
+                           <th class="border-top-0" width="32%">{{'manager_name' | translate}}</th>
+                           <th class="border-top-0" width="9%">{{'member_count' | translate}}</th>
+                           <th class="border-top-0" width="9%">{{'location' | translate}} </th>
+                        </tr>
+                     </thead>
+                     <tbody>
+                        <tr *ngFor="let row of ReportStore.reportDetails.meeting_report_project.data;let list=index">
+                           <td class="text-center">{{list+1}}</td>
+                           <td> {{row.title}}</td>
+                           <td> 
+                              <div class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg" *ngIf="row.project_manager?.first_name">
+                                 <img
+                                    [attr.src]="row.image_token?createImageUrl(row.image_token):getDefaultImage('user-logo')"
+                                    width="30px" height="30px" class="rounded-circle">
+                                 
+                                 <div>
+                                    <h6>{{row?.project_manager?.first_name}} {{row?.project_manager?.last_name}}</h6>
+                                    <span>{{row?.project_manager?.designation?row.project_manager?.designation?.title:AppStore.noContentText}} </span>
+                                 </div>
+                              </div> 
+                           <p *ngIf="!row.project_manager?.first_name">{{AppStore.noContentText}}</p>
+                           </td>
+                           <td>{{row.member_count?row.member_count:AppStore.noContentText}}</td>
+                           <td>
+                                 {{row.location_title?row.location?.title:AppStore.noContentText}}
+                           </td>
+                        </tr>
+                     </tbody>
+                  </table>
+
+               </div>
+
+            </div>
+         </div>
+
+         <div class="row" *ngIf="ReportStore.reportDetails?.meeting_report_product?.data?.length>0">
+            <div class="col-sm-12">
+               <h6>{{ReportStore.reportDetails.meeting_report_product.label.label | translate}}</h6>
+               <div class="audit-form-table w-100 mb-3">
+                  <table class="table table-bordered ordinary-table audit-page-table mb-1 word-break table-scroll">
+                     <thead>
+                        <tr>
+                           <th class="border-top-0 text-center" width="3%">#</th>
+                           <th class="border-top-0" width="32%">{{'title' | translate}}</th>
+                           <th class="border-top-0" width="31%">{{'description' | translate}}</th>
+                        </tr>
+                     </thead>
+                     <tbody>
+                        <tr *ngFor="let row of ReportStore.reportDetails.meeting_report_product.data;let list=index">
+                           <td class="text-center">{{list+1}}</td>
+                           <td>{{row.title}}</td>
+                           <td>{{row.description?row.description:AppStore.noContentText}}</td>
+                        </tr>
+                     </tbody>
+                  </table>
+
+               </div>
+
+            </div>
+         </div>
+
+         <div class="row" *ngIf="ReportStore.reportDetails?.meeting_report_non_conformity?.data?.length>0">
+            <div class="col-sm-12">
+               <h6>{{ReportStore.reportDetails.meeting_report_non_conformity.label.label | translate}}</h6>
+               <div class="audit-form-table w-100 mb-3">
+                  <table class="table table-bordered ordinary-table audit-page-table mb-1 word-break table-scroll">
+                     <thead>
+                        <tr>
+                           <th class="border-top-0 text-center" width="3%">#</th>
+                           <th class="border-top-0" width="7%">{{'Ref. ID' | translate}}</th>
+                           <th class="border-top-0" width="51%">{{'title' | translate}}</th>
+                           <th class="border-top-0" width="19%">{{'category' | translate}}</th>
+                           <th class="border-top-0" width="10%">{{'risk_rating' | translate}}</th>
+                           <th class="border-top-0 text-center" width="10%">{{'status' | translate}}</th>
+                        </tr>
+                     </thead>
+                     <tbody>
+                        <tr *ngFor="let row of ReportStore.reportDetails.meeting_report_non_conformity.data;let list=index">
+                           <td class="text-center">{{list+1}}</td>
+                           <td>{{row.reference_code}}</td>
+                           <td>{{row.title}}</td>
+                           <td>{{row?.finding_category?.title}}</td>
+                           <td >
+                                 <div class="dot-div {{row?.risk_rating?.label}}-dot">{{row?.risk_rating?.language[0]?.pivot?.title}} </div>
+                           </td>
+                           <td class="text-center">
+                                 <div class="dot-div {{row?.finding_status?.label}}">{{row?.finding_status?.language[0]?.pivot?.title}}</div>
+                           </td>
+                        </tr>
+                     </tbody>
+                  </table>
+
+               </div>
+
+            </div>
+         </div>
+
+         <div class="row" *ngIf="ReportStore.reportDetails?.meeting_report_customer?.data?.length>0">
+            <div class="col-sm-12">
+               <h6>{{ReportStore.reportDetails.meeting_report_customer.label.label | translate}}</h6>
+               <div class="audit-form-table w-100 mb-3">
+                  <table class="table table-bordered ordinary-table audit-page-table mb-1 word-break table-scroll">
+                     <thead>
+                        <tr>
+                           <th class="border-top-0 text-center" width="3%">#</th>
+                           <th class="border-top-0" width="37%">{{'title' | translate}}</th>
+                           <th class="border-top-0" width="30%">{{'contact_person' | translate}}</th>
+                           <th class="border-top-0" width="30%">{{'address' | translate}}</th>
+                        </tr>
+                     </thead>
+                     <tbody>
+                        <tr *ngFor="let cust of ReportStore.reportDetails.meeting_report_customer.data;let list=index">
+                           <td class="text-center">{{list+1}}</td>
+                           <td> {{cust.title}}</td>
+                           <td>{{cust.contact_person?cust.contact_person:AppStore.noContentText}}</td>
+                           <td>
+                                 {{cust.address?cust.address:AppStore.noContentText}}
+                           </td>
+                        </tr>
+                     </tbody>
+                  </table>
+
+               </div>
+
+            </div>
+         </div>
+
+         <div class="row" *ngIf="ReportStore.reportDetails?.meeting_report_control?.data?.length>0">
+            <div class="col-sm-12">
+               <h6>{{ReportStore.reportDetails.meeting_report_control.label.label | translate}}</h6>
+               <div class="audit-form-table w-100 mb-3">
+                  <table class="table table-bordered ordinary-table audit-page-table mb-1 word-break table-scroll">
+                     <thead>
+                        <tr>
+                           <th class="border-top-0 text-center" width="3%">#</th>
+                           <th class="border-top-0" width="10%">{{'ref_id' | translate}}</th>
+                           <th class="border-top-0" width="87%">{{'title' | translate}}</th>
+                        </tr>
+                     </thead>
+                     <tbody>
+                        <tr *ngFor="let row of ReportStore.reportDetails.meeting_report_control.data;let list=index">
+                           <td class="text-center">{{list+1}}</td>
+                           <td>{{row.reference_code}}</td>
+                           <td> {{row.title}}</td>
+                        </tr>
+                     </tbody>
+                  </table>
+
+               </div>
+
+            </div>
+         </div>
+
+         <div class="row" *ngIf="ReportStore.reportDetails?.meeting_report_audit_finding?.data?.length>0">
+            <div class="col-sm-12">
+               <h6>{{ReportStore.reportDetails.meeting_report_audit_finding.label.label | translate}}</h6>
+               <div class="audit-form-table w-100 mb-3">
+                  <table class="table table-bordered ordinary-table audit-page-table mb-1 word-break table-scroll">
+                     <thead>
+                        <tr>
+                           <th class="border-top-0 text-center" width="3%">#</th>
+                           <th class="border-top-0" width="57%">{{'title' | translate}}</th>
+                           <th class="border-top-0" width="15%">{{'audit_category' | translate}}</th>
+                           <th class="border-top-0" width="15%">{{'risk' | translate}}</th>
+                           <th class="border-top-0 text-center" width="10%">{{'status' | translate}}</th>
+                        </tr>
+                     </thead>
+                     <tbody>
+                        <tr *ngFor="let row of ReportStore.reportDetails.meeting_report_audit_finding.data;let list=index">
+                           <td class="text-center">{{list+1}}</td>
+                           <td >{{row?.title }}
+                           </td>
+                           <td >{{row?.finding_category?.title?row?.finding_category?.title:AppStore.noContentText}}</td>
+                           <td >
+                                 <div class="dot-div {{row?.risk_rating?.label}}-dot">{{row?.risk_rating?.language[0]?.pivot?.title}} </div>
+                           </td>
+                           <td class="text-center">
+                              <div class="dot-div {{row?.finding_status?.label}}">{{row?.finding_status?.language[0]?.pivot?.title}}</div>
+                           </td>
+                        </tr>
+                     </tbody>
+                  </table>
+
+               </div>
+
+            </div>
+         </div>
+
+      </div>
+   </div>
+   <ng-container *mobxAutorun>
+      <app-no-data *ngIf="ReportStore?.reportDetailsLoaded && ReportStore.reportDetails==null" [border]='false'>
+      </app-no-data>
+   </ng-container>
+</div>
+
+
+<div class="modal modal-style-1 image-download-popup-new fade" id="loadMe" aria-labelledby="loadMeLabel" tabindex="-1"
+   role="dialog" #loaderPopUp>
+   <app-loader [source]="downloadMessage"></app-loader>
+</div>
+
+<!-----------------------Form Modal--------------------------->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+   <app-meeting-reports-add *ngIf="reportObject.type" [selectedMeeting]="selectedMeeting" [source]="reportObject">
+   </app-meeting-reports-add>
+</div>

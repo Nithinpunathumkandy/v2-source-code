@@ -1,0 +1,82 @@
+<div #plainDev></div>
+<div class="widget">
+    <nav class="edit-bar" data-toggle="affix" #navBar>
+        <app-sub-menu>-</app-sub-menu>
+        <ul class="nav nav-pills float-left d-none d-lg-block" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link nav-link-show" [routerLink]="['/strategy-management/strategy-workflows']"
+                    routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">{{'workflow_engine' | translate}}
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <main class="mt-3 acl-page">
+        <div class="container-fluid" >
+            <div class="audit-program-box audit-page-table-main" *mobxAutorun>
+                <div class="row">
+                    <div class="col-sm-12 full-width-table">
+                        <table *ngIf="StrategyWorkflowStore.loaded && StrategyWorkflowStore.allItems.length != 0" class="table table-bordered ordinary-table audit-page-table mb-4 table-scroll">
+                            <thead>
+                                <tr>
+                                    <th class="border-top-0 text-center" width="4%">#</th>
+                                    <th class="border-top-0" width="25%">{{'title' | translate}}</th>
+                                    <th class="border-top-0" width="22%">{{'module' | translate}}</th>
+                                    <th class="border-top-0" width="38%">{{'description' | translate}}</th>
+                                    <th class="border-top-0" width="15%">{{'status' | translate}}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <ng-container *mobxAutorun>
+                                    <tr [ngClass]="AuthStore.getActivityPermission(1600,'STRATEGY_WORKFLOW_DETAILS') ? 'cursor-pointer edit-and-delete-main' : 'edit-and-delete-main'"
+                                     (click)="AuthStore.getActivityPermission(1600,'STRATEGY_WORKFLOW_DETAILS') ? gotToStrategyWorkflowDetails(row.id) : ''"
+                                        *ngFor="let row of StrategyWorkflowStore.allItems| paginate: {currentPage:StrategyWorkflowStore.currentPage, itemsPerPage:StrategyWorkflowStore.itemsPerPage,totalItems:StrategyWorkflowStore.totalItems};let num=index ">
+                                        <td class="text-center">{{ (StrategyWorkflowStore?.currentPage - 1) * StrategyWorkflowStore?.itemsPerPage + (num + 1)}}</td>
+                                        <td style="padding:0.75rem">{{ row.title}}</td>
+                                        <td style="padding:0.75rem">{{ row.module_title}}</td>
+                                        <td style="padding:0.75rem">{{ row.description ? row.description : AppStore.noContentText}}</td>
+                                        <td style="padding:0.75rem">
+                                            <div [attr.class]="'dot-div '+row.status_label">{{row.status}}</div>
+                                            <div class="edit-option-show">
+                                                <a [attr.title]="'edit' | translate" (click)="edit(row.id)" *ngIf="AuthStore.getActivityPermission(3200,'UPDATE_STRATEGY_WORKFLOW')"><i class="fas fa-pen pointer"></i></a>
+                                                <a [attr.title]="'delete' | translate" (click)="deleteConfirm(row.id,row.status)" *ngIf="AuthStore.getActivityPermission(3200,'DELETE_STRATEGY_WORKFLOW')"><i class="fas fa-trash pointer"></i></a>
+                                                <a [attr.title]="'activate' | translate" *ngIf="row.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(600,'ACTIVATE_STRATEGY_WORKFLOW')" (click)="activateConfirm(row.id)">
+                                                    <i class="fas fa-check pointer"></i></a>
+                                                <a [attr.title]="'deactivate' | translate" *ngIf="row.status_id == AppStore.activeStatusId && AuthStore.getActivityPermission(600,'DEACTIVATE_STRATEGY_WORKFLOW')" (click)="deactivateConfirm(row.id)">
+                                                    <i class="fas fa-ban pointer"></i></a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </ng-container>
+                            </tbody>
+                        </table>
+                        <ng-container *mobxAutorun>
+                            <app-no-data *ngIf="StrategyWorkflowStore.loaded && StrategyWorkflowStore.allItems.length == 0"></app-no-data>
+                        </ng-container>
+                        <ng-container *mobxAutorun>
+                            <app-table-loader *ngIf="!StrategyWorkflowStore.loaded"></app-table-loader>
+                        </ng-container>
+                    </div>
+                    <div *ngIf="StrategyWorkflowStore.totalItems > StrategyWorkflowStore.itemsPerPage && StrategyWorkflowStore?.loaded"
+                        class="col-sm-12">
+                        <ul class="pagination justify-content-center mt-3">
+                            <div class="list">
+                                <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate" (pageChange)="pageChange($event)" class="my-pagination">
+                                </pagination-controls>
+                            </div>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>                
+    </main>
+</div>
+
+<!------------------- Add WorkFlow Modal Start --------------------------->
+<div class="modal modal-style-1 popup-full-width fade" style="z-index:99999;overflow: auto;" id="new-bcp" data-keyboard="false" data-backdrop="static" #formModal>
+    <app-add-strategy-workflow *ngIf="workFlowObject.type" [source]="workFlowObject">
+    </app-add-strategy-workflow>
+</div>
+<!------------------- Delete Confirmation Modal Start --------------------------->
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp>
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>

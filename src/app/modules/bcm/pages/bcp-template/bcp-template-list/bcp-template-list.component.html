@@ -1,0 +1,124 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navBar>
+    <div class="module-name-block module-name-block-space float-left">
+        <a class="dropdown module-title">{{'templates'|translate}}</a>
+    </div>
+    <app-sub-menu>-</app-sub-menu>
+</nav>
+
+<main class="mt-3">
+    <div class="container-fluid">
+        <app-filter-menu></app-filter-menu>
+        <div class="row">
+            <div class="col-sm-12" *mobxAutorun>
+                <div
+                    *ngIf="BcmTemplateStore.loaded && BcmTemplateStore.allItems.length > 0 && AuthStore.getActivityPermission(700,'BUSINESS_CONTINUITY_PLAN_TEMPLATE_LIST')">
+                    <div class="row">
+                        <div class="col-xl-3 col-lg-4 col-sm-6" 
+                            *ngFor="let templates of BcmTemplateStore.allItems | paginate: {currentPage: BcmTemplateStore?.currentPage,itemsPerPage: BcmTemplateStore?.itemsPerPage,  totalItems: BcmTemplateStore?.totalItems};let num = index">
+                            <div class="workflow-lst-box template-list edit-and-delete-main" (click)="goTdetailsPage(templates.id)">
+                                <div class="edit-option-show pointer" style="margin: 27px -13px 0 0;">
+                                    <a (click)="getTemplateDetails(templates.id)" title="Edit"
+                                        *ngIf="AuthStore.getActivityPermission(700,'UPDATE_BUSINESS_CONTINUITY_PLAN_TEMPLATE')"><i
+                                            class="fas fa-pen"></i></a>
+                                    <a (click)="delete(templates.id)" title="Delete"
+                                        *ngIf="AuthStore.getActivityPermission(700,'DELETE_BUSINESS_CONTINUITY_PLAN_TEMPLATE')"><i
+                                            class="fas fa-trash"></i></a>
+                                    <a title="Activate"
+                                        *ngIf="templates.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(700,'ACTIVATE_BUSINESS_CONTINUITY_PLAN_TEMPLATE')"
+                                        (click)="activate(templates.id)"><i class="fas fa-check pointer"></i></a>
+                                    <a title="Deactivate"
+                                        *ngIf="templates.status_id == AppStore.activeStatusId && AuthStore.getActivityPermission(700,'DEACTIVATE_BUSINESS_CONTINUITY_PLAN_TEMPLATE')"
+                                        (click)="deactivate(templates.id)"><i class="fas fa-ban pointer"></i></a>
+                                </div>
+                                <h6 class="workflow-lst-box-head bg-main pointer div-middle" style="min-height: 60px;">
+                                    <!-- <span class="issue-smoal-head-text">#{{templates.reference_code}}</span> -->
+                                    {{templates?.template_title.length > 30
+                                    ?templates?.template_title.substring(0,30)+'...':templates?.template_title}}
+                                </h6>
+                                <div class="workflow-lst-content pointer p-0">
+                                    <div class="box-inner-overflow">
+                                        <div class="template-pic-box" *ngIf="!(templates.token)"
+                                            [ngStyle]="{'background': ' url(' + getDefaultImage('no-preview') + ') no-repeat 0 0 / cover'}">
+                                            <div class="box-light-shadow"></div>
+                                        </div>
+                                        <div class="template-pic-box" *ngIf="templates.token"
+                                            [ngStyle]="{'background': 'url(' + createImageUrl(templates.token,'document-template-document') + ')'}">
+                                            <div class="box-light-shadow"></div>
+                                        </div>
+                                    </div>
+                                    <!-- <div class="box-cnt-one mt-2 pl-2 pr-2">
+                                        <p class="mb-0" title="{{templates?.description}}"
+                                            *ngIf="templates?.description!=null">
+                                            {{templates?.description.length >
+                                            20 ?
+                                            templates?.description.substring(0,30)+'
+                                            ...' : templates?.description}}
+                                        </p>
+                                        <p class="mb-0" *ngIf="templates?.description==null">
+                                            {{AppStore.noContentText}}</p>
+                                    </div> -->
+                                    <div class="row mb-1 pl-2 pr-2">
+                                        <div class="col-xl-12">
+                                            <hr class="mb-2 mt-2">
+                                            <div class="d-flex flex-row user-list-sm align-items-center">
+                                                <img width="30px" height="30px"
+                                                    [attr.src]="templates.created_by_image_token ? createImageUrl(templates?.created_by_image_token,'user-profile-picture') : getDefaultImage('user-logo')"
+                                                    class="rounded-circle">
+                                                <div>
+                                                    <h6>{{templates?.created_by_first_name}}&nbsp;{{templates?.created_by_last_name}}
+                                                    </h6>
+                                                    <span>{{templates?.created_by_designation}} | Created on
+                                                        {{getTimezoneFormatted(templates.created_at) |
+                                                        date:'medium'}}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="float-right" *ngIf="BcmTemplateStore.loaded && BcmTemplateStore.allItems.length > 0">
+                        <b>{{'total_Items' | translate}}:{{BcmTemplateStore?.totalItems}}</b>
+                    </p>
+
+                    <div *ngIf="BcmTemplateStore.totalItems > BcmTemplateStore.itemsPerPage && BcmTemplateStore?.loaded"
+                        class="col-sm-12">
+                        <ul class="pagination justify-content-center mt-3">
+                            <div class="list">
+                                <pagination-controls (pageChange)="pageChange($event)" class="my-pagination">
+                                </pagination-controls>
+                            </div>
+                        </ul>
+                    </div>
+                </div>
+
+                <ng-container *mobxAutorun>
+                    <app-no-data [border]=false
+                        *ngIf="BcmTemplateStore.loaded && BcmTemplateStore.allItems.length == 0">
+                    </app-no-data>
+                </ng-container>
+
+                <ng-container *mobxAutorun>
+                    <div *ngIf="!BcmTemplateStore.loaded">
+                        <app-template-loader></app-template-loader>
+                    </div>
+                </ng-container>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- ---------------------Form Modal------------------------- -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+    <app-bcp-template-add-modal *ngIf="templateObject.type" [source]="templateObject"></app-bcp-template-add-modal>
+</div>
+<!--------------------- Ends Here---------------------------- -->
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp>
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+<!------------------- Delete Confirmation Modal End --------------------------->

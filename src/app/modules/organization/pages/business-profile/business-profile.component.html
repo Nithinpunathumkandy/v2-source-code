@@ -1,0 +1,157 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navBar>
+   <div class="dropdown edit-dropdown d-lg-none">
+      <a class="btn btn-primary float-left three-dots-dropdown dropdown-toggle" data-toggle="dropdown">{{AppStore.pageTitle}}
+         <i class="fas fa-chevron-circle-down ml-2"></i></a>
+      <div class="dropdown-menu">
+         <a  (click)="dropdownItemClicked(items)" *ngFor = "let items of OrganizationModulesStore.getOrganizationSubModules(100,2101)" class="dropdown-item" data-toggle="pill"
+            routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" [routerLink]="['/'+items.client_side_url]">{{items.title}}</a>
+      </div>
+      <div class="module-name-block float-left">
+         <!-- <a class="dropdown-toggle nav-link current-page border-right-0" data-toggle="dropdown">{{AppStore.pageTitle}}</a> -->
+      </div>
+   </div>
+   <ul class="nav nav-pills float-left  d-none d-lg-block" role="tablist" (click)="tabListUlClick($event)" *mobxAutorun>
+      <ng-container *ngIf = "checkForCurrentUrl()">
+         <li class="nav-item" [attr.id] = "processTitle(items.title)" *ngFor = "let items of getItemsPerIndex(0,8)"> <a [ngClass]="items.client_side_url == 'organization/business-profile' ? 'nav-link nav-link-show' : 'nav-link full-screen-click'" data-toggle="tab" data-original-title="Customer"
+            routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" [routerLink]="['/'+items.client_side_url]">{{items.title}}</a> </li>
+         <li class="nav-item drop-tab-menu-list-hdr" id="more" *ngIf = "OrganizationModulesStore.getOrganizationSubModules(100,2101).length > 9"><a [ngClass]="checkRouterLink() ? 'nav-link full-screen-click active' : 'nav-link full-screen-click'">{{'more' | translate}}<i class="fas fa-chevron-down ml-1"></i></a>
+            <ul class="nav nav-pills" role="tablist" (click)="tabListUlClick($event)" style="z-index: 99999;">
+               <li class="nav-item" *ngFor = "let items of getItemsPerIndex(8,OrganizationModulesStore.getOrganizationSubModules(100,2101).length)"><a [ngClass]="items.client_side_url == 'organization/business-profile' ? 'nav-link full-screen-click active show' : 'nav-link full-screen-click'" data-toggle="tab" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" [routerLink]="['/'+items.client_side_url]">{{items.title}}</a></li>
+            </ul>
+         </li>
+      </ng-container>
+      <ng-container *ngIf = "!checkForCurrentUrl()">
+         <li class="nav-item" [attr.id] = "processTitle(items.title)" *ngFor = "let items of OrganizationModulesStore.getOrganizationSubModules(100,2101)"> <a [ngClass]="items.client_side_url == 'organization/business-profile' ? 'nav-link nav-link-show' : 'nav-link full-screen-click'" data-toggle="tab" data-original-title="Customer"
+            routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" [routerLink]="['/'+items.client_side_url]">{{items.title}}</a> </li>
+      </ng-container>
+   </ul>
+   <app-sub-menu></app-sub-menu>
+   <!-- <app-sub-menu-drop-down></app-sub-menu-drop-down> -->
+</nav>
+<app-profile-component-loader *ngIf = "!ProfileStore.loaded"></app-profile-component-loader>
+<main class="mt-3 organization-page" *ngIf = "ProfileStore.loaded">
+   <div class="container-fluid widget">
+      <app-filter-menu></app-filter-menu>
+      <div class="row user-main-sec" *mobxAutorun>
+         <ng-container>
+            <div class="col-xl-3 col-lg-4 col-md-12 user-side-bar user-side-left" #userSideBar>
+               <div class="organization-profile-sidebar">
+                  <div class="profile-img align-items-center d-flex relative cmn-bdr">
+                     <figure class="w-100 d-block mb-0">
+                        <img [attr.src]="ProfileStore.loaded && ProfileStore.organizationProfile?.image.token ? createImageUrl('logo',ProfileStore.organizationProfile?.image.token) : getDefaultImage('general')" 
+                        onerror="this.src='/assets/images/placeholder.png'" 
+                        class="d-block mx-auto img-fluid">
+                     </figure>
+                     <a class="curve-toggle curv-2" (click)="collapseSide()"></a>
+                  </div>
+                  <div class="colored-scial-media">
+                     <ul>
+                        <li *ngIf = "ProfileStore.loaded && ProfileStore.organizationProfile?.email"><a target="_blank" [attr.href]="'mailto:'+ProfileStore.organizationProfile?.email"><img src="/assets/images/social-icon-email.svg" class="img-fluid"></a></li>
+                        <li [attr.title] = "ProfileStore.organizationProfile?.organization_sns?.youtube" *ngIf = "ProfileStore.loaded && ProfileStore.organizationProfile?.organization_sns?.youtube"><a target="_blank" [attr.href]="returnWebsiteValue(ProfileStore.organizationProfile?.organization_sns?.youtube)"><img src="/assets/images/social-icon-youtube.svg" class="img-fluid"></a></li>
+                        <li [attr.title] = "ProfileStore.organizationProfile?.organization_sns?.twitter" *ngIf = "ProfileStore.loaded && ProfileStore.organizationProfile?.organization_sns?.twitter"><a target="_blank" [attr.href]="returnWebsiteValue(ProfileStore.organizationProfile?.organization_sns?.twitter)"><img src="/assets/images/social-icon-twitter.svg" class="img-fluid"></a></li>
+                        <li [attr.title] = "ProfileStore.organizationProfile?.organization_sns?.instagram" *ngIf = "ProfileStore.loaded && ProfileStore.organizationProfile?.organization_sns?.instagram"><a target="_blank" [attr.href]="returnWebsiteValue(ProfileStore.organizationProfile?.organization_sns?.instagram)"><img src="/assets/images/social-icon-instagram.svg" class="img-fluid"></a></li>
+                        <li [attr.title] = "ProfileStore.organizationProfile?.organization_sns?.skype" *ngIf = "ProfileStore.loaded && ProfileStore.organizationProfile?.organization_sns?.skype"><a target="_blank" [attr.href]="returnWebsiteValue(ProfileStore.organizationProfile?.organization_sns?.skype)"><img src="/assets/images/social-icon-skype.svg" class="img-fluid"></a></li>
+                        <li [attr.title] = "ProfileStore.organizationProfile?.organization_sns?.facebook" *ngIf = "ProfileStore.loaded && ProfileStore.organizationProfile?.organization_sns?.facebook"><a target="_blank" [attr.href]="returnWebsiteValue(ProfileStore.organizationProfile?.organization_sns?.facebook)"><img src="/assets/images/social-icon-facebook.svg" class="img-fluid"></a></li>
+                        <li [attr.title] = "ProfileStore.organizationProfile?.organization_sns?.linkedin" *ngIf = "ProfileStore.loaded && ProfileStore.organizationProfile?.organization_sns?.linkedin"><a target="_blank" [attr.href]="returnWebsiteValue(ProfileStore.organizationProfile?.organization_sns?.linkedin)"><img src="/assets/images/social-icon-linkedin.svg" class="img-fluid"></a></li>
+                        <li [attr.title] = "ProfileStore.organizationProfile?.website" *ngIf = "ProfileStore.organizationProfile?.website"><a target="_blank" [attr.href]="returnWebsiteValue(ProfileStore.organizationProfile?.website)"><img src="/assets/images/social-icon-website.svg" class="img-fluid"></a></li>
+
+                     </ul>
+                  </div>
+                  <div class="clearfix"></div>
+                  <div class="row">
+                     <!-- <div class="col-sm-12">
+                        <h6>{{'company' | translate}}</h6>
+                        <p>{{(ProfileStore.loaded && ProfileStore.organizationProfile?.title) ? ProfileStore.organizationProfile?.title : AppStore.noContentText }}</p>
+                     </div> -->
+                     <div class="col-sm-12" *ngIf = "ProfileStore.organizationProfile?.establish_date">
+                        <h6>{{'organization_establish_date' | translate}}</h6>
+                        <p *ngIf = "ProfileStore.loaded && ProfileStore.organizationProfile?.establish_date">{{ ProfileStore.organizationProfile?.establish_date | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</p>
+                        <p *ngIf = "ProfileStore.loaded && !ProfileStore.organizationProfile?.establish_date">{{ AppStore.noContentText }}</p>
+                     </div>
+                     <div class="col-sm-12" *ngIf = "ProfileStore.organizationProfile?.address">
+                        <h6>{{'address' | translate}}</h6>
+                        <p style="white-space: pre-wrap;">{{(ProfileStore.loaded && ProfileStore.organizationProfile?.address) ? ProfileStore.organizationProfile?.address : AppStore.noContentText}}
+                        </p>
+                     </div>
+                     <div class="col-sm-12" *ngIf = "ProfileStore.organizationProfile?.phone">
+                        <h6>{{'organization_phone' | translate}}</h6>
+                        <p>{{(ProfileStore.loaded && ProfileStore.organizationProfile?.phone) ? ProfileStore.organizationProfile?.phone : AppStore.noContentText }}</p>
+                     </div>
+                     <!-- <div class="col-sm-12">
+                        <h6>{{'organization_email_id' | translate}}</h6>
+                        <p *ngIf = "ProfileStore.loaded && !ProfileStore.organizationProfile?.email">{{AppStore.noContentText}}</p>
+                        <a class="mb-3 d-block cmn-clr" *ngIf = "ProfileStore.loaded && ProfileStore.organizationProfile?.email" target="_blank" [attr.href]="'mailto:'+ProfileStore.organizationProfile?.email">{{ ProfileStore.organizationProfile?.email }}</a>
+                     </div> -->
+                     <!-- <div class="clearfix"></div> -->
+                     <!-- <div class="col-sm-12" *ngIf = "ProfileStore.organizationProfile?.website">
+                        <h6>{{'website' | translate}}</h6>
+                        <a class="cmn-clr mb-3 d-block" *ngIf = "ProfileStore.loaded && ProfileStore.organizationProfile?.website" target="_blank" [attr.href]="returnWebsiteValue(ProfileStore.organizationProfile?.website)">{{ProfileStore.organizationProfile?.website}} </a>
+                     </div> -->
+                     <div class="col-sm-12" *ngIf = "ProfileStore.organizationProfile?.branch_count">
+                        <h6>{{'branch_count' | translate}}</h6>
+                        <p>{{(ProfileStore.loaded && ProfileStore.organizationProfile?.branch_count) ? ProfileStore.organizationProfile?.branch_count : AppStore.noContentText}}</p>
+                     </div>
+                     <div class="col-sm-12" *ngIf="ProfileStore.organizationProfile?.employee_count">
+                        <h6>{{'employee_count' | translate}}</h6>
+                        <p>{{(ProfileStore.loaded && ProfileStore.organizationProfile?.employee_count) ? ProfileStore.organizationProfile?.employee_count : AppStore.noContentText}}</p>
+                     </div>
+                     <div class="col-sm-12 edit-and-delete-main" *ngIf = "ProfileStore.loaded && ProfileStore.organizationProfile?.brouchures.length > 0">
+                        <h6 class="mt-3">{{'organization_brochures' | translate}}</h6>
+                        <div class="edit-option-show" *ngIf="ProfileStore.organizationProfile?.brouchures.length > 1">
+                           <a *ngIf = "AuthStore.getActivityPermission(100,'DOWNLOAD_BUSINESS_PROFILE_BROCHURE')"><i class="fas fa-download float-right pointer" [attr.title]="'download_all' | translate" (click) = "downloadAllBrochures(ProfileStore.organizationProfile?.id)"></i></a>
+                        </div>
+                        <div class="thumb-view-left-side thumb-pics-fix-text clearfix">
+                           <div class="thumb-view-left-side-box w-100" *ngFor = "let br of ProfileStore.organizationProfile?.brouchures">
+                              <div [ngClass]="AuthStore.getActivityPermission(100,'PREVIEW_BUSINESS_PROFILE_BROCHURE_FILE') ? 'upload-pics upload-pics-small edit-option pointer' : 'upload-pics upload-pics-small edit-option'" (click) =  "AuthStore.getActivityPermission(100,'PREVIEW_BUSINESS_PROFILE_BROCHURE_FILE') ? viewBrochureItem(br,ProfileStore.organizationProfile?.id) : ''">
+                                 <div class="browse-form-pic" [ngStyle]="{'background': 'url(' + createImageUrl('brochure',br.token) + '), url(' + getDefaultImage('no-preview') + ') no-repeat 0 0 / cover'}">
+                                 </div>
+                                 <div class="browse-form-name clearfix">
+                                 <div class="float-left">
+                                    <h6 [attr.title] = "br.title">{{br.title.length > 10 ? br.title.substring(0,10)+' ...': br.title}}</h6>
+                                    <span>{{br.size/1048576 | number:'0.2-2'}}MB</span>
+                                 </div>
+                                 <div class="browse-logo">
+                                    <img *ngIf = "checkExtension(br.ext,'image') != -1" src="/assets/images/md-jpg.png">
+                                    <img *ngIf = "checkExtension(br.ext,'doc') != -1" src="/assets/images/md-doc.png">
+                                    <img *ngIf = "checkExtension(br.ext,'pdf') != -1" src="/assets/images/pdf-icone.png">
+                                    <img *ngIf = "checkExtension(br.ext,'excel') != -1" src="/assets/images/md-xl.png">
+                                    <img *ngIf = "checkExtension(br.ext,'video') != -1" src="/assets/images/md-video.png">
+                                    <img *ngIf = "checkExtension(br.ext,'audio') != -1" src="/assets/images/md-audio.png">
+                                    <img *ngIf = "checkExtension(br.ext,'ppt') != -1" src="/assets/images/md-ppt.png">
+                                 </div>
+                                 </div>
+                                 <div class="edit-option-show-inner">
+                                 <a *ngIf = "AuthStore.getActivityPermission(100,'DOWNLOAD_BUSINESS_PROFILE_BROCHURE_FILE')" [attr.title]="'download_brochure' | translate"><i class="fas fa-download" (click) = "downloadBrochures(br,ProfileStore.organizationProfile?.id)"></i></a>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+                  </div>
+               </div>
+         </ng-container>
+         <div id="right-details" class="col-xl-9 col-lg-8 col-md-12 user-right-details user-right-fill" #userRightDetails>
+            <router-outlet>
+            </router-outlet>
+         </div>
+      </div>
+   </div>
+</main>
+
+<div class="side-bar-round" (click)="unCollapseSide()" #sideBarRound>
+  <figure class="w-100 d-block">
+   <img width="100" [attr.src]="(ProfileStore.loaded && ProfileStore.organizationProfile?.image.token) ? createImageUrl('logo',ProfileStore.organizationProfile?.image.token) : getDefaultImage('general')"
+       class="d-block mx-auto img-fluid rounded-circle" 
+       onerror="this.src='/assets/images/placeholder.png'">
+</figure>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup" data-keyboard="false" data-backdrop="static" #filePreviewModal *mobxAutorun>
+   <button type="button" class="close" data-dismiss="modal" (click) = "closePreviewModal($event)"><i class="lni-close"></i><span>esc</span></button>
+   <app-previewcomponent *ngIf = "previewObject" [source] = "previewObject" (close) = "closePreviewModal($event)"></app-previewcomponent>
+</div>
+<div class="modal welcome-screen fade in" id="welcome-screen" data-keyboard="false" data-backdrop="static" #profileSlider *mobxAutorun>
+   <app-profile-slider></app-profile-slider>
+</div>

@@ -1,0 +1,161 @@
+<ng-container *mobxAutorun>
+    <div class="tab-pane active" id="teamwise" *ngIf="AuthStore.getActivityPermission(3600,'ISMS_RISK_MATRIX_RATING_LEVEL_LIST')">
+        <div class="widget bg-white widg-padding-cmn min-height-83">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group mb-f-8">
+                        <label>{{'calculation_method' | translate}}</label>
+                        <div>
+                            <label [ngClass]="calculationMethod==calculation.id?'outline-tag active':'outline-tag'"
+                                *ngFor="let calculation of IsmsRiskMatrixCalculationMethodMasterStore.allItems;let c=index"
+                                (click)="setCalculation(calculation.id)">{{calculation.isms_risk_matrix_calculation_method_title}}
+                                ({{calculation.is_addition?'+':calculation.is_substraction?'-':calculation.is_multiplication?'*':'/'}})</label>
+                            <!-- <label class="outline-tag">Subtraction (-)
+                            </label><label class="outline-tag">Multiplication (*)</label><label
+                                class="outline-tag">Divistion (/)</label> -->
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="form-group mb-f-8">
+                        <label>{{'risk_rating_level' | translate}}</label>
+                        <div class="btn-type-label-big">
+                            <label [ngClass]="ratingLevel==level.id?'outline-tag active':'outline-tag'"
+                                *ngFor="let level of RiskMatrixRatingLevelsMasterStore.allItems"
+                                (click)="setLevel(level)">{{level.isms_risk_matrix_rating_level_language_title}}</label>
+                            <!-- <label class="outline-tag">(Low,
+                                Medium, High, Very High)</label> -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- <div class="row">
+                <div class="col-sm-12 pointer" *ngFor="let rating of ratings;let num=index">
+                  
+                        <h6>{{rating.isms_risk_rating_language_title}}</h6>
+                       
+                            <label [ngClass]="checkValueForLevel(rating,ratng)?'outline-tag '+rating.label+' active pointer':'outline-tag pointer'" *ngFor="let ratng of rangeArray" (click)="setLevelRange(ratng,rating)">{{ratng}}</label>
+                     
+                    </div>
+                </div> -->
+                
+
+                <div class="form-group mb-0">
+                     <label for="name" class="mb-1">{{'criticality_rating'|translate}}<sup>*</sup></label>
+
+                     <div class="row">
+                        <div class="col-md-4" *ngFor="let rating of ratingArray;let r = index">
+                           <div class="form-group">
+                              <div class="row">
+                                 <div class="col-md-12">
+                                    <small [ngClass]="'text-'+rating.label+' mb-0 bold'">{{rating.isms_risk_rating_language_title}}</small>
+                                    <div class="clearfix d-flex align-items-center">
+
+                                       <input class="form-control w-50" [value]="rating.score_from" (keyup)="setLevelRange($event,rating.isms_risk_rating_id,'from',r)"
+                                          type="text">
+                                       <p style="width:50px" class="mb-0 text-center">To</p>
+                                       <input class="form-control w-50" [value]="rating.score_to" (keyup)="setLevelRange($event,rating.isms_risk_rating_id,'to',r)"
+                                          type="text">
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                           
+                        </div>
+                       
+                        <!-- <div class="col-md-4 mb-2" *ngIf="!(ratingArray?.length>0)">
+                           <p>No option values selected for rating</p>
+                    
+                        </div> -->
+                        
+                     </div>
+                     <p class="form-error pt-1" *ngIf="formErrors && formErrors.asset_rating_scores && (!isOverlapped())"> {{formErrors.asset_rating_scores}}</p>
+                     <p class="form-error pt-1" *ngIf="(!formErrors?.asset_rating_scores) && isOverlapped()"> Rating values Cannot be overlapped</p>
+                    
+
+                  </div>
+
+            <!-- </div> -->
+    
+            
+            
+        
+            <!-- <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Medium</label>
+                        <div class="input-two-col clearfix">
+                            <input type="text" class="form-control">
+                            <input type="text" class="form-control">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>High</label>
+                        <div class="input-two-col clearfix">
+                            <input type="text" class="form-control">
+                            <input type="text" class="form-control">
+                        </div>
+                    </div>
+                </div>
+            </div> -->
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group mb-0">
+                        <label>{{'risk_treatment' | translate}}</label>
+                    </div>
+                    <div class="clearfix small-tab-small-main small-tab-md-main">
+                        <div class="small-list-tab small-tab-small">
+                            <!-- tab menu start -->
+                            <ul class="nav nav-tabs nav-tabs--vertical nav-tabs--left vertical-tab" role="navigation"
+                                *ngIf="LanguageSettingsStore.loaded">
+                                <li class="nav-item" *ngFor="let language of RiskRatingMasterStore.allLanguageRiskRating;let lang=index"
+                                    (click)="setLanguage(language.language_id)">
+                                    <a [attr.href]="'#review'+lang"
+                                        [ngClass]="currentLanguage && currentLanguage==language.language_id?'nav-link active show':'nav-link'"
+                                        data-toggle="tab" role="tab" aria-controls="lorem" aria-selected="true"
+                                        data-original-title="" title="">{{language.language}}</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="tab-content">
+                            <div class="tab-pane fade active show" id="review" role="tabpanel"
+                                *ngFor="let language of RiskRatingMasterStore.allLanguageRiskRating;let l=index">
+                                <div class="p-3" *ngIf="currentLanguage && currentLanguage==language.language_id">
+                                    <div class="row">
+                                        <div class="col-md-12" *ngFor="let langRating of language.isms_risk_ratings;let r=index">
+                                            <div class="form-group" *ngIf="currentLanguage && currentLanguage==langRating.language_id">
+                                                <label>{{langRating.isms_risk_rating_language_title}}</label>
+                                                <input type="text" [(ngModel)]="langRating.isms_risk_treatment" class="form-control">
+                                            </div>
+                                        </div>
+    
+                                    </div>
+                                </div>
+                            </div>
+    
+    
+                        </div>
+                    </div>
+    
+                </div>
+            </div>
+    
+    
+            <div class="row mt-5">
+                <div class="col-sm-12">
+                    <div class="d-block justify-content-left border-0">
+                        <!-- *ngIf="AuthStore.getActivityPermission(900,'UPDATE_ISMS_RISK_MATRIX_RATING_LEVEL')" -->
+                        <button type="button" data-toggle="modal" data-target="#signal-lost"
+                            class="btn ordinary-btn mr-3 btn-active" (click)="save()">{{AppStore.loading? getButtonText('loading'):getButtonText('save')}}</button>
+                        <!-- <button type="button" data-toggle="modal" data-target="#signal-lost"
+                            class="btn ordinary-btn mr-3">Save &amp; Close</button> -->
+                        <!-- <button type="button" data-toggle="modal" data-target="#error-message"
+                            class="btn ordinary-btn mr-2" (click)="cancel()">Cancel</button> -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </ng-container>
+    

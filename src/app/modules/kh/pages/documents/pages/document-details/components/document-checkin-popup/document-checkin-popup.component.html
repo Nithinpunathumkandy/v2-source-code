@@ -1,0 +1,105 @@
+<button type="button" class="close" (click)="closeFormModal()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered" #formModal>
+    <div class="modal-content" *mobxAutorun>
+       <!-- Modal Header -->
+       <div class="modal-header">
+          <h4 class="modal-title">{{'checkin_document' | translate}}</h4>
+          <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
+       </div>
+       <!-- Modal body -->
+       <div class="modal-body form-body">
+          <form [formGroup]="checkinForm">
+
+    
+          <p class="head-details">{{'checkin_document_content_message' | translate}}
+          </p>
+
+          <!-- <>Choose File</h6> -->
+          <!-- <h6>Choose File<sup>*</sup></h6> -->
+          <label class="label-style">{{'choose_file' | translate}}<span class="form-error">*</span></label>
+          <div class="scroll-documents" #uploadArea>
+             <div class="row m-0 upload-section" style="padding-top: 0">
+                <div class="col-sm-4 costmz-logo-new mt-2">
+                   <div class="question-circle-inp" *ngIf = "OrganizationGeneralSettingsStore?.organizationSettings?.support_file_allowed_types?.length > 0" style="margin-right: 7px;">
+                      <i class="far fa-question-circle"></i>
+                      <div class="message-password-inp">
+                          <p class="mb-0">Allowed File Types {{OrganizationGeneralSettingsStore?.organizationSettings?.support_file_allowed_types?.toString()}}</p>
+                      </div>
+                   </div>
+                   <div class="form-group form-group-upload">
+                      <div class="darag-dropifile-upload">
+                         <div class="d-flex justify-content-center align-items-center text-center">
+                            <div>
+                               <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                               <div class="drag-file-name">{{'drag_drop_file_here' | translate}}</div>
+                               <div class="upload-btn-wrapper">
+                                  <input type="file" name="myfile" (change)="onFileChange($event,'support-file')" [accept]="checkAcceptFileTypes('support-file')"/>
+                                  <button class="btn">{{'browse_files' | translate}}</button>
+                               </div>
+                            </div>
+                         </div>
+                      </div>
+                   </div>
+                </div>
+
+                 <div [ngClass] = "files.success || files.file_type != 'support-file' ? 'col-sm-4 up-pic-cf mt-2 hide_loader' : 'col-sm-4 up-pic-cf mt-2'" *ngFor = "let files of checkinFileArray">
+                   <div class="upload-pics edit-option file-upload-loader">
+                      <circle-progress
+                         [percent] = files.uploadProgress
+                         [title] = files.uploadProgress
+                      ></circle-progress>
+                   </div>
+                </div> 
+
+                <div [ngClass]="documentWorkFlowStore.getCheckinFile?.is_deleted ? 'col-sm-4 up-pic-cf mt-2 image_deleted':'col-sm-4 up-pic-cf mt-2'" *ngIf = "documentWorkFlowStore.getCheckinFile">
+                    <div class="upload-pics edit-option">
+                          <div class="browse-form-pic" [ngStyle]="{'background': 'url(' + documentWorkFlowStore.getCheckinFile?.preview + ') no-repeat 0 0 / cover'}">
+                          </div>
+                           <div class="browse-form-name clearfix">
+                            <div class="float-left">
+                              <h6 [attr.title] = "documentWorkFlowStore.getCheckinFile?.name">{{documentWorkFlowStore.getCheckinFile?.name.length > 20 ? documentWorkFlowStore.getCheckinFile?.name.substring(0,20)+' ...' : documentWorkFlowStore.getCheckinFile?.name}}</h6>
+                              <span>{{documentWorkFlowStore.getCheckinFile?.size/1048576 | number:'0.2-2'}}MB</span>
+                            </div>
+                            <div class="browse-logo">
+                              <img *ngIf = "checkExtension(documentWorkFlowStore.getCheckinFile?.ext,'excel') != -1" src="/assets/images/md-xl.png">
+                              <img *ngIf = "checkExtension(documentWorkFlowStore.getCheckinFile?.ext,'image') != -1" src="/assets/images/md-jpg.png">
+                              <img *ngIf = "checkExtension(documentWorkFlowStore.getCheckinFile?.ext,'doc') != -1" src="/assets/images/md-doc.png">
+                              <img *ngIf = "checkExtension(documentWorkFlowStore.getCheckinFile?.ext,'pdf') != -1" src="/assets/images/md-pdf.png">
+                              <img *ngIf = "checkExtension(documentWorkFlowStore.getCheckinFile?.ext,'ppt') != -1" src="/assets/images/md-ppt.png">
+                            </div>
+                           </div>
+                           <div  class="edit-option-show">
+                            <a (click) = "documentWorkFlowStore.unsetFileDetails()"><i class="fas fa-trash"></i></a>
+                          </div>
+                        </div>
+                 </div>
+
+                <!-- <p class="form-error pt-1" *ngIf="FormErrors">
+                  {{FormErrors}}</p> -->
+             </div>
+
+          </div>
+
+   
+          <div class="row">
+            <div class="col-sm-12">
+              <div class="d-block justify-content-left border-0 mt-3">
+                <button type="submit" class="btn btn-active" (click)="saveFiles()"
+                  [disabled]="checkinForm.invalid || AppStore.loading || checkFileStatus()">{{ AppStore.loading  ? 'Loading...' : 'Save' }}</button>
+                <button type="button" data-toggle="modal" data-target="#signal-lost" class="btn"
+                  (click)="saveFiles(true)"
+                  [disabled]="checkinForm.invalid || AppStore.loading || checkFileStatus()">{{ AppStore.loading  ? 'Loading...' : 'Save & Close' }}</button>
+                <button type="button" data-toggle="modal" data-target="#error-message" class="btn"
+                  (click)="closeFormModal()">{{ AppStore.loading  ? 'Loading...' : 'Cancel' }}</button>
+  
+              </div>
+            </div>
+          </div>
+
+         </form>
+
+       </div>
+       <!-- Modal footer -->
+    </div>
+ </div>
+

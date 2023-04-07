@@ -1,0 +1,348 @@
+<nav class="edit-bar">
+   <div class="module-name-block module-name-block-space float-left">
+      <a class="dropdown module-title">{{'event_task_menu'|translate}}</a>
+   </div>
+   <app-sub-menu></app-sub-menu>
+</nav>
+<main class="audit-program-details-page mt-3" *mobxAutorun>
+   <div class="container-fluid" *ngIf="EventTaskStore.individualLoaded">
+      <div class="row">
+         <div class="col-sm-12">
+            <div class="widget">
+               <div class=" bg-white widg-padding-cmn">
+                  <div class="min-height-64">
+                     <div class="row">
+                        <div class="col-lg-9 col-sm-12">
+                           <div class="issue-top-sec">
+                              <div class="clearfix">
+                                 <h5 class="d-inline-block cmn-head-style label-tag-style mr-2">
+                                    <span class="issue-smoal-head-text">#{{EventTaskStore.IndividualEventTaskDetails?.event?.reference_code}}-{{EventTaskStore.IndividualEventTaskDetails?.id}}</span>
+                                    {{EventTaskStore.IndividualEventTaskDetails?.title}}
+                                    <span [ngClass]="'draft-tag draft-tag-'+EventTaskStore.IndividualEventTaskDetails?.event_task_status?.label+' label-tag-style-tag label-left-arow-tag d-inline-block status-tag-new-one'">{{EventTaskStore.IndividualEventTaskDetails?.event_task_status?.language[0]?.pivot?.title}}</span>
+                                 </h5>
+                              </div>
+                              <div class="clearfix">
+                                 <p class="label-tag-style mb-2"><i class="fas fa-calendar-alt date-pics-two"></i>
+                                    {{EventTaskStore.IndividualEventTaskDetails?.start_date | date: OrganizationGeneralSettingsStore?.organizationSettings?.date_format}} To
+                                    {{EventTaskStore.IndividualEventTaskDetails?.end_date | date: OrganizationGeneralSettingsStore?.organizationSettings?.date_format}} <span
+                                       class="blinking">( {{EventTaskStore.IndividualEventTaskDetails?.duration ? EventTaskStore.IndividualEventTaskDetails?.duration:'0'}} days)</span></p>
+                              </div>
+                              <p style="white-space: pre-wrap;">{{EventTaskStore.IndividualEventTaskDetails?.description}}</p>
+                              <div class="row">
+                                 <div class="col-lg-6 col-sm-12">
+                                    <div class="label-and-user-pic">
+                                       <h6>{{'responsible_users' | translate}}</h6>
+                                       <div class="d-flex workflow-department-section align-items-center">
+                                          <div class="w-100">
+                                             <ul class="arci-user-tab-dtl workflow-lst-pics-loop clearfix">
+                                                <li class="rounde-hov-bg user-delete-div"
+                                                   *ngFor="let user of EventTaskStore.IndividualEventTaskDetails?.responsible_users; let i = index">
+                                                   <app-user-popup-box [showName]="false" [source]=" getResponsibleUser(user)"></app-user-popup-box>
+                                                </li>
+                                             </ul>
+                                          </div>
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                        <div class="col-lg-3 col-sm-12 cmn-bdr-left-sm-hide edit-and-delete-main d-flex align-items-center">
+                           <div class="edit-option-show" style="margin: 30px 0 0 0; " >                              
+                              <a (click)="historyModal(taskId)"><i class="fas fa-history" [attr.title]="'history'|translate"></i></a>
+                              <a *ngIf="userRole" (click)="updatePercentage(taskId)"><i class="fas fa-pen-alt" [attr.title]="'update_status'|translate"></i></a>
+                          </div>
+                           <div class="progress-circle progress-circle-big-one" [ngClass]="EventTaskStore.IndividualEventTaskDetails?.percentage >=50 ? 'over50':''" class="p{{EventTaskStore.IndividualEventTaskDetails?.percentage}}">
+                              <span>{{EventTaskStore.IndividualEventTaskDetails?.percentage ? EventTaskStore.IndividualEventTaskDetails?.percentage :0}}%</span>
+                              <div class="left-half-clipper">
+                                 <div class="first50-bar"></div>
+                                 <div class="value-bar"></div>
+                              </div>
+                           </div>
+                           <!-- <div class="row">
+                              <div class="col-lg-1 col-sm-4"></div>
+                              <div class="col-lg-10 col-sm-4">
+                                 <div class="form-group mb-0 mt-3">
+                                    <form *ngIf="EventTaskStore.IndividualEventTaskDetails?.sub_tasks.length==0 && userRole" id="regForm" [formGroup]="form" class="clearfix d-flex">
+                                       <input type="number" maxlength="3" min="1" max="100" formControlName="percentage" class="form-control w-100" placeholder="Completion %">
+                                       <button type="button" class="btn btn-active multi-add-user ml-2" (click)="updateTask(EventTaskStore.IndividualEventTaskDetails?.id)" style="width: 120px;">{{'update' | translate}}</button>
+                                    </form>
+                                 </div>
+                              </div>
+                           </div> -->
+                        </div>
+                     </div>
+                     <h6>{{'attachments' | translate}}</h6>
+								<p *ngIf="EventTaskStore.IndividualEventTaskDetails?.documents.length == 0">{{AppStore.noContentText}}</p>
+								<div class="thumb-pics-bg thumb-pics-col-6 clearfix thumb-pics-fix-text">
+									<div class="thumb-pics" *ngFor="let docs of EventTaskStore.IndividualEventTaskDetails?.documents;let i = index">
+										<div style="margin: 0 -25px 0 0;" *ngIf="!docs.document_id" [ngClass]="AuthStore.getActivityPermission(100,'PREVIEW_EVENT_CHECKLIST_DETAIL_DOCUMENT_FILE') ? 'upload-pics upload-pics-small edit-option pointer' : 'upload-pics upload-pics-small edit-option'"
+											(click)="AuthStore.getActivityPermission(100,'PREVIEW_EVENT_CHECKLIST_DETAIL_DOCUMENT_FILE') ? viewBrochureItem('event-task',docs,docs.id) : ''">
+											<div class="browse-form-pic" [ngStyle]="{'background': 'url('+createImageUrl('event-task',docs?.token)+') no-repeat'}">
+											</div>
+											<div class="browse-form-name clearfix">
+												<div class="float-left">
+													<h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}</h6>
+													<span class="mr-2 cmn-clr"><i class="fas fa-laptop"></i></span>
+													<span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+												</div>
+												<div class="browse-logo">
+													<img *ngIf="checkExtension(docs.ext,'image') != -1"
+														class="folder-picher" src="/assets/images/jpg-icone.png">
+													<img *ngIf="checkExtension(docs.ext,'doc') != -1"
+														class="folder-picher" src="/assets/images/word-icone.png">
+													<img *ngIf="checkExtension(docs.ext,'pdf') != -1"
+														class="folder-picher" src="/assets/images/pdf-icone.png">
+													<img *ngIf="checkExtension(docs.ext,'excel') != -1"
+														class="folder-picher" src="/assets/images/excel-icone.png">
+													<img *ngIf="checkExtension(docs.ext,'video') != -1"
+														class="folder-picher" src="/assets/images/md-video.png">
+													<img *ngIf="checkExtension(docs.ext,'audio') != -1"
+														class="folder-picher" src="/assets/images/md-audio.png">
+													<img *ngIf="checkExtension(docs.ext,'ppt') != -1"
+														class="folder-picher" src="/assets/images/md-ppt.png">
+												</div>
+											</div>
+											<div class="edit-option-show-inner" style="margin: -2px -8px 0 0;">
+												<a *ngIf="AuthStore.getActivityPermission(100,'DOWNLOAD_EVENT_CHECKLIST_DETAIL_DOCUMENT_FILE')"><i class="fas fa-download" (click)="downloadDocumentFile('event-task',docs)"></i></a>
+											</div>
+										</div>
+
+
+										<div class="upload-pics edit-option" style="margin: 0 -25px 0 0;" *ngIf="docs.document_id">
+											<div *ngFor="let mainDoc of docs?.kh_document?.versions">
+												<div *ngIf="mainDoc.is_latest" [ngClass]="AuthStore.getActivityPermission(100,'PREVIEW_EVENT_CHECKLIST_DETAIL_DOCUMENT_FILE') ? 'upload-pics-small pointer' : 'upload-pics-small'"
+													(click)="AuthStore.getActivityPermission(100,'PREVIEW_EVENT_CHECKLIST_DETAIL_DOCUMENT_FILE') ? viewBrochureItem('document-version',docs,mainDoc) : ''">
+													<div class="browse-form-pic" [ngStyle]="{'background': 'url('+createImageUrl('document-version',mainDoc?.token)+') no-repeat'}"></div>
+													<div class="browse-form-name clearfix">
+														<div class="float-left">
+															<h6>{{mainDoc.title}}.{{mainDoc.ext}}</h6>
+															<span class="mr-2 cmn-clr"><i class="fas fa-book"></i></span>
+															<span>{{mainDoc.size/1048576 | number:'0.2-2'}}MB</span>
+														</div>
+														<div class="browse-logo">
+															<img *ngIf="checkExtension(mainDoc.ext,'image') != -1" class="folder-picher" src="/assets/images/jpg-icone.png">
+															<img *ngIf="checkExtension(mainDoc.ext,'doc') != -1" class="folder-picher" src="/assets/images/word-icone.png">
+															<img *ngIf="checkExtension(mainDoc.ext,'pdf') != -1" class="folder-picher" src="/assets/images/pdf-icone.png">
+															<img *ngIf="checkExtension(mainDoc.ext,'excel') != -1" class="folder-picher" src="/assets/images/excel-icone.png">
+															<img *ngIf="checkExtension(mainDoc.ext,'video') != -1" class="folder-picher" src="/assets/images/md-video.png">
+															<img *ngIf="checkExtension(mainDoc.ext,'audio') != -1" class="folder-picher" src="/assets/images/md-audio.png">
+															<img *ngIf="checkExtension(mainDoc.ext,'ppt') != -1" class="folder-picher" src="/assets/images/md-ppt.png">
+														</div>
+													</div>
+													<div class="edit-option-show-inner" style="margin: -2px -8px 0 0;">
+														<a *ngIf="AuthStore.getActivityPermission(100,'DOWNLOAD_EVENT_CHECKLIST_DETAIL_DOCUMENT_FILE')"><i class="fas fa-download" (click)="downloadDocumentFile('document-version',docs,mainDoc)"></i></a>
+													</div>
+												</div>
+											</div>
+										</div>
+
+									</div>
+								</div>
+
+                     <div class="mt-0">                        
+                        <div class="header-back-line mt-3 mb-2">
+                           <h6>{{'sub_task' | translate}}</h6>
+                           <button class="btn-plus" data-toggle="modal" (click)="openNewTask()" data-target="#sub-task-popup" title="Add"><i class="fas fa-plus"></i></button>
+                        </div>
+                        <!-- <h6>Sub Task <button type="button" class="btn btn-small ml-3" data-toggle="modal" data-target="#sub-task-popup">Add</button></h6> -->
+                        <div class="panel-group panel-drop-sections panel-drop-white mb-3" id="jd" role="tablist"
+                           aria-multiselectable="true">
+                           <div class="panel panel-default"
+                              *ngFor=" let sub of EventTaskStore.IndividualEventTaskDetails?.sub_tasks;let num = index">
+                              <div [ngClass]="selectedIndex == num ? 'panel-heading active' : 'panel-heading'" role="tab" id="headingOne">
+                                 <div class="panel-title">
+                                    <a role="button" data-toggle="collapse" (click)="getSubTaskDetails(num);checkButtonPermission(sub?.id,sub?.responsible_users)" aria-expanded="false" aria-controls="collapseOne"
+                                       [ngClass]="selectedIndex == num ?'collapsed':''">
+                                       <h5 class="width96pc mt-0">
+                                          <span class="d-flex">
+                                             <span class="w-100">{{sub?.title}}</span>
+                                             <span class="text-right ml-2" style="width: 100px;">
+                                                <span [ngClass]="'draft-tag draft-tag-'+sub?.event_task_status?.label +' label-tag-style-tag label-left-arow-tag d-inline-block status-tag-new-one ml-0'">{{sub?.event_task_status?.language[0]?.pivot?.title}}</span></span>
+                                          </span>
+                                          <span class="drop-down-icone"><i class="fas fa-chevron-down"></i></span>
+                                       </h5>
+                                    </a>
+                                 </div>
+                              </div>
+                              <div id="sub-task-acd-1003"
+                                 [ngClass]="selectedIndex == num ? 'drop-detail-sec panel-collapse collapse show' : 'drop-detail-sec panel-collapse collapse'"
+                                 role="tabpanel" aria-labelledby="headingOne" data-parent="#sub-task-acd-1003">
+                                 <div class="panel-body bg-white pb-2 edit-and-delete-main">
+                                    <div class="edit-option-show" style="margin: 30px 0 0 0; " >
+                                       <a (click)="historyModal(sub?.id)"><i class="fas fa-history" [attr.title]="'history'|translate"></i></a>
+                                       <a (click)="editSubTask(sub)"><i class="fas fa-pen" [attr.title]="'edit'|translate"></i></a>
+                                       <a (click)="deleteSubTask(sub?.id)"><i class="fas fa-trash" [attr.title]="'delete'|translate"></i></a>
+                                       <a *ngIf="(subTaskId==sub?.id) && subTaskUserCheck" (click)="updatePercentage(sub?.id)"><i class="fas fa-pen-alt" [attr.title]="'update_status'|translate"></i></a>
+                                   </div>
+                                    <div class="row">
+                                       <div class="col-lg-9 col-sm-12">
+                                          <div class="row">
+                                             <div class="col-sm-12">
+                                                <h6>{{'description' | translate}}</h6>
+                                                <p>{{sub?.description ? sub?.description:AppStore.noContentText}}</p>
+                                             </div>
+                                             <div class="col-lg-4 col-sm-6">
+                                                <h6>{{'start_date' | translate}}</h6>
+                                                <p>{{sub?.start_date | date: OrganizationGeneralSettingsStore?.organizationSettings?.date_format}}
+                                                </p>
+                                             </div>
+                                             <div class="col-lg-4 col-sm-6">
+                                                <h6>{{'end_date' | translate}}</h6>
+                                                <p>{{sub?.end_date | date: OrganizationGeneralSettingsStore?.organizationSettings?.date_format}}
+                                                </p>
+                                             </div>
+                                             <div class="col-lg-4 col-sm-6">
+                                                <h6>{{'duration' | translate}}</h6>
+                                                <p>{{sub?.duration ? sub?.duration:'0'}} days</p>
+                                             </div>
+                                             
+                                             <div class="col-lg-4 col-sm-6">
+                                                <div class="label-and-user-pic">
+                                                   <h6>{{'responsible_users' | translate}}</h6>
+                                                   <div class="d-flex workflow-department-section align-items-center">
+                                                      <div class="w-100">
+                                                         <ul class="arci-user-tab-dtl workflow-lst-pics-loop clearfix">
+                                                            <li class="rounde-hov-bg user-delete-div"
+                                                               *ngFor="let user of sub?.responsible_users; let i = index">
+                                                               <app-user-popup-box [showName]="false" [source]=" getResponsibleUser(user)"></app-user-popup-box>
+                                                            </li>
+                                                         </ul>
+                                                      </div>
+                                                   </div>
+                                                </div>
+                                             </div>
+                                             
+                                          </div>
+                                       </div>
+                                       <div class="col-lg-3 col-sm-12 cmn-bdr-left-sm-hide d-flex align-items-center">
+                                          <div class="progress-circle progress-circle-big-one" [ngClass]="sub?.percentage >=50 ? 'over50':''" class="p{{sub?.percentage}}">
+                                             <span>{{sub?.percentage ? sub?.percentage :0}}%</span>
+                                             <div class="left-half-clipper">
+                                                <div class="first50-bar"></div>
+                                                <div class="value-bar"></div>
+                                             </div>
+                                          </div>                                          
+                                       </div>
+                                    </div>
+                                    <h6>{{'attachments' | translate}}</h6>
+                                       <p *ngIf="sub?.documents.length == 0">{{AppStore.noContentText}}</p>
+                                       <div class="thumb-pics-bg thumb-pics-col-6 clearfix thumb-pics-fix-text">
+                                          <div class="thumb-pics" *ngFor="let docs of sub?.documents;let i = index">
+                                             <div style="margin: 0 -25px 0 0;" *ngIf="!docs.document_id" [ngClass]="AuthStore.getActivityPermission(100,'PREVIEW_EVENT_CHECKLIST_DETAIL_DOCUMENT_FILE') ? 'upload-pics upload-pics-small edit-option pointer' : 'upload-pics upload-pics-small edit-option'"
+                                                (click)="AuthStore.getActivityPermission(100,'PREVIEW_EVENT_CHECKLIST_DETAIL_DOCUMENT_FILE') ? viewBrochureItem('event-task',docs,docs.id) : ''">
+                                                <div class="browse-form-pic" [ngStyle]="{'background': 'url('+createImageUrl('event-task',docs?.token)+') no-repeat'}">
+                                                </div>
+                                                <div class="browse-form-name clearfix">
+                                                   <div class="float-left">
+                                                      <h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}</h6>
+                                                      <span class="mr-2 cmn-clr"><i class="fas fa-laptop"></i></span>
+                                                      <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                                                   </div>
+                                                   <div class="browse-logo">
+                                                      <img *ngIf="checkExtension(docs.ext,'image') != -1"
+                                                         class="folder-picher" src="/assets/images/jpg-icone.png">
+                                                      <img *ngIf="checkExtension(docs.ext,'doc') != -1"
+                                                         class="folder-picher" src="/assets/images/word-icone.png">
+                                                      <img *ngIf="checkExtension(docs.ext,'pdf') != -1"
+                                                         class="folder-picher" src="/assets/images/pdf-icone.png">
+                                                      <img *ngIf="checkExtension(docs.ext,'excel') != -1"
+                                                         class="folder-picher" src="/assets/images/excel-icone.png">
+                                                      <img *ngIf="checkExtension(docs.ext,'video') != -1"
+                                                         class="folder-picher" src="/assets/images/md-video.png">
+                                                      <img *ngIf="checkExtension(docs.ext,'audio') != -1"
+                                                         class="folder-picher" src="/assets/images/md-audio.png">
+                                                      <img *ngIf="checkExtension(docs.ext,'ppt') != -1"
+                                                         class="folder-picher" src="/assets/images/md-ppt.png">
+                                                   </div>
+                                                </div>
+                                                <div class="edit-option-show-inner" style="margin: -2px -8px 0 0;">
+                                                   <a *ngIf="AuthStore.getActivityPermission(100,'DOWNLOAD_EVENT_CHECKLIST_DETAIL_DOCUMENT_FILE')"><i class="fas fa-download" (click)="downloadDocumentFile('event-task',docs)"></i></a>
+                                                </div>
+                                             </div>
+
+
+                                             <div class="upload-pics edit-option" style="margin: 0 -25px 0 0;" *ngIf="docs.document_id">
+                                                <div *ngFor="let mainDoc of docs?.kh_document?.versions">
+                                                   <div *ngIf="mainDoc.is_latest" [ngClass]="AuthStore.getActivityPermission(100,'PREVIEW_EVENT_CHECKLIST_DETAIL_DOCUMENT_FILE') ? 'upload-pics-small pointer' : 'upload-pics-small'"
+                                                      (click)="AuthStore.getActivityPermission(100,'PREVIEW_EVENT_CHECKLIST_DETAIL_DOCUMENT_FILE') ? viewBrochureItem('document-version',docs,mainDoc) : ''">
+                                                      <div class="browse-form-pic" [ngStyle]="{'background': 'url('+createImageUrl('document-version',mainDoc?.token)+') no-repeat'}"></div>
+                                                      <div class="browse-form-name clearfix">
+                                                         <div class="float-left">
+                                                            <h6>{{mainDoc.title}}.{{mainDoc.ext}}</h6>
+                                                            <span class="mr-2 cmn-clr"><i class="fas fa-book"></i></span>
+                                                            <span>{{mainDoc.size/1048576 | number:'0.2-2'}}MB</span>
+                                                         </div>
+                                                         <div class="browse-logo">
+                                                            <img *ngIf="checkExtension(mainDoc.ext,'image') != -1" class="folder-picher" src="/assets/images/jpg-icone.png">
+                                                            <img *ngIf="checkExtension(mainDoc.ext,'doc') != -1" class="folder-picher" src="/assets/images/word-icone.png">
+                                                            <img *ngIf="checkExtension(mainDoc.ext,'pdf') != -1" class="folder-picher" src="/assets/images/pdf-icone.png">
+                                                            <img *ngIf="checkExtension(mainDoc.ext,'excel') != -1" class="folder-picher" src="/assets/images/excel-icone.png">
+                                                            <img *ngIf="checkExtension(mainDoc.ext,'video') != -1" class="folder-picher" src="/assets/images/md-video.png">
+                                                            <img *ngIf="checkExtension(mainDoc.ext,'audio') != -1" class="folder-picher" src="/assets/images/md-audio.png">
+                                                            <img *ngIf="checkExtension(mainDoc.ext,'ppt') != -1" class="folder-picher" src="/assets/images/md-ppt.png">
+                                                         </div>
+                                                      </div>
+                                                      <div class="edit-option-show-inner" style="margin: -2px -8px 0 0;">
+                                                         <a *ngIf="AuthStore.getActivityPermission(100,'DOWNLOAD_EVENT_CHECKLIST_DETAIL_DOCUMENT_FILE')"><i class="fas fa-download" (click)="downloadDocumentFile('document-version',docs,mainDoc)"></i></a>
+                                                      </div>
+                                                   </div>
+                                                </div>
+                                             </div>
+
+                                          </div>
+                                       </div>                                    
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                        <ng-container *mobxAutorun>
+                           <app-no-data *ngIf="EventTaskStore.IndividualEventTaskDetails?.sub_tasks.length == 0" [border]='false' [height]=true></app-no-data>
+                        </ng-container>
+                     </div>
+                  </div>
+                  <div class="row">
+                     <div class="col-xl-12">
+                        <hr class="mb-2">
+                        <div *ngIf="EventTaskStore.IndividualEventTaskDetails?.created_by.first_name"
+                           class="d-flex flex-row user-list-sm">
+                           <app-user-popup-box [source]=" getResponsibleUser( EventTaskStore.IndividualEventTaskDetails?.created_by, EventTaskStore.IndividualEventTaskDetails?.created_at )"></app-user-popup-box>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+   <ng-container *mobxAutorun>
+      <div *ngIf="!EventTaskStore.individualLoaded">
+          <app-event-task-details-loader></app-event-task-details-loader>
+      </div>
+  </ng-container>
+</main>
+
+<div class="modal modal-style-1 popup-full-width fade" style="z-index:99999;overflow: auto;" data-keyboard="false"
+   data-backdrop="static" #taskFormModal>
+   <app-add-event-task *ngIf="taskObject.type" [source]="taskObject"></app-add-event-task>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" style="z-index:99999;overflow: auto;" data-keyboard="false"
+   data-backdrop="static" #percentageUpdateModal>
+   <app-update-percentage *ngIf="percentageObject.type" [source]="percentageObject"></app-update-percentage>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" style="z-index:99999;overflow: auto;" data-keyboard="false"
+   data-backdrop="static" #historyPopupModal>
+   <app-event-task-history *ngIf="historyObject.type" [source]="historyObject"></app-event-task-history>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+   <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+<!------------------- Delete Confirmation Modal End --------------------------->
+<div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup" data-keyboard="false" data-backdrop="static" #filePreviewModal *mobxAutorun>
+   <button type="button" class="close" (click)="closePreviewModal($event)"><i class="lni-close"></i><span>esc</span></button>
+       <app-ca-image-preview *ngIf="previewObject" [source]="previewObject" (close)="closePreviewModal($event)"></app-ca-image-preview>
+</div>

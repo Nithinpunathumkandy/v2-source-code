@@ -1,0 +1,507 @@
+    <!-- kpi-measures-main-edit-popup Start -->
+        <button type="button" class="close" data-dismiss="modal" (click)="cancel()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+          <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+              <h4 class="modal-title">{{'add_all_kpi_measure_title' | translate}}</h4>
+              <!-- <button type="button" class="close" data-dismiss="modal">&times;</button>-->
+            </div>
+            <!-- Modal body -->
+            <div class="modal-body form-body">
+              <p class="head-details">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation</p>
+              
+              <div class="row">
+                 <div class="col-md-12">
+  
+  
+                    <div class="audit-form-table w-100 not-fixed-table hover-no-bg-color">
+                       <table class="table table-bordered ordinary-table audit-page-table mb-3 table-scroll">
+                          <tr>
+                             <th width="20%">{{'KPI' | translate}}</th>
+                             <th width="80%">{{'sm_achieved_target' | translate}}</th>
+                          </tr>
+                          <tr *ngFor="let k of kpiDataArray;let num = index">
+                             <td>{{k.kpi_title}}</td>
+                             <td> 
+                                <div class="row">
+                                 <div class="col-lg-6 col-sm-12">
+                                    <div class="form-group">
+                                       <label for="name">{{'Frequency' | translate}}<span class="form-error">*</span></label>
+                                       <div class="clearfix d-flex">
+                                        <div class="multiple-plain-ngselect select-width-plus w-100">
+                                            <ng-select 
+                                            [placeholder]="'Choose Frequency' | translate" 
+                                            [multiple]="false"
+                                            searchable="true" 
+                                            [(ngModel)]="k.selected_frequency"
+                                            (change)="changeFrequency($event,k,num)">
+                                                <ng-option [value]="type"
+                                                    *ngFor="let type of k.frequency">
+                                                    {{type.review_frequency | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                </ng-option>
+                                            </ng-select>
+                                            <p style="color: red;"
+                                            *ngIf="formErrors && formErrors.actual_value">
+                                            {{formErrors.actual_value}}</p>
+                                        </div>
+                                     </div>
+                                   </div>
+                                 </div>
+                                   <div class="col-md-6" *ngIf="k.kpi_calculation_type == 'manual'">
+                                      <div class="form-group">
+                                        <label for="name">{{'actual_value' | translate}}</label>
+                                        <input [(ngModel)]="k.actual_value" type="text" class="form-control w-100" [placeholder]="'sm_enter_actual_value' | translate">
+                                    </div>
+                                   </div>
+                                   <div class="col-md-12">
+                                      <div class="form-group">
+                                          <label for="name">{{'justification' | translate}}</label>
+                                          <textarea [(ngModel)]="k.justification" class="form-control" [placeholder]="'enter_justification' | translate" rows="3" id="comment"></textarea>
+                                      </div>
+                                   </div>
+                                   <div *ngIf="k.kpi_calculation_type == 'calculate'" style="width: 100%; margin-left: 15px;margin-right: 15px;">
+                                    <div class="row"  *ngFor="let input of k.strategy_profile_objective_kpi_data_inputs;let num = index">
+                                       <div class="col-lg-8 col-sm-8">
+                                          <div class="form-group">
+                                             <div class="bg-main data-input-select-box">
+                                                {{input.strategy_profile_objective_kpi_data_input?.title ? input.strategy_profile_objective_kpi_data_input?.title : input.title }}
+                                                <span class="tag-data-input-select-box">{{num + 1}}</span>
+                                            </div>
+                                          </div>
+                                       </div>
+                                       <div class="col-lg-4 col-sm-4">
+                                          <div class="form-group">
+                                            <input type="text"  class="form-control w-100" [(ngModel)]="input.value"  [ngModelOptions]="{standalone: true}" placeholder="Enter Value">
+                                        </div>
+                                       </div>
+                                    </div>
+                                 </div>
+                                   <div class="col-md-12">
+                                      <h6>{{'attachments' | translate}}</h6>
+                                      <div class="scroll-documents" #uploadArea>
+                                       <div class="thumb-pics-bg thumb-pics-col-3 clearfix thumb-pics-fix-text" style="padding-top: 0;">
+                                          <div class="thumb-pics">
+                                   
+                                             <div class="form-group form-group-upload">
+                                                <div class="darag-dropifile-upload">
+                                                   <div class="d-flex justify-content-center align-items-center text-center">
+                                                      <div>
+                                                         <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                                                         <div class="drag-file-name">{{'select_or_upload_your_file_here' | translate}} </div>
+                                                         <div class="upload-btn-wrapper">                  
+                                                            <button (click)="openFileUploadModal(num)" type="button" class="btn">{{'browse_files' | translate}}</button>
+                                                         </div>
+                                                      </div>
+                                                   </div>
+                                                </div>
+                                             </div>
+                                          </div>
+                                   
+                                             <div class="thumb-pics"  *ngFor="let docs of k.documents;let i = index">
+                                                 <div class="upload-pics edit-option" data-toggle="modal">
+                                                   <div *ngIf="docs.id && !docs.preview" class="browse-form-pic"  [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                                                   </div>
+                                                     <div  *ngIf="docs.preview" class="browse-form-pic" [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">              
+                                                   </div>
+                                                    <div class="browse-form-name clearfix">
+                                                     <div class="float-left">
+                                                       <h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:AppStore.noContentText}}.{{docs.ext}}
+                                                       </h6>
+                                                       <span *ngIf="docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-book"></i></span>
+                                                       <span  *ngIf="!docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-laptop"></i></span>
+                                                       <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                                                     </div>
+                                                     <div class="browse-logo">
+                                                       <img *ngIf="checkExtension(docs.ext,'image') != -1"
+                                                           class="folder-picher" src="/assets/images/jpg-icone.png">
+                                                       <img *ngIf="checkExtension(docs.ext,'doc') != -1"
+                                                           class="folder-picher" src="/assets/images/word-icone.png">
+                                                       <img *ngIf="checkExtension(docs.ext,'pdf') != -1"
+                                                           class="folder-picher" src="/assets/images/pdf-icone.png">
+                                                       <img *ngIf="checkExtension(docs.ext,'excel') != -1"
+                                                           class="folder-picher" src="/assets/images/excel-icone.png">
+                                                       <img *ngIf="checkExtension(docs.ext,'video') != -1"
+                                                           class="folder-picher" src="/assets/images/md-video.png">
+                                                       <img *ngIf="checkExtension(docs.ext,'audio') != -1"
+                                                           class="folder-picher" src="/assets/images/md-audio.png">
+                                                       <img *ngIf="checkExtension(docs.ext,'ppt') != -1"
+                                                           class="folder-picher" src="/assets/images/md-ppt.png">
+                                                   </div>
+                                                    </div>
+                                                 </div>
+                                              </div>
+                                   
+                                   
+                                       </div>
+                                    </div>
+                                   </div>
+                                   <div class="col-md-12">
+                                      <div class="cmn-bdr bg-main widg-padding-cmn-small pt-2 pb-2 mt-2">
+                                         <div class="row">
+                                            <div class="col-lg-4 col-sm-12 pt-3 pb-3 bdr-right-pc-btm-sm">
+                                               <div class="text-center">
+                                                  <h5 class="text-red font-normal mb-0">{{'minimum_value' | translate}} : {{k.minimum}}</h5>
+                                               </div>
+                                            </div>
+                                            <div class="col-lg-4 col-sm-12 pt-3 pb-3 bdr-right-pc-btm-sm">
+                                               <div class="text-center">
+                                                  <h5 class="text-green font-normal mb-0">{{'maximum_value' | translate}} : {{k.maximum}}</h5>
+                                               </div>
+                                            </div>
+                                            <div class="col-lg-4 col-sm-12 pt-3 pb-3">
+                                               <div class="text-center">
+                                                  <h5 class="text-blue font-normal mb-0">{{'target' | translate}} : {{k.target}} </h5>
+                                               </div>
+                                            </div>
+                                         </div>
+                                      </div>
+                                   </div>
+                                </div>
+                             </td>
+                          </tr>
+                          <!-- <tr>
+                             <td>% Focus Group User Index</td>
+                             <td> 
+                                <div class="row">
+                                   <div class="col-md-6">
+                                      <div class="form-group">
+                                           <label for="name">Frequency</label>
+                                           <div class="plain-select">
+                                             <select class="form-control" name="test">
+                                               <option value="a1">Enter Field Name</option>
+                                               <option value="a2">Select item 2</option>
+                                               <option value="a3">Select item 3</option>
+                                             </select>
+                                           </div>
+                                       </div>
+                                   </div>
+                                </div>
+                                <div class="row">
+                                   <div class="col-lg-8 col-sm-8">
+                                      <div class="form-group">
+                                         <div class="bg-main data-input-select-box">
+                                            Lorem ipsum is a dummy text of Industry - (a)
+                                            <span class="tag-data-input-select-box">1</span>
+                                        </div>
+                                      </div>
+                                   </div>
+                                   <div class="col-lg-4 col-sm-4">
+                                      <div class="form-group">
+                                        <input type="text" class="form-control w-100" placeholder="Enter Value">
+                                    </div>
+                                   </div>
+                                </div>
+                                <div class="row">
+                                   <div class="col-lg-8 col-sm-8">
+                                      <div class="form-group">
+                                         <div class="bg-main data-input-select-box">
+                                            Lorem ipsum is a dummy text of Industry - (b)
+                                            <span class="tag-data-input-select-box">2</span>
+                                        </div>
+                                      </div>
+                                   </div>
+                                   <div class="col-lg-4 col-sm-4">
+                                      <div class="form-group">
+                                        <input type="text" class="form-control w-100" placeholder="Enter Value">
+                                    </div>
+                                   </div>
+                                </div>
+  
+  
+                                <div class="row">
+                                   <div class="col-md-12">
+                                      <div class="form-group">
+                                          <label for="name">Justification</label>
+                                          <textarea class="form-control" rows="3" id="comment">Lorem ipsum dolor sit amet, consectetur consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit,</textarea>
+                                      </div>
+                                   </div>
+                                   <div class="col-md-12">
+                                      <h6>Attachments</h6>
+                                      <div class="thumb-pics-bg thumb-pics-col-4 clearfix">
+                                         <div class="thumb-pics">
+                                            <div class="upload-pics upload-pics-small edit-option">
+                                               <div class="browse-form-pic" style="background: url(images/mba.jpg) no-repeat;">
+                                               </div>
+                                                <div class="browse-form-name clearfix">
+                                                 <div class="float-left">
+                                                  <h6>Certificate.png</h6>
+                                                  <span>96KB</span>
+                                                 </div>
+                                                 <div class="browse-logo">
+                                                   <img src="images/md-xl.png">
+                                                 </div>
+                                                </div>
+                                                <div class="edit-option-show-inner">
+                                                 <a href="#"><i class="fas fa-download"></i></a>
+                                               </div>
+                                             </div>
+                                          </div>
+                                          <div class="thumb-pics">
+                                            <div class="upload-pics upload-pics-small edit-option">
+                                               <div class="browse-form-pic" style="background: url(images/mba.jpg) no-repeat;">
+                                               </div>
+                                                <div class="browse-form-name clearfix">
+                                                 <div class="float-left">
+                                                  <h6>Certificate.png</h6>
+                                                  <span>96KB</span>
+                                                 </div>
+                                                 <div class="browse-logo">
+                                                   <img src="images/md-xl.png">
+                                                 </div>
+                                                </div>
+                                                <div class="edit-option-show-inner">
+                                                 <a href="#"><i class="fas fa-download"></i></a>
+                                               </div>
+                                             </div>
+                                          </div>
+                                         </div>
+                                   </div>
+                                   <div class="col-md-12">
+                                      <div class="cmn-bdr bg-main widg-padding-cmn-small pt-2 pb-2 mt-2">
+                                         <div class="row">
+                                            <div class="col-lg-4 col-sm-12 pt-3 pb-3 bdr-right-pc-btm-sm">
+                                               <div class="text-center">
+                                                  <h5 class="text-red font-normal mb-0">Minimum Value : 35</h5>
+                                               </div>
+                                            </div>
+                                            <div class="col-lg-4 col-sm-12 pt-3 pb-3 bdr-right-pc-btm-sm">
+                                               <div class="text-center">
+                                                  <h5 class="text-green font-normal mb-0">Maximum Value : 90</h5>
+                                               </div>
+                                            </div>
+                                            <div class="col-lg-4 col-sm-12 pt-3 pb-3">
+                                               <div class="text-center">
+                                                  <h5 class="text-blue font-normal mb-0">Target : 100% </h5>
+                                               </div>
+                                            </div>
+                                         </div>
+                                      </div>
+                                   </div>
+                                </div>
+                             </td>
+                          </tr>
+                          <tr>
+                             <td>% Customer Satisfaction Index</td>
+                             <td> 
+                                <div class="row">
+                                   <div class="col-md-6">
+                                      <div class="form-group">
+                                           <label for="name">Frequency</label>
+                                           <div class="plain-select">
+                                             <select class="form-control" name="test">
+                                               <option value="a1">Enter Field Name</option>
+                                               <option value="a2">Select item 2</option>
+                                               <option value="a3">Select item 3</option>
+                                             </select>
+                                           </div>
+                                       </div>
+                                   </div>
+                                   <div class="col-md-6">
+                                      <div class="form-group">
+                                        <label for="name">Actual Value</label>
+                                        <input type="text" class="form-control w-100" placeholder="Type Question">
+                                    </div>
+                                   </div>
+                                   <div class="col-md-12">
+                                      <div class="form-group">
+                                          <label for="name">Justification</label>
+                                          <textarea class="form-control" rows="3" id="comment">Lorem ipsum dolor sit amet, consectetur consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit,</textarea>
+                                      </div>
+                                   </div>
+                                   <div class="col-md-12">
+                                      <h6>Attachments</h6>
+                                      <div class="thumb-pics-bg thumb-pics-col-4 clearfix">
+                                         <div class="thumb-pics">
+                                            <div class="upload-pics upload-pics-small edit-option">
+                                               <div class="browse-form-pic" style="background: url(images/mba.jpg) no-repeat;">
+                                               </div>
+                                                <div class="browse-form-name clearfix">
+                                                 <div class="float-left">
+                                                  <h6>Certificate.png</h6>
+                                                  <span>96KB</span>
+                                                 </div>
+                                                 <div class="browse-logo">
+                                                   <img src="images/md-xl.png">
+                                                 </div>
+                                                </div>
+                                                <div class="edit-option-show-inner">
+                                                 <a href="#"><i class="fas fa-download"></i></a>
+                                               </div>
+                                             </div>
+                                          </div>
+                                          <div class="thumb-pics">
+                                            <div class="upload-pics upload-pics-small edit-option">
+                                               <div class="browse-form-pic" style="background: url(images/mba.jpg) no-repeat;">
+                                               </div>
+                                                <div class="browse-form-name clearfix">
+                                                 <div class="float-left">
+                                                  <h6>Certificate.png</h6>
+                                                  <span>96KB</span>
+                                                 </div>
+                                                 <div class="browse-logo">
+                                                   <img src="images/md-xl.png">
+                                                 </div>
+                                                </div>
+                                                <div class="edit-option-show-inner">
+                                                 <a href="#"><i class="fas fa-download"></i></a>
+                                               </div>
+                                             </div>
+                                          </div>
+                                         </div>
+                                   </div>
+                                   <div class="col-md-12">
+                                      <div class="cmn-bdr bg-main widg-padding-cmn-small pt-2 pb-2 mt-2">
+                                         <div class="row">
+                                            <div class="col-lg-4 col-sm-12 pt-3 pb-3 bdr-right-pc-btm-sm">
+                                               <div class="text-center">
+                                                  <h5 class="text-red font-normal mb-0">Minimum Value : 35</h5>
+                                               </div>
+                                            </div>
+                                            <div class="col-lg-4 col-sm-12 pt-3 pb-3 bdr-right-pc-btm-sm">
+                                               <div class="text-center">
+                                                  <h5 class="text-green font-normal mb-0">Maximum Value : 90</h5>
+                                               </div>
+                                            </div>
+                                            <div class="col-lg-4 col-sm-12 pt-3 pb-3">
+                                               <div class="text-center">
+                                                  <h5 class="text-blue font-normal mb-0">Target : 100% </h5>
+                                               </div>
+                                            </div>
+                                         </div>
+                                      </div>
+                                   </div>
+                                </div>
+                             </td>
+                          </tr>
+                          <tr>
+                             <td>% Customer Satisfaction Index</td>
+                             <td> 
+                                <div class="row">
+                                   <div class="col-md-6">
+                                      <div class="form-group">
+                                           <label for="name">Frequency</label>
+                                           <div class="plain-select">
+                                             <select class="form-control" name="test">
+                                               <option value="a1">Enter Field Name</option>
+                                               <option value="a2">Select item 2</option>
+                                               <option value="a3">Select item 3</option>
+                                             </select>
+                                           </div>
+                                       </div>
+                                   </div>
+                                   <div class="col-md-6">
+                                      <div class="form-group">
+                                        <label for="name">Actual Value</label>
+                                        <input type="text" class="form-control w-100" placeholder="Type Question">
+                                    </div>
+                                   </div>
+                                   <div class="col-md-12">
+                                      <div class="form-group">
+                                          <label for="name">Justification</label>
+                                          <textarea class="form-control" rows="3" id="comment">Lorem ipsum dolor sit amet, consectetur consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit,</textarea>
+                                      </div>
+                                   </div>
+                                   <div class="col-md-12">
+                                      <h6>Attachments</h6>
+                                      <div class="thumb-pics-bg thumb-pics-col-4 clearfix">
+                                         <div class="thumb-pics">
+                                            <div class="upload-pics upload-pics-small edit-option">
+                                               <div class="browse-form-pic" style="background: url(images/mba.jpg) no-repeat;">
+                                               </div>
+                                                <div class="browse-form-name clearfix">
+                                                 <div class="float-left">
+                                                  <h6>Certificate.png</h6>
+                                                  <span>96KB</span>
+                                                 </div>
+                                                 <div class="browse-logo">
+                                                   <img src="images/md-xl.png">
+                                                 </div>
+                                                </div>
+                                                <div class="edit-option-show-inner">
+                                                 <a href="#"><i class="fas fa-download"></i></a>
+                                               </div>
+                                             </div>
+                                          </div>
+                                          <div class="thumb-pics">
+                                            <div class="upload-pics upload-pics-small edit-option">
+                                               <div class="browse-form-pic" style="background: url(images/mba.jpg) no-repeat;">
+                                               </div>
+                                                <div class="browse-form-name clearfix">
+                                                 <div class="float-left">
+                                                  <h6>Certificate.png</h6>
+                                                  <span>96KB</span>
+                                                 </div>
+                                                 <div class="browse-logo">
+                                                   <img src="images/md-xl.png">
+                                                 </div>
+                                                </div>
+                                                <div class="edit-option-show-inner">
+                                                 <a href="#"><i class="fas fa-download"></i></a>
+                                               </div>
+                                             </div>
+                                          </div>
+                                         </div>
+                                   </div>
+                                   <div class="col-md-12">
+                                      <div class="cmn-bdr bg-main widg-padding-cmn-small pt-2 pb-2 mt-2">
+                                         <div class="row">
+                                            <div class="col-lg-4 col-sm-12 pt-3 pb-3 bdr-right-pc-btm-sm">
+                                               <div class="text-center">
+                                                  <h5 class="text-red font-normal mb-0">Minimum Value : 35</h5>
+                                               </div>
+                                            </div>
+                                            <div class="col-lg-4 col-sm-12 pt-3 pb-3 bdr-right-pc-btm-sm">
+                                               <div class="text-center">
+                                                  <h5 class="text-green font-normal mb-0">Maximum Value : 90</h5>
+                                               </div>
+                                            </div>
+                                            <div class="col-lg-4 col-sm-12 pt-3 pb-3">
+                                               <div class="text-center">
+                                                  <h5 class="text-blue font-normal mb-0">Target : 100% </h5>
+                                               </div>
+                                            </div>
+                                         </div>
+                                      </div>
+                                   </div>
+                                </div>
+                             </td>
+                          </tr> -->
+                       </table>
+                    </div>
+  
+                    
+                    
+                 </div>
+              </div>
+  
+              <div class="row">
+                 <div class="col-sm-12">
+                  <div class="d-block justify-content-left border-0 mt-3">
+                     <button type="button" data-toggle="modal"
+                        class="btn btn-active"  (click) = "save()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save') }}</button>
+                     <button type="button" data-toggle="modal"
+                      class="btn"  (click) = "save(true)">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save_close') }}</button>
+                     <button type="button" data-toggle="modal" (click) = "cancel()"
+                        class="btn">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('cancel') }}</button>
+                  </div>
+                 </div>
+              </div>
+                
+                
+                
+              
+            </div>
+            <!-- Modal footer --> 
+          </div>
+        </div>
+      <!-- kpi-measures-main-edit-popup End -->
+
+          <!------------------------------->
+<!-- * Documetn Attach/Upload Common Component Starts Here -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #fileUploadModal>
+ 
+   <app-file-upload-popup *ngIf = "fileUploadPopupStore.openPopup" ></app-file-upload-popup>
+ 
+ </div>
+ <!-- * Documetn Attach/Upload Common Component Ends Here -->

@@ -1,0 +1,180 @@
+<button type="button" class="close" (click)="cancel()"><i class="lni-close"></i><span>esc</span></button>
+<div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content">
+       <!-- Modal Header -->
+       <div class="modal-header">
+          <h4 class="modal-title">{{'add_control' | translate}}</h4>
+          <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
+       </div>
+       <!-- Modal body -->
+       <div class="modal-body form-body">
+          <p class="head-details">Easily add controls to the auditable items which are assigned for auditing from different processes.
+          </p>
+
+          <div class="row">
+            <div class="col-sm-12 col-lg-6">
+                <div class="form-group">
+                   <label for="name">{{'search' | translate}}</label>
+                     <form class="form-control issue-select-process-search bg-white search-popup-new"
+                     
+                     autocomplete="off" [formGroup]="form"
+                     (submit) = "searchControls()"
+                     >
+                       <input type="text" [placeholder]="'search'|translate" name="search" class="search-process" 
+                       
+                       [(ngModel)] = "searchTerm" (ngModelChange) = "searchControls()"  [ngModelOptions]="{standalone: true}">
+                       <a class="search-clear-btn" (click) = "clearSearchBar()" *ngIf = "searchTerm">X</a>
+                       
+                       
+                       <button type="submit" style="width: 40px;"><i class="fa fa-search"></i></button>
+                     </form>
+                 </div>
+             </div>
+
+             <!-- <div class="col-sm-6 col-lg-6">
+                 <div class="form-group">
+                     <label for="name">Reference Code</label>
+                       <div class="plain-select bg-white">
+                          <select class="form-control" name="test">
+                             <option value="a1">Choose</option>
+                             <option value="a2">Select item 2</option>
+                             <option value="a3">Select item 3</option>
+                          </select>
+                       </div>
+                  </div>
+               </div> -->
+          
+               <div class="col-sm-6 col-lg-6">
+                  <div class="form-group">
+                     <label for="name">{{'control_types' | translate}}</label>
+                       <div class="multiple-plain-ngselect">
+                         <ng-select
+                           [placeholder]="'control_types'|translate"
+                            [multiple]="false"
+                            [(ngModel)] = "control_type_id"
+                            (search) = "searchControlTypes($event)"
+                            (clear) = "getTypes()"
+                            (open) = "getTypes()"
+                            (change) = "sortControls()">
+                            <ng-option [value]="controlTypes.id" *ngFor="let controlTypes of ControlTypesMasterStore.controlTypes">
+                               {{controlTypes.title}}
+                            </ng-option>
+                         </ng-select>
+                       </div>
+                  </div>
+               </div>
+               <div class="col-sm-6 col-lg-6">
+                  <div class="form-group">
+                     <label for="name">{{'control_categories' | translate}}</label>
+                       <div class="multiple-plain-ngselect">
+                         <ng-select
+                              [placeholder]="'control_categories'|translate"
+                             [multiple]="false"
+                             [(ngModel)] = "control_categories_id"
+                             (search) = "searchControlCategories($event)"
+                             (clear) = "getControlCategories()"
+                             (open) = "getControlCategories()"
+                             (change) = "sortControls()">
+                             <ng-option [value]="controlCategory.id" *ngFor="let controlCategory of ControlCategoryMasterStore.controlCategories">
+                                {{controlCategory.title}}
+                             </ng-option>
+                          </ng-select>
+                       </div>
+                  </div>
+               </div>
+             </div>
+
+
+
+          <div class="audit-form-table w-100">
+                 <div class="row">
+                    <div class="col-sm-12 full-width-table">
+                       <table class="table table-bordered ordinary-table audit-page-table mb-2 table-scroll">
+                        <thead>
+                           <tr>
+                              <th class="border-top-0" width="6%">
+                               <label class="container2 float-left" style="margin-top: 2px; padding-left: 22px;">
+                                  <input type="checkbox" [checked]="allControls" (change)="checkAll($event)">
+                                  <span class="checkmark"></span>
+                               </label>
+                              #</th>
+                              <th class="border-top-0" width="9%">Ref. No</th>
+                              <th class="border-top-0" width="50%">{{'title' | translate}}</th>
+                              <th class="border-top-0" width="15%">{{'control_categories' | translate}}</th>
+                              <th class="border-top-0" width="11%">{{'control_types' | translate}}</th>
+                              <th class="border-top-0" width="15%">{{'status' | translate}}</th>
+                           </tr>
+                        </thead>
+                          <tbody>
+                           <ng-container *mobxAutorun>
+                           <tr *ngFor="
+                           let row of ControlStore?.controlList
+                             | paginate
+                               : {
+                                   currentPage: ControlStore?.currentPage,
+                                   itemsPerPage: ControlStore?.itemsPerPage,
+                                   totalItems: ControlStore?.totalItems
+                                 };
+                           let num = index
+                         "  >
+                              <td class="pointer">
+                               <label class="container2 float-left" style="margin-top: 2px; padding-left: 22px;">
+                                  <input type="checkbox" [id]="row.id" [name]="row.name" [checked] = "checkSelectedStatus(row.id)" (change) = "selectControls($event,row, num)">
+                                  <span class="checkmark"></span>
+                               </label>
+                               {{
+                                 (ControlStore?.currentPage - 1) *
+                                   ControlStore?.itemsPerPage +
+                                   (num + 1)
+                               }}</td>
+                              <td>{{ row?.reference_code }}</td>
+                              <td>{{ row?.title }}</td>
+                              <td *ngIf="row.control_category_title!=null" title="{{row.control_category_title}}">{{row.control_category_title.length > 13 ? row.control_category_title.substring(0,13)+' ...': row.control_category_title}}</td>
+                              <td *ngIf="row.control_category_title==null">{{AppStore.noContentText}}</td>
+                              <td>{{ row.control_type_title ? row.control_type_title:AppStore.noContentText }}</td>
+                              <td>
+                                 
+                                 <div *ngIf="row.status_id==1" class="dot-div green-dot"> {{ row.status}}</div>
+                                 <div *ngIf="row.status_id==2" class="dot-div red-dot"> {{ row.status}}</div>
+                              </td>
+                           </tr>
+
+                        </ng-container>
+                           
+                          </tbody>
+                       </table>
+
+                      
+                    </div>
+
+                 </div>
+
+                 <div *ngIf="ControlStore.totalItems > ControlStore.itemsPerPage && ControlStore?.control_loaded" class="col-sm-12">
+                  <ul class="pagination justify-content-center mt-3">
+                    <div class="list">
+                      <pagination-controls (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+                    </div>
+                  </ul>
+                </div>
+
+                <app-no-data-list [source] = "controlslistEmptyList" *ngIf = "ControlStore.totalItems == 0 && ControlStore?.control_loaded"></app-no-data-list>
+                
+               </div>
+
+               
+
+          <div class="row mt-3">
+             <div class="col-sm-12">
+               <div class="d-block justify-content-left border-0 mt-3">
+                  <button type="button" data-toggle="modal" (click) = "save()" [disabled]="AppStore.loading ||controlsArray.length==0" data-target="#signal-lost" class="btn btn-active">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('add') }}</button>
+                  <button type="button" data-toggle="modal" data-target="#signal-lost" [disabled]="AppStore.loading ||controlsArray.length==0" (click) = "save(true)" class="btn">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('add_close') }}</button>
+                  <button type="button" data-toggle="modal" data-target="#error-message" (click) = "cancel()" class="btn">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('cancel') }}</button>
+               </div>
+             </div>
+           </div>
+       </div>
+       <!-- Modal footer -->
+    </div>
+ </div>
+
+  

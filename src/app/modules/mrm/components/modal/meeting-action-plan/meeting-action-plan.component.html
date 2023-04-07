@@ -1,0 +1,182 @@
+<button type="button" class="close" (click)="cancel()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header">
+            <h4 class="modal-title" *ngIf="source.type=='Add' || source.type=='Add_details_page'" >{{'add_action_plan' | translate}}</h4>
+            <h4 class="modal-title" *ngIf="source.type=='Edit'"  >{{'edit_mom' | translate}}</h4>
+            
+        </div>
+        <!-- Modal body -->
+        <div class="modal-body form-body">
+            <form [formGroup]="form">
+                <div class="row">
+
+                    <div  *ngIf="source.type=='Edit'" class="col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'agenda' | translate}}<span
+                                    class="form-error">*</span></label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect">
+                                    <ng-select 
+                                    [placeholder]="'choose_agenda' | translate" formControlName="meeting_plan_meeting_agenda_id"  
+                                    [multiple]="false" 
+                                    [items]="MeetingsStore.individualMeetingsDetails?.meeting_plan?.meeting_plan_agenda"
+                                          bindLabel="title"
+                
+                                         [closeOnSelect]="true">
+                                    </ng-select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                   
+                   
+                    <div class="col-sm-12"  *ngIf="source.type=='Add'">
+                        <div class="form-group">
+                            <label for="name">{{'title' | translate}}<span class="form-error">*</span></label>
+                            <div class="plain-select input-add-report">
+                                <input type="text" class="form-control"
+                                    [placeholder]="'title_of_the_action_plans' | translate" formControlName="title">
+                               
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <div class="clearfix">
+                                <label class="float-left">{{'mom' | translate}}<span class="form-error">*</span></label>
+                                <span class="float-right">
+                                    <p class="text-grey mb-0">{{form?.value.description != null ?
+                                        form?.value.description?.length : 0}}
+                                        {{'characters' | translate}}</p>
+                                </span>
+                            </div>
+                            <textarea class="form-control" rows="3" id="comment11"
+                                [placeholder]="'write_a_short_description_of_the_action_plans'|translate"
+                                formControlName="description"></textarea>
+                        </div>
+                    </div>
+
+                   
+                   
+
+                    <div  *ngIf="source.type=='Add'" class="col-sm-6">
+                        <div class="form-group">
+                            <label for="name"> {{'start_date' | translate}} <span class="form-error">*</span></label>
+                            <div class="input-group date-picker">
+                                <input class="form-control cal4" formControlName="start_date" placeholder="yyyy-mm-dd"
+                                    (click)="startDateInput.toggle()" id="start" ngbDatepicker
+                                    [minDate]="form.value.start_date?{year: this.form.value.start_date.year, month: this.form.value.start_date.month, day: this.form.value.start_date.day}:''"
+                                    #startDateInput="ngbDatepicker">
+
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary calendar" (click)="startDateInput.toggle()"
+                                        type="button"><i class="fas fa-calendar-alt"></i></button>
+                                </div>
+                            </div>
+                           
+                        </div>
+                    </div>
+
+                    <div  *ngIf="source.type=='Add'" class="col-sm-6">
+                        <div class="form-group">
+                            <label for="name"> {{'target_date' | translate}} <span class="form-error">*</span></label>
+                            <div class="input-group date-picker">
+                                <input class="form-control cal4" formControlName="target_date" placeholder="yyyy-mm-dd"
+                                    (click)="targetDateInput.toggle()"
+                                    [minDate]="form.value.start_date?{year: this.form.value.start_date.year, month: this.form.value.start_date.month, day: this.form.value.start_date.day}:''"
+                                    id="target" ngbDatepicker #targetDateInput="ngbDatepicker">
+
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary calendar"
+                                        (click)="targetDateInput.toggle()" type="button"><i
+                                            class="fas fa-calendar-alt"></i></button>
+                                </div>
+                            </div>
+                           
+                        </div>
+                    </div>
+
+
+                    <div  *ngIf="source.type=='Add'" class="col-sm-6">
+                        <div class="form-group">
+                            <label for="name">{{'responsible_user' | translate}}<span
+                                    class="form-error">*</span></label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect">
+                                    <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                                        [placeholder]="'select_responsible_user'|translate" [searchFn]="customSearchFn"
+                                        formControlName="responsible_user_id" (clear)="getUsers()"
+                                        (search)="searchUsers($event)" (open)="getUsers()">
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            <img class="ng-select-user-display"
+                                                *ngIf="item.image?.token||item.image_token" height="15" width="15"
+                                                [attr.src]="item.image?.token?createImageUrl(item.image?.token):createImageUrl(item.image_token)" />
+                                            <img class="ng-select-user-display"
+                                                *ngIf="!item.image?.token && !item.image_token" height="15" width="15"
+                                                [attr.src]="getDefaultImage()" />
+                                            <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],30,'
+                                                ') | titlecase}}</b><span aria-hidden="true" (click)="clear(item)"
+                                                style="border:none;" class="ng-value-icon left">×</span>
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            <div class="user-post-department-pic">
+                                                <img class="ng-select-user-display"
+                                                    *ngIf="item.image?.token || item.image_token" height="25" width="25"
+                                                    [attr.src]="item.image?.token?createImageUrl(item.image?.token):createImageUrl(item.image_token)" />
+                                                <img class="ng-select-user-display"
+                                                    *ngIf="!item.image?.token && !item.image_token" height="25"
+                                                    width="25" [attr.src]="getDefaultImage()" />
+                                            </div>
+                                            <div class="user-post-department-div">
+                                                <b>{{getStringsFormatted([item.first_name,item.last_name],30,' ') |
+                                                    titlecase}}</b>
+                                                <p class="user-post-department-multiple">
+                                                    {{getStringsFormatted([item.designation_title,'
+                                                    '+item.department],30,',')}}</p>
+                                            </div>
+                                        </ng-template>
+                                    </ng-select>
+                                </div>
+                            </div>
+                           
+                        </div>
+                    </div>
+
+                    
+                </div>
+
+                
+                <div class="row" *ngIf="source.type=='Add'">
+                    <div class="col-sm-12">
+                        <div class="d-block justify-content-left border-0 mt-3">
+                            <button (click)="save(false)" type="submit" class="btn btn-active" 
+                                [disabled]="form.invalid">{{'add_continue' | translate}}</button>
+                            <button type="button" data-toggle="modal" data-target="#signal-lost" class="btn"
+                                (click)="save(true)" [disabled]="form.invalid">{{'add_close' | translate}}</button>
+                            <button type="button" data-toggle="modal" data-target="#error-message" class="btn"
+                                (click)="cancel()">{{'cancel' | translate}}</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" *ngIf="source.type=='Edit'">
+                    <div class="col-sm-12">
+                        <div class="d-block justify-content-left border-0 mt-3">
+                            <button (click)="update(false)" type="submit" class="btn btn-active" 
+                            [disabled]="form.invalid || AppStore.loading">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save') }}</button>
+                            <button type="button" data-toggle="modal" data-target="#signal-lost" class="btn"
+                                (click)="update(true)" [disabled]="form.invalid || AppStore.loading">{{  AppStore.loading  ? getButtonText('loading') : getButtonText('save_close') }}</button>
+                            <button type="button" data-toggle="modal" data-target="#error-message" class="btn"
+                                (click)="cancel()">{{  AppStore.loading  ? getButtonText('loading') : getButtonText('cancel')}}</button>
+                        </div>
+                    </div>
+                </div>
+
+               
+            </form>
+        </div>
+      </div>
+    </div>

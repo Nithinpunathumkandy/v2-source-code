@@ -1,0 +1,109 @@
+ <!-- Profille -->
+ <div class="tab-pane active" id="top-tab-left-one">
+   <app-strategy-review-loader  *ngIf="!StrategyReviewStore.loaded"></app-strategy-review-loader>
+
+    <div class="row" *ngIf="StrategyReviewStore.loaded">
+       <div class="col-sm-12">
+           <div class="panel-group panel-drop-sections pt-0" id="jd" role="tablist" aria-multiselectable="true">
+               <div class="panel panel-default" *ngFor="let objective of StrategyReviewStore.allItems |paginate: {currentPage:StrategyReviewStore.currentPage, itemsPerPage:StrategyReviewStore.itemsPerPage,totalItems:StrategyReviewStore.totalItems};let mIndex = index">
+                   <div [ngClass]="selectedIndex == mIndex ? 'panel-heading active' : 'panel-heading'" role="tab" id="headingOne">
+                     <div class="panel-title relative">
+                        <a role="button" 
+                        aria-expanded="false"
+                            aria-controls="collapseOne" class="collapsed"
+                            (click)="selectedIndexChange(mIndex,objective)">
+                            <h5 class="width96pc mt-0"> {{objective.objective_title}} <span
+                                    class="drop-down-icone"><i
+                                        class="fas fa-chevron-down"></i></span></h5>
+                        </a>
+                        <span class="accordion-score-right">{{'score' | translate}}: <span class="text-light-blue bold" style="font-size: 18px;">{{objective.score ? objective.score : '0'}}</span></span>
+
+                    </div>
+                   </div>
+                   <div 
+                   [ngClass]="selectedIndex == mIndex ? 'drop-detail-sec panel-collapse collapse show' : 'drop-detail-sec panel-collapse collapse'"
+                   role="tabpanel" aria-labelledby="headingOne"  >
+                       <div class="panel-body bg-white pb-0 edit-and-delete-main">
+                         <div *ngIf="StrategyStore.kpis.length > 0" class="edit-option-show" style="margin: 30px 5px 0 0;">
+                            <a data-toggle="modal" (click)="openAllKpiMesureModal()" ><i class="fas fa-pen"></i></a>
+                            <a data-toggle="modal" (click)="openKpiMesureHistoryAllModalPopup()"><i class="fas fa-history"></i></a>
+                          </div>
+                           <h6>{{'sm_kpi_measures' | translate}}</h6>
+                           <div class="audit-form-table w-100 table-align-top not-fixed-table">
+                              <p *ngIf="StrategyStore.kpis.length == 0">{{AppStore.noContentText}}</p>
+                               <table *ngIf="StrategyStore.kpis.length > 0 && AuthStore.getActivityPermission(3200, 'STRATEGY_REVIEW_LIST')" class="table table-bordered ordinary-table audit-page-table mb-3 table-scroll">
+                                 <thead>
+                                    <tr>
+                                       <th class="border-top-0 text-center" width="4%">#</th>
+                                       <!-- <th class="border-top-0" width="10%">Ref ID</th> -->
+                                       <th class="border-top-0" width="46%">KPI</th>
+                                       <th class="border-top-0" width="10%">
+                                          {{'minimum_value' | translate}}</th>
+                                      <th class="border-top-0" width="10%">
+                                        {{'maximum_value' | translate}}</th>
+                                      <th class="border-top-0" width="10%">
+                                          {{'target' | translate}}</th>
+                                       <th class="border-top-0" width="10%"> {{'sm_achieved_target' | translate}}</th>
+                                    </tr>
+                                 </thead>
+                                 <tbody>
+                                  <tr *ngFor="let k of StrategyStore.kpis;let num = index" class="edit-option">
+                                     <td class="text-center">{{num+1}}</td>
+                                     <!-- <td>#0001</td> -->
+                                     <td>{{k.kpi_title}}</td>
+                                         <td>{{k.minimum}}</td>
+                                        <td>{{k.maximum}}</td>
+                                       <td>{{k.target}}</td>
+                                     <td>{{k.score ? k.score : AppStore.noContentText}}
+                                        <div class="edit-option-show-inner">
+                                          <a *ngIf="AuthStore.getActivityPermission(3200, 'UPDATE_STRATEGY_REVIEW')" data-toggle="modal" (click)="openKpiMesureModal(k.id)"><i class="fas fa-pen"></i></a>
+                                           <a data-toggle="modal" (click)="openKpiMesureHistoryModal(k.id)" ><i class="fas fa-history"></i></a>
+                                        </div>
+                                     </td>
+                                  </tr>
+                                 </tbody>
+                              </table>
+
+                            </div>
+
+                       </div>
+                   </div>
+               </div>
+
+               <div *ngIf="StrategyReviewStore.totalItems > StrategyReviewStore.itemsPerPage"
+                  class="col-sm-12">
+                  <ul class="pagination justify-content-center mt-3">
+                      <div class="list">
+                          <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"  class="my-pagination" (pageChange)="pageChange($event)">
+                          </pagination-controls>
+                      </div>
+                  </ul>
+              </div>
+             
+
+           </div>
+       
+       </div>
+    </div>
+    
+ </div>
+
+ <div class="modal modal-style-1 popup-full-width fade" id="add-new-notes-popup" data-keyboard="false"
+    data-backdrop="static" #kpiMesure>
+    <app-add-review-modal *ngIf="kpiMesureObject.type" [source]="kpiMesureObject" [freequency]="kpiMesureData"></app-add-review-modal>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="add-new-notes-popup" data-keyboard="false"
+data-backdrop="static" #kpiMesureHistory>
+<app-kpi-mesure-history-single *ngIf="kpiMesureHistoryObject.type" [source]="kpiMesureHistoryObject"></app-kpi-mesure-history-single>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="add-new-notes-popup" data-keyboard="false"
+data-backdrop="static" #allKpiMesure>
+<app-add-all-review-modal *ngIf="allKpiMesureObject.type" [source]="allKpiMesureObject"></app-add-all-review-modal>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="add-new-notes-popup" data-keyboard="false"
+data-backdrop="static" #kpiMesureHistoryAll>
+<app-kpi-review-measure-all-history *ngIf="kpiMesureHistoryAllObject.type" [source]="kpiMesureHistoryAllObject"></app-kpi-review-measure-all-history>
+</div>

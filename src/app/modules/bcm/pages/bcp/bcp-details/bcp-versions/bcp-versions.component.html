@@ -1,0 +1,131 @@
+<div class="row" *mobxAutorun>
+
+    <div class="col-md-12 pr-0">
+
+        <div class="inner-dtl">
+            <div class="tab-content">
+                
+                <!-- Profille -->
+                <div class="tab-pane bg-white p-3 active" id="profile">
+                    
+                    <div class="work-flow-info-tab d-flex">
+                        
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="name">{{'select_bcp_version'|translate}}</label>
+                                <div class="clearfix">
+                                    <div class="pointer" class="multiple-plain-ngselect">
+                                        <ng-select  [placeholder]="'select_version' | translate"
+                                            [multiple]="false" [(ngModel)] = "selectedVersion"
+                                            (change) = "selectedVersionChange($event)">
+                                            <ng-option [value]="item"
+                                                *ngFor="let item of BcpStore.bcpVersionHistoryItems">
+                                                <label class="mb-0">{{item.title.length > 80 ?
+                                                    item.title.substring(0,80)+' ...' : item.title }} </label>
+                                            </ng-option>
+                                        </ng-select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="small-tab-content pl-4">
+                        <div class="tab-content" *mobxAutorun>
+
+                            <div class="tab-pane fade active show" id="large" role="tabpanel" *ngIf = "selectedVersion">
+                                <div class="work-flow-pdf-preview">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <ng-container *ngFor = "let items of selectedVersion.contents;let num = index">
+                                                <h5 class="cmn-head-style"> {{num+1}}. <span [innerHTML] = "items.dtitle ? items.dtitle : items.title"></span>  </h5>
+                                                <p class="text-editor-content bullet-point-list" [innerHTML] = "items.description | safeHtml"></p>
+                                                <app-child-clause-details *ngIf = "items.children.length > 0" [source] = "items.children" [index] = "num+1" [buttons] = "'buttons'"></app-child-clause-details>
+                                            </ng-container>
+                                            <ng-container  *ngIf = "selectedVersion?.call_tree.length > 0">
+                                                <h5 class="cmn-head-style">{{selectedVersion?.contents.length + 1}}.<span>{{'call_tree' | translate}}</span></h5>
+                                                <div class="pl-3 mt-1 pt-1">
+                                                    <div class="accordion-workflow-content edit-option">
+                                                        <div class="inner-dtl">
+                                                            <div class="tab-content">
+                                                                <div class="tab-pane bg-white p-3  active" id="policies">
+                                                                    <div class="mt-4 mb-4">
+
+                                                                        <div class="row" *mobxAutorun>
+                                                                    <!-- <h6>{{BcpStore.bcpContents?.contents.length}} <span style="font-weight: normal;">{{'call_tree' | translate}}</span> </h6> -->
+                                                                            <div class="col-md-12 d-flex justify-content-center">
+                                                                                <div id="content-oc" class="call-tree-wrapper">
+                                                                                    <div class="call-tree clearfix mt-5">
+                                                                                        <ul>
+                                                                                            <li *ngFor = "let users of selectedVersion?.call_tree">
+                                                                                                <div *ngIf = "users.user_id" class="oc-user-box edit-and-delete-main">
+                                                                                                    <div class="call-profile-img">
+                                                                                                        <img [attr.src]="users.user.image_token ? createImageUrl(users.user.image_token) : getDefaultImage('user-logo')" onerror = "this.src='/assets/images/user-demo2.png'" width="55"
+                                                                                                            height="55"
+                                                                                                            class="img-fluid rounded-circle"
+                                                                                                            alt="images" />
+                                                                                                        
+                                                
+                                                                                                    </div>
+                                                                                                    <h4>{{getStringsFormatted([users.user.first_name,users.user.last_name],20,' ')}}</h4>
+                                                                                                    <h5 [attr.title] = "users.user.designation.tile">{{users.user.designation.title.length >= 20? users.user.designation.title.substring(0,17)+'..' : users.user.designation.title}}</h5>
+                                                                                                    <p *ngIf = "users.user.mobile"> <i class="fa fa-phone"></i>&nbsp;{{users.user.mobile}}
+                                                                                                    </p>
+                                                                                                    <p *ngIf = "!users.user.mobile"> <i class="fa fa-phone"></i>&nbsp;{{AppStore.noContentText}}
+                                                                                                    </p>
+                                                                                                    <p *ngIf = "users.user.email" [attr.title] = "users.user.email"> <i class="fa fa-envelope"></i>
+                                                                                                        {{users.user.email.length >= 20? users.user.email.substring(0,17)+'..' : users.user.email}}</p>
+                                                                                                
+                                                                                                </div>
+                                                                                                <div *ngIf = "!users.user_id" class="oc-user-box edit-and-delete-main">
+                                                
+                                                                                                    <div class="call-profile-img">
+                                                                                                        <img [attr.src]="getDefaultImage('user-logo')" width="55"
+                                                                                                            height="55"
+                                                                                                            class="img-fluid rounded-circle"
+                                                                                                            alt="images" />
+                                                                                                        
+                                                
+                                                                                                    </div>
+                                                                                                    <h4 [attr.title] = "users.name">{{users.name.length >= 20? users.name.substring(0,17)+'..' : users.name}}</h4>
+                                                                                                    <h5 *ngIf = "users.designation" [attr.title] = "users.designation">{{users.designation.length >= 20? users.designation.substring(0,17)+'..' : users.designation}}</h5>
+                                                                                                    <p *ngIf = "users.mobile"> <i class="fa fa-phone"></i>&nbsp;{{users.mobile}}
+                                                                                                    </p>
+                                                                                                    <p *ngIf = "!users.mobile"> <i class="fa fa-phone"></i>&nbsp;{{AppStore.noContentText}}
+                                                                                                    </p>
+                                                                                                    <p *ngIf = "users.email" [attr.title] = "users.email"> <i class="fa fa-envelope"></i>
+                                                                                                        {{users.email.length >= 20? users.email.substring(0,17)+'..' : users.email}}</p>
+                                                                                                
+                                                                                                </div>
+                                                                                                <app-calltree-user *ngIf = "users.children.length > 0" [details] = "users.children" [showButtons] = "false"></app-calltree-user>
+                                                                                            </li>
+                                                                                        </ul>
+                                                                                    </div>
+                                                
+                                                                                </div>
+                                                                                
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                
+                                                </div>
+                                            </ng-container>
+                                        </div>
+                                        
+                                    </div>
+                                </div>
+                                <ng-container *mobxAutorun>
+                                    <app-no-data *ngIf="selectedVersion && selectedVersion.contents.length == 0"></app-no-data>
+                                </ng-container>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

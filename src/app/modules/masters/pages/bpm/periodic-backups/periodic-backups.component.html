@@ -1,0 +1,100 @@
+<div class="widget bg-white">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item pointer" [routerLink]="['/masters/bpm']">
+                <a>{{'bpm' | translate}}</a>
+            </li>
+            <li class="breadcrumb-item active">{{'periodic_backup' | translate}}</li>
+        </ol>
+    </nav>
+
+    <div class="audit-form-table w-100 not-fixed-table mb-0">
+        <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll"
+        *ngIf="PeriodicBackupMasterStore?.loaded && PeriodicBackupMasterStore.PeriodicBackup.length > 0">
+        <tr>
+            <th style="width: 5%; text-align: center;">{{'sl' | translate}}</th>
+            <th style="width: 83%;" (click)="sortTitle('periodic_backups.title')"
+                class="border-top-0 issue-list-org-tab-three pointer" >
+                <span>{{'periodic_backup' | translate}}</span>
+                <img _ngcontent-twv-c17="" *ngIf="PeriodicBackupMasterStore.orderItem=='periodic_backups.title'" class="sort-down-pics pl-2" [attr.src]="PeriodicBackupMasterStore.orderBy=='desc' ? 
+                'assets/images/sort-up.png' : PeriodicBackupMasterStore.orderBy=='asc' ? 
+                'assets/images/sort-down.png' : 'assets/images/sort-empty.png'">
+            </th>
+            <!-- <th>{{'description' | translate}}</th> -->
+            <th style="width: 12%; text-align: center;">{{'status' | translate}}</th>
+        </tr>
+        <ng-container *mobxAutorun>
+            <tr class="edit-and-delete-main pointer"
+            (click)=" getPeriodicBackup(row.id)"  [ngStyle] = "{ 'pointer-events' : AuthStore.getActivityPermission(1100,'UPDATE_PERIODIC_BACKUP') ? '' : 'none'}"
+                *ngFor="let row of PeriodicBackupMasterStore?.PeriodicBackup | paginate: {currentPage:PeriodicBackupMasterStore?.currentPage, itemsPerPage:PeriodicBackupMasterStore?.itemsPerPage,totalItems:PeriodicBackupMasterStore?.totalItems}; let num = index">
+                <td style="text-align: center;">{{(PeriodicBackupMasterStore?.currentPage - 1) *
+                    PeriodicBackupMasterStore?.itemsPerPage + (num + 1)}}</td>
+
+                <td>{{row.title}}</td>
+
+                <td style="padding:0.75rem; text-align: center;">
+                    <div [attr.class]="'dot-div '+row.status_label">{{row.status}}</div>
+                    <div class="edit-option-show">
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'UPDATE_PERIODIC_BACKUP')"
+                            (click)=" getPeriodicBackup(row.id)" [attr.title]="'edit' | translate"><i
+                                class="fas fa-pen pointer"></i></a>
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'DELETE_PERIODIC_BACKUP')"
+                            (click)="delete(row.id)" [attr.title]="'delete' | translate"><i class="fas fa-trash pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(1100,'ACTIVATE_PERIODIC_BACKUP')"
+                            (click)="activate(row.id)" [attr.title]="'activate' | translate"><i class="fas fa-check pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.activeStatusId && AuthStore.getActivityPermission(1100,'DEACTIVATE_PERIODIC_BACKUP')"
+                            (click)="deactivate(row.id)" 
+                            ><i class="fas fa-ban pointer"></i></a>
+                    </div> 
+                </td>
+                <!-- <td>{{row.description}}</td>-->
+            </tr>
+        </ng-container>
+    </table>
+
+    </div>
+
+    <p class="float-right" *ngIf="PeriodicBackupMasterStore?.loaded && PeriodicBackupMasterStore.totalItems > 0"><b>{{'total_Items' | translate}}:{{PeriodicBackupMasterStore?.totalItems}}</b></p>
+
+    <ng-container *mobxAutorun>
+        <div *ngIf="!PeriodicBackupMasterStore.loaded">
+            <app-table-loader></app-table-loader>
+        </div>
+        <app-no-data
+            *ngIf="PeriodicBackupMasterStore.PeriodicBackup.length == 0 && PeriodicBackupMasterStore.loaded == true">
+        </app-no-data>
+
+    </ng-container>
+
+    <div *ngIf="PeriodicBackupMasterStore.totalItems>PeriodicBackupMasterStore.itemsPerPage"
+        class="col-sm-12">
+        <ul class="pagination justify-content-center mt-3">
+            <div class="list">
+                <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+                    (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+            </div>
+        </ul>
+    </div>
+</div>
+
+<!-- Modal part -->
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+
+    <app-periodic-backup-modal *ngIf="periodicBackupObject.type"
+        [source]="periodicBackupObject">
+
+    </app-periodic-backup-modal>
+
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+
+<div class="modal modal-style-1 email-popup-new fade" data-backdrop="static" data-keyboard="false"
+    id="email-notification-popup" #mailConfirmationPopup>
+    <app-mail-send-popup [source]="mailConfirmationData"></app-mail-send-popup>
+</div>

@@ -1,0 +1,393 @@
+<!-- <div class="modal modal-style-1 popup-full-width fade" id="kpi-measures-popup-two" data-keyboard="false"
+      data-backdrop="static" style="z-index: 999999; overflow-x: hidden; overflow-y: auto;"> -->
+<button type="button" class="close" (click)="cancel()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered">
+  <div class="modal-content">
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <h4 class="modal-title">{{'kpi_measures' | translate}}</h4>
+      <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
+    </div>
+    <!-- Modal body -->
+    <div class="modal-body form-body">
+      <p class="head-details">{{'sm_kpi_modal_brief' | translate}}
+      </p>
+      <form [formGroup]="strategyKpiForm" *mobxAutorun>
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'title' | translate}}<span class="form-error">*</span></label>
+              <div class="clearfix d-flex">
+                <div class="multiple-plain-ngselect select-width-plus w-100">
+                  <ng-select [placeholder]="'select_kpi' | translate" [multiple]="false" searchable="true"
+                    formControlName="kpi_id" (open)="getKpis()" [items]="KpiMasterStore.kpis" bindLabel="title"
+                    (search)="searchKpis($event)" (clear)="getKpis();" (change)="changeSelectedKpi()">
+                    <ng-option *ngFor="let type of KpiMasterStore.kpis">
+                      {{type.title.length > 70 ? type.title.substring(0,70)+'...' : type.title}}
+                    </ng-option>
+                  </ng-select>
+                </div>
+                <button class="btn multi-add-user ml-2" data-toggle="modal" (click)="openKpiMasters()"
+                  style="width: 42px;"><i class="fas fa-plus"></i></button>
+              </div>
+              <p class="form-error pt-1" *ngIf="formErrors && formErrors.kpi_id">{{formErrors.kpi_id}}</p>
+            </div>
+          </div>
+          <div class="col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'description' | translate}}</label>
+              <textarea class="form-control " rows="3" id="comment" formControlName="description"
+                [placeholder]="'sm_kpi_description'|translate"></textarea>
+            </div>
+          </div>
+          <div class="col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'calculation_type' | translate}}<span class="form-error">*</span></label>
+              <div class="clearfix">
+                <div class="multiple-plain-ngselect">
+                  <ng-select [placeholder]="'select_calculation_type' | translate" [multiple]="false" searchable="true"
+                    formControlName="kpi_calculation_type_id" (clear)="getActualValue()" (open)="getActualValue()">
+                    <ng-option [value]="type.id" *ngFor="let type of KpiCalculationTypesMasterStore?.allItems">
+                      {{type.title.length > 50 ? type.title.substring(0,50)+'...' : type.title}}
+                    </ng-option>
+                  </ng-select>
+                </div>
+              </div>
+              <p class="form-error pt-1" *ngIf="formErrors && formErrors.kpi_calculation_type_id">
+                {{formErrors.kpi_calculation_type_id}}</p>
+            </div>
+          </div>
+
+
+
+          <div class="col-sm-12 calculate-select"
+            *ngIf="strategyKpiForm.value.kpi_calculation_type_id && strategyKpiForm.value.kpi_calculation_type_id == 2">
+            <div class="form-group">
+              <label for="name">{{'data_input' | translate}}<small>(Calculate Select)</small></label>
+              <div class="d-flex clearfix">
+                <input type="text" class="form-control w-100" [(ngModel)]="variable"
+                  [ngModelOptions]="{standalone: true}" [placeholder]="'enter_input' | translate">
+                <button type="button" class="btn multi-add-user ml-2" style="width: 70px;"
+                  (click)="addVariable()">{{'add' | translate}}</button>
+              </div>
+              <div class="row">
+                <div class="col-lg-6 col-sm-12" *ngFor="let items of variableArray; let ind = index">
+                  <div class="bg-main data-input-select-box mt-2">
+                    <!-- <ol class="  bg-main data-input-select-box mt-2 ml-3" type="a">
+                                       <li class="col-lg-6 col-sm-12 ml-3" > -->
+                    {{items}}
+                    <span class="tag-data-input-select-box">{{dummy_array[ind]}}</span>
+                    <span class="close-data-input-select-box ml-3" (click)="removeVariable(ind)">x</span>
+                    <!-- </li>
+                                     </ol>
+                                      -->
+
+                  </div>
+                </div>
+                <!-- <div class="col-lg-6 col-sm-12">
+                                   <div class="bg-main data-input-select-box mt-2">
+                                       Lorem ipsum is a dummy text of Industry - (b)
+                                       <span class="tag-data-input-select-box">2</span>
+                                       <span class="close-data-input-select-box">x</span>
+                                   </div>
+                                 </div> -->
+              </div>
+            </div>
+
+          </div>
+
+          <div class="col-lg-6 col-sm-12 calculate-select"
+            *ngIf="strategyKpiForm.value.kpi_calculation_type_id && strategyKpiForm.value.kpi_calculation_type_id == 2">
+            <div class="form-group">
+              <label for="name">{{'formula' | translate}} <small>(Calculate Select)</small></label>
+              <input type="text" class="form-control" placeholder="Formula" formControlName="formula">
+            </div>
+          </div>
+
+
+
+
+
+
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'data_type' | translate}}<span class="form-error">*</span></label>
+              <div class="clearfix">
+                <div class="multiple-plain-ngselect">
+                  <ng-select [placeholder]="'select_data_type' | translate" [multiple]="false" searchable="true"
+                    formControlName="strategy_kpi_data_type_id" (open)="getDataType()" (clear)="getDataType()"
+                    (change)="dataTypeChange($event)">
+                    <ng-option [value]="type.id" *ngFor="let type of StrategyKpiDataTypesMasterStore?.allItems">
+                      {{type.title.length > 50 ? type.title.substring(0,50)+'...' : type.title}}
+                    </ng-option>
+                  </ng-select>
+                </div>
+              </div>
+              <p class="form-error pt-1" *ngIf="formErrors && formErrors.strategy_kpi_data_type_id">
+                {{formErrors.strategy_kpi_data_type_id}}</p>
+            </div>
+          </div>
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'aggregation_type' | translate}}<span class="form-error">*</span></label>
+              <div class="clearfix">
+                <div class="multiple-plain-ngselect">
+                  <ng-select [placeholder]="'select_aggregation_type' | translate" [multiple]="false" searchable="true"
+                    formControlName="aggregation_type_id" (open)="getAggrigationType()" (clear)="getAggrigationType()">
+                    <ng-option [value]="type.id" *ngFor="let type of AggregationTypesMasterStore.allItems">
+                      {{type.aggregation_language_title?.length > 50 ?
+                      type.aggregation_language_title.substring(0,50)+'...' : type.aggregation_language_title}}
+                    </ng-option>
+                  </ng-select>
+                </div>
+              </div>
+              <p class="form-error pt-1" *ngIf="formErrors && formErrors.aggregation_type_id">
+                {{formErrors.aggregation_type_id}}</p>
+
+            </div>
+          </div>
+
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'target' | translate}}<span class="form-error">*</span></label>
+              <div class="plain-select input-add-report">
+                <input type="text" class="form-control" formControlName="target"
+                  [placeholder]="'enter_target' | translate">
+                <p class="form-error pt-1"
+                  *ngIf="strategyKpiForm?.get('target').invalid && strategyKpiForm.value.target">
+                  {{'numeric_value' | translate}}</p>
+                <p class="form-error pt-1" *ngIf="formErrors && formErrors.target">{{formErrors.target}}</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'target_unit' | translate}}<span class="form-error">*</span></label>
+              <div class="clearfix d-flex">
+                <div class="multiple-plain-ngselect select-width-plus w-100">
+                  <ng-select [placeholder]="'select_target_unit' | translate" [multiple]="false"
+                    formControlName="target_unit_id" bindLabel="title" (open)="openTargetUnit()"
+                    (clear)="openTargetUnit()">
+
+                    <ng-option [value]="type.id" *ngFor="let type of UnitMasterStore.allItems">
+                      {{type.title}}
+                    </ng-option>
+
+                  </ng-select>
+                </div>
+                <p class="form-error pt-1" *ngIf="formErrors && formErrors.target_unit_id">{{formErrors.target_unit_id}}
+                </p>
+
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'minimum_value' | translate}} (%)</label>
+              <div class="plain-select input-add-report">
+                <input type="text" class="form-control" formControlName="minimum"
+                  [placeholder]="'enter_minimum_value' | translate">
+                <p class="form-error pt-1" *ngIf="strategyKpiForm?.get('minimum').invalid && strategyKpiForm.value.minimum">
+                  {{'numeric_value' | translate}}</p>
+                <p class="form-error pt-1" *ngIf="strategyKpiForm.value.aggregation_type_id == 2 && strategyKpiForm.value.minimum > 99">
+                  {{'sm_kpi_min_value_validation' | translate}} 99</p>
+
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'maximum_value' | translate}} (%)</label>
+              <div class="plain-select input-add-report">
+                <input type="text" class="form-control" formControlName="maximum"
+                  [placeholder]="'enter_maximum_value' | translate">
+                <p class="form-error pt-1" *ngIf="strategyKpiForm?.get('maximum').invalid && strategyKpiForm.value.maximum">
+                  {{'numeric_value' | translate}}</p>
+                <p class="form-error pt-1" *ngIf="strategyKpiForm.value.aggregation_type_id == 2 && strategyKpiForm.value.maximum > 100">
+                  {{'sm_kpi_min_value_validation' | translate}} 100</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'review_frequency' | translate}}<span class="form-error">*</span></label>
+              <div class="clearfix d-flex">
+                <div class="multiple-plain-ngselect select-width-plus w-100">
+                  <ng-select [placeholder]="'select_review_frequency' | translate" [multiple]="false"
+                    formControlName="strategy_review_frequency_id" bindLabel="title" (open)="openFrequncy()"
+                    (clear)="openFrequncy()" (change)=changeFreequency($event)>
+                    <ng-option [value]='type.id'
+                      *ngFor="let type of StrategyInitiativeReviewFrequencyMasterStore?.allItems">
+                      {{type.title}}
+                    </ng-option>
+
+                  </ng-select>
+                </div>
+                <p class="form-error pt-1" *ngIf="formErrors && formErrors.strategy_review_frequency_id">
+                  {{formErrors.strategy_review_frequency_id}}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group">
+              <label> {{'owner' | translate}}<span class="form-error">*</span></label>
+              <div class="clearfix">
+                <div class="dropdown-filter">
+                  <div class="multiple-plain-ngselect">
+                    <ng-select [items]="UsersStore.usersList" bindLabel="email" formControlName="kpi_owner_id"
+                      [placeholder]="'select_owner' | translate" (search)="searchUsers($event)" (open)="getUsers()"
+                      [searchFn]="customSearchFn">
+                      <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                        <img *ngIf="item.image_token" class="ng-select-user-display" height="15" width="15"
+                          [attr.src]="createImageUrl('user-profile-picture',item.image_token)"
+                          onerror="this.src='/assets/images/user-demo2.png'" />
+                        <img *ngIf="!item.image_token" class="ng-select-user-display" height="15" width="15"
+                          [attr.src]="getDefaultImage('user-logo')" />
+                        <b style="padding-left: 3px">{{getStringsFormatted([item.first_name,item.last_name],50,'
+                          ') | titlecase}}</b><span aria-hidden="true" (click)="clear(item)" style="border: none"
+                          class="ng-value-icon left">×</span>
+                      </ng-template>
+                      <ng-template ng-option-tmp let-item="item" let-index="index">
+                        <div class="user-post-department-pic">
+                          <img *ngIf="item.image_token" class="ng-select-user-display" height="25" width="25"
+                            [attr.src]="createImageUrl('user-profile-picture',item.image_token)"
+                            onerror="this.src='/assets/images/user-demo2.png'" />
+                          <img *ngIf="!item.image_token" class="ng-select-user-display" height="25" width="25"
+                            [attr.src]="getDefaultImage('user-logo')" />
+                        </div>
+                        <div class="user-post-department-div">
+                          <b>{{getStringsFormatted([item.first_name,item.last_name],50,'
+                            ') | titlecase}}</b>
+                          <p class="user-post-department-multiple">
+                            {{getStringsFormatted([item.designation_title,'
+                            '+item.department],30,',')}}
+                          </p>
+                        </div>
+                      </ng-template>
+                    </ng-select>
+                  </div>
+                </div>
+                <p class="form-error pt-1" *ngIf="formErrors && formErrors.kpi_owner_id">{{formErrors.kpi_owner_id}}</p>
+
+              </div>
+            </div>
+          </div>
+          <div
+            [ngClass]="strategyKpiForm.value.kpi_calculation_type_id && strategyKpiForm.value.kpi_calculation_type_id == 2 ? 'col-lg-6 col-sm-12' : 'col-lg-12 col-sm-12'">
+            <div class="form-group">
+              <label>{{'responsible_users' | translate}}<span class="form-error">*</span></label>
+              <div class="clearfix">
+                <div class="dropdown-filter">
+                  <div class="multiple-plain-ngselect">
+                    <ng-select [items]="UsersStore.usersList" bindLabel="email" multiple="true"
+                      formControlName="user_ids" [placeholder]="'select_responsible_users' | translate"
+                      (search)="searchUsers($event)" (open)="getUsers()" [searchFn]="customSearchFn">
+                      <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                        <img *ngIf="item.image_token" class="ng-select-user-display" height="15" width="15"
+                          [attr.src]="createImageUrl('user-profile-picture',item.image_token)"
+                          onerror="this.src='/assets/images/user-demo2.png'" />
+                        <img *ngIf="!item.image_token" class="ng-select-user-display" height="15" width="15"
+                          [attr.src]="getDefaultImage('user-logo')" />
+                        <b style="padding-left: 3px">{{getStringsFormatted([item.first_name,item.last_name],50,'
+                          ') | titlecase}}</b><span aria-hidden="true" (click)="clear(item)" style="border: none"
+                          class="ng-value-icon left">×</span>
+                      </ng-template>
+                      <ng-template ng-option-tmp let-item="item" let-index="index">
+                        <div class="user-post-department-pic">
+                          <img *ngIf="item.image_token" class="ng-select-user-display" height="25" width="25"
+                            [attr.src]="createImageUrl('user-profile-picture',item.image_token)"
+                            onerror="this.src='/assets/images/user-demo2.png'" />
+                          <img *ngIf="!item.image_token" class="ng-select-user-display" height="25" width="25"
+                            [attr.src]="getDefaultImage('user-logo')" />
+                        </div>
+                        <div class="user-post-department-div">
+                          <b>{{getStringsFormatted([item.first_name,item.last_name],50,'
+                            ') | titlecase}}</b>
+                          <p class="user-post-department-multiple">
+                            {{getStringsFormatted([item.designation_title,'
+                            '+item.department],30,',')}}
+                          </p>
+                        </div>
+                      </ng-template>
+                    </ng-select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'review_users' | translate}}<span class="form-error">*</span></label>
+              <div class="clearfix">
+                <div class="dropdown-filter">
+                  <div class="multiple-plain-ngselect">
+                    <ng-select [items]="StrategyStore.strategyObjectiveReviewUser" bindLabel="email" multiple="true" formControlName="review_user_ids"
+                      [placeholder]="'select_review_users' | translate"
+                      [searchFn]="customSearchFn">
+                      <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                        <img *ngIf="item.image_token" class="ng-select-user-display" height="15" width="15"
+                          [attr.src]="createImageUrl('user-profile-picture',item.image_token)"
+                          onerror="this.src='/assets/images/user-demo2.png'" />
+                        <img *ngIf="!item.image_token" class="ng-select-user-display" height="15" width="15"
+                          [attr.src]="getDefaultImage('user-logo')" />
+                        <b style="padding-left: 3px">{{getStringsFormatted([item.first_name,item.last_name],50,'
+                          ') | titlecase}}</b><span aria-hidden="true" (click)="clear(item)" style="border: none"
+                          class="ng-value-icon left">×</span>
+                      </ng-template>
+                      <ng-template ng-option-tmp let-item="item" let-index="index">
+                        <div class="user-post-department-pic">
+                          <img *ngIf="item.image_token" class="ng-select-user-display" height="25" width="25"
+                            [attr.src]="createImageUrl('user-profile-picture',item.image_token)"
+                            onerror="this.src='/assets/images/user-demo2.png'" />
+                          <img *ngIf="!item.image_token" class="ng-select-user-display" height="25" width="25"
+                            [attr.src]="getDefaultImage('user-logo')" />
+                        </div>
+                        <div class="user-post-department-div">
+                          <b>{{getStringsFormatted([item.first_name,item.last_name],50,'
+                            ') | titlecase}}</b>
+                          <p class="user-post-department-multiple">
+                            {{getStringsFormatted([item?.designation?.title,'
+                            '+item?.department?.title],30,',')}}
+                          </p>
+                        </div>
+                      </ng-template>
+                    </ng-select>
+                  </div>
+                </div>
+                <p class="form-error pt-1" *ngIf="formErrors && formErrors.review_user_ids">
+                  {{formErrors.review_user_ids}}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="d-block justify-content-left border-0 mt-3">
+              <button type="button" data-toggle="modal" class="btn btn-active"
+                [disabled]="strategyKpiForm.invalid || AppStore.loading" (click)="save()">{{ AppStore.loading ?
+                getButtonText('loading') : getButtonText('save') }}</button>
+              <button type="button" data-toggle="modal" class="btn"
+                [disabled]="strategyKpiForm.invalid || AppStore.loading" (click)="save(true)">{{ AppStore.loading ?
+                getButtonText('loading') : getButtonText('save_close') }}</button>
+              <button type="button" data-toggle="modal" (click)="cancel()" class="btn">{{ AppStore.loading ?
+                getButtonText('loading') : getButtonText('cancel') }}</button>
+            </div>
+          </div>
+        </div>
+      </form>
+
+    </div>
+    <!-- Modal footer -->
+  </div>
+</div>
+<!-- </div> -->
+<div class="modal modal-style-1 popup-full-width fade" id="add-kpi-popup-two" data-keyboard="false"
+  data-backdrop="static" #kpiMasterModal>
+  <app-user-kpi-modal *ngIf="kpiObject.type" [source]="kpiObject"></app-user-kpi-modal>
+</div>

@@ -1,0 +1,115 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navBar>
+    <app-sub-menu>-</app-sub-menu>
+    <div class="module-name-block module-name-block-space float-left">
+        <a class="dropdown module-title">{{'bc_strategies'|translate}}</a>
+    </div>
+    <!-- <ul class="nav nav-pills float-left d-none d-lg-block" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link nav-link-show" [routerLink]="['/bcm/bc-strategy']" routerLinkActive="active"
+                [routerLinkActiveOptions]="{exact: true}"> {{'bc_strategies' | translate}}</a>
+    </ul> -->
+</nav>
+<main class="mt-4 acl-page">
+    <div class="container-fluid">
+        <app-filter-menu></app-filter-menu>
+        <div class="audit-program-box audit-page-table-main">
+                        <div class="row" *mobxAutorun>
+                            <div class="col-sm-12">
+                                <div class="full-width-table mb-3">
+                                <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll"
+                                    *ngIf="BcmStrategyStore.loaded && BcmStrategyStore.allItems.length!=0 && AuthStore.getActivityPermission(2800,'BUSINESS_CONTINUITY_STRATEGY_LIST')">
+                                    <thead>
+                                        <tr>
+                                            <th class="border-top-0 text-center" width="2%">#</th>
+                                            <th class="border-top-0 pointer" width="8%"
+                                                (click)="setSort('business_continuity_strategies.reference_code')">
+                                                {{'ref_id'|translate}}
+                                                <img *ngIf="BcmStrategyStore.orderItem == 'business_continuity_strategies.reference_code'"
+                                                    [attr.src]="BcmStrategyStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                                    class="sort-down-pics">
+                                            </th>
+                                            <th class="border-top-0 pointer" width="50%"
+                                                (click)="setSort('business_continuity_strategies.business_continuity_strategy_type')">
+                                                {{'bc_type_title' | translate}}
+                                                <img *ngIf="BcmStrategyStore.orderItem == 'business_continuity_strategies.business_continuity_strategy_type'"
+                                                    [attr.src]="BcmStrategyStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                                    class="sort-down-pics">
+                                            </th>
+                                            <!-- <th width="20%">{{'scores' | translate}}
+                                            </th> -->
+                                            <th width="30%">{{'solutions' | translate}}
+                                            </th>
+                                            <th class="text-center" width="10%">{{'status' | translate}}
+                                            </th>
+                                            <!-- <th class="border-top-0" width="10%">{{'assessment' | translate}}</th> -->
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr (click)="AuthStore.getActivityPermission(100,'BUSINESS_CONTINUITY_STRATEGY_TYPE_DETAILS') ? gotoDetails(bcs?.id) : ''"
+                                            class="edit-and-delete-main"
+                                            *ngFor="let bcs of BcmStrategyStore.allItems| paginate: {currentPage:BcmStrategyStore?.currentPage, itemsPerPage:BcmStrategyStore?.itemsPerPage,totalItems:BcmStrategyStore?.totalItems};let ind=index">
+                                            <td class="pointer text-center">{{(BcmStrategyStore?.currentPage - 1) *
+                                                BcmStrategyStore?.itemsPerPage + (ind + 1)}}</td>
+                                            <td class="pointer">{{bcs?.reference_code}}</td>
+                                            <td class="pointer">{{bcs?.business_continuity_strategy_type}}</td>
+                                            <!-- <td class="pointer">
+                                                {{bcs?.solution_score?bcs?.solution_score:AppStore.noContentText}}</td> -->
+                                            <td class="pointer">
+                                                <ul class="arrowlist pl-0 mt-2" *ngIf="bcs?.solutions">
+                                                    <li class="clearfix" *ngFor="let solution of bcs?.solutions.split(',')">
+                                                        {{solution}}
+                                                    </li>
+                                                </ul>
+                                                <p *ngIf="!bcs?.solutions">{{AppStore.noContentText}}</p>
+                                            </td>
+                                            <td class="pointer text-center">
+                                                <div
+                                                    [attr.class]="'dot-div '+bcs?.business_continuity_strategy_status_label+'-dot'">
+                                                    {{bcs.business_continuity_strategy_status_title}}</div>
+                                                <div class="edit-option-show" style="margin: 30px 0 0 0; "
+                                                    *ngIf="(AuthStore.getActivityPermission(2800,'UPDATE_BUSINESS_CONTINUITY_STRATEGY') || AuthStore.getActivityPermission(4200,'DELETE_BUSINESS_CONTINUITY_STRATEGY'))">
+                                                    <a *ngIf="bcs.status_type == 'new' && AuthStore.getActivityPermission(2800,'UPDATE_BUSINESS_CONTINUITY_STRATEGY')"
+                                                        (click)="editBcStrategy(bcs.id)"
+                                                        [attr.title]="'edit' | translate"><i class="fas fa-pen"></i></a>
+                                                    <a *ngIf="AuthStore.getActivityPermission(2800,'DELETE_BUSINESS_CONTINUITY_STRATEGY')"
+                                                        (click)="deleteConfirm(bcs.id)"
+                                                        [attr.title]="'delete' | translate"><i
+                                                            class="fas fa-trash"></i></a>
+                                                </div>
+                                            </td>
+                                            <!-- <td class="pointer">
+                                            <a data-toggle="modal" class="btn" (click)="assessmentPerform(bcp.id)">Perform Now</a>
+                                        </td> -->
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                </div>
+                                <p class="float-right bold mb-0" *ngIf="BcmStrategyStore.loaded && BcmStrategyStore.totalItems > 0">{{'total_Items' | translate}}:{{BcmStrategyStore?.totalItems}}</p>
+                                <div *ngIf="BcmStrategyStore.totalItems>BcmStrategyStore.itemsPerPage && AuthStore.getActivityPermission(2800,'BUSINESS_CONTINUITY_STRATEGY_LIST')"
+                                    class="col-sm-12">
+                                    <ul class="pagination justify-content-center mt-3" *ngIf="BcmStrategyStore.loaded">
+                                        <div class="list">
+                                            <pagination-controls [previousLabel]="'previous' | translate"
+                                                [nextLabel]="'next' | translate" (pageChange)="pageChange($event)"
+                                                class="my-pagination"></pagination-controls>
+                                        </div>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <ng-container *mobxAutorun>
+                            <app-no-data *ngIf="BcmStrategyStore.loaded && BcmStrategyStore.allItems.length==0">
+                            </app-no-data>
+                        </ng-container>
+                        <ng-container *mobxAutorun>
+                            <app-bcm-table-loader *ngIf="!BcmStrategyStore.loaded"></app-bcm-table-loader>
+                        </ng-container>
+        </div>
+    </div>
+</main>
+
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>

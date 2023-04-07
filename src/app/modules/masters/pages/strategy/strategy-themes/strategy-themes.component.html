@@ -1,0 +1,82 @@
+<div class="widget bg-white">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item pointer" [routerLink]="['/masters/strategy-management']"><a>{{'strategic_management' | translate}}</a></li>
+            <li class="breadcrumb-item active">{{'strategy_theme' | translate}}</li>
+        </ol>
+    </nav>
+
+    <table class="table-master table" *ngIf="StrategicThemesMasterStore?.loaded && StrategicThemesMasterStore.allItems.length > 0">
+
+
+        <tr>
+            <th style="width: 10%; text-align: center;">{{'sl' | translate}}</th>
+            <th (click)="sortTitle('strategic_theme_title')" class="border-top-0 issue-list-org-tab-three pointer" style="width: 30%;"><span>{{'strategy_theme' | translate}}</span>
+                <img _ngcontent-twv-c17="" class="sort-down-pics pl-2" 
+                [attr.src]="StrategicThemesMasterStore.orderBy=='desc' ? 
+                'assets/images/sort-up.png' : StrategicThemesMasterStore.orderBy=='asc' ? 
+                'assets/images/sort-down.png' : 'assets/images/sort-empty.png'">
+
+
+            </th>
+
+            <th>{{'description' | translate}}</th>
+            <th style="width: 15%;">{{'status' | translate}}</th>
+        </tr>
+        <ng-container *mobxAutorun>
+
+
+
+            <tr class="edit-and-delete-main"
+                *ngFor="let row of StrategicThemesMasterStore.allItems| paginate: {currentPage:StrategicThemesMasterStore.currentPage, itemsPerPage:StrategicThemesMasterStore.itemsPerPage,totalItems:StrategicThemesMasterStore.totalItems};let num=index ">
+                <td style="text-align: center;">{{(StrategicThemesMasterStore.currentPage - 1) * StrategicThemesMasterStore.itemsPerPage + (num + 1)}}</td>
+                <td><a (click)=" getStrategicThemes(row.id)" [ngStyle] = "{ 'pointer-events' : AuthStore.getActivityPermission(1100,'UPDATE_STRATEGY_THEME') ? '' : 'none'}" >{{row.title}}</a></td>
+                <td>{{row.description ? row?.description : AppStore.noContentText}}</td>
+                <td style="padding:0.75rem;" >
+                    <div [attr.class]="'dot-div '+row.status_label">{{row.status}}</div>
+                    <div class="edit-option-show">
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'UPDATE_STRATEGY_THEME')" (click)=" getStrategicThemes(row.id)" [attr.title]="'edit' | translate" ><i class="fas fa-pen pointer"></i></a>
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'DELETE_STRATEGY_THEME')" (click)="delete(row.id)" [attr.title]="'delete' | translate"><i class="fas fa-trash pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(1100,'ACTIVATE_STRATEGY_THEME')" (click)="activate(row.id)" [attr.title]="'activate' | translate"><i
+                                class="fas fa-check pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.activeStatusId && AuthStore.getActivityPermission(1100,'DEACTIVATE_STRATEGY_THEME')" (click)="deactivate(row.id)" [attr.title]="'deactivate' | translate"><i
+                                class="fas fa-ban pointer"></i></a>
+                    </div>
+                </td>
+
+            </tr>
+        </ng-container>
+    </table>
+    <p class="float-right" *ngIf="StrategicThemesMasterStore?.loaded && StrategicThemesMasterStore.totalItems > 0"><b>{{'total_Items' | translate}}:{{StrategicThemesMasterStore?.totalItems}}</b></p>
+
+    <ng-container *mobxAutorun>
+        <div *ngIf="!StrategicThemesMasterStore.loaded">
+            <app-table-loader></app-table-loader>
+        </div>
+       
+
+
+        <app-no-data *ngIf = "StrategicThemesMasterStore.totalItems == 0 && StrategicThemesMasterStore.loaded == true"></app-no-data>
+    </ng-container>
+
+    <div *ngIf="StrategicThemesMasterStore.totalItems>StrategicThemesMasterStore.itemsPerPage" class="col-sm-12">
+        <ul class="pagination justify-content-center mt-3">
+            <div class="list">
+                <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate" (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls> 
+            </div>
+        </ul>
+    </div>
+</div>
+
+
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+    <app-strategy-theme-modal *ngIf="strategicThemesObject.type" [source]="strategicThemesObject">
+    </app-strategy-theme-modal>
+</div>
+
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+

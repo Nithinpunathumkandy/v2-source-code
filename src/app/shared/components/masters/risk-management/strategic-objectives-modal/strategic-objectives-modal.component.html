@@ -1,0 +1,266 @@
+<button type="button" class="close" (click)="cancel()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header">
+            <h4 class="modal-title">Strategic Objectives</h4>
+            <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
+        </div>
+        <!-- Modal body -->
+        <div class="modal-body form-body">
+            <!-- <form [formGroup]="form"> -->
+            <p class="head-details"></p>
+            <form [formGroup]="form" *mobxAutorun>
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label for="title">{{'strategic_objective_form_title' | translate}}<sup>*</sup></label>
+                            <input type="text" formControlName="title" class="form-control"
+                                placeholder="{{'strategic_objective_form_title_placeholder' | translate}}" id="title" #titleInput>
+                            <p class="form-error pt-1" *ngIf="formErrors && formErrors.title"> {{formErrors.title}}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <span style="float: right;"><p class="text-grey mb-0">{{form?.value.description != null ? getDescriptionLength() : 0}} {{'characters' | translate}}</p></span>
+                            <label>{{'strategic_objective_form_description' | translate}}</label>
+                            <textarea class="form-control" rows="3" id="comment11"
+                                placeholder="{{'strategic_objective_form_description_placeholder' | translate}}" formControlName="description"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-6" *ngIf = "OrganizationLevelSettingsStore.organizationLevelSettings?.is_subsidiary">
+                        <div class="form-group">
+                            <label for="name">{{'strategic_objective_form_organizations' | translate}}<sup>*</sup></label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect">
+
+                                    <ng-select [items]="SubsidiaryStore.subsidiaryList"
+                                        [placeholder]="'strategic_objective_form_organizations_placeholder' | translate"  
+                                        multiple="true" searchable="true"
+                                        bindLabel="title"  
+                                        formControlName="organization_ids"
+                                        (search)="searchSubsidiary($event)" 
+                                        (clear)="getSubsidiary()"
+                                        (open)="getSubsidiary()" 
+                                        (add)="getBranches()"
+                                        [closeOnSelect]="false"
+                                        autocomplete="new-password">
+                                    
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            {{item.title?.length > 60 ? (item.title | slice:0:60)+' ...' :
+                                            item.title}}<span aria-hidden="true" (click)="clear(item)"
+                                                style="border:none;" class="ng-value-icon left">×</span>
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            {{item.title?.length > 80 ? (item.title | slice:0:80)+' ...' :
+                                            item.title}}
+                                        </ng-template>
+                                    </ng-select>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.organization_id">
+                                    {{formErrors.organization_id[0]}}</p>
+
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="col-sm-6"
+                        [ngStyle]="{ display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_branch ? 'none' : 'block' }">
+                        <div class="form-group">
+                            <label for="name">{{'strategic_objective_form_branches' | translate}}</label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect">
+                                    <ng-select [items] = "BranchesStore.branchDetails" [placeholder]="'strategic_objective_form_branches_placeholder' | translate" 
+                                        multiple="true" searchable="true" 
+                                        bindLabel="title"
+                                        formControlName="branch_ids"
+                                        [closeOnSelect]="false"
+                                        (open)="getBranches()" 
+                                        (search)="searchBranches($event)"
+                                        (add)="getDivision()" 
+                                        autocomplete="new-password">
+                    
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            {{item.title?.length > 60 ? (item.title | slice:0:60)+' ...' :
+                                            item.title}}<span aria-hidden="true" (click)="clear(item)"
+                                                style="border:none;" class="ng-value-icon left">×</span>
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            {{item.title?.length > 80 ? (item.title | slice:0:80)+' ...' :
+                                            item.title}}
+                                        </ng-template>
+                                    </ng-select>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.branch_ids">
+                                    {{formErrors.branch_ids}}</p>
+                            </div>
+                        </div>
+                    </div>
+                <!-- </div> -->
+
+                <!-- <div class="row"> -->
+                    <div class="col-sm-6"
+                        [ngStyle]="{ display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_division ? 'none' : 'block' }">
+                        <div class="form-group">
+                            <label for="name">{{'divisions' | translate}}<sup>*</sup></label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect">
+                                    <ng-select [items]="DivisionStore.allItems" [placeholder]="'select_divisions' | translate" 
+                                        multiple="true" 
+                                        searchable="true" 
+                                        bindLabel="title"
+                                        (search)="searchDivision($event)" 
+                                        formControlName="division_ids"
+                                        [closeOnSelect]="false" 
+                                        (clear)="getDivision()" 
+                                        (open)="getDivision()"
+                                        (add) = "getDepartment()"
+                                        autocomplete="new-password">
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            {{item.title?.length > 60 ? (item.title | slice:0:60)+' ...' :
+                                            item.title}}<span aria-hidden="true" (click)="clear(item)"
+                                                style="border:none;" class="ng-value-icon left">×</span>
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            {{item.title?.length > 80 ? (item.title | slice:0:80)+' ...' :
+                                            item.title}}
+                                        </ng-template>
+                                    </ng-select>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.division_id">
+                                    {{formErrors.division_id}}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6" *ngIf = "OrganizationLevelSettingsStore.organizationLevelSettings?.is_department">
+                        <div class="form-group">
+                            <label for="name">{{'departments' | translate}}<sup>*</sup></label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect">
+                                    <ng-select [items]="DepartmentStore.allItems" 
+                                        [placeholder]="'select_departments' | translate" 
+                                        multiple="true" 
+                                        searchable="true" 
+                                        bindLabel="title"
+                                        (search)="searchDepartment($event)" 
+                                        formControlName="department_ids"
+                                        (clear)="getDepartment()" 
+                                        [closeOnSelect]="false" 
+                                        (open)="getDepartment()"
+                                        (add) = "getSection()">
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            {{item.title?.length > 60 ? (item.title | slice:0:60)+' ...' :
+                                            item.title}}<span aria-hidden="true" (click)="clear(item)"
+                                                style="border:none;" class="ng-value-icon left">×</span>
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            {{item.title?.length > 80 ? (item.title | slice:0:80)+' ...' :
+                                            item.title}}
+                                        </ng-template>
+                                    </ng-select>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.department_id">
+                                    {{formErrors.department_id}}</p>
+
+                            </div>
+                        </div>
+                    </div>
+                    
+                <!-- </div>
+                <div class="row"> -->
+
+                    <div class="col-sm-6"
+                        [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_section ? 'none':'block'}">
+                        <div class="form-group">
+                            <label for="name">{{'sections' | translate}}<sup>*</sup></label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect">
+                                    <ng-select [items]="SectionStore.allItems" [placeholder]="'select_sections' | translate" 
+                                        multiple="true" 
+                                        searchable="true" 
+                                        bindLabel="title"
+                                        (search)="searchSection($event)" 
+                                        formControlName="section_ids"
+                                        (clear)="getSection()" 
+                                        [closeOnSelect]="false" 
+                                        (open)="getSection()"
+                                        (add) = "getSubSection()"
+                                        autocomplete="new-password">
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            {{item.title?.length > 60 ? (item.title | slice:0:60)+' ...' :
+                                            item.title}}<span aria-hidden="true" (click)="clear(item)"
+                                                style="border:none;" class="ng-value-icon left">×</span>
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            {{item.title?.length > 80 ? (item.title | slice:0:80)+' ...' :
+                                            item.title}}
+                                        </ng-template>
+                                    </ng-select>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.section_id">
+                                    {{formErrors.section_id}}</p>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6"
+                        [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_sub_section ? 'none':'block'}">
+                        <div class="form-group">
+                            <label for="name">{{'sub_sections' | translate}}<sup>*</sup></label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect">
+                                    <ng-select [items]="SubSectionStore.allItems" [placeholder]="'select_sub_sections' | translate" 
+                                        multiple="true" searchable="true" bindLabel="title"
+                                        formControlName="sub_section_ids" (clear)="getSubSection()"
+                                        (search)="searchSubSection($event)" (open)="getSubSection()"
+                                        [closeOnSelect]="false" autocomplete="new-password">
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            {{item.title?.length > 60 ? (item.title | slice:0:60)+' ...' :
+                                            item.title}}<span aria-hidden="true" (click)="clear(item)"
+                                                style="border:none;" class="ng-value-icon left">×</span>
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            {{item.title?.length > 80 ? (item.title | slice:0:80)+' ...' :
+                                            item.title}}
+                                        </ng-template>
+                                    </ng-select>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.sub_section_id">
+                                    {{formErrors.sub_section_id}}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="clearfix"></div>
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="d-block justify-content-left border-0 mt-3">
+                            <button type="submit" class="btn btn-active" (click)="save()"
+                                [disabled]="form.invalid || AppStore.loading">{{  AppStore.loading  ? getButtonText('loading') : getButtonText('save')  }}</button>
+                            <button type="button" data-toggle="modal" data-target="#signal-lost"
+                                class="btn" (click)="save(true)"
+                                [disabled]="form.invalid || AppStore.loading">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save_close')  }}</button>
+                            <button type="button" data-toggle="modal" data-target="#error-message"
+                                class="btn"
+                                (click)="cancel()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('cancel')  }}</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <!-- </form> -->
+        </div>
+        <!-- Modal footer -->
+    </div>
+</div>

@@ -1,0 +1,629 @@
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" data-backdrop="static" data-keyboard="false" #deletePopup>
+    <app-delete-popup [source]="deleteObject"></app-delete-popup>
+  </div>
+  
+  <!------------------- Delete Confirmation Modal End --------------------------->
+  
+  <div #plainDev></div>
+  <nav class="edit-bar" data-toggle="affix" #navigationBar>
+  
+    <app-sub-menu></app-sub-menu>
+    <div class="dropdown edit-dropdown d-lg-none drop-menu-left-head">
+      <a class="btn btn-primary float-left three-dots-dropdown dropdown-toggle" data-toggle="dropdown">{{AppStore.pageTitle}}<i
+          class="fas fa-chevron-circle-down ml-2"></i></a>
+      <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+        <a [ngClass]="RisksStore.is_registered==true?'dropdown-item active':'dropdown-item'" data-toggle="pill" 
+          [routerLink]="['/risk-management/corporate-risks']" (click)="setIdentified(false)">{{'corporate_risk_register'|translate}}</a>
+          <a [ngClass]="RisksStore.is_registered==false?'dropdown-item active':'dropdown-item'" data-toggle="pill" 
+          [routerLink]="['/risk-management/corporate-risks']" (click)="setIdentified(true)">{{'identified_risks'|translate}}</a>
+          </div>
+    </div>
+    <ul class="nav nav-pills float-left  d-none d-lg-block" role="tablist">
+      <li class="nav-item">
+        <a [ngClass]="RisksStore.is_registered==true?'nav-link active':'nav-link'" data-toggle="pill" 
+          [routerLink]="['/risk-management/corporate-risks']" (click)="setIdentified(false)">{{'corporate_risk_register'|translate}}</a>
+            </li>
+            <li class="nav-item">
+              <a [ngClass]="RisksStore.is_registered==false?'nav-link active':'nav-link'" data-toggle="pill" 
+                [routerLink]="['/risk-management/corporate-risks']" (click)="setIdentified(true)">{{'identified_risks'|translate}}</a>
+                  </li>
+    </ul>
+  </nav>
+  <main class="mt-3 acl-page" *mobxAutorun>
+    <app-filter-menu></app-filter-menu>
+    <div class="container-fluid"
+      *ngIf="RisksStore.loaded && RisksStore.riskDetails?.length>0 && AuthStore.getActivityPermission(900,'RISK_LIST')">
+      <div class="audit-program-box audit-page-table-main">
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="relative">
+              <div class="left-right-round-btns">
+                <button id="left-button" class="btn-left" (click)="prev()"></button>
+                <button id="right-button" class="btn-right" (click)="next()"></button>
+              </div> 
+              <div  class="full-width-table table-scroll-first-time" id="container">
+              <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll" style="width:4000px !important">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th colspan="6" class="text-center">{{'risk_statement'|translate}}</th>
+                    <th colspan="4" class="text-center">{{'inherent_risk_rating'|translate}}</th>
+                    <th colspan="3"></th>
+                    <th colspan="4" class="text-center">{{'residual_risk_rating'|translate}}</th>
+                    <th colspan="3"></th>
+                  
+                  </tr>
+                  <tr>
+                    
+                    <th class="border-top-0" width="2%">
+                      <label class="container2 float-left" style="margin-top: 2px; padding-left: 22px;" *ngIf="OrganizationModulesStore.checkOrganizationSubModulesPermission(900,41501)">
+                          <input type="checkbox" [checked]="allRiskSelected" (change)="selectAllRisk($event)">
+                          <span class="checkmark"></span>
+                      </label>#
+                  </th>
+                    <th class="border-top-0 pointer" width="3%" (click)="setRiskSort('reference_code')">{{'ref_id' |
+                      translate}}
+                      <img *ngIf="RisksStore.orderItem == 'reference_code'"
+                        [attr.src]="RisksStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                        class="sort-down-pics">
+                    </th>
+                    <!-- <th class="border-top-0 pointer" width="3%" (click)="setRiskSort('risks.id')">Risk ID
+                      <img *ngIf="RisksStore.orderItem == 'risks.id'"
+                        [attr.src]="RisksStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                        class="sort-down-pics">
+                    </th> -->
+                    <th class="border-top-0 pointer" [style.width.%]="OrganizationLevelSettingsStore.organizationLevelSettings?.is_division ? 12 : 16" (click)="setRiskSort('risks.title')">{{'risk' | translate}}
+                      <img *ngIf="RisksStore.orderItem == 'risks.title'"
+                        [attr.src]="RisksStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                        class="sort-down-pics">
+                    </th>
+                    <th class="border-top-0 pointer" width="8%">{{'description' | translate}}
+                    
+                    </th>
+                  
+                    <th class="border-top-0 pointer" *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_division" [style.width.%]="OrganizationLevelSettingsStore.organizationLevelSettings?.is_division ? 4 : ''" (click)="setRiskSort('divisions.title')">{{'divisions' |
+                      translate}}
+                      <img *ngIf="RisksStore.orderItem == 'divisions.title'"
+                        [attr.src]="RisksStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                        class="sort-down-pics">
+                    </th>
+                    <th class="border-top-0 pointer" width="4%" (click)="setRiskSort('departments.title')">{{'departments'
+                      | translate}}
+                      <img *ngIf="RisksStore.orderItem == 'departments.title'"
+                        [attr.src]="RisksStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                        class="sort-down-pics">
+                    </th>
+                    <th class="border-top-0 pointer" width="4%" (click)="setRiskSort('risk_categories.title')">
+                      {{'risk_category' | translate}}
+                      <img *ngIf="RisksStore.orderItem == 'risk_categories.title'"
+                        [attr.src]="RisksStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                        class="sort-down-pics">
+                    </th>
+    
+                    <th class="border-top-0 pointer" width="4%" (click)="setRiskSort('likelihoods.title')">{{'likelihood' |
+                      translate}}
+                      <img *ngIf="RisksStore.orderItem == 'likelihoods.title'"
+                        [attr.src]="RisksStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                        class="sort-down-pics">
+                    </th>
+                  
+                    <th class="border-top-0 pointer" width="3%" (click)="setRiskSort('impacts.title')">{{'impact' |
+                      translate}}
+                      <img *ngIf="RisksStore.orderItem == 'impacts.title'"
+                        [attr.src]="RisksStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                        class="sort-down-pics">
+                    </th>
+    
+                    <th class="border-top-0 pointer" width="3%" (click)="setRiskSort('risks.inherent_risk_score')">{{'risk_score' |
+                      translate}}
+                      <img *ngIf="RisksStore.orderItem == 'risks.inherent_risk_score'"
+                        [attr.src]="RisksStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                        class="sort-down-pics">
+                    </th>
+                  
+                    <th class="border-top-0 pointer" width="4%" (click)="setRiskSort('risk_ratings.title')">{{'risk_rating' |
+                      translate}}
+                      <img *ngIf="RisksStore.orderItem == 'risk_ratings.title'"
+                        [attr.src]="RisksStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                        class="sort-down-pics">
+                    </th>
+                  
+                    <th class="border-top-0 pointer" width="3%" (click)="setRiskSort('risk_sources.title')">{{'risk_sources'
+                      | translate}}
+                      <img *ngIf="RisksStore.orderItem == 'risk_sources.title'"
+                        [attr.src]="RisksStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                        class="sort-down-pics">
+                    </th>
+                    <th class="border-top-0 pointer" width="8%" (click)="setRiskSort('users.first_name')">{{'risk_owner'|translate}}
+                      <img *ngIf="RisksStore.orderItem == 'users.first_name'"
+                        [attr.src]="RisksStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                        class="sort-down-pics">
+                    </th>
+                    <th class="border-top-0" width="4%" (click)="setRiskSort('statuses.title')">{{'status' |
+                      translate}}
+                      <img *ngIf="RisksStore.orderItem == 'statuses.title'"
+                        [attr.src]="RisksStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                        class="sort-down-pics">
+                    </th>
+                    <th class="border-top-0 pointer" width="4%" (click)="setRiskSort('likelihoods.title')">{{'likelihood' |
+                      translate}}
+                      <img *ngIf="RisksStore.orderItem == 'likelihoods.title'"
+                        [attr.src]="RisksStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                        class="sort-down-pics">
+                    </th>
+                    <th class="border-top-0 pointer" width="3%" (click)="setRiskSort('impacts.title')">{{'impact' |
+                      translate}}
+                      <img *ngIf="RisksStore.orderItem == 'impacts.title'"
+                        [attr.src]="RisksStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                        class="sort-down-pics">
+                    </th>
+    
+                    <th class="border-top-0 pointer" width="3%" (click)="setRiskSort('risks.inherent_risk_score')">{{'risk_score' |
+                      translate}}
+                      <img *ngIf="RisksStore.orderItem == 'risks.inherent_risk_score'"
+                        [attr.src]="RisksStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                        class="sort-down-pics">
+                    </th>
+                  
+                    <th class="border-top-0 pointer" width="4%" (click)="setRiskSort('risk_ratings.title')">{{'risk_rating' |
+                      translate}}
+                      <img *ngIf="RisksStore.orderItem == 'risk_ratings.title'"
+                        [attr.src]="RisksStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                        class="sort-down-pics">
+                    </th>
+                  
+                    <!-- <th>
+                    </th> -->
+                    <th class="border-top-0 pointer" width="4%" (click)="setRiskSort('risk_types.title')">{{'risk_types' |
+                      translate}}
+                      <img *ngIf="RisksStore.orderItem == 'risk_types.title'"
+                        [attr.src]="RisksStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                        class="sort-down-pics">
+                    </th>
+                  
+                    <th class="border-top-0 pointer" width="7%">
+                      {{'risk_treatment_strategy'|translate}}
+                    
+                    </th>
+    
+                  
+                  
+                
+                    <th class="border-top-0" width="5%">{{'risk_mitigation_status'|translate}}
+                    
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="pointer edit-and-delete-main"
+                    *ngFor="let risk of RisksStore.riskDetails| paginate: {currentPage:RisksStore?.currentPage, itemsPerPage:RisksStore?.itemsPerPage,totalItems:RisksStore?.totalItems};let num = index">
+                    <td><label class="container2 float-left" style="margin-top: 2px; padding-left: 22px;">
+                      <input type="checkbox" [checked]="risk.selected" (change)="setSelectedRisk(num,$event)">
+                      <span class="checkmark"></span>
+                  </label>
+                  {{(RisksStore?.currentPage - 1) * RisksStore?.itemsPerPage + (num +1)}}</td>
+                    <td (click)="getDetails(risk.id)">#{{risk.reference_code}}</td>
+                    <!-- <td (click)="getDetails(risk.id)">{{risk.id}}</td> -->
+                    
+                    <td (click)="getDetails(risk.id)">{{risk.title}}</td>
+                    <td (click)="getDetails(risk.id)">
+                      <div class="elips-2" [title]="risk.description">
+                        {{risk.description ? risk.description : AppStore.noContentText}}
+                      </div>
+                      <!-- {{risk.description?risk.description:AppStore.noContentText}} -->
+                    </td>
+                  
+                    <td (click)="getDetails(risk.id)">{{risk.divisions?risk.divisions:AppStore.noContentText}}</td>
+                    
+                    <td (click)="getDetails(risk.id)">{{risk.departments?risk.departments:AppStore.noContentText}}</td>
+                    <td (click)="getDetails(risk.id)">{{risk.risk_category_title}}</td>
+                    <td (click)="getDetails(risk.id)">{{risk.inherent_likelihood_title?risk.inherent_likelihood_title:AppStore.noContentText}}</td>
+                    
+                    <td (click)="getDetails(risk.id)">{{risk.inherent_impact_title?risk.inherent_impact_title:AppStore.noContentText}}</td>
+                    <td (click)="getDetails(risk.id)">{{risk.inherent_risk_score?risk.inherent_risk_score:AppStore.noContentText}}</td>
+                  
+                    <td (click)="getDetails(risk.id)">{{risk.inherent_risk_rating_title?risk.inherent_risk_rating_title:AppStore.noContentText}}</td>
+                    <td (click)="getDetails(risk.id)">{{risk.risk_sources?risk.risk_sources:AppStore.noContentText}}</td>
+                    <td (click)="getDetails(risk.id)">
+                      <div class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg" *ngIf="risk.risk_owner_first_name">
+                        <img
+                            [attr.src]="risk.risk_owner_image_token?createImagePreview('user-profile-picture',risk.risk_owner_image_token):getDefaultImage('user-logo')"
+                            width="30px" height="30px" class="rounded-circle">
+                        
+                        <div>
+                            <h6>{{risk.risk_owner_first_name}} {{risk.risk_owner_last_name}}</h6>
+                            <span>{{risk.risk_owner_designation}} </span>
+                        </div>
+                    </div>
+                  <p *ngIf="!risk.risk_owner_first_name">{{AppStore.noContentText}}</p></td>
+                  <td class="text-center" (click)="getDetails(risk.id)">
+                    <div [ngClass]="'dot-div '+risk.label+'-dot'">
+                      {{risk.risk_status_title}}</div>
+                  </td>
+                  <td (click)="getDetails(risk.id)">{{risk.residual_likelihood_title?risk.residual_likelihood_title:AppStore.noContentText}}</td>
+                  
+                    <td (click)="getDetails(risk.id)">{{risk.residual_impact_title?risk.residual_impact_title:AppStore.noContentText}}</td>
+                    <td (click)="getDetails(risk.id)">{{risk.residual_risk_score?risk.residual_risk_score:AppStore.noContentText}}</td>
+                  
+                    <td (click)="getDetails(risk.id)">{{risk.residual_risk_rating_title?risk.residual_risk_rating_title:AppStore.noContentText}}</td>
+                    
+                    <td (click)="getDetails(risk.id)">
+                      {{risk.risk_types?risk.risk_types:AppStore.noContentText}}</td>
+    
+                    <!-- <td>Rare</td>
+                          <td>Minor</td>
+                          <td><div class="dot-div red-dot">High (25)</div></td> -->
+                    <!-- <td (click)="getDetails(risk.id)"> <p style="white-space:pre-wrap">{{risk.risk_observation?risk.risk_observation:AppStore.noContentText}}</p></td>
+                    <td (click)="getDetails(risk.id)"> <p style="white-space:pre-wrap">{{risk.risk_cause?risk.risk_cause:AppStore.noContentText}}</p></td>
+                    <td (click)="getDetails(risk.id)"> <p style="white-space:pre-wrap">{{risk.last_review_note?risk.last_review_note:AppStore.noContentText}}</p></td>
+              -->
+              <td (click)="getDetails(risk.id)">{{risk.risk_treatment_strategy?risk.risk_treatment_strategy:AppStore.noContentText}}</td>
+              <!-- <td (click)="getDetails(risk.id)">{{risk.risk_treatment_plan?risk.risk_treatment_plan:AppStore.noContentText}}</td> -->
+              
+                  
+              <td class="text-center">
+                <div class="edit-option-show" style="margin:6px 0 0 0">
+                  <!-- <a [attr.title]="'view'|translate" (click)="viewDetails(row.employee_id,row.id)"><i
+                                class="fas fa-eye"></i></a> -->
+                  <a *ngIf="risk.risk_status_id==1" [attr.title]="'edit'|translate" (click)="editRisk(risk.id)"><i class="fas fa-pen"></i></a>
+                  <a [attr.title]="'delete'|translate" (click)="deleteRisk(risk.id,num)"><i
+                      class="fas fa-trash"></i></a>
+                </div>
+                <div *ngIf="risk.treatment_status_title" [ngClass]="'dot-div '+risk.treatment_status_label+'-dot'">
+                  {{risk.treatment_status_title}}</div>
+                  <div *ngIf="!risk.treatment_status_title">
+                    {{AppStore.noContentText}}
+                  </div>
+                  <!-- {{risk.treatment_status_title?risk.treatment_status_title:AppStore.noContentText}} -->
+              </td>
+                  </tr>
+                </tbody>
+              </table>
+              </div>
+            </div>
+              <p class="float-right bold mb-0" *ngIf="RisksStore?.loaded && RisksStore.totalItems > 0">{{'total_Items' | translate}}:{{RisksStore?.totalItems}}</p>
+
+          </div>
+          <div class="col-sm-12" *ngIf="RisksStore?.totalItems>RisksStore?.itemsPerPage">
+            <ul class="pagination justify-content-center mt-3">
+              <pagination-controls (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+            </ul>
+  
+          </div>
+        </div>
+      </div>
+    </div>
+  
+    
+  <!-- More Permission popup Start -->
+  <div class="modal modal-style-1 fade popup-full-width" id="more-permission-popup" data-keyboard="false"
+  data-backdrop="static" #exportFormModal>
+  <button type="button" class="close" (click)="closeExportModal()"><i class="lni-close"></i><span>{{'esc'|translate}}</span></button>
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+      <div class="modal-content">
+          <!-- Modal Header -->
+          <div class="modal-header">
+           
+          </div>
+          <!-- Modal body -->
+          <div class="modal-body form-body">
+              <div class="row">
+                  <div class="col-sm-12">
+                      <div class="head-and-check mt-3">
+                          <div class="Preview-checkbox clearfix">
+                             <label class="container2 remember-txt float-left mb-0">
+                             <input type="checkbox" [checked]="statementSelected" (change)="selectAll('statement',$event)">
+                             <span class="checkmark"></span>{{'risk_details'|translate}}</label>
+                          </div>
+                          <hr class="mt-1 mb-2">
+                       </div>
+                      <div class="row">
+                          <div class="col-md-3 col-6">
+                              <div class="form-group mb-3">
+                                  <div class="Preview-checkbox clearfix new-check-box">
+                                      <label class="container2 remember-txt float-left mb-0">
+                                      <input type="checkbox" [checked]="statementSelected || checkSelected('reference_code')" (change)="setSelectedField('reference_code',$event,'statement')">
+                                      <span class="checkmark"></span>{{'ref_id' |
+                                      translate}}</label>
+                                   </div>
+                              </div>
+                          </div>
+                         
+                          <div class="col-md-3 col-6">
+                            <div class="form-group mb-3">
+                                <div class="Preview-checkbox clearfix new-check-box">
+                                    <label class="container2 remember-txt float-left mb-0">
+                                    <input type="checkbox" [checked]="statementSelected || checkSelected('risk')" (change)="setSelectedField('risk',$event,'statement')">
+                                    <span class="checkmark"></span>{{'risk'|translate}}</label>
+                                 </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                          <div class="form-group mb-3">
+                              <div class="Preview-checkbox clearfix new-check-box">
+                                  <label class="container2 remember-txt float-left mb-0">
+                                  <input type="checkbox" [checked]="statementSelected || checkSelected('description')" (change)="setSelectedField('description',$event,'statement')">
+                                  <span class="checkmark"></span>{{'description'|translate}}</label>
+                               </div>
+                          </div>
+                      </div>
+
+                        <div class="col-md-3 col-6" *ngIf="OrganizationLevelSettingsStore?.organizationLevelSettings?.is_division">
+                          <div class="form-group mb-3">
+                              <div class="Preview-checkbox clearfix new-check-box">
+                                  <label class="container2 remember-txt float-left mb-0">
+                                  <input type="checkbox" [checked]="statementSelected || checkSelected('divisions')" (change)="setSelectedField('divisions',$event,'statement')">
+                                  <span class="checkmark"></span>{{'divisions'|translate}}</label>
+                               </div>
+                          </div>
+                      </div>
+                        <div class="col-md-3 col-6" *ngIf="OrganizationLevelSettingsStore?.organizationLevelSettings?.is_department">
+                          <div class="form-group mb-3">
+                              <div class="Preview-checkbox clearfix new-check-box">
+                                  <label class="container2 remember-txt float-left mb-0">
+                                  <input type="checkbox" [checked]="statementSelected || checkSelected('departments')" (change)="setSelectedField('departments',$event,'statement')">
+                                  <span class="checkmark"></span>{{'departments'|translate}}</label>
+                               </div>
+                          </div>
+                      </div>
+                     
+                    <div class="col-md-3 col-6">
+                      <div class="form-group mb-3">
+                          <div class="Preview-checkbox clearfix new-check-box">
+                              <label class="container2 remember-txt float-left mb-0">
+                              <input type="checkbox" [checked]="statementSelected || checkSelected('risk_category')" (change)="setSelectedField('risk_category',$event,'statement')">
+                              <span class="checkmark"></span>{{'risk_category'|translate}}</label>
+                           </div>
+                      </div>
+                  </div>
+                  
+                  <!-- <div class="col-md-3 col-6">
+                    <div class="form-group mb-3">
+                        <div class="Preview-checkbox clearfix new-check-box">
+                            <label class="container2 remember-txt float-left mb-0">
+                            <input type="checkbox">
+                            <span class="checkmark"></span>{{'corporate_functional'|translate}}</label>
+                         </div>
+                    </div>
+                </div> -->
+                      </div>
+                  </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-12">
+                    <div class="head-and-check mt-3">
+                        <div class="Preview-checkbox clearfix">
+                           <label class="container2 remember-txt float-left mb-0">
+                           <input type="checkbox" [checked]="inherentSelected" (change)="selectAll('inherent',$event)">
+                           <span class="checkmark"></span>{{'inherent_risk_rating'|translate}}</label>
+                        </div>
+                        <hr class="mt-1 mb-2">
+                     </div>
+                     <div class="row">
+                      <div class="col-md-3 col-6">
+                        <div class="form-group mb-3">
+                            <div class="Preview-checkbox clearfix new-check-box">
+                                <label class="container2 remember-txt float-left mb-0">
+                                <input type="checkbox" [checked]="inherentSelected || checkSelected('inherent_risk_likelihood')" (change)="setSelectedField('inherent_risk_likelihood',$event,'inherent')">
+                                <span class="checkmark"></span>{{'likelihood'|translate}}</label>
+                             </div>
+                        </div>
+                    </div>
+                      <div class="col-md-3 col-6">
+                          <div class="form-group mb-3">
+                              <div class="Preview-checkbox clearfix new-check-box">
+                                  <label class="container2 remember-txt float-left mb-0">
+                                  <input type="checkbox" [checked]="inherentSelected || checkSelected('inherent_risk_impact')" (change)="setSelectedField('inherent_risk_impact',$event,'inherent')">
+                                  <span class="checkmark"></span>{{'impact'|translate}}</label>
+                               </div>
+                          </div>
+                      </div>
+                      <div class="col-md-3 col-6">
+                        <div class="form-group mb-3">
+                            <div class="Preview-checkbox clearfix new-check-box">
+                                <label class="container2 remember-txt float-left mb-0">
+                                <input type="checkbox" [checked]="inherentSelected || checkSelected('inherent_risk_score')" (change)="setSelectedField('inherent_risk_score',$event,'inherent')">
+                                <span class="checkmark"></span>{{'risk_score'|translate}}</label>
+                             </div>
+                        </div>
+                    </div>
+                     
+                    <div class="col-md-3 col-6">
+                      <div class="form-group mb-3">
+                          <div class="Preview-checkbox clearfix new-check-box">
+                              <label class="container2 remember-txt float-left mb-0">
+                              <input type="checkbox" [checked]="inherentSelected || checkSelected('inherent_risk_rating')" (change)="setSelectedField('inherent_risk_rating',$event,'inherent')">
+                              <span class="checkmark"></span>{{'risk_rating'|translate}}</label>
+                           </div>
+                      </div>
+                  </div>
+                 
+                  </div>
+                </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-12">
+                  <div class="head-and-check mt-3">
+                      <div class="Preview-checkbox clearfix">
+                         <label class="container2 remember-txt float-left mb-0">
+                         <input type="checkbox" [checked]="residualSelected" (change)="selectAll('residual',$event)">
+                         <span class="checkmark"></span>{{'residual_risk_rating'|translate}}</label>
+                      </div>
+                      <hr class="mt-1 mb-2">
+                   </div>
+                   <div class="row">
+                    <div class="col-md-3 col-6">
+                      <div class="form-group mb-3">
+                          <div class="Preview-checkbox clearfix new-check-box">
+                              <label class="container2 remember-txt float-left mb-0">
+                              <input type="checkbox" [checked]="residualSelected || checkSelected('residual_risk_likelihood')" (change)="setSelectedField('residual_risk_likelihood',$event,'residual')">
+                              <span class="checkmark"></span>{{'likelihood'|translate}}</label>
+                           </div>
+                      </div>
+                  </div>
+                    <div class="col-md-3 col-6">
+                        <div class="form-group mb-3">
+                            <div class="Preview-checkbox clearfix new-check-box">
+                                <label class="container2 remember-txt float-left mb-0">
+                                <input type="checkbox" [checked]="residualSelected || checkSelected('residual_risk_impact')" (change)="setSelectedField('residual_risk_impact',$event,'residual')">
+                                <span class="checkmark"></span>{{'impact'|translate}}</label>
+                             </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 col-6">
+                      <div class="form-group mb-3">
+                          <div class="Preview-checkbox clearfix new-check-box">
+                              <label class="container2 remember-txt float-left mb-0">
+                              <input type="checkbox" [checked]="residualSelected || checkSelected('residual_risk_score')" (change)="setSelectedField('residual_risk_score',$event,'residual')">
+                              <span class="checkmark"></span>{{'risk_score'|translate}}</label>
+                           </div>
+                      </div>
+                  </div>
+                   
+                  <div class="col-md-3 col-6">
+                    <div class="form-group mb-3">
+                        <div class="Preview-checkbox clearfix new-check-box">
+                            <label class="container2 remember-txt float-left mb-0">
+                            <input type="checkbox" [checked]="residualSelected || checkSelected('residual_risk_rating')" (change)="setSelectedField('residual_risk_rating',$event,'residual')">
+                            <span class="checkmark"></span>{{'risk_rating'|translate}}</label>
+                         </div>
+                    </div>
+                </div>
+               
+                </div>
+              </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-12">
+                <div class="head-and-check mt-3">
+                    <div class="Preview-checkbox clearfix">
+                       <label class="container2 remember-txt float-left mb-0">
+                       <input type="checkbox" [checked]="otherSelected" (change)="selectAll('other',$event)">
+                       <span class="checkmark"></span>{{'others'|translate}}</label>
+                    </div>
+                    <hr class="mt-1 mb-2">
+                 </div>
+                 <div class="row">
+                  <div class="col-md-3 col-6">
+                      <div class="form-group mb-3">
+                          <div class="Preview-checkbox clearfix new-check-box">
+                              <label class="container2 remember-txt float-left mb-0">
+                              <input type="checkbox" [checked]="otherSelected || checkSelected('risk_types')" (change)="setSelectedField('risk_types',$event)">
+                              <span class="checkmark"></span>{{'risk_types'|translate}}</label>
+                           </div>
+                      </div>
+                  </div>
+                  <div class="col-md-3 col-6">
+                    <div class="form-group mb-3">
+                        <div class="Preview-checkbox clearfix new-check-box">
+                            <label class="container2 remember-txt float-left mb-0">
+                            <input type="checkbox" [checked]="otherSelected || checkSelected('risk_sources')" (change)="setSelectedField('risk_sources',$event)">
+                            <span class="checkmark"></span>{{'risk_sources'|translate}}</label>
+                         </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                  <div class="form-group mb-3">
+                      <div class="Preview-checkbox clearfix new-check-box">
+                          <label class="container2 remember-txt float-left mb-0">
+                          <input type="checkbox" [checked]="otherSelected || checkSelected('risk_owner')" (change)="setSelectedField('risk_owner',$event)">
+                          <span class="checkmark"></span>{{'risk_owner'|translate}}</label>
+                       </div>
+                  </div>
+              </div>
+              <div class="col-md-3 col-6">
+                <div class="form-group mb-3">
+                    <div class="Preview-checkbox clearfix new-check-box">
+                        <label class="container2 remember-txt float-left mb-0">
+                        <input type="checkbox" [checked]="statementSelected || checkSelected('risk_observation')" (change)="setSelectedField('risk_observation',$event)">
+                        <span class="checkmark"></span>{{'risk_observation'|translate}}</label>
+                     </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+              <div class="form-group mb-3">
+                  <div class="Preview-checkbox clearfix new-check-box">
+                      <label class="container2 remember-txt float-left mb-0">
+                      <input type="checkbox" [checked]="statementSelected || checkSelected('risk_impacts')" (change)="setSelectedField('risk_impacts',$event)">
+                      <span class="checkmark"></span>{{'risk_impacts'|translate}}</label>
+                   </div>
+              </div>
+          </div>
+            <div class="col-md-3 col-6">
+              <div class="form-group mb-3">
+                  <div class="Preview-checkbox clearfix new-check-box">
+                      <label class="container2 remember-txt float-left mb-0">
+                      <input type="checkbox" [checked]="statementSelected || checkSelected('risk_causes')" (change)="setSelectedField('risk_causes',$event,'statement')">
+                      <span class="checkmark"></span>{{'risk_causes'|translate}}</label>
+                   </div>
+              </div>
+          </div>
+            
+            <div class="col-md-3 col-6">
+              <div class="form-group mb-3">
+                  <div class="Preview-checkbox clearfix new-check-box">
+                      <label class="container2 remember-txt float-left mb-0">
+                      <input type="checkbox" [checked]="statementSelected || checkSelected('last_review_note')" (change)="setSelectedField('last_review_note',$event)">
+                      <span class="checkmark"></span>{{'last_review_note'|translate}}</label>
+                   </div>
+              </div>
+          </div>
+          <div class="col-md-3 col-6">
+            <div class="form-group mb-3">
+                <div class="Preview-checkbox clearfix new-check-box">
+                    <label class="container2 remember-txt float-left mb-0">
+                    <input type="checkbox" [checked]="statementSelected || checkSelected('risk_treatment_strategy')" (change)="setSelectedField('risk_treatment_strategy',$event)">
+                    <span class="checkmark"></span>{{'risk_treatment_strategy'|translate}}</label>
+                 </div>
+            </div>
+        </div>
+              <div class="col-md-3 col-6">
+                <div class="form-group mb-3">
+                    <div class="Preview-checkbox clearfix new-check-box">
+                        <label class="container2 remember-txt float-left mb-0">
+                        <input type="checkbox" [checked]="otherSelected || checkSelected('status')" (change)="setSelectedField('status',$event)">
+                        <span class="checkmark"></span>{{'status'|translate}}</label>
+                     </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+              <div class="form-group mb-3">
+                  <div class="Preview-checkbox clearfix new-check-box">
+                      <label class="container2 remember-txt float-left mb-0">
+                      <input type="checkbox" [checked]="otherSelected || checkSelected('risk_treatment_status')" (change)="setSelectedField('risk_treatment_status',$event)">
+                      <span class="checkmark"></span>{{'risk_mitigation_status'|translate}}</label>
+                   </div>
+              </div>
+          </div>
+              </div>
+            </div>
+        </div>
+  
+              <div class="row">
+                  <div class="col-sm-12">
+                      <div class="d-block justify-content-left border-0 mt-3">
+                          <button type="button" data-toggle="modal" [disabled]="selectedFields.length==0" (click)="export()"
+                              class="btn ordinary-btn mr-3 btn-active">{{ AppStore.loading  ? getButtonText('exporting...') : getButtonText('export') }}</button>
+                          <button type="button" data-toggle="modal" (click)="closeExportModal()"
+                              class="btn ordinary-btn mr-2">{{ AppStore.loading  ? getButtonText('loading...') : getButtonText('cancel') }}</button>
+                      </div>
+                  </div>
+              </div>
+          </div>
+          <!-- Modal footer -->
+      </div>
+  </div>
+  </div>
+  <!-- More Permission popup End -->
+    <ng-container *mobxAutorun>
+      <div *ngIf="!RisksStore.loaded">
+        <app-risk-list></app-risk-list>
+      </div>
+    </ng-container>
+    <ng-container *mobxAutorun>
+      <app-no-data *ngIf="RisksStore.loaded && RisksStore.riskDetails?.length==0" [border]=false></app-no-data>
+    </ng-container>
+  </main>

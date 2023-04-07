@@ -1,0 +1,248 @@
+
+ 
+        <button type="button" class="close" (click)="cancel()" data-dismiss="modal"><i class="lni-close"></i><span>esc</span></button>
+        <div class="modal-dialog modal-lg modal-dialog-centered" #formModal>
+          <div class="modal-content" *mobxAutorun>
+            <!-- Modal Header -->
+            <div class="modal-header">
+
+              <h4 *ngIf="TemplateStore.addFlag" class="modal-title">{{'add_new_template' | translate}}</h4>
+              <h4 *ngIf="!TemplateStore.addFlag" class="modal-title">{{'edit_template' | translate}}</h4>
+            </div>
+            <!-- Modal body -->
+            <div class="modal-body form-body">
+
+                <form [formGroup]="templateForm">
+                  <p class="head-details">{{'kh_template_description' | translate}}
+                  </p>
+              <div class="row">             
+              <div class="col-sm-12">
+                 <div class="form-group">
+                    <label for="name">{{'title' | translate}}<span class="form-error">*</span></label>
+                    <div class="plain-select input-add-report">
+                      <input type="text" class="form-control" [placeholder]="'template_placeholder' | translate"  formControlName="title">
+                      <p class="pt-1" style="color: red;"  *ngIf="formErrors && formErrors.title "> {{formErrors.title}}</p>
+                    </div>
+                  </div>
+               </div>
+  
+               <div class="col-sm-12">
+                 <div class="form-group form-group-add-roles">
+                    <label for="name">{{'description' | translate}}</label>
+                    <textarea class="form-control" rows="11" id="comment" [placeholder]="'template_description_placeholder' | translate" formControlName="description"></textarea>
+                  </div>
+              </div>    
+             <div class="col-sm-12">           
+             <div class="form-group">
+              <label>{{'document_types'|translate}}<span class="form-error">*</span></label>
+              <div class="clearfix d-flex">
+                 <div class="multiple-plain-ngselect w-100">
+                    <ng-select [items]="DocumentTypeMasterStore.allItems"
+                    bindLabel="title"
+                    [placeholder]="'kh_select_document_types' | translate" 
+                    multiple="true"
+                    [closeOnSelect]="false"
+                    formControlName = "document_type_ids"
+                    (search) = "searchDocTypes($event)"
+                    (clear) = "getDocumentTypes()"
+                    (open) = "getDocumentTypes()">
+                 </ng-select>
+                 </div>
+                 <button *ngIf="AuthStore.getActivityPermission(2400,'CREATE_DOCUMENT_TYPE')" class="btn multi-add-user ml-2" style="width: 42px;" (click)="addDocumentType()"><i
+                       class="fas fa-plus"></i></button>
+              </div>
+              <p class="form-error" *ngIf="formErrors && formErrors.document_type_ids"> Select Any Document Type</p>
+           </div>
+           </div>
+
+        
+
+           <div class="col-lg-12 col-sm-12">
+            <div class="form-group">
+                <a class="text-light-blue" data-toggle="modal" (click)="organisationChanges()"
+                    style="border-bottom: 1px solid;">{{'change_organization_unit' | translate}}</a>
+            </div>
+        </div>
+                      
+<!-- Common File Upload Starts Here -->
+<!-- <div class="col-sm-12">
+  <div class="form-group">
+  <label for="name" class="label-style mb-0">{{'template_upload' | translate}}</label>
+             <div class="scroll-documents" #uploadArea>
+              <div class="thumb-pics-bg thumb-pics-col-lg-3 clearfix thumb-pics-fix-text" style="padding-top: 0;">
+                 <div class="thumb-pics">
+                  <div class="question-circle-inp" style="margin-right: 7px;">
+                    <i class="far fa-question-circle"></i>
+                    <div class="message-password-inp">
+                        <p class="mb-0">{{'allowed_file_types' | translate}}
+                            {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                        </p>
+                    </div>
+                    </div>
+                    <div class="form-group form-group-upload" style="min-height: 175px !important;">
+                       <div class="darag-dropifile-upload">
+                          <div class="d-flex justify-content-center align-items-center text-center">
+                             <div>
+                                <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                                <div class="drag-file-name"> Select or Upload Your File Here </div>
+                                <div class="upload-btn-wrapper">                  
+                                   <button (click)="openFileUploadModal()" type="button" class="btn">{{'browse_files' | translate}}</button>
+                                </div>
+                             </div>
+                          </div>
+                       </div>
+                    </div>
+                 </div>
+
+                    <div class="thumb-pics"  *ngFor="let docs of fileUploadPopupStore.displayFiles ;let i = index">
+                        <div class="upload-pics edit-option" data-toggle="modal">
+                          <div *ngIf="docs.id && !docs.preview" class="browse-form-pic"  [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                          </div>
+                            <div  style="height: 109px;" *ngIf="docs.preview" class="browse-form-pic" [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">              
+                          </div>
+                           <div class="browse-form-name clearfix">
+                            <div class="float-left">
+                              <h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                              </h6>
+                              <span *ngIf="docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-book"></i></span>
+                              <span  *ngIf="!docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-laptop"></i></span>
+                              <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                            </div>
+                            <div class="browse-logo">
+                              <img *ngIf="checkExtension(docs.ext,'image') != -1"
+                                  class="folder-picher" src="/assets/images/jpg-icone.png">
+                              <img *ngIf="checkExtension(docs.ext,'doc') != -1"
+                                  class="folder-picher" src="/assets/images/word-icone.png">
+                              <img *ngIf="checkExtension(docs.ext,'pdf') != -1"
+                                  class="folder-picher" src="/assets/images/pdf-icone.png">
+                              <img *ngIf="checkExtension(docs.ext,'excel') != -1"
+                                  class="folder-picher" src="/assets/images/excel-icone.png">
+                              <img *ngIf="checkExtension(docs.ext,'video') != -1"
+                                  class="folder-picher" src="/assets/images/md-video.png">
+                              <img *ngIf="checkExtension(docs.ext,'audio') != -1"
+                                  class="folder-picher" src="/assets/images/md-audio.png">
+                              <img *ngIf="checkExtension(docs.ext,'ppt') != -1"
+                                  class="folder-picher" src="/assets/images/md-ppt.png">
+                          </div>
+                           </div>
+                        </div>
+                     </div>
+
+        
+              </div>
+           </div>
+          </div>
+              </div> -->
+      <!-- Common File Upload Ends Here -->
+             
+             <div class="col-sm-12" *ngIf="KHSettingStore.khSettingsItems?.knowledge_hub_setting_type?.type=='external'">
+                <div class="form-group">
+                    <label class="label-style">{{'template_upload' | translate}}<span class="form-error">*</span></label>
+                 <div class="row m-0 upload-section" style="padding-top: 0">
+
+                    <div class="col-sm-4 costmz-logo-new mt-2">
+                      <div class="question-circle-inp"
+                      *ngIf="OrganizationGeneralSettingsStore?.organizationSettings?.support_file_allowed_types?.length > 0"
+                      style="margin-right: 7px;">
+                      <i class="far fa-question-circle"></i>
+                      <div class="message-password-inp">
+                         <p class="mb-0">{{'allowed_file_types' | translate}}
+                            {{OrganizationGeneralSettingsStore?.organizationSettings?.support_file_allowed_types?.toString()}}
+                         </p>
+                      </div>
+                   </div>
+                       <div class="form-group form-group-upload">
+                          <div class="darag-dropifile-upload">
+                             <div class="d-flex justify-content-center align-items-center text-center">
+                                <div>
+                                   <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                                   <div class="drag-file-name"> {{'drag_drop_file_here' | translate}} </div>
+                                   <div class="upload-btn-wrapper">
+                                      <input type="file" name="myfile" (change)="onFileChange($event,'support-file')" [accept]="checkAcceptFileTypes('support-file')" />
+                                      <button class="btn">{{'browse_files' | translate}}</button>
+                                   </div>
+                                </div>
+                             </div>
+                          </div>
+                       </div>
+                    </div>
+   
+                    <div [ngClass] = "files.success || files.file_type != 'brochure' ? 'col-sm-4 up-pic-cf mt-2 hide_loader' : 'col-sm-4 up-pic-cf mt-2'" *ngFor = "let files of fileUploadsArray">
+                       <div class="upload-pics edit-option file-upload-loader">
+                          <circle-progress
+                             [percent] = files.uploadProgress
+                             [title] = files.uploadProgress
+                          ></circle-progress>
+                       </div>
+                    </div> 
+
+                    <div [ngClass]="TemplateStore.getTemplateFiles?.is_deleted ? 'col-sm-4 col-lg-4 up-pic-cf mt-2 image_deleted':'col-sm-4 col-lg-4 up-pic-cf mt-2'" *ngIf = "TemplateStore.getTemplateFiles">
+                      <div class="upload-pics edit-option">
+                            <div class="browse-form-pic" [ngStyle]="{'background': 'url(' + TemplateStore.getTemplateFiles?.preview + ') no-repeat 0 0 / cover'}">
+                            </div>
+                             <div class="browse-form-name clearfix">
+                              <div class="float-left">
+                                <h6 [attr.title] = "TemplateStore.getTemplateFiles?.name">{{TemplateStore.getTemplateFiles?.name.length > 20 ? TemplateStore.getTemplateFiles?.name.substring(0,20)+' ...' : TemplateStore.getTemplateFiles?.name}}</h6>
+                                <span>{{TemplateStore.getTemplateFiles?.size/1048576 | number:'0.2-2'}}MB</span>
+                              </div>
+                              <div class="browse-logo">
+                                <img *ngIf = "checkExtension(TemplateStore.getTemplateFiles?.ext,'excel') != -1" src="/assets/images/md-xl.png">
+                                <img *ngIf = "checkExtension(TemplateStore.getTemplateFiles?.ext,'image') != -1" src="/assets/images/md-jpg.png">
+                                <img *ngIf = "checkExtension(TemplateStore.getTemplateFiles?.ext,'doc') != -1" src="/assets/images/md-doc.png">
+                                <img *ngIf = "checkExtension(TemplateStore.getTemplateFiles?.ext,'pdf') != -1" src="/assets/images/md-pdf.png">
+                                <img *ngIf = "checkExtension(TemplateStore.getTemplateFiles?.ext,'ppt') != -1" src="/assets/images/md-ppt.png">
+                              </div>
+                             </div>
+                             <div class="edit-option-show">
+                              <a (click) = "TemplateStore.unsetTemplateFiles('support-file')"><i class="fas fa-trash"></i></a>
+                            </div>
+                          </div>
+                   </div>
+   
+                 </div>
+                  </div>
+
+             </div> 
+          
+                <div class="col-sm-12">
+                  <div class="d-block justify-content-left border-0 mt-3">
+                    <button type="submit" class="btn btn-active" (click)="save()"
+                      [disabled]="formValidationCheck()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save') }}</button>
+                    <button type="button" data-toggle="modal" data-target="#signal-lost" class="btn"
+                      (click)="save(true)"
+                      [disabled]="formValidationCheck()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save_close') }}</button>
+                    <button type="button" data-toggle="modal" data-target="#error-message" class="btn"
+                      (click)="cancel()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('cancel') }}</button>
+      
+                  </div>
+                </div>
+              
+  
+               
+              </div>
+            </form>
+            </div>
+            <!-- Modal footer -->
+          </div>
+        </div>
+    
+        <!-- Document Types Modal -->
+      <div class="modal modal-style-1 popup-full-width fade"  data-keyboard="false" data-backdrop="static" #documentTypesModal *mobxAutorun>
+      <button type="button" class="close" data-dismiss="modal" (click) ="closeDocumentTypeModal()"><i class="lni-close"></i><span>esc</span></button>
+      <app-document-types-modal></app-document-types-modal>
+      </div>
+
+      <!-- Document Types Modal Ends Here -->
+
+      <!----------------------- Organization form modal starts here --------------------------->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static"
+#organisationChangeFormModal *mobxAutorun>
+<app-organisation-change-modal *ngIf="openModelPopup" [source]="templateForm.value"
+    (organizationChangeEvent)="closeOrganizationModal($event)"></app-organisation-change-modal>
+</div>
+<!----------------------- Organization form modal ends here --------------------------->
+
+<!------------------------file upload from kh------------------->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #fileUploadModal>
+  <app-file-upload-popup *ngIf = "fileUploadPopupStore.openPopup" ></app-file-upload-popup>
+</div>

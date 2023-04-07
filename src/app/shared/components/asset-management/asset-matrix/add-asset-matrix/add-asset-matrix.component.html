@@ -1,0 +1,235 @@
+<!--asset criticality new form Starts-->
+<button type="button" class="close" (click)="closeFormModal()"><i class="lni-close"></i><span>esc</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered" *mobxAutorun>
+   <div class="modal-content">
+      <!-- Modal Header -->
+      <div class="modal-header">
+         <h4 class="modal-title pb-2">{{'asset_criticality_matrix'|translate}}</h4>
+         <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
+      </div>
+      <!-- Modal body -->
+
+      <div class="modal-body form-body">
+         <p>Asset criticality matrix plots the relationship between the probability of failure of an asset and the consequence of failure of an asset (or group of assets) at a particular point in time</p>
+        
+         <div class="row">
+            <div class="col-sm-12">
+               <form [formGroup]="form" id="form">
+                  <div class="form-group">
+                     <label>{{'title'|translate}}<sup>*</sup></label>
+                     <input type="text" formControlName="title" class="form-control" [placeholder]="'matrix_title_placeholder'|translate">
+                     <p class="form-error pt-1" *ngIf="formErrors && formErrors.title"> {{formErrors.title}}</p>
+                             
+                  </div>
+                 
+                     <div class="form-group">
+                         <span style="float: right;" class="text-grey mb-0">{{form?.value.description != null
+                             ?
+                             getDescriptionLength() : 0}} {{'characters' | translate}}</span>
+     
+                         <label for="name">{{'description'|translate}}</label>
+                       
+                         <textarea formControlName="description" class="form-control" rows="3" id="comment"
+                             [placeholder]="'asset_matrix_form_description'|translate"></textarea>
+                        
+                     </div>
+                 
+                  <div class="form-group calculation-main-cls" *ngIf="AssetCalculationMethodMasterStore.loaded">
+                     <label>{{'calculation_method'|translate}}<sup>*</sup></label>
+                     <div class="mb-2">
+                        <p [ngClass]="form.value.asset_calculation_method_id == method.id?'outline-tag active pointer':'outline-tag pointer'"
+                           (click)="setCalculationMethod(method.id)"
+                           *ngFor="let method of AssetCalculationMethodMasterStore.allItems">{{method.title}}<span [ngClass]="'calculation ml-1 '+method.type"></span></p>
+                        <!-- <p class="outline-tag">Multiplication (*)</p> 
+                              <p class="outline-tag active">Highest Value  <span>(<i class="fa fa-arrow-up"></i>)</span></p> 
+                              <p class="outline-tag">Average (x̄)</p>  -->
+                     </div>
+                     <p class="form-error pt-1" *ngIf="formErrors && formErrors.asset_calculation_method_id"> {{formErrors.asset_calculation_method_id}}</p>
+                     
+                  </div>
+               
+                  <div class="form-group">
+                     <label for="name">{{'matrix_categories'|translate}}<sup>*</sup>
+
+                     </label>
+                   
+
+                     <div class="clearfix d-flex">
+                        <div class="multiple-plain-ngselect w-100">
+
+                           <ng-select [items]="AssetMatrixCategoriesMasterStore.allItems"
+                              [placeholder]="'select_matrix_categories'|translate" multiple="true" searchable="true"
+                              bindLabel="title" formControlName="asset_matrix_category_ids"
+                              (search)="searchMatrixCategory($event)" (clear)="getMatrixCategory()"
+                              (open)="getMatrixCategory()" [closeOnSelect]="false" autocomplete="new-password">
+                              <!-- <ng-option [value]="type.id"
+                                                 *ngFor="let type of SubsidiaryStore.subsidiaryList">
+                                                 {{type.title}}
+                                             </ng-option> -->
+                              <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                 {{item.title?.length > 60 ? (item.title | slice:0:60)+' ...' :
+                                 item.title}}<span aria-hidden="true" (click)="clear(item)" style="border:none;"
+                                    class="ng-value-icon left">×</span>
+                              </ng-template>
+                              <ng-template ng-option-tmp let-item="item" let-index="index">
+                                 {{item.title?.length > 80 ? (item.title | slice:0:80)+' ...' :
+                                 item.title}}
+                              </ng-template>
+                           </ng-select>
+                        </div>
+                        <button class="btn multi-add-user ml-2" style="width: 42px;" (click) = "addMatrixCategory()"><i class="fas fa-plus"></i></button>
+                        <!-- <p class="form-error pt-1" *ngIf="formErrors&&formErrors.organization_ids">
+                                         {{formErrors.organization_ids[0]}}</p> -->
+
+                     </div>
+                     <p class="form-error pt-1" *ngIf="formErrors && formErrors.asset_matrix_category_ids"> {{formErrors.asset_matrix_category_ids}}</p>
+                    
+                  </div>
+                  <div class="form-group" *ngIf="AssetOptionValuesMasterStore.loaded">
+                     <label>{{'option_values'|translate}}<sup>*</sup></label>
+                     <div class="mb-3">
+                        <button type="button" [ngClass]="isOptionValuePresent(option.id) ? 'btn btn-small btn-'+option.label+'-hov active' : 'btn btn-small btn-'+option.label+'-hov'"
+                        (click)="setOptionValue(option.id)" *ngFor="let option of AssetOptionValuesMasterStore.allItems">{{option.title}}
+                           ({{option.score}})
+                        </button>
+                    </div>
+                     <!-- <div class="mb-2">
+
+                        <p [ngClass]="isOptionValuePresent(option.id)?'outline-tag active pointer':'outline-tag pointer'"
+                           (click)="setOptionValue(option.id)"
+                           *ngFor="let option of AssetOptionValuesMasterStore.allItems">{{option.title}}
+                           ({{option.score}})</p>
+                      
+                     </div> -->
+                     <p class="form-error pt-1" *ngIf="formErrors && formErrors.asset_option_value_ids"> {{formErrors.asset_option_value_ids}}</p>
+                    
+                  </div>
+
+                  <div class="form-group mb-0" *ngIf="AssetRatingMasterStore.loaded">
+                     <label for="name" class="mb-1">{{'criticality_rating'|translate}}<sup>*</sup></label>
+
+                     <div class="row">
+                        <div class="col-md-4" *ngFor="let rating of ratingArray;let r = index">
+                           <div class="form-group">
+                              <div class="row">
+                                 <div class="col-md-12">
+                                    <small [ngClass]="'text-'+rating.label+' mb-0'">{{rating.title}}</small>
+                                    <div class="clearfix d-flex align-items-center">
+
+                                       <input class="form-control w-50" [value]="rating.score_from" (keyup)="setLevelRange($event,rating.asset_rating_id,'from',r)"
+                                          type="text">
+                                       <p style="width:50px" class="mb-0 text-center">To</p>
+                                       <input class="form-control w-50" [value]="rating.score_to" (keyup)="setLevelRange($event,rating.asset_rating_id,'to',r)"
+                                          type="text">
+
+                                       <!-- <input type="text" class="form-control w-50" placeholder="1">
+                                      <p style="width:50px"  class="mb-0 text-center">To</p>
+                                      <input type="text" class="form-control w-50" placeholder="10"> -->
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                           
+                        </div>
+                       
+                        <div class="col-md-4 mb-2" *ngIf="!(ratingArray?.length>0)">
+                           <p>Please select an impact value</p>
+                    
+                           <!-- <p></p> -->
+                           
+                        </div>
+                        
+
+
+
+                     </div>
+                     <p class="form-error pt-1" *ngIf="formErrors && formErrors.asset_rating_scores && (!isOverlapped())"> {{formErrors.asset_rating_scores}}</p>
+                     <p class="form-error pt-1" *ngIf="(!formErrors?.asset_rating_scores) && isOverlapped()"> Rating values Cannot be overlapped</p>
+                    
+
+                  </div>
+
+                  <div class="form-group">
+                     <label for="name">{{'asset_categories'|translate}}
+                        <small>(The matrix will be available for this category)</small><sup>*</sup>
+                     </label>
+                     <!-- <div class="clearfix d-flex">
+                           <div class="plain-select multiple-select full-width-multiple w-100">
+                               <select id="multiple" class="multiple-user-lists selectator" name="select2" multiple="" style="display: block;">
+                                   <option value="1" selected="">Service Assets</option>
+                                   <option value="1" selected="">Physical Assets</option>
+                     
+                                </select>
+                           </div>
+                          
+                          
+                       </div> -->
+
+                     <div class="clearfix d-flex">
+                        <div class="multiple-plain-ngselect w-100">
+
+                           <ng-select [items]="AssetCategoryStore.allItems"
+                              [placeholder]="'select_asset_categories'|translate" multiple="true" searchable="true"
+                              bindLabel="title" formControlName="asset_category_ids"
+                              (search)="searchAssetCategory($event)" (clear)="getAssetCategory()"
+                              (open)="getAssetCategory()" [closeOnSelect]="false" autocomplete="new-password">
+                              <!-- <ng-option [value]="type.id"
+                                                *ngFor="let type of SubsidiaryStore.subsidiaryList">
+                                                {{type.title}}
+                                            </ng-option> -->
+                              <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                 {{item.title?.length > 60 ? (item.title | slice:0:60)+' ...' :
+                                 item.title}}<span aria-hidden="true" (click)="clear(item)" style="border:none;"
+                                    class="ng-value-icon left">×</span>
+                              </ng-template>
+                              <ng-template ng-option-tmp let-item="item" let-index="index">
+                                 {{item.title?.length > 80 ? (item.title | slice:0:80)+' ...' :
+                                 item.title}}
+                              </ng-template>
+                           </ng-select>
+                        </div>
+                        <button class="btn multi-add-user ml-2" style="width: 42px;" (click) = "addAssetCategory()"><i class="fas fa-plus"></i></button>
+                       
+                        <!-- <p class="form-error pt-1" *ngIf="formErrors&&formErrors.organization_ids">
+                                        {{formErrors.organization_ids[0]}}</p> -->
+
+                     </div>
+                     <p class="form-error pt-1" *ngIf="formErrors && formErrors.asset_category_ids"> {{formErrors.asset_category_ids}}</p>
+                    
+                  </div>
+               </form>
+            </div>
+
+         </div>
+
+
+
+         <div class="row">
+            <div class="col-sm-12">
+               <div class="d-block justify-content-left border-0 mt-3">
+                  <button type="button" data-toggle="modal" (click)="save()" 
+                     class="btn btn-active" [disabled]="isOverlapped()">{{getButtonText(AppStore.loading?'loading':'save')}}</button>
+                  <button type="button" data-toggle="modal" (click) = "save(true)"
+                     class="btn" [disabled]="isOverlapped()">{{getButtonText(AppStore.loading?'loading':'save_close')}}</button>
+                  <button type="button" data-toggle="modal" (click)="closeFormModal()"
+                     class="btn">{{getButtonText(AppStore.loading?'loading':'cancel')}}</button>
+               </div>
+            </div>
+         </div>
+      </div>
+
+      <!-- Modal footer -->
+   </div>
+</div>
+<!-- </div> -->
+<!--asset criticality new form Ends-->
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #matrixCategoryModal>
+   <app-asset-matrix-categories-modal *ngIf = "assetMatrixCategoriesObject.type" [source] = "assetMatrixCategoriesObject" ></app-asset-matrix-categories-modal>
+
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #categoryModal>
+   <app-asset-category-modal *ngIf="assetCategoryObject.type" [source]="assetCategoryObject">
+   </app-asset-category-modal>
+</div>

@@ -1,0 +1,206 @@
+<button type="button" class="close" (click)="cancel()"><i class="lni-close"></i><span>{{'esc' |
+        translate}}</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header">
+            <h4 class="modal-title" *ngIf="TemplateSource.type=='Add'">{{'new' | translate}}
+                {{'template' | translate}}</h4>
+            <h4 class="modal-title" *ngIf="TemplateSource.type=='Edit'">{{'edit' | translate}}
+                {{'template' | translate}}</h4>
+            <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
+        </div>
+        <!-- Modal body -->
+        <div class="modal-body form-body" *mobxAutorun>
+
+            <div class="row">
+                <p class="head-details"></p>
+            </div>
+
+            <form [formGroup]="form">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label>{{'title' | translate}}<span class="form-error">*</span></label>
+                            <input type="text" class="form-control"
+                                [attr.placeholder]="'template_placeholder' | translate"
+                                formControlName="template_title">
+                            <p style="color: red;" *ngIf="formErrors && formErrors.template_title">
+                                {{formErrors.template_title}}</p>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'content_title' | translate}}<span class="form-error">*</span></label>
+                            <div class="plain-select input-add-report">
+                                <input type="text" class="form-control" [ngModelOptions]="{standalone: true}"
+                                    [(ngModel)]="title"
+                                    [attr.placeholder]="'template_content_title_placeholder' | translate">
+                                <!-- <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.title ">
+                                {{formErrors.title}}</p> -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-12">
+                        <div class="form-group form-group-add-roles">
+                                <label for="name">{{'description' | translate}}</label>
+                                    <ckeditor [config]="config" id="description" (ready)="onReady($event)"
+                                        (change)="descriptionChange($event)" [editor]="Editor"
+                                        formControlName="description"></ckeditor>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'order' | translate}}<span class="form-error">*</span></label>
+                            <div class="plain-select input-add-report">
+                                <input type="number" class="form-control input-number"
+                                    [ngModelOptions]="{standalone: true}" [(ngModel)]="order"
+                                    [attr.placeholder]="'order' | translate">
+                                <!-- <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.order ">
+                                {{formErrors.order}}</p> -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-12 mb-2">
+                        <button class="btn pointer" [disabled]="!order" (click)="addItem()">{{'add_items'}}</button>
+                        <p class="form-error pt-1" *ngIf="ItemMessage"> {{ItemMessage}}</p>
+                    </div>
+
+                    <div class="col-sm-12 mb-2" *ngIf="!(ItemsList.length == 0)">
+                        <div class="full-width-table">
+                            <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                                <thead>
+                                    <tr>
+                                        <th>{{'sl' | translate}}</th>
+                                        <th>{{'title' | translate}}</th>
+                                        <th>{{'description' | translate}}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="edit-and-delete-main" *ngFor="let data of ItemsList;let num = index">
+                                        <td>{{(num + 1)}}</td>
+                                        <td>{{data.title}}</td>
+                                        <td>
+                                            <div [innerHtml]="data.description | safeHtml"></div>
+                                            <div class=" edit-option-show">
+                                                <a (click)="edititems(data,num)" [attr.title]="'edit' | translate"><i
+                                                        class="fas fa-pen"></i></a>
+                                                <a (click)="removeItem(num)" [attr.title]="'delete' | translate"><i
+                                                        class="fas fa-trash pointer"></i></a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-12">
+                        <label class="label-style mb-0">{{'icon'|translate}}</label>
+                        <div class="scroll-documents" #uploadArea>
+                            <div class="row m-0 upload-section" style="padding-top: 0">
+                                <div class="col-sm-4 col-lg-4 costmz-logo-new mt-2">
+                                    <div class="question-circle-inp"
+                                        *ngIf="OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.length > 0"
+                                        style="margin-right: 7px;">
+                                        <i class="far fa-question-circle"></i>
+                                        <div class="message-password-inp">
+                                            <p class="mb-0">{{'allowed_file_types' | translate}}
+                                                {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="form-group form-group-upload">
+                                        <div class="darag-dropifile-upload">
+                                            <div class="d-flex justify-content-center align-items-center text-center">
+                                                <div>
+                                                    <img src="assets/images/drag-pic.png" alt="image"
+                                                        class="drag-pic-files">
+                                                    <div class="drag-file-name"> {{'drag_drop_file_here'|translate}}
+                                                    </div>
+                                                    <div class="upload-btn-wrapper">
+                                                        <input type="file" name="myfile"
+                                                            (change)="onFileChange($event,'logo')"
+                                                            [accept]="checkAcceptFileTypes('logo')">
+                                                        <button class="btn">{{'browse_files'|translate}}</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div [ngClass]="files.success? 'col-sm-4 col-lg-4 up-pic-cf mt-2 hide_loader' : 'col-sm-4 col-lg-4 up-pic-cf mt-2'"
+                                    *ngFor="let files of fileUploadsArray">
+                                    <div class="upload-pics edit-option file-upload-loader">
+                                        <circle-progress class="browse-form-pic" [percent]=fileUploadProgress
+                                            [title]=fileUploadProgress>
+                                        </circle-progress>
+                                    </div>
+                                </div>
+
+                                <div [ngClass]="BcmTemplateStore.getFileDetailsByType('logo')?.is_deleted ? 'col-sm-4 col-lg-4 up-pic-cf mt-2 image_deleted':'col-sm-4 col-lg-4 up-pic-cf mt-2'"
+                                    *ngIf="BcmTemplateStore.getFileDetailsByType('logo')">
+                                    <div class="upload-pics edit-option">
+                                        <div class="browse-form-pic"
+                                            [ngStyle]="{'background': 'url(' + BcmTemplateStore.getFileDetailsByType('logo')?.preview + ') no-repeat 0 0 / cover'}">
+                                        </div>
+                                        <div class="browse-form-name clearfix">
+                                            <div class="float-left">
+                                                <h6
+                                                    [attr.title]="BcmTemplateStore.getFileDetailsByType('logo')?.name.length>15?BcmTemplateStore.getFileDetailsByType('logo')?.name:''">
+                                                    {{BcmTemplateStore.getFileDetailsByType('logo')?.name.length>15?BcmTemplateStore.getFileDetailsByType('logo')?.name.substring(0,15)+'
+                                                    ...':BcmTemplateStore.getFileDetailsByType('logo')?.name}}
+                                                </h6>
+                                                <span>{{BcmTemplateStore.getFileDetailsByType('logo')?.size/1048576 |
+                                                    number:'0.2-2'}}MB</span>
+                                            </div>
+                                            <div class="browse-logo">
+                                                <img *ngIf="checkExtension(BcmTemplateStore.getFileDetailsByType('logo')?.ext,'excel') != -1"
+                                                    src="/assets/images/md-xl.png">
+                                                <img *ngIf="checkExtension(BcmTemplateStore.getFileDetailsByType('logo')?.ext,'image') != -1"
+                                                    src="/assets/images/md-jpg.png">
+                                                <img *ngIf="checkExtension(BcmTemplateStore.getFileDetailsByType('logo')?.ext,'doc') != -1"
+                                                    src="/assets/images/md-doc.png">
+                                                <img *ngIf="checkExtension(BcmTemplateStore.getFileDetailsByType('logo')?.ext,'pdf') != -1"
+                                                    src="/assets/images/md-pdf.png">
+                                            </div>
+                                        </div>
+                                        <div class="edit-option-show">
+                                            <a (click)="BcmTemplateStore.unsetFileDetails('logo')">
+                                                <i class="fas fa-trash"></i></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p style="color: red;" *ngIf="formErrors&&formErrors.documents">
+                            {{formErrors.documents}}</p>
+                    </div>
+                </div>
+
+                <div class="clearfix"></div>
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="d-block justify-content-left border-0 mt-3">
+                            <button type="submit" class="btn btn-active" (click)="save()"
+                                [disabled]="ItemsList.length == 0 || AppStore.loading">{{ AppStore.loading ?
+                                getButtonText('loading') : getButtonText('save') }}</button>
+                            <button type="button" data-toggle="modal" data-target="#signal-lost" class="btn"
+                                (click)="save(true)" [disabled]="ItemsList.length == 0 || AppStore.loading">{{
+                                AppStore.loading ?
+                                getButtonText('loading') : getButtonText('save_close') }}</button>
+                            <button type="button" data-toggle="modal" data-target="#error-message" class="btn"
+                                (click)="cancel()">{{ AppStore.loading ? getButtonText('loading') :
+                                getButtonText('cancel')}}</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <!-- Modal footer -->
+    </div>
+</div>

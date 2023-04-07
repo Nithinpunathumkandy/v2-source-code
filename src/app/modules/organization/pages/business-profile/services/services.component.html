@@ -1,0 +1,197 @@
+<div>
+   <app-ms-types-loader *ngIf="!BusinessServiceStore.loaded"></app-ms-types-loader>
+</div>
+<ng-container *mobxAutorun>
+   <div class="row"
+      *ngIf="BusinessServiceStore.loaded && BusinessServiceStore.servicesDetails.length > 0 && AuthStore.getActivityPermission(1900,'SERVICE_LIST')">
+      <div class="col-md-12">
+         <div class="panel-group panel-drop-sections panel-drop-white" id="jd" role="tablist"
+            aria-multiselectable="true">
+            <div class="panel panel-default"
+               *ngFor="let ser of BusinessServiceStore.servicesDetails | paginate: {currentPage:BusinessServiceStore?.currentPage, itemsPerPage:BusinessServiceStore?.itemsPerPage,totalItems:BusinessServiceStore?.totalItems};let num = index">
+               <div
+                  [ngClass]="(ser.is_accordion_active == true || (initialLoad && num == 0))? 'panel-heading active' : 'panel-heading'"
+                  role="tab" id="headingOne">
+                  <div class="panel-title">
+                     <a (click)="applicationAccordianClick(num)" role="button" data-toggle="collapse"
+                        aria-expanded="false" aria-controls="collapseOne" class="collapsed">
+                        <h5 class="width96pc mt-0">{{ser.title}} <label
+                              class="fill-tag fill-tag-middle mb-0">{{ser.service_category_title}}</label><span
+                              class="drop-down-icone"><i class="fas fa-chevron-down"></i></span> </h5>
+                     </a>
+                  </div>
+               </div>
+               <div id="acd-services1" class="drop-detail-sec"
+                  [ngClass]="(ser.is_accordion_active == true || (initialLoad && num == 0))? 'panel-collapse collapse show' : 'panel-collapse collapse'"
+                  role="tabpanel" aria-labelledby="headingOne" data-parent="#acd-services1">
+                  <div class="panel-body bg-white edit-and-delete-main">
+                     <div class="edit-option-show" style="margin: -18px 24px 0 0;">
+                        <!-- edit-and-delete starts -->
+                        <a *ngIf="AuthStore.getActivityPermission(100,'UPDATE_SERVICE')" (click)="editService(ser.id)"
+                           [attr.title]="'edit' | translate"><i class="fas fa-pen pointer"></i></a>
+                        <a *ngIf="AuthStore.getActivityPermission(100,'DELETE_SERVICE')" (click)="deleteService(ser.id)"
+                           [attr.title]="'delete' | translate"><i class="fas fa-trash pointer"></i></a>
+                     </div>
+                     <p style="white-space: pre-line;">{{ser.description}}</p>
+                     <div class="row">
+                        <div class="col-xl-3 col-lg-4 col-sm-6">
+                           <h5>{{'service_items' | translate}}</h5>
+                           <ul class="arrowlist m-0 p-0">
+                              <li *ngFor="let items of ser.service_items">{{items}}</li>
+                           </ul>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+            <div class="col-sm-12" *ngIf="BusinessServiceStore?.totalItems > BusinessServiceStore?.itemsPerPage">
+               <ul class="pagination justify-content-center mt-3">
+                  <div class="list">
+                     <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+                        (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+                  </div>
+               </ul>
+            </div>
+         </div>
+      </div>
+   </div>
+</ng-container>
+<ng-container *mobxAutorun>
+   <app-no-data *ngIf="BusinessServiceStore.loaded && BusinessServiceStore.servicesDetails.length == 0"></app-no-data>
+</ng-container>
+
+<!-- add-user-btn-popup Start -->
+<div class="modal modal-style-1 popup-full-width fade" id="add-eight-popup" data-keyboard="false" data-backdrop="static"
+   #formModal>
+   <button type="button" class="close" data-dismiss="modal"><i class="lni-close"></i><span>{{'esc' |
+         translate}}</span></button>
+   <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content" *mobxAutorun>
+         <!-- Modal Header -->
+         <div class="modal-header">
+            <h4 class="modal-title" *ngIf="!BusinessServiceStore.addOrEditFlag">{{'add_service' | translate}}</h4>
+            <h4 class="modal-title" *ngIf="BusinessServiceStore.addOrEditFlag">{{'edit_service' | translate}}</h4>
+            <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
+         </div>
+         <!-- Modal body -->
+         <div class="modal-body form-body">
+            <p class="head-details">{{'service_form_message' | translate}}
+            </p>
+            <form [formGroup]="form">
+               <div class="row">
+                  <div class="col-sm-12">
+                     <div class="form-group">
+                        <label for="title">{{'title' | translate}}<sup>*</sup></label>
+                        <input type="text" id="title" class="form-control" formControlName="title"
+                           [attr.placeholder]="'title_of_the_service' | translate">
+                        <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.title}}</p>
+                        <p class="form-error pt-1"
+                           *ngIf="!formErrors && form.get('title').invalid && (form.controls.title.dirty || form.controls.title.touched)">
+                           {{ form.hasError('required', ['title']) ? 'Title required' : 'Maximum 500 characters allowed'
+                           }}</p>
+                     </div>
+                  </div>
+               </div>
+               <div class="row">
+                  <div class="col-sm-12">
+                     <div class="form-group add-kpi-textarea">
+                        <span style="float: right;" class="text-grey">{{form?.value.description != null ?
+                           form?.value.description?.length : 0}} {{'characters' | translate}}</span>
+                        <label for="description">{{'description' | translate}}</label>
+                        <textarea class="form-control" id="description" formControlName="description" rows="11"
+                           id="comment11"
+                           [attr.placeholder]="'write_a_short_description_of_the_service' | translate"></textarea>
+                     </div>
+                  </div>
+               </div>
+               <div class="row">
+                  <div class="col-sm-12">
+                     <div class="form-group">
+                        <label for="service_item">{{'service_items' | translate}}</label>
+                        <div class="clearfix">
+                           <div class="select-new-width">
+                              <input type="text" id="service_item" class="form-control"
+                                 [ngModelOptions]="{standalone: true}" [(ngModel)]="serviceItem"
+                                 [attr.placeholder]="'write_service_items' | translate">
+                           </div>
+                           <button class="btn multi-add-user" (click)="addServiceItem()"><i
+                                 class="fas fa-plus"></i></button>
+                        </div>
+                        <div *ngIf="serviceItemsList.length > 0" #serviceItemsDiv style="max-height: 100px;"
+                           class="delete-bullet-point mt-2">
+                           <ul class="arrowlist ml-0 pl-0 mt-0 mb-0">
+                              <li *ngFor="let items of serviceItemsList; let it = index">{{items.title}}
+                                 <Button type="button" (click)="removeServiceItem(it)"
+                                    class="btn btn-small float-right btn-small-delete" style="border: none;"><i
+                                       class="fas fa-trash"></i></Button>
+                              </li>
+                           </ul>
+                        </div>
+                        <p class="form-error pt-1" *ngIf="serviceItemMessage"> {{serviceItemMessage}}</p>
+                     </div>
+                  </div>
+               </div>
+               <div class="row">
+                  <div class="col-sm-12">
+                     <div class="form-group">
+                        <label for="service_category_id">{{'service_category' | translate}}<sup>*</sup></label>
+                        <div class="clearfix">
+                           <!-- [ngClass]="AuthStore.getActivityPermission(100,'CREATE_SERVICE_CATEGORY') ? 'multiple-plain-ngselect select-new-width' : 'multiple-plain-ngselect'" -->
+                           <div
+                              [ngClass]="AuthStore.getActivityPermission(100,'CREATE_SERVICE_CATEGORY') ? 'multiple-plain-ngselect select-new-width' : 'multiple-plain-ngselect'">
+                              <ng-select id="service_category_id" [placeholder]="'select_service_category' | translate"
+                                 [searchable]="true" [multiple]="false" formControlName="service_category_id"
+                                 (search)="searchServiceCategory($event)" (clear)="getServiceCategory()"
+                                 (open)="getServiceCategory()">
+                                 <ng-option [value]="item.id" *ngFor="let item of ServiceCategoryMasterStore?.allItems">
+                                    {{item.title.length > 80 ? item.title.substring(0,80)+' ...' : item.title }}
+                                 </ng-option>
+                              </ng-select>
+                           </div>
+                           <!-- *ngIf = "AuthStore.getActivityPermission(100,'CREATE_SERVICE_CATEGORY')" -->
+                           <button *ngIf="AuthStore.getActivityPermission(100,'CREATE_SERVICE_CATEGORY')"
+                              class="btn multi-add-user" (click)="addServiceCategory()"><i
+                                 class="fas fa-plus"></i></button>
+                        </div>
+                        <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.service_category_id}}</p>
+                        <p class="form-error pt-1"
+                           *ngIf="!formErrors && form.get('service_category_id').invalid && (form.controls.service_category_id.dirty || form.controls.service_category_id.touched)">
+                           Service category required</p>
+                     </div>
+                  </div>
+               </div>
+               <div class="row">
+                  <div class="col-sm-12">
+                     <div class="d-block justify-content-left border-0 mt-3">
+                        <button type="button" data-toggle="modal" data-target="#signal-lost" class="btn  btn-active"
+                           (click)="save()" [disabled]="form.invalid || AppStore.loading">
+                           {{ AppStore.loading ? getButtonText('loading') : getButtonText('save') }}</button>
+                        <button type="button" data-toggle="modal" data-target="#signal-lost" class="btn "
+                           (click)="save(true)" [disabled]="form.invalid || AppStore.loading">
+                           {{ AppStore.loading ? getButtonText('loading') : getButtonText('save_close') }}</button>
+                        <button type="button" data-toggle="modal" data-target="#error-message" class="btn "
+                           (click)="cancel()">
+                           {{ AppStore.loading ? getButtonText('loading') : getButtonText('cancel') }}</button>
+                     </div>
+                  </div>
+               </div>
+            </form>
+         </div>
+         <!-- Modal footer -->
+      </div>
+   </div>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="add-saven-popup" data-keyboard="false" data-backdrop="static"
+   #serviceCategoryFormModal>
+   <app-service-category-modal *ngIf="serviceCategoryObject.type" [source]="serviceCategoryObject">
+   </app-service-category-modal>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #deletePopup data-backdrop="static" data-keyboard="false">
+   <app-delete-popup [source]="deleteObject"></app-delete-popup>
+</div>
+
+<!------------------- Delete Confirmation Modal End --------------------------->

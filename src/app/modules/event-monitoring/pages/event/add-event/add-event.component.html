@@ -1,0 +1,791 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" scrollPoint #navBar>
+   <app-sub-menu>-</app-sub-menu>
+   <div class="module-name-block module-name-block-space float-left">
+      <a class="dropdown module-title">{{'events'|translate}}</a>
+   </div>
+</nav>
+<main class="mt-3 organization-page">
+    <div class="container-fluid">
+      <div class="organization-form-page" *mobxAutorun>
+
+        <form id="regForm" [formGroup]="regForm" class="organization-multi-stup-form multi-stup-form-common">
+           <!-- Circles which indicates the steps of the form: -->
+          <div id="header-sroll-form" class="form-indicates-sec clearfix" #formSteps>
+            <span class="step pointer" (click) = "changeStep(0)"><span class="multi-form-nbr">1</span>{{'event_form_info' | translate}}</span>
+            <span class="step pointer" (click) = "changeStep(1)"><span class="multi-form-nbr">2</span>{{'event_form_event_owner' | translate}}</span>
+            <span class="step pointer" (click) = "changeStep(2)"><span class="multi-form-nbr">3</span>{{'support_file' | translate}}</span>
+            <span class="step pointer" (click) = "changeStep(3)"><span class="multi-form-nbr">4</span>{{'preview_save' | translate}}</span>
+          </div>
+          <!-- One "tab" for each step in the form: -->
+          <div class="tab"><!-- tab start -->
+            
+            <div class="row">
+               <div class="col-sm-12">
+                  <div class="form-group">
+                        <label for="name">{{'event_form_title' | translate}}<span class="form-error">*</span></label>
+                        <input type="text" formControlName = "title" class="form-control" placeholder="{{'title_of_event' | translate}}">
+                        <p class="form-error pt-1" *ngIf="formErrors && formErrors.title">{{formErrors.title}}</p>
+                     </div>
+               </div>
+               <div class="col-sm-12">
+                  <div class="form-group">
+                         <label for="name">{{'event_form_description' | translate}}</label>
+                         <textarea class="form-control" formControlName = "description" rows="3" id="comment" placeholder="{{'description_of_event' | translate}}"></textarea>
+                        
+                      </div>
+               </div>
+               <div class="col-lg-6 col-sm-12">
+                  <div class="form-group">
+                     <label for="name">{{'event_form_start_date' | translate}}<span class="form-error">*</span></label>
+                     <div class="input-group date-picker cal-time">
+                        <div class="input-group date-picker">
+                           <input class="form-control" formControlName="start_date" [owlDateTime]="dt1"
+                              [owlDateTimeTrigger]="dt1"
+                              [placeholder]="'incident_form_date_time_placeholder'| translate">
+                           <owl-date-time [hour12Timer]="true" #dt1></owl-date-time>
+                           <div class="input-group-append">
+                              <button [owlDateTimeTrigger]="dt1" class="btn btn-outline-secondary calendar" type="button"><i
+                                 class="fas fa-calendar-alt"></i></button>
+                           </div>
+                           </div>
+                           <p class="form-error pt-1" *ngIf="formErrors && formErrors.start_date">{{formErrors.start_date}}</p>
+                     </div>
+                  </div>
+               </div>
+               <div class="col-lg-6 col-sm-12">
+                  <div class="form-group">
+                     <label for="name">{{'event_form_end_date' | translate}}<span class="form-error">*</span></label>
+                     <div class="input-group date-picker cal-time">
+                        <div class="input-group date-picker cal-time">
+                           <div class="input-group date-picker">
+                              <input class="form-control" formControlName="end_date" [owlDateTime]="dt2"
+                                 [owlDateTimeTrigger]="dt2" [min]="regForm.value.start_date"
+                                 [placeholder]="'incident_form_date_time_placeholder'| translate">
+                              <owl-date-time [hour12Timer]="true" #dt2></owl-date-time>
+                              <div class="input-group-append">
+                                 <button [owlDateTimeTrigger]="dt2" class="btn btn-outline-secondary calendar" type="button"><i
+                                    class="fas fa-calendar-alt"></i></button>
+                              </div>
+                              </div>
+                              <p class="form-error pt-1" *ngIf="formErrors && formErrors.end_date">{{formErrors.end_date}}</p>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+              
+               <div class="col-lg-6 col-sm-12">
+                     <div class="form-group">
+                          <label for="name">{{'event_form_budget_question' | translate}}</label>                                   
+                          <div class="custom-control pt-2 custom-radio">
+                              <input type="radio" class="custom-control-input" id="customRadio1" name="is_budgeted" formControlName = "is_budgeted" value="1" checked="">
+                              <label class="custom-control-label" for="customRadio1" style="padding-top: 2px;">Yes</label>
+
+                              <span class="pl-5"><input type="radio" class="custom-control-input" id="customRadio2" formControlName = "is_budgeted" name="is_budgeted" value="0">
+                              <label class="custom-control-label" for="customRadio2" style="padding-top: 2px;">No</label></span>
+                            </div>
+                      </div>
+               </div>
+             
+               <div class="col-lg-6 col-sm-12">
+                  <div class="form-group">
+                        <label for="name">{{'event_type' | translate}}</label>
+                        <div class="clearfix d-flex">
+                           <div class="multiple-plain-ngselect w-100">
+                              <ng-select
+                                    bindLabel="event_type_title"
+                                    [placeholder]="'select_event_type' | translate"
+                                    [multiple]="false"
+                                    formControlName = "event_type_id"
+                                    (search) = "getEventTypes($event)"
+                                    (clear) = "getEventTypes()"
+                                    (open) = "getEventTypes()"
+                                    (change) = "formFieldChange('event_type_id',$event)">
+                                    <ng-option [value]="item.id" *ngFor = "let item of EventTypeMasterStore.eventType">
+                                       {{item.event_type_title.length > 80 ? (item.event_type_title | slice:0:80)+' ...' : item.event_type_title}}
+                                    </ng-option>
+                              </ng-select>
+                            </div>
+                            <button *ngIf="AuthStore.getActivityPermission(100,'CREATE_EVENT_TYPE')" (click)="addEvenetType()" class="btn multi-add-user ml-2" style="width: 42px;"><i
+                              class="fas fa-plus"></i></button>
+                        </div>
+                        
+                    </div>
+               </div>
+              
+               <div class="col-lg-6 col-sm-12">
+                  <div class="form-group">
+                      <label>{{'project_priority_title' | translate}}<span class="form-error">*</span></label>
+                      <div class="clearfix d-flex">
+                          <div class="multiple-plain-ngselect select-width-plus w-100">
+                              <ng-select 
+                              [placeholder]="'Select priority' | translate" 
+                              [multiple]="false"
+                              searchable="true"
+                              (open)="getPriority()" 
+                              (clear)="getPriority()"
+                              (search)="searchPriority($event)"
+                              formControlName="event_priority_id"
+                              (change) = "formFieldChange('event_priority_id',$event)">
+                                  <ng-option [value]="type.id"
+                                      *ngFor="let type of ProjectPriorityMasterStore?.projectPriority">
+                                      {{type.score.length > 50 ? type.score.substring(0,50)+'...' : type.score}}
+                                  </ng-option>
+                              </ng-select>
+                          </div>
+                          <p class="form-error pt-1" *ngIf="formErrors && formErrors.event_priority_id">{{formErrors.event_priority_id}}</p>
+                          <!-- <button class="btn multi-add-user ml-2" data-toggle="modal" (click) = "addNewPriorityType()" style="width: 42px;"><i class="fas fa-plus"></i></button> -->
+                       </div>
+                  </div>
+              </div>
+               <div class="col-lg-6 col-sm-12">
+                  <div class="form-group">
+                        <label for="name">{{'event_periodicity' | translate}}</label>
+                        <div class="clearfix d-flex">
+                            <div class="multiple-plain-ngselect w-100">
+                              <ng-select
+                              bindLabel="event_periodicity_title"
+                              [placeholder]="'select_periodicity' | translate"
+                              [multiple]="false"
+                              formControlName = "event_periodicity_id"
+                              (search) = "getPeriodicity($event)"
+                              (clear) = "getPeriodicity()"
+                              (open) = "getPeriodicity()"
+                              (change) = "formFieldChange('event_periodicity_id',$event)">
+                           <ng-option [value]="item.id" *ngFor = "let item of PeriodicityMasterStore.periodicity">
+                              {{item.event_periodicity_title.length > 80 ? (item.event_periodicity_title | slice:0:80)+' ...' : item.event_periodicity_title}}
+                           </ng-option>
+                           </ng-select>
+                            </div>
+                            <button *ngIf="AuthStore.getActivityPermission(100,'CREATE_EVENT_PERIODICITY')" (click)="addEventPeriodicity()" class="btn multi-add-user ml-2" style="width: 42px;"><i
+                              class="fas fa-plus"></i></button>
+                        </div>
+                    </div>
+               </div>
+               <div class="col-lg-6 col-sm-12">
+                  <div class="form-group">
+                        <label for="name">{{'event_range' | translate}}</label>
+                        <div class="clearfix d-flex">
+                            <div class="multiple-plain-ngselect w-100">
+                              <ng-select
+                                    bindLabel="event_range_title"
+                                    [placeholder]="'select_range' | translate"
+                                    [multiple]="false"
+                                    formControlName = "event_range_id"
+                                    (search) = "getRange($event)"
+                                    (clear) = "getRange()"
+                                    (open) = "getRange()"
+                                    (change) = "formFieldChange('event_range_id',$event)">
+                                 <ng-option [value]="item.id" *ngFor = "let item of RangeMasterStore.range">
+                                    {{item.event_range_title.length > 80 ? (item.event_range_title | slice:0:80)+' ...' : item.event_range_title}}
+                                 </ng-option>
+                              </ng-select>
+                            </div>
+                            <button *ngIf="AuthStore.getActivityPermission(100,'CREATE_EVENT_RANGE')" (click)="addEventRange()" class="btn multi-add-user ml-2" style="width: 42px;"><i
+                              class="fas fa-plus"></i></button>
+                        </div>
+                    </div>
+               </div>
+               <div class="col-lg-6 col-sm-12">
+                  <div class="form-group">
+                        <label for="name">{{'event_entrance' | translate}}</label>
+                        <div class="clearfix d-flex">
+                            <div class="multiple-plain-ngselect w-100">
+                              <ng-select
+                                    bindLabel="event_entrance_title"
+                                    [placeholder]="'select_entrance' | translate"
+                                    [multiple]="false"
+                                    formControlName = "event_entrance_id"
+                                    (search) = "getEntrances($event)"
+                                    (clear) = "getEntrances()"
+                                    (open) = "getEntrances()"
+                                    (change) = "formFieldChange('event_entrance_id',$event)">
+                                 <ng-option [value]="item.id" *ngFor = "let item of EntranceMasterStore.entrance">
+                                    {{item.event_entrance_title.length > 80 ? (item.event_entrance_title | slice:0:80)+' ...' : item.event_entrance_title}}
+                                 </ng-option>
+                              </ng-select>
+                            </div>
+                            <button *ngIf="AuthStore.getActivityPermission(100,'CREATE_EVENT_ENTRANCE')" (click)="addEventEntrance()" class="btn multi-add-user ml-2" style="width: 42px;"><i
+                              class="fas fa-plus"></i></button>
+                        </div>
+                    </div>
+               </div>
+               <div class="col-lg-6 col-sm-12">
+                  <div class="form-group">
+                        <label for="name">{{'event_dimension' | translate}}</label>
+                        <div class="clearfix d-flex">
+                            <div class="multiple-plain-ngselect w-100">
+                              <ng-select
+                                    bindLabel="event_dimension_title"
+                                    [placeholder]="'select_diamension' | translate"
+                                    [multiple]="false"
+                                    formControlName = "event_dimension_id"
+                                    (search) = "getDimensions($event)"
+                                    (clear) = "getDimensions()"
+                                    (open) = "getDimensions()"
+                                    (change) = "formFieldChange('event_dimension_id',$event)">
+                                 <ng-option [value]="item.id" *ngFor = "let item of DimensionMasterStore.dimension">
+                                    {{item.event_dimension_title.length > 80 ? (item.event_dimension_title | slice:0:80)+' ...' : item.event_dimension_title}}
+                                 </ng-option>
+                              </ng-select>
+                            </div>
+                            <button *ngIf="AuthStore.getActivityPermission(100,'CREATE_EVENT_DIMENSION')" (click)="addEventDimension()" class="btn multi-add-user ml-2" style="width: 42px;"><i
+                              class="fas fa-plus"></i></button>
+                        </div>
+                    </div>
+               </div>
+               <div class="col-lg-6 col-sm-12">
+                  <div class="form-group">
+                        <label for="name">{{'event_type_of_space' | translate}}</label>
+                        <div class="clearfix d-flex">
+                            <div class="multiple-plain-ngselect w-100">
+                              <ng-select
+                                    bindLabel="event_space_type_title"
+                                    [placeholder]="'select_space_type' | translate"
+                                    [multiple]="false"
+                                    formControlName = "event_type_space_id"
+                                    (search) = "getSpaceTypes($event)"
+                                    (clear) = "getSpaceTypes()"
+                                    (open) = "getSpaceTypes()"
+                                    (change) = "formFieldChange('event_type_space_id',$event)">
+                                 <ng-option [value]="item.id" *ngFor = "let item of SpaceTypeMasterStore.spaceType">
+                                    {{item.event_space_type_title.length > 80 ? (item.event_space_type_title | slice:0:80)+' ...' : item.event_space_type_title}}
+                                 </ng-option>
+                              </ng-select>
+                            </div>
+                            <button *ngIf="AuthStore.getActivityPermission(100,'CREATE_EVENT_SPACE_TYPE')" (click)="addEventTypeSpace()" class="btn multi-add-user ml-2" style="width: 42px;"><i
+                              class="fas fa-plus"></i></button>
+                        </div>
+                    </div>
+               </div>
+               <div class="col-lg-6 col-sm-12">
+                  <div class="form-group">
+                        <label for="name">{{'event_target_audience' | translate}}</label>
+                        <div class="clearfix d-flex">
+                            <div class="multiple-plain-ngselect w-100">
+                              <ng-select
+                                    bindLabel="event_target_audience_title"
+                                    [placeholder]="'select_target_audience' | translate"
+                                    [multiple]="false"
+                                    formControlName = "event_target_audience_id"
+                                    (search) = "getTargetAudiences($event)"
+                                    (clear) = "getTargetAudiences()"
+                                    (open) = "getTargetAudiences()"
+                                    (change) = "formFieldChange('event_target_audience_id',$event)">
+                                 <ng-option [value]="item.id" *ngFor = "let item of TargetAudienceMasterStore.targetAudience">
+                                    {{item.event_target_audience_title.length > 80 ? (item.event_target_audience_title | slice:0:80)+' ...' : item.event_target_audience_title}}
+                                 </ng-option>
+                              </ng-select>
+                            </div>
+                            <button *ngIf="AuthStore.getActivityPermission(100,'CREATE_EVENT_TARGET_AUDIENCE')"  (click)="addEventTargetAudience()" class="btn multi-add-user ml-2" style="width: 42px;"><i
+                              class="fas fa-plus"></i></button>
+                        </div>
+                    </div>
+               </div>
+               <div class="col-sm-6">
+                  <div class="form-group">
+                        <label for="name">{{'event_form_location' | translate}}</label>
+                        <div class="clearfix d-flex">
+                           <div class="multiple-plain-ngselect w-100">
+                              <ng-select
+                                    bindLabel="event_location_title"
+                                    [placeholder]="'select_event_location' | translate"
+                                    [multiple]="false"
+                                    formControlName = "event_location_id"
+                                    (search) = "getEventLocation($event)"
+                                    (clear) = "getEventLocation()"
+                                    (open) = "getEventLocation()"
+                                    (change) = "formFieldChange('event_location_id',$event)">
+                                    <ng-option [value]="item.id" *ngFor = "let item of LocationsMasterStore.locations">
+                                       {{item.title.length > 80 ? (item.title | slice:0:80)+' ...' : item.title}}
+                                    </ng-option>
+                              </ng-select>
+                            </div>
+                            <button *ngIf="AuthStore.getActivityPermission(100,'CREATE_EVENT_LOCATION')" (click)="addEventLocation()" class="btn multi-add-user ml-2" style="width: 42px;"><i
+                              class="fas fa-plus"></i></button>
+                        </div>
+                        
+                     </div>
+               </div>
+            </div>
+
+            
+
+          </div><!-- tab end -->
+          <div class="tab"><!-- tab start -->
+             
+              
+            <div class="row">
+               <div class="col-lg-6 col-sm-12">
+                  <div class="form-group">
+                        <label for="name">{{'event_form_owner_primary_dept' | translate}}<span class="form-error">*</span></label>
+                        <div class="clearfix">
+                            <div class="multiple-plain-ngselect">
+                              <ng-select
+                                    id="owner-primary-department"
+                                    bindLabel="title"
+                                    [placeholder]="'select_pri_owner_dept' | translate"
+                                    [multiple]="false"
+                                    formControlName = "department_id"
+                                    (search) = "getDepartments($event)"
+                                    (clear) = "getDepartments()"
+                                    (open) = "getDepartments()"
+                                    (change) = "formFieldChange('department_id',$event)">
+                                 <ng-option [value]="item.id" *ngFor = "let item of DepartmentMasterStore.allItems">
+                                    {{item.title.length > 80 ? (item.title | slice:0:80)+' ...' : item.title}}
+                                 </ng-option>
+                              </ng-select>
+                            </div>
+                            <p class="form-error pt-1" *ngIf="formErrors && formErrors.department_id">{{formErrors.department_id}}</p>
+                        </div>
+                    </div>
+               </div>
+               <div class="col-lg-6 col-sm-12">
+                  <div class="form-group">
+                     <label>{{'event_form_owner_primary' | translate}}<span class="form-error">*</span></label>
+                     <div class="clearfix d-flex">
+                        <div class="multiple-plain-ngselect w-100">
+                           <ng-select
+                              [items]="UsersStore.usersList"
+                              formControlName = "owner_id"
+                              bindLabel = "email"
+                              labelForId = "id"
+                              [placeholder]="'select_pri_event_owner' | translate"
+                              [multiple]="false"
+                              (search) = "searchUers($event,'department_id')"
+                              (clear) = "getUsers('department_id')"
+                              (open) = "getUsers('department_id')"
+                              [searchFn]="customSearchFn">
+                              <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                 <img *ngIf = "item.image_token" class="ng-select-user-display" height="15" width="15" [attr.src]="createImagePreview('user-profile-picture',item.image_token)" onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                 <img *ngIf = "!item.image_token" class="ng-select-user-display" height="15" width="15" [attr.src]="getDefaultImage()"/>
+                                 <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b><span aria-hidden="true" (click) = "clear(item)" style="border:none;" class="ng-value-icon left">×</span>
+                              </ng-template>
+                              <ng-template ng-option-tmp let-item="item" let-index="index">
+                                 <div class="user-post-department-pic">
+                                    <img *ngIf = "item.image_token" class="ng-select-user-display" height="25" width="25" [attr.src]="createImagePreview('user-profile-picture',item.image_token)" onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                    <img *ngIf = "!item.image_token" class="ng-select-user-display" height="25" width="25" [attr.src]="getDefaultImage()"/>
+                                 </div>
+                                 <div class="user-post-department-div">
+                                    <b>{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b>
+                                    <p class="user-post-department-multiple">{{getStringsFormatted([item.designation_title,' '+item.department],50,',')}}</p>
+                                 </div>
+                              </ng-template>
+                           </ng-select>
+                        </div>
+                       
+                     </div>
+                     <p class="form-error pt-1" *ngIf="formErrors && formErrors.owner_id">{{formErrors.owner_id}}</p>
+                  </div>
+               </div>
+               <div class="col-lg-6 col-sm-12">
+                  <div class="form-group">
+                     <label>{{'event_form_owner_secondary_depts' | translate}}</label>
+                      <div class="clearfix">
+                         <div class="multiple-plain-ngselect">
+                           <!-- [items] = "DepartmentMasterStore.allItems" -->
+                           <ng-select
+                              id="owner-secondary-department"
+                              bindLabel="title"
+                              [placeholder]="'select_sec_owner_dept' | translate"
+                              [multiple]="true"
+                              [closeOnSelect] = "false"
+                              formControlName = "secondary_department_ids"
+                              (search) = "getDepartments($event)"
+                              (clear) = "getDepartments();departmentCleared($event)"
+                              (open) = "getDepartments()"
+                              (add) = "departmentChange($event,'add')"
+                              (remove) = "departmentChange($event,'remove')">
+                              <ng-option [value]="item.id" *ngFor = "let item of DepartmentMasterStore.allItems">
+                                 {{item.title.length > 80 ? (item.title | slice:0:80)+' ...' : item.title}}
+                              </ng-option>
+                           </ng-select> 
+                         </div>
+                      </div>
+
+                    </div>
+               </div>
+               <div class="col-lg-6 col-sm-12">
+                  <div class="form-group">
+                     <label>{{'event_form_owners_secondary' | translate}}</label>
+                     <div class="clearfix d-flex">
+                        <div class="multiple-plain-ngselect w-100">
+                           <ng-select
+                              [items]="UsersStore.usersList"
+                              formControlName = "secondary_owner_ids"
+                              bindLabel = "email"
+                              labelForId = "id"
+                              [placeholder]="'select_sec_event_owner' | translate"
+                              multiple="true"
+                              [closeOnSelect]="false"
+                              (search) = "searchUers($event,'secondary_department_ids')"
+                              (clear) = "getUsers('secondary_department_ids')"
+                              (open) = "getUsers('secondary_department_ids')"
+                              [searchFn]="customSearchFn">
+                              <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                 <img *ngIf = "item.image_token" class="ng-select-user-display" height="15" width="15" [attr.src]="createImagePreview('user-profile-picture',item.image_token)" onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                 <img *ngIf = "!item.image_token" class="ng-select-user-display" height="15" width="15" [attr.src]="getDefaultImage()"/>
+                                 <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b><span aria-hidden="true" (click) = "clear(item)" style="border:none;" class="ng-value-icon left">×</span>
+                              </ng-template>
+                              <ng-template ng-option-tmp let-item="item" let-index="index">
+                                 <div class="user-post-department-pic">
+                                    <img *ngIf = "item.image_token" class="ng-select-user-display" height="25" width="25" [attr.src]="createImagePreview('user-profile-picture',item.image_token)" onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                    <img *ngIf = "!item.image_token" class="ng-select-user-display" height="25" width="25" [attr.src]="getDefaultImage()"/>
+                                 </div>
+                                 <div class="user-post-department-div">
+                                    <b>{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b>
+                                    <p class="user-post-department-multiple">{{getStringsFormatted([item.designation_title,' '+item.department],50,',')}}</p>
+                                 </div>
+                              </ng-template>
+                           </ng-select>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+
+                
+
+          </div><!-- tab end -->
+
+          <div class="tab"><!-- tab start -->
+
+            <label for="name" class="label-style mb-0">{{'event_form_attachments' | translate}}</label>
+            <div class="row m-0 upload-section" style="padding-top: 0">
+               <div class="col-sm-4 col-lg-3 costmz-logo-new mt-2">
+                  <div class="question-circle-inp" style="margin-right: 7px;">
+                     <i class="far fa-question-circle"></i>
+                     <div class="message-password-inp">
+                         <p class="mb-0">{{'allowed_file_types' | translate}}
+                           {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                         </p>
+                     </div>
+                 </div>
+                  <div class="form-group form-group-upload">
+                     <div class="darag-dropifile-upload">
+                        <div class="d-flex justify-content-center align-items-center text-center">
+                           <div class="drag-file-sec">
+                              <img src="assets/images/drag-pic.png" class="drag-pic-files">
+                              <div class="drag-file-name">Select or Upload Your File Here</div>
+                                 <div class="upload-btn-wrapper">
+                                   <!-- <input type="file" name="myfile"> -->
+                                   <button (click)="openFileUploadModal()" type="button" class="btn">{{'browse_files' |
+                                    translate}}</button>
+                                 </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+               <div *ngFor="let docs of fileUploadPopupStore.displayFiles ;let i = index" class="col-sm-4 col-lg-3 up-pic-cf mt-2">
+                  <!-- <div class="thumb-pics" *ngFor="let docs of fileUploadPopupStore.displayFiles ;let i = index"> -->
+                     <div class="upload-pics edit-option" data-toggle="modal">
+                       <div *ngIf="docs.id && !docs.preview" class="browse-form-pic"
+                         [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                       </div>
+                       <div *ngIf="docs.preview" class="browse-form-pic"
+                         [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">
+                       </div>
+                       <div class="browse-form-name clearfix">
+                         <div class="float-left">
+                           <h6>
+                             {{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                           </h6>
+                           <span *ngIf="docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-book"></i></span>
+                           <span *ngIf="!docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-laptop"></i></span>
+                           <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                         </div>
+                         <div class="browse-logo">
+                           <img *ngIf="checkExtension(docs.ext,'image') != -1" class="folder-picher"
+                             src="/assets/images/jpg-icone.png">
+                           <img *ngIf="checkExtension(docs.ext,'doc') != -1" class="folder-picher"
+                             src="/assets/images/word-icone.png">
+                           <img *ngIf="checkExtension(docs.ext,'pdf') != -1" class="folder-picher"
+                             src="/assets/images/pdf-icone.png">
+                           <img *ngIf="checkExtension(docs.ext,'excel') != -1" class="folder-picher"
+                             src="/assets/images/excel-icone.png">
+                           <img *ngIf="checkExtension(docs.ext,'video') != -1" class="folder-picher"
+                             src="/assets/images/md-video.png">
+                           <img *ngIf="checkExtension(docs.ext,'audio') != -1" class="folder-picher"
+                             src="/assets/images/md-audio.png">
+                           <img *ngIf="checkExtension(docs.ext,'ppt') != -1" class="folder-picher"
+                             src="/assets/images/md-ppt.png">
+                         </div>
+                       </div>
+                       <div class="edit-option-show">
+                         <a (click)="removeDocument(docs)"><i class="fas fa-trash"></i></a>
+                       </div>
+                     </div>
+                  <!-- </div> -->
+               </div>
+               
+            </div>
+
+
+          </div><!-- tab end -->
+
+          <div class="tab"><!-- tab start -->
+            <div class="row">
+               <div class="col-lg-8 col-sm-12 padding-right-0">
+                  <div class="bg-white"> 
+                     <div class="min-height-64">
+                        <div class="issue-top-sec">
+                              <div class="clearfix">
+                                 <h5 class="d-inline-block cmn-head-style label-tag-style mr-2"><span class="issue-smoal-head-text">{{regForm.value.id ? '' : 'xxxx'}}</span>{{regForm.value.title}}</h5>
+                              </div>
+                              <div class="clearfix">
+                                <p class="label-tag-style mb-2"><i class="fas fa-calendar-alt date-pics-two"></i>{{regForm.value.start_date | date :
+                                 OrganizationGeneralSettingsStore.organizationSettings?.date_time_format}} To {{regForm.value.end_date | date :
+                                    OrganizationGeneralSettingsStore.organizationSettings?.date_time_format}}
+                                    <span class="ml-3" *ngIf = "regForm.value.event_location_id"><i class="fas fa-map-marker-alt mr-2"></i>
+                                       {{displayForm.event_location_id ? displayForm.event_location_id.event_location_title : AppStore.noContentText}}
+                                    
+                                    </span>
+                                    </p>
+                              </div>
+                              <p style="white-space: pre-line;">{{regForm.value.description ? regForm.value.description : AppStore.noContentText}} </p>
+                           </div>
+
+                        <div class="row">
+                           <div class="col-xl-3 col-lg-4 col-sm-6">
+                              <h6>{{'event_budgeted' | translate}}</h6>
+                              <p>{{regForm.value.is_budgeted == '1' ? 'Yes' : 'No'}}</p>
+                           </div>
+                           <div class="col-xl-3 col-lg-4 col-sm-6">
+                              <h6>{{'event_type' | translate}}</h6>
+                              <p>{{displayForm.event_type_id ? displayForm.event_type_id.event_type_title : AppStore.noContentText}}</p>
+                           </div>
+                           <div class="col-xl-3 col-lg-4 col-sm-6">
+                              <h6>{{'event_priority' | translate}}</h6>
+                              <p>{{displayForm.event_priority_id ? displayForm.event_priority_id.project_priority_title : AppStore.noContentText}}-({{displayForm.event_priority_id ? displayForm.event_priority_id.score : AppStore.noContentText}})</p>
+                           </div>
+                           <div class="col-xl-3 col-lg-4 col-sm-6">
+                              <h6>{{'event_periodicity' | translate}}</h6>
+                              <p>{{displayForm.event_periodicity_id ? displayForm.event_periodicity_id.event_periodicity_title : AppStore.noContentText}}</p>
+                           </div>
+                           <div class="col-xl-3 col-lg-4 col-sm-6">
+                              <h6>{{'event_target_audience' | translate}}</h6>
+                              <p>{{displayForm.event_target_audience_id ? displayForm.event_target_audience_id.event_target_audience_title : AppStore.noContentText}}</p>
+                           </div>
+                           <div class="col-xl-3 col-lg-4 col-sm-6">
+                              <h6>{{'event_range' | translate}}</h6>
+                              <p>{{displayForm.event_range_id ? displayForm.event_range_id.event_range_title : AppStore.noContentText}}</p>
+                           </div>
+                           <div class="col-xl-3 col-lg-4 col-sm-6">
+                              <h6>{{'event_dimension' | translate}}</h6>
+                              <p>{{displayForm.event_dimension_id ? displayForm.event_dimension_id.event_dimension_title : AppStore.noContentText}}</p>
+                           </div>
+                           <div class="col-xl-3 col-lg-4 col-sm-6">
+                              <h6>{{'event_entrance' | translate}} </h6>
+                              <p>{{displayForm.event_entrance_id ? displayForm.event_entrance_id.event_entrance_title : AppStore.noContentText}}</p>
+                           </div>
+                           <div class="col-xl-3 col-lg-4 col-sm-6">
+                              <h6>{{'event_type_of_space' | translate}}</h6>
+                              <p>{{displayForm.event_type_space_id ? displayForm.event_type_space_id.event_space_type_title : AppStore.noContentText}}</p>
+                           </div>
+                        </div>
+
+                        
+
+                        <h6 class="text-left">{{'event_form_attachments' | translate}}</h6>
+                        <p *ngIf="fileUploadPopupStore.displayFiles.length==0">
+                           {{AppStore.noContentText}}</p>
+                        <div class="thumb-pics-bg thumb-pics-col-3 clearfix thumb-pics-fix-text"
+                           *ngIf="fileUploadPopupStore.displayFiles.length > 0">
+                        <div class="thumb-pics"
+                            *ngFor="let docs of fileUploadPopupStore.displayFiles ;let i = index">
+                            <div class="upload-pics edit-option" data-toggle="modal">
+                                <div *ngIf="docs.id && !docs.preview"
+                                    class="browse-form-pic"
+                                    [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                                </div>
+                                <div *ngIf="docs.preview" class="browse-form-pic"
+                                    [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">
+                                </div>
+                                <div class="browse-form-name clearfix">
+                                    <div class="float-left">
+                                        <h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}
+                                        </h6>
+                                        <span *ngIf="docs.is_kh_document"
+                                            class="mr-2 cmn-clr"><i
+                                                class="fas fa-book"></i></span>
+                                        <span *ngIf="!docs.is_kh_document"
+                                            class="mr-2 cmn-clr"><i
+                                                class="fas fa-laptop"></i></span>
+                                        <span>{{docs.size/1048576 |
+                                            number:'0.2-2'}}MB</span>
+                                    </div>
+                                    <div class="browse-logo">
+                                        <img *ngIf="checkExtension(docs.ext,'image') != -1"
+                                            class="folder-picher"
+                                            src="/assets/images/jpg-icone.png">
+                                        <img *ngIf="checkExtension(docs.ext,'doc') != -1"
+                                            class="folder-picher"
+                                            src="/assets/images/word-icone.png">
+                                        <img *ngIf="checkExtension(docs.ext,'pdf') != -1"
+                                            class="folder-picher"
+                                            src="/assets/images/pdf-icone.png">
+                                        <img *ngIf="checkExtension(docs.ext,'excel') != -1"
+                                            class="folder-picher"
+                                            src="/assets/images/excel-icone.png">
+                                        <img *ngIf="checkExtension(docs.ext,'video') != -1"
+                                            class="folder-picher"
+                                            src="/assets/images/md-video.png">
+                                        <img *ngIf="checkExtension(docs.ext,'audio') != -1"
+                                            class="folder-picher"
+                                            src="/assets/images/md-audio.png">
+                                        <img *ngIf="checkExtension(docs.ext,'ppt') != -1"
+                                            class="folder-picher"
+                                            src="/assets/images/md-ppt.png">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                     </div>
+
+                    
+                  </div>
+               </div>
+               <div class="col-lg-4 col-sm-12">
+
+                  <div class="w-100 not-fixed-table mb-3">
+                        <table class="table table-bordered ordinary-table audit-page-table mb-1 no-scroll-table">
+                          <thead>
+                             <tr>
+                                <th colspan="2" class="border-top-0 text-center">{{'event_form_primary' | translate}}</th>
+                             </tr>
+                             <tr>
+                                <th class="border-top-0" width="50%">{{'event_form_owner' | translate}}</th>
+                                <th class="border-top-0" width="50%">{{'event_form_owner_department' | translate}}</th>
+                             </tr>
+                          </thead>
+                          <tbody>
+                           <tr>
+                              <td>
+                                 <app-user-popup-box *ngIf = "regForm.value.owner_id" [source]="getPopupDetails(regForm.value.owner_id)" [showName] = "true" [activateButtons] = "false"></app-user-popup-box>
+                              </td>
+                              <td>{{displayForm.department_id ? displayForm.department_id.title : AppStore.noContentText}}</td>
+                           </tr>
+                          </tbody>
+                       </table>
+
+                     </div>
+
+                     <div class="w-100 not-fixed-table mb-3" *ngIf = "regForm.value.secondary_owner_ids?.length > 0">
+                        <table class="table table-bordered ordinary-table audit-page-table mb-1 no-scroll-table">
+                          <thead>
+                             <tr>
+                                <th colspan="2" class="border-top-0 text-center">{{'event_form_secondary' | translate}}</th>
+                             </tr>
+                             <tr>
+                                <th class="border-top-0" width="50%">{{'event_form_owner' | translate}}</th>
+                                <th class="border-top-0" width="50%">{{'event_form_owner_department' | translate}}</th>
+                             </tr>
+                          </thead>
+                          <tbody>
+                           <tr *ngFor = "let items of regForm.value.secondary_owner_ids">
+                              <td>
+                                 <app-user-popup-box [source]="getPopupDetails(items)" [showName] = "true" [activateButtons] = "false"></app-user-popup-box>
+                              </td>
+                              <td>{{items.department?.title?items.department?.title:items.department}}</td>
+                           </tr>
+                          </tbody>
+                       </table>
+
+                     </div>
+
+
+
+               </div>
+            </div>
+
+          </div><!-- tab end -->
+
+          <div style="overflow:auto;">
+            <div class="form-next-page-btns" style="float:left;">
+               <button class="btn btn-active" type="button" id="nextBtn" (click)="nextPrev(1)" [disabled]="AppStore.loading || !checkFormObject()">{{getButtonText(nextButtonText)}}</button>
+               <button class="btn" type="button" id="prevBtn" (click)="nextPrev(-1)" [disabled]="AppStore.loading">{{getButtonText(previousButtonText)}}</button>
+               <button class="btn" type="button" (click) = "cancelClicked()">{{getButtonText('cancel')}}</button>
+            </div>
+          </div>
+          
+        </form>
+      </div>
+    </div>
+  </main>
+  <!-- * Documetn Attach/Upload Common Component Starts Here -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #fileUploadModal>
+   <app-file-upload-popup *ngIf="fileUploadPopupStore.openPopup"></app-file-upload-popup>
+</div>
+
+<!-- cancel popup -->
+<div class="modal modal-style-1 fade" id="delete-popup" #cancelPopup data-backdrop="static" data-keyboard="false">
+   <app-delete-popup [source]="confirmationObject"></app-delete-popup>
+ </div>
+<!-- cancel popup -->
+
+<!-- event type master -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #eventTypeModal>
+   <button type="button" class="close"  (click) ="closeEventTypeMasterModal()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+   <app-event-type-modal *ngIf = "eventTypeObject.type" [source] = "eventTypeObject"></app-event-type-modal>
+</div>
+<!---->
+
+<!-- event periodicity master -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #eventPeriodicityModal>
+   <button type="button" class="close"  (click) ="closeEventPeriodicityMasterModal()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+   <app-periodicity-modal *ngIf = "eventPeriodicityObject.type" [source] = "eventPeriodicityObject"></app-periodicity-modal>
+</div>
+<!---->
+
+<!-- event range master -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #eventRangeModal>
+   <button type="button" class="close"  (click) ="closeEventRangeMasterModal()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+   <app-range-modal *ngIf = "eventRangeObject.type" [source] = "eventRangeObject"></app-range-modal>
+</div>
+<!---->
+
+<!-- event entrance master -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #eventEntranceModal>
+   <button type="button" class="close"  (click) ="closeEventEntranceMasterModal()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+   <app-entrance-modal *ngIf = "eventEntranceObject.type" [source] = "eventEntranceObject"></app-entrance-modal>
+</div>
+<!---->
+
+<!-- event dimension master -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #eventDimensionModal>
+   <button type="button" class="close"  (click) ="closeEventDimensionMasterModal()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+   <app-dimension-modal *ngIf = "eventDimensionObject.type" [source] = "eventDimensionObject"></app-dimension-modal>
+</div>
+<!---->
+
+<!-- event type of space master -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #eventTypeSpaceModal>
+   <button type="button" class="close"  (click) ="closeEventTypeSpaceMasterModal()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+   <app-space-type-modal *ngIf = "eventTypeSpaceObject.type" [source] = "eventTypeSpaceObject"></app-space-type-modal>
+</div>
+<!---->
+
+<!-- event target audience master -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #eventTargetAudienceModal>
+   <button type="button" class="close"  (click) ="closeEventTargetAudienceMasterModal()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+   <app-target-audience-modal *ngIf = "eventTargetAudienceObject.type" [source] = "eventTargetAudienceObject"></app-target-audience-modal>
+</div>
+<!---->
+
+<!-- event location  master -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #eventLocationModal>
+   <button type="button" class="close"  (click) ="closeEventLocationMasterModal()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+   <app-locations-modal *ngIf = "eventLocationObject.type" [source] = "eventLocationObject"></app-locations-modal>
+</div>
+<!---->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #priorityFormModal>
+    <button type="button" class="close" data-dismiss="modal" (click) ="closePriorityTypeMasteModal()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+    <app-project-priority-modal *ngIf = "projectPriorityObject.type" [source] = "projectPriorityObject"></app-project-priority-modal>
+    
+
+</div>

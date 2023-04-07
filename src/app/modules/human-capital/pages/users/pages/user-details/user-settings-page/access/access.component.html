@@ -1,0 +1,234 @@
+<div class="tab-pane" id="access" role="tabpanel">
+    <div class="widget access-settings">
+        <div class="row">
+            <div class="col-sm-12">
+
+                <div id="accordion" *mobxAutorun>
+                    <div *ngIf="!UserAccessStore.loaded">
+                        <app-acl-list></app-acl-list>
+                    </div>
+                    <div class="card access-main-card"
+                        *ngIf="UserAccessStore.loaded && AuthStore.getActivityPermission(200,'USER_BRANCH_ACCESS_LIST') && OrganizationLevelSettingsStore.organizationLevelSettings?.is_branch">
+                        <div class="card-header card-hov-effect">
+                            <a class="pointer"
+                                [ngClass]="active=='branches'?'card-link font-weight-bold full-line-click':'card-link font-weight-bold full-line-click collapsed'"
+                                data-toggle="collapse" [attr.area-expanded]="active=='branches'?'true':'false'"
+                                (click)="getItems('branches')">
+                                {{'branches'|translate}}
+                            </a>
+                            <div class="custom-control white-cbox  custom-checkbox check-align-2">
+                                <input type="checkbox" class="custom-control-input" id="customCheck3" name="example2"
+                                    (change)="changeBranchEnabled('branches',$event)"
+                                    [checked]="UserAccessStore?.accessBranchDetails[0]?.is_enabled == true">
+                                <label class="custom-control-label" for="customCheck3"></label>
+                            </div>
+                        </div>
+                        <div id="collapseOne1" [ngClass]="active=='branches'?'collapse show':'collapse'"
+                            data-parent="#collapseOne1">
+                            <div class="card-body pt-0">
+                                <div id="accordion-inner" class="sub-accordion"
+                                    *ngFor="let branch of UserAccessStore?.accessBranchDetails[0]?.organizations;let j=index">
+                                    <div class="card relative">
+                                        <div class="card-header">
+                                            <a class="card-link align-label-check-head full-line-click mgn-top-click"
+                                                data-toggle="collapse" [attr.href]="'#company-col_'+j">
+                                                {{branch.title}}
+                                            </a>
+                                            <div class="custom-control white-cbox  custom-checkbox check-align-1">
+                                                <input type="checkbox" class="custom-control-input"
+                                                    [attr.id]="'branch'+branch.id" [attr.name]="'branch'+branch.id"
+                                                    [checked]="branch.is_enabled==true"
+                                                    (change)="changeBranchEnabled('branch_name',$event,j)">
+                                                <label class="custom-control-label"
+                                                    [attr.for]="'branch'+branch.id"></label>
+                                            </div>
+                                        </div>
+
+                                        <div [attr.id]="'company-col_'+j" class="collapse"
+                                            data-parent="#accordion-inner">
+                                            <div class="card-body">
+                                                <div *ngFor="let row of branch.branches;let i=index">
+                                                    <div class="custom-control white-cbox custom-checkbox">
+                                                        <input type="checkbox" class="custom-control-input"
+                                                            [attr.id]="row.id" [attr.name]="row.id"
+                                                            [checked]="row.is_enabled==true"
+                                                            (change)="changeBranchEnabled('branch',$event,j,i)">
+                                                        <label
+                                                            class="custom-control-label align-label-check smoothe-slide"
+                                                            [attr.for]="row.id">{{row.title}}</label>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div
+                                    *ngIf=" UserAccessStore?.accessBranchDetails &&  !UserAccessStore?.accessBranchDetails[0]?.organizations">
+                                    <app-no-data></app-no-data>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card access-main-card"
+                        *ngIf="UserAccessStore.loaded && AuthStore.getActivityPermission(200,'USER_ORGANIZATION_STRUCTURE_ACCESS_LIST')">
+                        <div class="card-header card-hov-effect">
+                            <a class="pointer"
+                                [ngClass]="active=='organization-structures'?'card-link font-weight-bold full-line-click':'card-link font-weight-bold full-line-click collapsed'"
+                                data-toggle="collapse"
+                                [attr.area-expanded]="active=='organization-structures'?'true':'false'"
+                                (click)="getItems('organization-structures')">
+                                {{'organization_structure'|translate}}
+                            </a>
+                            <div class="custom-control white-cbox  custom-checkbox check-align-2">
+                                <input type="checkbox" class="custom-control-input" id="org1" name="org1"
+                                    (change)="changeOrganizationEnabled('organizations',$event)"
+                                    [checked]="UserAccessStore?.accessOrganizationDetails[0]?.is_enabled == true">
+                                <label class="custom-control-label" for="org1"></label>
+                            </div>
+                        </div>
+                        <div id="collapseOne" [ngClass]="active=='organization-structures'?'collapse show':'collapse'"
+                            data-parent="#accordion">
+                            <div class="card-body pt-0">
+                                <div id="accordion-inner-org" class="sub-accordion"
+                                    *ngFor="let organization of UserAccessStore?.accessOrganizationDetails[0]?.organization;let i=index">
+                                    <div class="card relative">
+                                        <div class="card-header">
+                                            <a class="card-link align-label-check-head full-line-click  mgn-top-click"
+                                                data-toggle="collapse" [attr.href]="'#company-col-org_'+i">
+                                                {{organization.organization_title}}
+                                            </a>
+                                            <div class="custom-control white-cbox  custom-checkbox check-align-1">
+                                                <input type="checkbox" class="custom-control-input"
+                                                    [attr.id]="'organization'+organization.id"
+                                                    [attr.name]="'organization'+organization.id"
+                                                    [checked]="organization.is_enabled==true"
+                                                    (change)="changeOrganizationEnabled('organization_title',$event,i)">
+                                                <label class="custom-control-label"
+                                                    [attr.for]="'organization'+organization.id"></label>
+                                            </div>
+                                        </div>
+                                        <div [attr.id]="'company-col-org_'+i" class="collapse" data-parent="#accordion">
+                                            <div class="card-body"
+                                                *ngFor="let division of organization.divisions;let j=index">
+                                                <div>
+                                                    <div class="custom-control white-cbox custom-checkbox">
+                                                        <input type="checkbox" class="custom-control-input"
+                                                            [attr.id]="'division'+division.id"
+                                                            [attr.name]="'division'+division.id"
+                                                            [checked]="division.is_enabled==true"
+                                                            (change)="changeOrganizationEnabled('division',$event,i,j)">
+                                                        <label
+                                                            class="custom-control-label align-label-check smoothe-slide"
+                                                            [attr.for]="'division'+division.id">{{division.division_title}}</label>
+                                                    </div>
+                                                </div>
+                                                <div class="ml-4"
+                                                    *ngFor="let department of division.departments;let k=index">
+                                                    <div class="custom-control white-cbox custom-checkbox">
+                                                        <input type="checkbox" class="custom-control-input"
+                                                            [attr.id]="'department'+department.id"
+                                                            [attr.name]="'department'+department.id"
+                                                            [checked]="department.is_enabled==true"
+                                                            (change)="changeOrganizationEnabled('department',$event,i,j,k)">
+                                                        <label
+                                                            class="custom-control-label align-label-check smoothe-slide"
+                                                            [attr.for]="'department'+department.id">{{department.department_title}}</label>
+                                                    </div>
+                                                    <div class="ml-4"
+                                                        *ngFor="let section of department.sections;let l=index">
+                                                        <div class="custom-control white-cbox custom-checkbox">
+                                                            <input type="checkbox" class="custom-control-input"
+                                                                [attr.id]="'section'+section.id"
+                                                                [attr.name]="'section'+section.id"
+                                                                [checked]="section.is_enabled==true"
+                                                                (change)="changeOrganizationEnabled('section',$event,i,j,k,l)">
+                                                            <label
+                                                                class="custom-control-label align-label-check smoothe-slide"
+                                                                [attr.for]="'section'+section.id">{{section.section_title}}</label>
+                                                        </div>
+                                                        <div class="ml-4">
+                                                            <div class="custom-control white-cbox custom-checkbox"
+                                                                *ngFor="let sub_section of section.sub_sections;let m=index">
+                                                                <input type="checkbox" class="custom-control-input"
+                                                                    [attr.id]="'sub_section'+sub_section.id"
+                                                                    [attr.name]="'sub_section'+sub_section.id"
+                                                                    [checked]="sub_section.is_enabled==true"
+                                                                    (change)="changeOrganizationEnabled('sub_section',$event,i,j,k,l,m)">
+                                                                <label
+                                                                    class="custom-control-label align-label-check smoothe-slide"
+                                                                    [attr.for]="'sub_section'+sub_section.id">{{sub_section.sub_section_title}}</label>
+                                                            </div>
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div
+                                    *ngIf=" UserAccessStore?.accessOrganizationDetails &&  !UserAccessStore?.accessOrganizationDetails[0]?.organization">
+                                    <app-no-data></app-no-data>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card access-main-card"
+                        *ngIf="UserAccessStore.loaded && AuthStore.getActivityPermission(200,'USER_MS_TYPE_ACCESS_LIST') && OrganizationGeneralSettingsStore?.organizationSettings?.is_ms_type">
+                        <div class="card-header card-hov-effect">
+                            <a class="pointer"
+                                [ngClass]="active=='ms-types'?'card-link font-weight-bold full-line-click':'card-link font-weight-bold full-line-click collapsed'"
+                                data-toggle="collapse" (click)="getItems('ms-types')">
+                                {{'management_system_types'|translate}}
+                            </a>
+                            <div class="custom-control white-cbox  custom-checkbox check-align-2">
+                                <input type="checkbox" class="custom-control-input" id="111" name="111"
+                                    [checked]="UserAccessStore?.accessMsTypeDetails[0]?.is_enabled == true"
+                                    (change)="changeMsTypeEnabled('ms-type',$event)">
+                                <label class="custom-control-label" for="111"></label>
+                            </div>
+                        </div>
+                        <div id="collapseFive" [ngClass]="active=='ms-types'?'collapse show':'collapse'"
+                            data-parent="#collapseFive">
+                            <div class="card-body pt-0">
+                                <div id="accordion-inner" class="sub-accordion">
+                                    <div class="card relative">
+                                        <div class="card-header" *ngIf="checkAvailableMsTypes()?.length > 0">
+                                            <!-- {{UserAccessStore.accessMsTypeDetails[0]?.ms-types.title}} -->
+                                            <div *ngFor="let type of checkAvailableMsTypes();let i=index">
+                                                <div class="custom-control white-cbox custom-checkbox">
+                                                    <input type="checkbox" class="custom-control-input"
+                                                        [attr.id]="'type'+type.ms_type_organization_id"
+                                                        [attr.name]="'type'+type.ms_type_organization_id"
+                                                        (change)="changeMsTypeEnabled('types',$event,i)"
+                                                        [checked]="type.is_enabled">
+                                                    <label class="custom-control-label align-label-check smoothe-slide"
+                                                        [attr.for]="'type'+type.ms_type_organization_id">{{type.title}}({{type.ms_type_version_title}})</label>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                        <div *ngIf="checkAvailableMsTypes()?.length == 0">
+                                            <app-no-data></app-no-data>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-3"
+                    *ngIf="AuthStore.getActivityPermission(200,'UPDATE_USER_ACCESS') && UsersStore.individualUser.designation.is_super_admin == false">
+                    <div class="col-md-12" (click)="submitData()">
+                        <button type="button" class="btn">{{ AppStore.loading ? getButtonText('loading') :
+                            getButtonText('save') }}</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <!-- Nav tabs -->
+    </div>
+</div>

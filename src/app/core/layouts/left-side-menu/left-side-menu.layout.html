@@ -1,0 +1,276 @@
+<div id="sidebar-wrapper-menu" class="main-menu" [ngClass]="{active: AppStore.leftSideMenuOpen}" style="z-index: 99999;"
+    (mouseover)="mouseHover($event)" (mouseout)="mouseOut($event)" (click)="leftSideMenuClicked($event)" *mobxAutorun>
+    <div class="side-bar-header">
+        <img class="side-menu-lg-logo mx-auto" width="80" [attr.src]="ThemeStructureSettingStore.themeStructureObject.header_logo ? ThemeStructureSettingStore.themeStructureObject.header_logo : ''" onerror="this.src=''">
+        <div class="toggle-menu" id="nav-icon1">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
+    <div class="clearfix"></div>
+    <div class="menu-collape-area main-menuhh" *mobxAutorun #scrollDiv>
+        <ul class="nav-item left-menu-main" id="accordion" *ngIf = "OrganizationModulesStore.loaded">
+            <li>
+                <a [ngClass]="checkForPath('/dashboard') ? 'card-link no-dropdown active' : 'card-link no-dropdown'" (click) = "setModuleGroupId(null)" [routerLink]="['/dashboard']">
+                    <i class="fal fa-home"></i> <span>{{'dashboard' | translate}}</span>
+                </a>
+            </li>
+            <ng-container *ngFor = "let modules of OrganizationModulesStore.organizationModules; let i = index">
+                <li *ngIf = "modules?.is_menu == 1 && modules?.isEnabled == true">
+                    <a *ngIf = "OrganizationModulesStore.checkSubModules(modules?.id)" [ngClass]="selectedModule == modules?.id ? 'card-link collapsed active' : 'card-link collapsed'" data-toggle="collapse" [attr.href]="'#collapse'+i" aria-expanded = "false">
+                        <i [attr.class]="modules?.icon"></i> <span>{{modules?.title}}</span>
+                    </a>
+                    <a *ngIf = "!OrganizationModulesStore.checkSubModules(modules?.id)" (click) = "setModuleGroupId(modules?.id)" [ngClass]="checkForPath(modules?.client_side_url) ? 'card-link no-dropdown active' : 'card-link no-dropdown'" [routerLink]="[modules?.client_side_url]">
+                        <i [attr.class]="modules?.icon"></i> <span>{{modules?.title}}</span>
+                    </a>
+                    <div class="submenu">
+                        <ul [attr.id]="'collapse'+i" class="collapse" data-parent="#accordion">
+                            <div *ngFor = "let subModules of modules?.modules">
+                                <li *ngIf = "subModules?.is_menu == 1 && subModules?.isEnabled == true">
+                                    <a [routerLink]="'/'+subModules?.client_side_url" [ngClass]="checkForPath(subModules?.client_side_url,modules.id) ? 'active': ''" (click) = "setModuleGroupId(modules?.id)"> <span>{{subModules?.title}}</span></a>
+                                </li>
+                            </div>
+                        </ul>
+                    </div>
+                </li>
+            </ng-container>
+            
+            <!-- <li>
+                <a class="card-link" data-toggle="collapse" href="#collapseOne">
+                    <i class="fas fa-building"></i> <span>{{ 'organization' | translate }}</span>
+                </a>
+                <div class="submenu">
+                    <ul id="collapseOne" class="collapse" data-parent="#accordion">
+                        <li>
+                            <a routerLink="/organization/dashboard"> <span>Dashboard</span></a>
+                        </li>
+                        <li>
+                            <a routerLink="/organization/business-profile"> <span>{{ 'business_profile' | translate }}</span></a>
+                        </li>
+                        <li>
+                            <a routerLink="/organization/context"> <span>Context</span></a>
+                        </li>
+                        <li>
+                            <a routerLink="/organization/compliance-register"> <span>Compliace Register</span></a>
+                        </li>
+                        <li>
+                            <a routerLink="/organization/reports"><span>Report</span></a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li>
+                <a class="card-link" data-toggle="collapse" href="#collapse4">
+                    <i class="fas fa-user"></i>
+                    <span>Human Capital</span>
+                </a>
+                <div class="submenu">
+                    <ul id="collapse4" class="collapse" data-parent="#accordion">
+                        <li>
+                            <a routerLink="/human-capital/dashboard">Dashboard</a>
+                        </li>
+                        <li>
+                            <a routerLink="/human-capital/users">Users</a>
+                        </li>
+                        <li>
+                            <a routerLink="/human-capital/assessments">Assessment</a>
+                        </li>
+                        <li>
+                            <a routerLink="/human-capital/user-report">User Report</a>
+                        </li>
+                        <li>
+                            <a routerLink="/human-capital/competency-matrix">Competency Matrix</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+
+            <li>
+                <a class="card-link" data-toggle="collapse" href="#collapse8">
+                    <i class="fas fa-file-signature"></i>
+                    <span>Internal Audit </span>
+                </a>
+                <div class="submenu">
+                    <ul id="collapse8" class="collapse" data-parent="#accordion">
+                        <li>
+                            <a routerLink="/internal-audit/dashboard">Dashboard</a>
+                        </li>
+                        <li>
+                            <a routerLink="/internal-audit/audit-universe">Audit Universe</a>
+                        </li>
+                        <li>
+                            <a routerLink="/internal-audit/audit-program">Audit Program</a>
+                        </li>
+                        <li>
+                            <a routerLink="/internal-audit/audit-plan">Audit Plan</a>
+                        </li>
+                        <li>
+                            <a routerLink="/internal-audit/audit-schedule">Audit Schedule</a>
+                        </li>
+                        <li>
+                            <a routerLink="/internal-audit/audit">Audit</a>
+                        </li>
+                        <li>
+                            <a routerLink="/internal-audit/audit-findings">Audit Findings</a>
+                        </li>
+                        <li>
+                            <a routerLink="/internal-audit/reports">Reports</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+
+            <li>
+                <a class="card-link" data-toggle="collapse" href="#collapse14">
+                <i class="fas fa-business-time"></i> <span>BPM</span>
+                </a>
+                <div class="submenu">
+                   <ul id="collapse14" class="collapse" data-parent="#accordion">
+                      <li>
+                         <a  routerLink="/bpm/dashboard">Dashbord</a>
+                      </li>
+                      <li>
+                        <a routerLink="/bpm/process">Process</a>
+                      </li>
+                      <li>
+                         <a routerLink="/bpm/arci">ARCI</a>
+                      </li>
+                      <li>
+                         <a routerLink="/bpm/controls">Controls</a>
+                      </li>
+                      <li>
+                         <a href="#">Reports</a>
+                      </li>
+                   </ul>
+                </div>
+             </li>
+
+            <li>
+                <a class="card-link" data-toggle="collapse" href="#collapse13">
+                    <i class="fa fa-book"></i>
+                    <span>Knowledge Hub</span>
+                </a>
+                <div class="submenu">
+                    <ul id="collapse13" class="collapse" data-parent="#accordion">
+                        <li>
+                            <a routerLink="/knowledge-hub/dashboard">Dashbord</a>
+                        </li>
+                        <li>
+                            <a routerLink="/knowledge-hub/documents">Documents</a>
+                        </li>
+                        <li>
+                            <a routerLink="/knowledge-hub/work-flow">Work Flow</a>
+                        </li>
+                        <li>
+                            <a routerLink="/knowledge-hub/reports">Reports</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+
+            <li>
+                <a class="card-link" data-toggle="collapse" href="#collapse5">
+                    <i class="fas fa-brain"></i>
+                    <span>Strategy </span>
+                </a>
+                <ul id="collapse5" class="collapse" data-parent="#accordion">
+                    <li>
+                        <a href="#">fvcxcx</a>
+                    </li>
+                    <li>
+                        <a href="#">fvcxcx</a>
+                    </li>
+                    <li>
+                        <a href="#">fvcxcx</a>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a class="card-link" data-toggle="collapse" href="#collapse6">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Risk Management </span>
+                </a>
+                <ul id="collapse6" class="collapse" data-parent="#accordion">
+                    <li>
+                        <a href="#">fvcxcx</a>
+                    </li>
+                    <li>
+                        <a href="#">fvcxcx</a>
+                    </li>
+                    <li>
+                        <a href="#">fvcxcx</a>
+                    </li>
+                </ul>
+            </li>
+
+            <li>
+                <a class="card-link" data-toggle="collapse" href="#collapse9">
+                    <i class="fas fa-home"></i>
+                    <span>MRM </span>
+                </a>
+                <ul id="collapse9" class="collapse" data-parent="#accordion">
+                    <li>
+                        <a href="#">fvcxcx</a>
+                    </li>
+                    <li>
+                        <a href="#">fvcxcx</a>
+                    </li>
+                    <li>
+                        <a href="#">fvcxcx</a>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a class="card-link" data-toggle="collapse" href="#collapse10">
+                    <i class="fas fa-truck"></i> <span>Supplier </span>
+                </a>
+                <ul id="collapse10" class="collapse" data-parent="#accordion">
+                    <li>
+                        <a href="#">fvcxcx</a>
+                    </li>
+                    <li>
+                        <a href="#">fvcxcx</a>
+                    </li>
+                    <li>
+                        <a href="#">fvcxcx</a>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a class="card-link" data-toggle="collapse" href="#collapse11">
+                    <i class="fas fa-user-tie"></i> <span>Customer satisfaction </span>
+                </a>
+                <ul id="collapse11" class="collapse" data-parent="#accordion">
+                    <li>
+                        <a href="#">fvcxcx</a>
+                    </li>
+                    <li>
+                        <a href="#">fvcxcx</a>
+                    </li>
+                    <li>
+                        <a href="#">fvcxcx</a>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a class="card-link no-dropdown" routerLink="/acl">
+                    <i class="fas fa-user-lock"></i>
+                    <span>ACL </span>
+                </a>
+            </li>
+            <li>
+                <a class="card-link no-dropdown" [routerLink]="['/masters']" routerLinkActive="active">
+                    <i class="fas fa-list-ul"></i>
+                    <span>Masters </span>
+                </a>
+            </li>
+            <li>
+                <a class="card-link no-dropdown" [routerLink]="['/settings']" routerLinkActive="active">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings </span>
+                </a>
+            </li> -->
+        </ul>
+    </div>
+</div>

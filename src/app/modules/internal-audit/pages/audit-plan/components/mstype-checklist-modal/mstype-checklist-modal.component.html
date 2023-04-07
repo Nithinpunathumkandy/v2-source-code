@@ -1,0 +1,248 @@
+<button type="button" class="close" (click)="cancel()"><i class="lni-close"></i><span>esc</span></button>
+
+<div class="modal-dialog modal-xl modal-dialog-centered"  *mobxAutorun>
+    <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header">
+            <h4 class="modal-title">{{'add_checklist' | translate}}</h4>
+            <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
+        </div>
+        <!-- Modal body -->
+        <div class="modal-body form-body">
+            <p class="head-details">The internal audit checklists are helpful to take corrective actions. Easily identify areas of concern by adding checklist(s) against auditable items.
+            </p>
+
+            <div class="row">
+                <div class="col-sm-12 col-lg-6">
+                    <div class="form-group">
+                       
+                        <form class="form-control issue-select-process-search bg-white search-popup-new"
+                        autocomplete="off" [formGroup]="form"
+                        (submit) = "searchInCheckList()">
+                            <input type="text" [placeholder]="'search'|translate" name="search" class="search-process"
+                            [(ngModel)] = "searchTerm" (ngModelChange) = "searchInCheckList()"  [ngModelOptions]="{standalone: true}">
+                                <a class="search-clear-btn" (click) = "clearSearchBar()" *ngIf = "searchTerm">X</a>
+                            <button type="submit" style="width: 40px;"><i class="fa fa-search"></i></button>
+
+                        </form>
+
+
+                    </div>
+
+
+
+
+                </div>
+                <div class="col-lg-6 col-sm-12">
+
+                    <div class="form-group">
+                       <!-- <label>{{'ms_types' | translate}}</label> -->
+                       <div class="clearfix">
+                          <div class="multiple-plain-ngselect">
+                             <ng-select [placeholder]="'kh_select_ms_types'| translate " multiple="true"  (change)="getClauses($event)" [closeOnSelect]="false"
+                                (clear)="getMsTypes()"
+                               (open)="getMsTypes()"
+                               (search)="searchMsType($event)">
+                               <ng-option  [value]="mstypes.ms_type_id" *ngFor="let mstypes of MsTypeStore.msTypeDetails">
+                                   <label class="mb-0">{{mstypes.ms_type_title.length > 80 ? mstypes.ms_type_title.substring(0,80)+' ...' : mstypes.ms_type_title }} <span style="color: #7c7a7a;">V {{mstypes.ms_type_version_title}}</span></label>
+                                  </ng-option>
+           
+                             </ng-select>
+                           </div>
+                       </div>
+                    </div>
+
+                 </div>
+
+            </div>
+
+
+          <div class="panel-group panel-drop-sections pt-0" id="jd" role="tablist" aria-multiselectable="true">      
+            <div class="panel panel-default"  *ngFor="let row of AuditPlanScheduleMasterStore.msTypeClauses;let num = index">
+               <div class="panel-heading" role="tab" id="headingOne">
+                  <div class="panel-title position-relative">
+             
+                          <!-- <label class="container2 float-left"
+                                    style="margin-top: 2px; padding-left: 22px;">
+                                    <input type="checkbox" [checked]="allChecklists" (change)="checkAll($event)">
+                                    <span class="checkmark"></span>
+                                     </label> -->
+                     <a role="button" data-toggle="collapse"  style="padding-left: 27px;" [attr.href]="'#collapseOne'+num+'_'+row.id" aria-expanded="false" aria-controls="collapseOne" class="collapsed">
+                        <h5  class="width96pc mt-0"> {{row.clause_number}}.{{row.title}} <span class="drop-down-icone"><i class="fas fa-chevron-down"></i></span></h5>
+                     </a>
+                            <!-- <div class="custom-control white-cbox  custom-checkbox check-align-2">
+                        <input type="checkbox" class="custom-control-input" [checked]="allChecklists"   (change)="checkAll($event)">
+                        <label class="custom-control-label"></label>
+                      </div> -->
+                  </div>
+               </div>
+               <div [attr.id]="'collapseOne'+num+'_'+row.id" class="drop-detail-sec panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne" [attr.data-parent]="'#collapseOne'+num+'_'+row.id" style="">
+                <div class="panel-body bg-white pt-2">                      
+               <div *ngIf="row.checklists.length > 0">      
+                   <div class="add-new-plus-round">
+                    <h6 class="mt-3">{{'checklists' | translate}}</h6>                   
+                    <div>
+                                    <!-- <label class="container2 float-left"
+                                    style="margin-top: 2px; padding-left: 22px;">
+                                    <input type="checkbox" [checked]="allChecklists" (change)="checkAll($event)">
+                                    <span class="checkmark"></span>
+                                     </label> -->
+                        <ul class="ml-0 pl-0 mt-0 mb-0" style="list-style-type:none" *ngFor="let checklist of row.checklists;let checklist_num = index">
+                            <li>{{checklist.title}}
+                                <label class="container2 float-left"
+                                style="margin-top: 2px; padding-left: 22px;">
+                                <input type="checkbox" [id]="checklist.id" [name]="checklist.title"
+                                [checked] = "checkSelectedStatus(checklist.id)"
+                                    (change)="selectCheckList($event,checklist,checklist_num,row.clause_number)">
+                                <span class="checkmark"></span>
+                            </label>   
+                            </li>
+                        </ul>
+                    </div>
+                    <a *ngIf="!(row.checklists.length > 0)">{{AppStore.noContentText}}</a>
+                 </div>
+
+                 </div>
+                          <div class="pl-3 mt-1 pt-1" *ngFor="let document_template of row['children']">
+                             <div class="accordion-workflow-content edit-option pointer">
+                                <h6>{{document_template.clause_number}} <span style="font-weight: normal;">{{document_template.title}}:</span>
+                             </h6>
+                            </div>
+   
+                                  <div *ngIf="document_template.checklists.length > 0">     
+                                   <h6 class="mt-3">{{'checklists' | translate}}</h6>
+                                   <div>
+                                    <!-- <label class="container2 float-left"
+                                    style="margin-top: 2px; padding-left: 22px;"> Select All
+                                    <input type="checkbox" [checked]="allChecklists" (change)="checkAll($event)">
+                                    <span class="checkmark"></span>
+                                     </label> -->
+                                       <ul class="ml-0 pl-0 mt-0 mb-0"  style="list-style-type:none" *ngFor="let child_checklist of document_template.checklists;let child_checklist_num = index">      
+                                           <li class="edit-delete-right-space">{{child_checklist.title}}
+                                            <label class="container2 float-left"
+                                            style="margin-top: 2px; padding-left: 22px;">
+                                            <input type="checkbox" [id]="child_checklist.id" [name]="child_checklist.name"
+                                            [checked] = "checkSelectedStatus(child_checklist.id)"
+                                                (change)="selectCheckList($event,child_checklist, child_checklist_num,document_template.clause_number)">
+                                            <span class="checkmark"></span>
+                                        </label>                                               
+                                           </li>
+                                       </ul>
+                                   </div>
+                                   <a *ngIf="!(document_template.checklists.length > 0)">{{AppStore.noContentText}}</a>                             
+                          </div>
+                          <app-mstype-checklist-recursive-modal [sourceData]="document_template.children" *ngIf="document_template.children"></app-mstype-checklist-recursive-modal>
+              </div>
+           </div>
+            </div>
+    
+         </div>
+            <!-- <div class="audit-form-table w-100">
+                <div class="row">
+                    <div class="col-sm-12 full-width-table">
+                        <table class="table table-bordered ordinary-table audit-page-table mb-2 table-scroll">
+                            <thead>
+                                <tr>
+                                    <th class="border-top-0" width="3%">
+                                        <label class="container2 float-left"
+                                            style="margin-top: 2px; padding-left: 22px;">
+                                            <input type="checkbox" [checked]="allChecklists" (change)="checkAll($event)">
+                                            <span class="checkmark"></span>
+                                        </label>
+                                        #</th>
+
+                                    <th class="border-top-0" width="45%">{{'title' | translate}}</th>
+
+                                    <th class="border-top-0" width="6%">{{'status' | translate}}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <ng-container *mobxAutorun>
+                                    <tr *ngFor="
+                           let row of AuditCheckListStore?.allItems
+                             | paginate
+                               : {
+                                   currentPage: AuditCheckListStore?.currentPage,
+                                   itemsPerPage: AuditCheckListStore?.itemsPerPage,
+                                   totalItems: AuditCheckListStore?.totalItems
+                                 };
+                           let num = index
+                         ">
+                                        <td class="pointer">
+                                            <label class="container2 float-left"
+                                                style="margin-top: 2px; padding-left: 22px;">
+                                                <input type="checkbox" [id]="row.id" [name]="row.name"
+                                                [checked] = "checkSelectedStatus(row.id)"
+                                                    (change)="selectCheckList($event,row, num)">
+                                                <span class="checkmark"></span>
+                                            </label>
+                                            {{
+                                 (AuditCheckListStore?.currentPage - 1) *
+                                 AuditCheckListStore?.itemsPerPage +
+                                   (num + 1)
+                               }}</td>
+
+                                        <td >{{ row.title }}</td>
+
+                                        <td>
+                                 
+                                            <div *ngIf="row.status_id==1" class="dot-div green-dot"> {{ row.status}}</div>
+                                            <div *ngIf="row.status_id==2" class="dot-div red-dot"> {{ row.status}}</div>
+                                         </td>
+                                    </tr>
+
+                                </ng-container>
+
+                            </tbody>
+                        </table>
+
+
+                    </div>
+
+                </div>
+
+                <div *ngIf="AuditCheckListStore.totalItems > AuditCheckListStore.itemsPerPage && AuditCheckListStore?.loaded"
+                    class="col-sm-12">
+                    <ul class="pagination justify-content-center mt-3">
+                        <div class="list">
+                            <pagination-controls (pageChange)="pageChange($event)" class="my-pagination">
+                            </pagination-controls>
+                        </div>
+                    </ul>
+                </div>
+    
+                <app-no-data-list [source] = "checklistEmptyList" *ngIf = "AuditCheckListStore.totalItems == 0 && AuditCheckListStore?.loaded"></app-no-data-list>
+               
+
+            </div> -->
+
+   
+            <div class="row mt-3">
+                <div class="col-sm-12">
+                    <div class="d-block justify-content-left border-0 mt-3">
+                        <button type="button" data-toggle="modal" [disabled]="AppStore.loading ||AuditPlanScheduleMasterStore.checkListArray.length==0" (click)="save()" data-target="#signal-lost"
+                            class="btn btn-active" >{{ AppStore.loading  ? getButtonText('loading') : getButtonText('add') }}</button>
+                        <button type="button" data-toggle="modal" [disabled]="AppStore.loading ||AuditPlanScheduleMasterStore.checkListArray.length==0" data-target="#signal-lost" (click)="save(true)"
+                            class="btn">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('add_close') }}</button>
+                        <button type="button" data-toggle="modal" data-target="#error-message" (click)="cancel()"
+                            class="btn">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('cancel') }}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Modal footer -->
+    </div>
+</div>
+
+
+
+
+<!-- calling add checklist modal -->
+
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #checklistNewPopup>
+    <app-audit-check-list-modal>
+
+    </app-audit-check-list-modal>
+
+</div>

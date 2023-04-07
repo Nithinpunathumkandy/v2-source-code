@@ -1,0 +1,80 @@
+<div class="tab-content" *mobxAutorun>
+    <div class="tab-pane active show" >
+        
+        <div class="audit-form-table w-100 not-fixed-table mb-0">
+            <table *ngIf="MaturityMatrixPlanStore?.matrixPlanList.length > 0 && MaturityMatrixPlanStore.loaded" class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                <thead>
+                    <tr>
+                        <th class="border-top-0 text-center" width="4%">#</th>                                
+                        <th  (click)="sortTitle('reference_code')" style="cursor: pointer;" class="border-top-0" width="16%">
+                            {{'ref_code' | translate}}
+                            <img _ngcontent-twv-c17="" *ngIf="MaturityMatrixPlanStore.orderItem=='reference_code'"
+                            [attr.src]="MaturityMatrixPlanStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                            class="sort-down-pics">
+                        </th>
+                        <th (click)="sortTitle('title')" style="cursor: pointer;" class="border-top-0" width="40%">{{'plan' | translate}}
+                            <img _ngcontent-twv-c17="" *ngIf="MaturityMatrixPlanStore.orderItem=='title'"
+                            [attr.src]="MaturityMatrixPlanStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                            class="sort-down-pics">
+                        </th>
+                        <th (click)="sortTitle('start_date')" style="cursor: pointer;" class="border-top-0" width="15%">{{'start_date' | translate}}
+                            <img _ngcontent-twv-c17="" *ngIf="MaturityMatrixPlanStore.orderItem=='start_date'"
+                            [attr.src]="MaturityMatrixPlanStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                            class="sort-down-pics">
+                        </th>
+                        <th (click)="sortTitle('end_date')" style="cursor: pointer;" class="border-top-0" width="15%">{{'end_date' | translate}}
+                            <img _ngcontent-twv-c17="" *ngIf="MaturityMatrixPlanStore.orderItem=='end_date'"
+                            [attr.src]="MaturityMatrixPlanStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                            class="sort-down-pics">
+                        </th>
+                        <th class="border-top-0 text-center" width="10%">{{'status' | translate}}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr (click)="gotoDetails(row.id)"
+                        *ngFor="let row of MaturityMatrixPlanStore?.matrixPlanList | paginate: {currentPage:MaturityMatrixPlanStore?.currentPage, itemsPerPage:MaturityMatrixPlanStore?.itemsPerPage,totalItems:MaturityMatrixPlanStore?.totalItems}; let num = index"
+                        class="pointer edit-option">
+                        <td class="text-center">{{(MaturityMatrixPlanStore?.currentPage - 1) * MaturityMatrixPlanStore?.itemsPerPage + (num + 1)}}</td>                                
+                        <td>{{row?.reference_code}}</td>
+                        <td>{{row?.title ? row?.title:AppStore.noContentText}}</td>
+                        <td>{{row?.start_date | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</td>
+                        <td>{{row?.end_date | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</td>                                
+                        <td class="text-center">
+                            
+                            <div  [ngClass]="row.event_maturity_matrix_plan_status_label ? 'dot-div '+row.event_maturity_matrix_plan_status_label : ''">{{row?.event_maturity_matrix_plan_status_language_title?row?.event_maturity_matrix_plan_status_language_title:AppStore.noContentText}}</div>
+                            <div class="edit-option-show-inner" style="margin: 30px 0 0 0; ">
+                                <a  *ngIf="AuthStore.getActivityPermission(100,'UPDATE_MATURITY_MATRIX_PLAN')" [attr.title]="'edit'|translate" (click)="editPlan($event,row.id)"><i class="fas fa-pen pointer"></i></a>
+                                <a *ngIf="AuthStore.getActivityPermission(100,'DELETE_MATURITY_MATRIX_PLAN')" [attr.title]="'delete'|translate" (click)="delete($event,row.id)"><i class="fas fa-trash pointer"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <p class="float-right bold mb-0" *ngIf="MaturityMatrixPlanStore.loaded && MaturityMatrixPlanStore.totalItems > 0">{{'total_Items' | translate}}:{{MaturityMatrixPlanStore?.totalItems}}</p>
+            <ng-container *mobxAutorun>
+                <div *ngIf="!MaturityMatrixPlanStore.loaded">
+                    <app-six-column-loader></app-six-column-loader>
+                </div>
+                <app-no-data *ngIf="MaturityMatrixPlanStore?.matrixPlanList.length == 0 && MaturityMatrixPlanStore.loaded == true"></app-no-data>
+            </ng-container>
+            <div *ngIf="MaturityMatrixPlanStore.totalItems>MaturityMatrixPlanStore.itemsPerPage && MaturityMatrixPlanStore.loaded == true" class="col-sm-12">
+                <ul class="pagination justify-content-center mt-3">
+                    <div class="list">
+                        <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate" (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+                    </div>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false"
+   data-backdrop="static" #matrixPlanModal>
+  
+   <app-add-matrix-plan *ngIf="matrixPlan.type" [source] = "matrixPlan">
+   </app-add-matrix-plan>
+</div>
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+ </div>

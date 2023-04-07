@@ -1,0 +1,251 @@
+<!-- add-unsafe-actions-popup Start -->
+<!-- <div class="modal modal-style-1 popup-full-width fade" id="add-unsafe-actions-popup" data-keyboard="false"  data-backdrop="static"> -->
+<button type="button" class="close" (click)="closeFormModal()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content" *mobxAutorun>
+        <!-- Modal Header -->
+        <div class="modal-header">
+            <h4 *ngIf="formObject.type == 'Add'" class="modal-title">{{'jso_ua_form_add' | translate}}</h4>
+            <h4 *ngIf="formObject.type == 'Edit'" class="modal-title">{{'jso_ua_form_edit' | translate}}</h4>
+            <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
+        </div>
+        <!-- Modal body -->
+        <form [formGroup]="unsafeActionForm">
+            <div class="modal-body form-body">
+                <!-- <p class="head-details">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
+                    incididunt ut labore et dolore magna aliqua. Excepteur sint occaecat cupidatat non proident.</p> -->
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label>{{'jso_ua_form_description' | translate}}<span class="form-error">*</span></label>
+                            <textarea class="form-control" rows="3" [placeholder]="'jso_ua_form_description_placeholder'| translate"
+                                formControlName="description"></textarea>
+                                <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.description">
+                                    {{formErrors.description[0]}}
+                                </p>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'jso_ua_form_category' | translate}}<span class="form-error">*</span></label>
+                            <div class="clearfix d-flex">
+                                <div class="multiple-plain-ngselect w-100">
+                                    <!-- [(ngModel)] = "unsafeActionCategory"
+                                        [ngModelOptions]="{standalone: true}"
+                                    (change) = "unsafeActionDropdownChange('unsafe_action_category_id')" -->
+                                    <ng-select 
+                                        [placeholder]="'select_category'| translate" 
+                                        [multiple]="false"
+                                        [items] = "UnsafeActionCategoryMasterStore.allItems"
+                                        [(ngModel)] = "unsafeActionCategory"
+                                        [ngModelOptions] = "{standalone: true}"
+                                        bindLabel="title"
+                                        (search) = "searchCategory($event)"
+                                        (clear) = "getCategoryList()"
+                                        (open) = "getCategoryList()"
+                                        (change) = "unsafeActionDropdownChange('unsafe_action_category_id')" >
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            {{item.title.length > 80 ? item.title.substring(0,80)+'...' : item.title}}
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            {{item.title.length > 80 ? item.title.substring(0,80)+'...' : item.title}}
+                                        </ng-template>
+                                        <!-- <ng-option [value] = "row" *ngFor="let row of UnsafeActionCategoryMasterStore.allItems">
+                                            {{row.title}}
+                                        </ng-option> -->
+                                    </ng-select>
+                                    <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.unsafe_action_category_id">
+                                        {{formErrors.unsafe_action_category_id[0]}}
+                                    </p>
+                                </div>
+                                    <button class="btn multi-add-user ml-2" style="width: 42px;"
+                                    *ngIf="AuthStore.getActivityPermission(1100,'CREATE_UNSAFE_ACTION_CATEGORY')"
+                                     (click)="addCategory()"><i class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'jso_ua_form_sub_category' | translate}}<span class="form-error">*</span></label>
+                            <div class="clearfix d-flex">
+                                <div class="multiple-plain-ngselect w-100">
+                                    <ng-select 
+                                        [placeholder]="'select_sub_category'| translate" 
+                                        [multiple]="false"
+                                        [items] = "UnsafeActionSubCategoryMasterStore.allItems"
+                                        [(ngModel)] = "unsafeActionSubCategory"
+                                        [ngModelOptions]="{standalone: true}" bindLabel="title"
+                                        (search) = "searchSubCategory($event)"
+                                        (clear) = "getSubCategoryList()"
+                                        (open) = "getSubCategoryList()"
+                                        (change) = "unsafeActionDropdownChange('unsafe_action_sub_category_id')">
+                                        <!-- <ng-option [value]="row"
+                                            *ngFor="let row of UnsafeActionSubCategoryMasterStore.allItems">
+                                            {{row.title}}
+                                        </ng-option> -->
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            {{item.title.length > 80 ? item.title.substring(0,80)+'...' : item.title}}
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            {{item.title.length > 80 ? item.title.substring(0,80)+'...' : item.title}}
+                                        </ng-template>
+                                    </ng-select>
+                                    <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.unsafe_action_sub_category_id">
+                                        {{formErrors.unsafe_action_sub_category_id[0]}}
+                                    </p>
+                                </div>
+                                    <button class="btn multi-add-user ml-2" style="width: 42px;" [disabled]="unsafeActionForm.get('unsafe_action_category_id').invalid"
+                                    *ngIf="AuthStore.getActivityPermission(1100,'CREATE_UNSAFE_ACTION_SUB_CATEGORY')" (click)="addSubCategory()"><i
+                                         class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'jso_ua_form_group_observed' | translate}}<span class="form-error">*</span></label>
+                            <div class="clearfix d-flex">
+                                <div class="multiple-plain-ngselect w-100">
+                                    <ng-select [placeholder]="'select_group_observed'| translate" [multiple]="false"
+                                         bindLabel="title"
+                                        [items] = "JsoUnsafeActionObservedGroupMasterStore.allItems"
+                                        [(ngModel)] = "groupObserved"
+                                        [ngModelOptions]="{standalone: true}"
+                                        (search) = "searchObservedGroup($event)"
+                                        (clear) = "getObservedGroupList()"
+                                        (open) = "getObservedGroupList()"
+                                        (change) = "unsafeActionDropdownChange('unsafe_action_observed_group_id')">
+                                        <!-- <ng-option [value]="row"
+                                            *ngFor="let row of JsoUnsafeActionObservedGroupMasterStore.allItems">
+                                            {{row.title}}
+                                        </ng-option> -->
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            {{item.title.length > 80 ? item.title.substring(0,80)+'...' : item.title}}
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            {{item.title.length > 80 ? item.title.substring(0,80)+'...' : item.title}}
+                                        </ng-template>
+                                    </ng-select>
+                                    <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.unsafe_action_observed_group_id">
+                                        {{formErrors.unsafe_action_observed_group_id[0]}}
+                                    </p>
+                                </div>
+                                    <button class="btn multi-add-user ml-2" style="width: 42px;"
+                                    *ngIf="AuthStore.getActivityPermission(1100,'CREATE_UNSAFE_ACTION_OBSERVED_GROUP')"  (click)="addObservedGroup()"><i
+                                        class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="row mt-2">
+                    <div class="col-sm-12">
+                        <h5 class="cmn-head-style">{{'jso_ua_form_corrective_action' | translate}}</h5>
+                    </div>
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label>{{'jso_ua_form_action_required' | translate}}</label>
+                            <textarea class="form-control" rows="3" [placeholder]="'unsafe_safe_action_required_placeholder'| translate"
+                                formControlName="corrective_action"></textarea>
+                            <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.corrective_action">
+                                {{formErrors.corrective_action[0]}}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'jso_ua_form_target_date' | translate}}</label>
+                            <div class="input-group date-picker">          
+                                <input class="form-control" id="establish_date" [placeholder]="'jso_ua_form_target_date_placeholder'| translate" name="dp"
+                                    formControlName="corrective_action_target_date" ngbDatepicker #d="ngbDatepicker">
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary calendar" (click)="d.toggle()"
+                                        type="button"><i class="fas fa-calendar-alt"></i></button>
+                                </div>
+                                <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.corrective_action_target_date">
+                                    {{formErrors.corrective_action_target_date[0]}}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'jso_ua_form_responsible_users' | translate}}</label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect">
+                                    <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                                        [placeholder]="'select_responsible_users'|translate"
+                                        formControlName="corrective_action_responsible_user_id" (clear)="getUsers()"
+                                        (search)="searchUers($event)" (open)="getUsers()" autocomplete="new-password"
+                                        [searchFn]="customSearchFn">
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            <img *ngIf="item.image_token" class="ng-select-user-display" height="15"
+                                                width="15" [attr.src]="createImageUrl(item.image_token)"
+                                                onerror="this.src='/assets/images/user-demo2.png'" />
+                                            <img *ngIf="!item.image_token" class="ng-select-user-display" height="15"
+                                                width="15" [attr.src]="getDefaultImage('user-logo')" />
+                                            <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],25,'
+                                                ') | titlecase}}</b><span aria-hidden="true" (click)="clear(item)"
+                                                style="border:none;" class="ng-value-icon left">×</span>
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            <div class="user-post-department-pic">
+                                                <img *ngIf="item.image_token" class="ng-select-user-display" height="25"
+                                                    width="25" [attr.src]="createImageUrl(item.image_token)"
+                                                    onerror="this.src='/assets/images/user-demo2.png'" />
+                                                <img *ngIf="!item.image_token" class="ng-select-user-display"
+                                                    height="25" width="25" [attr.src]="getDefaultImage('user-logo')" />
+                                            </div>
+                                            <div class="user-post-department-div">
+                                                <b>{{getStringsFormatted([item.first_name,item.last_name],25,' ') |
+                                                    titlecase}}</b>
+                                                <p class="user-post-department-multiple">
+                                                    {{getStringsFormatted([item.designation_title,'
+                                                    '+item.department],25,',')}}</p>
+                                            </div>
+                                        </ng-template>
+                                    </ng-select>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.corrective_action_responsible_user_id">
+                                    {{formErrors.corrective_action_responsible_user_id[0]}}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="d-block justify-content-left border-0 mt-3">
+                            <button type="button" data-toggle="modal" (click)="save(false)"
+                                class="btn btn-primary mr-3 btn-active" 
+                                [disabled]="unsafeActionForm.invalid || AppStore.loading">{{ AppStore.loading ?
+                                getButtonText('loading') : getButtonText('save') }}</button>
+                            <button type="button" data-toggle="modal" (click)="save(true)"
+                                class="btn btn-primary mr-3" [disabled]="unsafeActionForm.invalid || AppStore.loading"> {{
+                                AppStore.loading ? getButtonText('loading') : getButtonText('save_close') }}</button>
+                            <button type="button" data-toggle="modal" data-target="#error-message"
+                                class="btn btn-primary mr-2" (click)="closeFormModal()">{{'cancel' |
+                                translate}}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <!-- Modal footer -->
+    </div>
+</div>
+<!-- </div> -->
+<!-- add-unsafe-actions-popup End -->
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #categoryFormModal>
+    <app-unsafe-action-category-modal *ngIf="JsoUnsafeActionStore.category_form_modal">
+    </app-unsafe-action-category-modal>
+</div>
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #subCategoryFormModal>
+    <app-unsafe-action-sub-category-modal *ngIf="JsoUnsafeActionStore.sub_category_form_modal" [source]="unsafeActionSubCategorySource">
+    </app-unsafe-action-sub-category-modal>
+</div>
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #observedGroupFormModal>
+    <app-unsafe-action-observed-group-modal *ngIf="JsoUnsafeActionStore.observed_group_form_modal">
+    </app-unsafe-action-observed-group-modal>
+</div>

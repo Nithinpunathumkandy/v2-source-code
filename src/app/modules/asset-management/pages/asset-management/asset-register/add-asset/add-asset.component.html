@@ -1,0 +1,1251 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navigationBar>
+    <div class="module-name-block float-left">
+        <app-breadcrumb-menu></app-breadcrumb-menu>
+
+    </div>
+    <app-sub-menu></app-sub-menu>
+</nav>
+<main class="mt-3 organization-page tab-btns-five stepform-btn-5-normal-height" *mobxAutorun>
+    <div class="container-fluid">
+        <div class="organization-form-page">
+
+            <form [formGroup]="assetForm" id="assetForm" class="organization-multi-stup-form issue-multi-stup-form">
+                <!-- Circles which indicates the steps of the form: -->
+                <div id="header-sroll-form" class="form-indicates-sec clearfix" #formSteps>
+                    <span class="step pointer" (click)="changeStep(0)"><span
+                            class="multi-form-nbr">1</span>{{'asset_profile' | translate}}</span>
+                    <span class="step pointer" (click)="changeStep(1)" *ngIf="AssetManagementSettingStore.assetManagementSettings?.is_asset_depreciation"><span
+                            class="multi-form-nbr">2</span>{{'asset_depreciation' | translate}}</span>
+                    <span class="step pointer" (click)="AssetManagementSettingStore.assetManagementSettings?.is_asset_depreciation?changeStep(2):changeStep(1)"><span
+                            class="multi-form-nbr">{{AssetManagementSettingStore.assetManagementSettings?.is_asset_depreciation?3:2}}</span>{{'specification' | translate}}</span>
+                    <span class="step pointer" (click)="AssetManagementSettingStore.assetManagementSettings?.is_asset_depreciation?changeStep(3):changeStep(2)"><span class="multi-form-nbr">{{AssetManagementSettingStore.assetManagementSettings?.is_asset_depreciation?4:3}}</span>{{'document'
+                        | translate}}</span>
+                    <span class="step pointer" (click)="AssetManagementSettingStore.assetManagementSettings?.is_asset_depreciation?changeStep(4):changeStep(3)"><span
+                            class="multi-form-nbr">{{AssetManagementSettingStore.assetManagementSettings?.is_asset_depreciation?5:4}}</span>{{'preview_save' | translate}}</span>
+                </div>
+                <!-- One "tab" for each step in the form: -->
+                <div class="tab">
+                    <!-- tab start -->
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="name">{{'title' | translate}}<sup>*</sup>
+                                </label>
+                                <input formControlName="title" type="text" class="form-control"
+                                    [placeholder]="'asset_title' | translate" max="10">
+                                <p class="form-error pt-1" *ngIf="formErrors && formErrors.title">
+                                    {{formErrors.title}}</p>
+                            </div>
+
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="name">{{'asset_type' | translate}}<sup>*</sup>
+                                </label>
+                                <div class="clearfix d-flex">
+                                    <div class="multiple-plain-ngselect w-100">
+                                        <ng-select [placeholder]="'select_asset_type' | translate" searchable="true"
+                                            formControlName="asset_type_id" (search)="searchAssetType($event)"
+                                            (clear)="getAssetType()" (open)="getAssetType()" [closeOnSelect]="true"
+                                            autocomplete="new-password" [multiple]="false">
+                                            <ng-option *ngFor="let type of AssetTypesMasterStore.assetTypes"
+                                                [value]="type.id">
+                                                {{type.title}}</ng-option>
+                                            <!-- <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                                    {{item.title?.length > 60 ? (item.title | slice:0:60)+' ...' :
+                                                    item.title}}<span aria-hidden="true" (click)="clear(item)"
+                                                       style="border:none;" class="ng-value-icon left">×</span>
+                                                 </ng-template>
+                                                 <ng-template ng-option-tmp let-item="item" let-index="index">
+                                                    {{item.title?.length > 80 ? (item.title | slice:0:80)+' ...' :
+                                                    item.title}}
+                                                 </ng-template> -->
+                                        </ng-select>
+                                    </div>
+                                    <button class="btn multi-add-user ml-2" style="width: 42px;"
+                                        (click)="addAssetType()"
+                                        *ngIf="AuthStore.getActivityPermission(100,'CREATE_ASSET_TYPE')"><i
+                                            class="fas fa-plus"></i></button>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors && formErrors.asset_type_id">
+                                    {{formErrors.asset_type_id}}</p>
+                            </div>
+                        </div>
+
+                        <!-- </div> -->
+
+                        <!-- <div class="row"> -->
+                        <div [ngClass]="AssetManagementSettingStore.assetManagementSettings?.is_asset_contain?'col-sm-6':'col-sm-12'">
+                            <div class="form-group">
+                                <label for="name">{{'description' | translate}}
+                                </label>
+                                <textarea class="form-control" rows="3" id="comment"
+                                    [placeholder]="'asset_description' | translate"
+                                    formControlName="description"></textarea>
+                            </div>
+                            <p class="form-error pt-1" *ngIf="formErrors && formErrors.description">
+                                {{formErrors.description}}</p>
+                        </div>
+                        <div class="col-sm-6" *ngIf="AssetManagementSettingStore.assetManagementSettings?.is_asset_contain">
+                            <div class="form-group">
+                                <label for="name">{{'asset_contains' | translate}}
+                                </label>
+                                <textarea class="form-control" rows="3" id="comment"
+                                    [placeholder]="'enter_asset_contains' | translate" formControlName="contains"></textarea>
+                            </div>
+                            <p class="form-error pt-1" *ngIf="formErrors && formErrors.contains">
+                                {{formErrors.contains}}</p>
+                        </div>
+                        <!-- </div> -->
+
+                        <!-- <div class="row"> -->
+                           
+                        <div class="col-sm-12 col-lg-6"
+                            *ngIf="OrganizationGeneralSettingsStore?.organizationSettings?.is_ms_type">
+                            <div class="form-group">
+                                <label for="name">{{'ms_type' | translate}}<sup>*</sup></label>
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect full-width-multiple">
+                                        <ng-select [placeholder]="'select_ms_types'|translate" bindLabel="ms_type_title"
+                                            multiple="true" searchable="true" formControlName="ms_type_organization_ids"
+                                            (search)="searchMsType($event)" (clear)="getMsType()" (open)="getMsType()"
+                                            [closeOnSelect]="true" autocomplete="new-password">
+                                            <ng-option [value]="type.id"
+                                                *ngFor="let type of MsTypeOrganizationStore.msTypeDetails">
+                                                {{type.ms_type_title}} <span class="small-text">V
+                                                    {{type.ms_type_version_title}}</span>
+                                            </ng-option>
+                                        </ng-select>
+                                    </div>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors && formErrors.ms_type_organization_ids">
+                                    {{formErrors.ms_type_organization_ids}}</p>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="name">{{'asset_category' | translate}}<sup>*</sup>
+                                </label>
+                                <div class="clearfix d-flex">
+                                    <div class="multiple-plain-ngselect w-100">
+                                        <ng-select [placeholder]="'select_asset_category' | translate"
+                                            [multiple]="false" searchable="true" formControlName="asset_category_id"
+                                            (search)="searchAssetCategory($event)" (clear)="getAssetCategory()"
+                                            (open)="getAssetCategory()">
+                                            <ng-option *ngFor="let cat of AssetCategoryStore.allItems" [value]="cat.id">
+                                                {{cat.title}}</ng-option>
+                                            <!-- <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                                {{item.title?.length > 60 ? (item.title | slice:0:60)+' ...' :
+                                                item.title}}<span aria-hidden="true" (click)="clear(item)" style="border:none;" class="ng-value-icon left">×</span>
+                                            </ng-template>
+                                            <ng-template ng-option-tmp let-item="item" let-index="index">
+                                                {{item.title?.length > 80 ? (item.title | slice:0:80)+' ...' :
+                                                item.title}}
+                                            </ng-template> -->
+                                        </ng-select>
+                                    </div>
+                                    <!-- <button class="btn multi-add-user ml-2" style="width: 42px;"
+                                        (click)="addAssetCategory()"
+                                        *ngIf="AuthStore.getActivityPermission(100,'CREATE_ASSET_CATEGORY')"><i
+                                            class="fas fa-plus"></i></button> -->
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors && formErrors.asset_category_id">
+                                    {{formErrors.asset_category_id}}</p>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="name">{{'asset_sub_category' | translate}}
+                                    <!-- <sup>*</sup> -->
+                                </label>
+                                <div class="clearfix d-flex">
+                                    <div class="multiple-plain-ngselect w-100">
+                                        <ng-select [placeholder]="'select_asset_sub_category' | translate"
+                                            [multiple]="false" searchable="true" formControlName="asset_sub_category_id"
+                                            (search)="searchSubAssetCategory($event)" (clear)="getAssetSubCategory()"
+                                            (open)="getAssetSubCategory()" [closeOnSelect]="true"
+                                            autocomplete="new-password">
+                                            <ng-option *ngFor="let subCat of AssetSubCategoryStore.allItems"
+                                                [value]="subCat.id">
+                                                {{subCat.title}}</ng-option>
+                                            <!-- <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                                {{item.title?.length > 60 ? (item.title | slice:0:60)+' ...' :
+                                                item.title}}<span aria-hidden="true" (click)="clear(item)" style="border:none;" class="ng-value-icon left">×</span>
+                                            </ng-template>
+                                            <ng-template ng-option-tmp let-item="item" let-index="index">
+                                                {{item.title?.length > 80 ? (item.title | slice:0:80)+' ...' :
+                                                item.title}}
+                                            </ng-template> -->
+                                        </ng-select>
+                                    </div>
+                                    <button class="btn multi-add-user ml-2" style="width: 42px;"
+                                        (click)="addSubAssetCategory()"
+                                        *ngIf="AuthStore.getActivityPermission(100,'CREATE_ASSET_SUB_CATEGORY')"><i
+                                            class="fas fa-plus"></i></button>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors && formErrors.asset_sub_category_id">
+                                    {{formErrors.asset_sub_category_id}}</p>
+                            </div>
+                        </div>
+                        <!-- </div> -->
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="name">{{'serial_number' | translate}}
+                                    
+                                </label>
+                                <input formControlName="serial_number" type="text" class="form-control"
+                                    [placeholder]="'asset_serial_number' | translate" max="10">
+                                <p class="form-error pt-1" *ngIf="formErrors && formErrors.serial_number">
+                                    {{formErrors.serial_number}}</p>
+                            </div>
+
+                        </div>
+
+                        <!-- <div class="row"> -->
+                        <div class="col-sm-12 col-lg-6">
+                            <div class="row">
+                                <div class="col-sm-6" *ngIf="AssetInvestmentTypesStore.allItems">
+                                    <div class="form-group">
+                                        <label for="name">{{'investment_type' | translate}}<sup>*</sup>
+                                        </label>
+                                        <div class="custom-control custom-radio pl-0">
+                                            <span *ngFor="let type of AssetInvestmentTypesStore.allItems;let num=index"
+                                                [ngClass]="num == 0?'':'pl-5'">
+                                                <input type="radio" formControlName="asset_investment_type_id"
+                                                    name="asset_investment_type_id" id="type.id" [value]="type.id">
+                                                <label style="padding-top: 3px;" class="ml-2 pt-2 font-normal">{{type.title |
+                                                    titlecase}}</label>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- <div class="form-group">
+                                        <label for="name">{{'asset_value' | translate}}
+                                        <sup>*</sup>
+                                        </label>
+                                        <div class="price-icon-inp d-flex">
+                                        <span>{{OrganizationGeneralSettingsStore?.organizationSettings?.currency}}</span>
+                                        <input type="number" class="form-control input-number" 
+                                                [placeholder]="'enter_value' | translate" min="0"
+                                                formControlName="value">
+                                        </div>
+                                        <p class="form-error pt-1" *ngIf="formErrors && formErrors.value">
+                                            {{formErrors.value}}</p>
+                                        </div> -->
+
+                                        <div class="form-group">
+                                            <label>{{'asset_value' | translate}}<sup>*</sup></label>
+                                            <div class="input-group">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text bg-white" id="basic-addon1">{{OrganizationGeneralSettingsStore?.organizationSettings?.currency}}</span>
+                                                </div>
+                                                <input type="number" class="form-control input-number" 
+                                                [placeholder]="'enter_value' | translate" min="0"
+                                                formControlName="value">
+                                            </div>
+                                            <p class="form-error pt-1" *ngIf="formErrors && formErrors.value">
+                                                {{formErrors.value}}</p>
+                                        </div>
+
+                                </div>
+                                
+                            </div>
+                        </div>
+
+
+
+                        <div class="col-sm-12 col-lg-6">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label>{{'start_date' | translate}}<sup>*</sup></label>
+                                        <div class="input-group input-clear-btn-main">
+                                            <!-- <div class="input-clear-btn-main"> -->
+                                            <input formControlName="purchased_date" class="form-control bg-white"
+                                                placeholder="yyyy-mm-dd" id="purchased_date" [readonly]="true"
+                                                ngbDatepicker #purchaseDate="ngbDatepicker">
+                                            <span aria-hidden="true" *ngIf="assetForm.value?.purchased_date"
+                                                (click)="clear('purchased_date')" style="border:none;"
+                                                class="input-clear-btn">×</span>
+                                            <!-- </div> -->
+
+                                            <div class="input-group-append">
+                                                <button class="btn btn-outline-secondary calendar"
+                                                    (click)="purchaseDate.toggle()" type="button"><i
+                                                        class="fas fa-calendar-alt"></i></button>
+                                            </div>
+                                        </div>
+                                        <p class="form-error pt-1" *ngIf="formErrors && formErrors.purchased_date">
+                                            {{formErrors.purchased_date}}</p>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label for="name" style="display: inline-block;">{{'asset_lifetime' |
+                                            translate}}<sup>*</sup>
+                                        </label>
+                                        <p style="display: inline; color: #506e91;"
+                                            *ngIf="assetForm?.value.purchased_date && assetForm?.value.asset_lifetime">
+                                            {{'remaining_years' | translate}} -
+                                            {{getYearDifference()>assetForm?.value.asset_lifetime?getYearDifference() -
+                                            assetForm?.value.asset_lifetime:0}}</p>
+                                        <div class="two-text-box-join">
+                                            <span>
+                                                <input type="number" class="form-control text-box-1 input-number"
+                                                    [placeholder]="'enter_years' | translate" min="0"
+                                                    formControlName="lifetime_year">
+                                            </span>
+                                            <input type="number" class="form-control text-box-2 input-number"
+                                                [placeholder]="'enter_months' | translate"
+                                                formControlName="lifetime_month" (keyup)="getMonthNumber()" min="0"
+                                                max="12">
+                                        </div>
+                                    </div>
+                                    <p class="form-error pt-1" *ngIf="errtest && assetForm?.value?.lifetime_month">
+                                        {{errtest}}</p>
+                                    <p class="form-error pt-1" *ngIf="formErrors && formErrors.lifetime_year">
+                                        {{formErrors.lifetime_year}}</p>
+                                </div>
+
+                               
+                                <!-- <div class="col-sm-6" *ngIf="AssetInvestmentTypesStore.allItems">
+                                    <div class="form-group">
+                                         <label for="name">{{'investment_type' | translate}}<sup>*</sup></label>                                   
+                                         <div class="custom-control pt-2 custom-radio">
+                                             <input type="radio" class="custom-control-input" id="customRadio1" name="example1" value="customEx" checked="">
+                                             <label class="custom-control-label" for="customRadio1" style="padding-top: 2px;">Yes</label>
+               
+                                             <span *ngFor="let type of AssetInvestmentTypesStore.allItems;let num=index" [ngClass]="num == 0?'':'pl-5'">
+                                             <input type="radio" formControlName="asset_investment_type_id" class="custom-control-input" id="type.id" name="asset_investment_type_id" [value]="type.id">
+                                             <label class="custom-control-label" style="padding-top: 2px;">{{type.title | titlecase}}</label></span>
+                                           </div>
+                                     </div>
+                              </div> -->
+
+                            </div>
+                        </div>
+                        <!-- </div> -->
+
+                        <!-- <div class="row multi-stup-form-common">
+
+
+                    </div> -->
+
+
+                        <!-- <div class="row"> -->
+                        <div class="col-sm-6 col-lg-6">
+                            <div class="form-group">
+                                <label for="name">{{'custodian' | translate}}<sup>*</sup>
+                                </label>
+                                <div class="clearfix d-flex">
+                                    <div class="multiple-plain-ngselect w-100">
+                                        <ng-select [placeholder]="'select_custodian'|translate" bindLabel="title"
+                                            [multiple]="false" searchable="true" formControlName="custodian_id"
+                                            (search)="searchCustodian($event)" (clear)="getCustodian()"
+                                            (open)="getCustodian()" [closeOnSelect]="true" autocomplete="new-password">
+                                            <ng-option [value]="designation.id"
+                                                *ngFor="let designation of DesignationStore.designations">
+                                                {{designation.title}}
+                                            </ng-option>
+                                            <!-- <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                                {{item.title?.length > 60 ? (item.title | slice:0:60)+' ...' :
+                                                item.title}}<span aria-hidden="true" (click)="clear(item)" style="border:none;" class="ng-value-icon left">×</span>
+                                            </ng-template>
+                                            <ng-template ng-option-tmp let-item="item" let-index="index">
+                                                {{item.title?.length > 80 ? (item.title | slice:0:80)+' ...' :
+                                                item.title}}
+                                            </ng-template> -->
+                                        </ng-select>
+                                    </div>
+                                    <button class="btn multi-add-user ml-2" style="width: 42px;"
+                                        (click)="addCustodian()"
+                                        *ngIf="AuthStore.getActivityPermission(100,'CREATE_DESIGNATION')"><i
+                                            class="fas fa-plus"></i></button>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors && formErrors.custodian_id">
+                                    {{formErrors.custodian_id}}</p>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="name">{{'asset_owner' | translate}}<sup>*</sup></label>
+
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect">
+                                        <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                                            [placeholder]="'select_asset_owner'|translate" formControlName="asset_owner_id"
+                                            [multiple]="false" (clear)="getUsers()" (search)="searchUers($event)"
+                                            (open)="getUsers()" [searchFn]="customSearchFn">
+                                            <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                                <img class="ng-select-user-display"
+                                                    *ngIf="item.image?.token||item.image_token" height="15" width="15"
+                                                    [attr.src]="item.image?.token?createImageUrl('user',item.image?.token):createImageUrl('user',item.image_token)" />
+                                                <img class="ng-select-user-display"
+                                                    *ngIf="!item.image?.token && !item.image_token" height="15"
+                                                    width="15" [attr.src]="getDefaultImage('user-logo')" />
+                                                <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,'
+                                                    ') |
+                                                    titlecase}}</b><span aria-hidden="true" (click)="clear(item)"
+                                                    style="border:none;" class="ng-value-icon left">×</span>
+                                            </ng-template>
+
+                                            <ng-template ng-option-tmp let-item="item" let-index="index">
+                                                <div class="user-post-department-pic">
+                                                    <img class="ng-select-user-display"
+                                                        *ngIf="item.image?.token || item.image_token" height="25"
+                                                        width="25"
+                                                        [attr.src]="item.image?.token?createImageUrl('user',item.image?.token):createImageUrl('user',item.image_token)" />
+                                                    <img class="ng-select-user-display"
+                                                        *ngIf="!item.image?.token && !item.image_token" height="25"
+                                                        width="25" [attr.src]="getDefaultImage('user-logo')" />
+                                                </div>
+                                                <div class="user-post-department-div">
+                                                    <b>{{getStringsFormatted([item.first_name,item.last_name],50,' ') |
+                                                        titlecase}}</b>
+                                                    <p class="user-post-department-multiple">
+                                                        {{getStringsFormatted([item.designation_title,'
+                                                        '+item.department],50,',')}}</p>
+                                                </div>
+                                            </ng-template>
+                                        </ng-select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-12 col-lg-6">
+                            <div class="form-group">
+                                <label for="name">{{'location' | translate}}<sup>*</sup></label>
+                                <div class="clearfix d-flex">
+                                    <div class="multiple-plain-ngselect w-100">
+                                        <ng-select [placeholder]="'select_asset_location' | translate" multiple="true"
+                                            searchable="true" formControlName="asset_location_ids"
+                                            (search)="searchAssetLocation($event)" (clear)="getAssetLocation()"
+                                            (open)="getAssetLocation()" [closeOnSelect]="true" bindLabel="title"
+                                            autocomplete="new-password">
+                                            <ng-option *ngFor="let loc of AssetLocationStore.allItems" [value]="loc.id">
+                                                {{loc.title}}</ng-option>
+                                        </ng-select>
+                                    </div>
+                                    <button class="btn multi-add-user ml-2" style="width: 42px;"
+                                        (click)="addAssetLocation()"
+                                        *ngIf="AuthStore.getActivityPermission(100,'CREATE_ASSET_LOCATION')"><i
+                                            class="fas fa-plus"></i></button>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors && formErrors.asset_location_ids">
+                                    {{formErrors.asset_location_ids}}</p>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-12 col-lg-6">
+                            <div class="form-group">
+                                <label for="name">{{'supplier' | translate}}<sup>*</sup>
+                                </label>
+                                <div class="clearfix d-flex">
+                                    <div class="multiple-plain-ngselect w-100">
+                                        <ng-select [placeholder]="'select_supplier' | translate" [multiple]="false"
+                                            searchable="true" formControlName="supplier_id"
+                                            (search)="searchSupplier($event)" (clear)="getSupplier()"
+                                            (open)="getSupplier()" [closeOnSelect]="true" autocomplete="new-password">
+                                            <ng-option *ngFor="let supplier of SuppliersMasterStore.allItems"
+                                                [value]="supplier.id">
+                                                {{supplier.contact_name}}</ng-option>
+                                            <!-- <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                                {{item.title?.length > 60 ? (item.title | slice:0:60)+' ...' :
+                                                item.title}}<span aria-hidden="true" (click)="clear(item)" style="border:none;" class="ng-value-icon left">×</span>
+                                            </ng-template>
+                                            <ng-template ng-option-tmp let-item="item" let-index="index">
+                                                {{item.title?.length > 80 ? (item.title | slice:0:80)+' ...' :
+                                                item.title}}
+                                            </ng-template> -->
+                                        </ng-select>
+                                    </div>
+                                    <button class="btn multi-add-user ml-2" style="width: 42px;" (click)="addSupplier()"
+                                        *ngIf="AuthStore.getActivityPermission(100,'CREATE_SUPPLIER')"><i
+                                            class="fas fa-plus"></i></button>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors && formErrors.supplier_id">
+                                    {{formErrors.supplier_id}}</p>
+                            </div>
+                        </div>
+
+                        <!-- </div> -->
+
+                        <!-- <div class="row"> -->
+                        <div class="col-lg-6 col-sm-6">
+                            <div class="form-group">
+                                <label class="relative label-with-info">{{'physical_condition_ranking' | translate}}<sup>*</sup>
+                                    <!-- <div class="info-circle-inp lg-tooltip">
+                                                                        <i class="fas fa-info-circle"></i>
+                                                                        <div class="message-password-inp top-show ranking-info-msg-box p-3">
+                                                                            <p class="mb-0">A - As new and can be expected to perform adequately to its
+                                                                                full normal life<br>
+                                                                                B - Sound , operationally safe and exhibits only minor deterioration<br>
+                                                                                B(C) - Currently as B but will fall below B within five years<br>
+                                                                                C - Operational but major repair or replacement is currently needed to
+                                                                                bring up to condition B<br>
+                                                                                D - Operationally unsound and in imminent danger of breakdown</p>
+                                
+                                                                        </div>
+                                                                    </div> -->
+                                    <div class="question-circle-inp">
+                                        <i class="fas fa-info-circle"></i>
+                                        <div class="message-password-inp">
+                                            <p class="mb-0 font-normal">A - As new and can be expected to perform adequately to its
+                                                full normal life<br>
+                                                B - Sound , operationally safe and exhibits only minor deterioration<br>
+                                                B(C) - Currently as B but will fall below B within five years<br>
+                                                C - Operational but major repair or replacement is currently needed to
+                                                bring up to condition B<br>
+                                                D - Operationally unsound and in imminent danger of breakdown</p>
+                                        </div>
+                                    </div>
+                                </label>
+                                    <div class="clearfix">
+                                        <div class="multiple-plain-ngselect w-100">
+                                            <ng-select [placeholder]="'select_physical_condition' | translate" [multiple]="false" searchable="true"
+                                                formControlName="physical_condition_ranking_id" (search)="searchPhysical($event)"
+                                                (clear)="getPhysical()" (open)="getPhysical()" [closeOnSelect]="true" bindLabel="title"
+                                                autocomplete="new-password">
+                                                <ng-option *ngFor="let type of PhysicalConditionRankingsStore.allItems" [value]="type.id">
+                                                    {{type.title}}</ng-option>
+                                            </ng-select>
+                                        </div>
+                                        <p class="form-error pt-1" *ngIf="formErrors && formErrors.physical_condition_ranking_id">
+                                            {{formErrors.physical_condition_ranking_id}}</p>
+                                    </div>
+                                
+                                
+                            </div>
+                        </div>
+                        <!-- </div> -->
+                        <!-- <div class="row"> -->
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label for="name">{{'remarks' | translate}}</label>
+                                <textarea class="form-control" rows="3" id="comment"
+                                    [placeholder]="'enter_remarks' | translate" formControlName="remarks"></textarea>
+                            </div>
+                        </div>
+                        <!-- </div> -->
+                        <!-- <div class="row"> -->
+                        <div class="col-lg-12 col-sm-12">
+                            <div class="form-group">
+                                <a class="text-light-blue" data-toggle="modal" (click)="organisationChanges()"
+                                    style="border-bottom: 1px solid;">{{'change_organization_unit' | translate}}</a>
+                            </div>
+                        </div>
+                        <!-- </div> -->
+                    </div>
+                </div>
+
+                <!-- tab end -->
+                <div class="tab" *ngIf="AssetManagementSettingStore.assetManagementSettings?.is_asset_depreciation">
+                    <!-- tab start -->
+
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="name">{{'depreciation_duration_yrs' | translate}}
+                                </label>
+                                <input type="number" class="form-control"
+                                    [placeholder]="'enter_depreciation_duration_in_years' | translate"
+                                    formControlName="depreciation_duration" [(ngModel)]="assetForm.value.lifetime_year"
+                                    min="0" (keyup)="getDepreciation()">
+                                <!-- <label *ngIf="assetForm?.value?.lifetime_year">{{assetForm.value.lifetime_year}}</label> -->
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="name">{{'depreciation' | translate}}%
+                                </label>
+                                <input type="number" class="form-control input-number" 
+                                    [placeholder]="'enter_depreciation_duration_in_percentage' | translate"
+                                    formControlName="depreciation_percentage" (keyup)="getDepreciation()" min="0"
+                                    max="100">
+                                <p class="form-error pt-1" *ngIf="msg && assetForm?.value.depreciation_percentage">
+                                    {{msg}}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row" *ngIf="duration_table.length > 0">
+                        <div class="col-sm-12 col-lg-6">
+                            <div class="form-group">
+                                <label for="name">{{'depreciation_duration_value_yrs' | translate}}
+                                </label>
+                                <div class="audit-form-table w-100 table-align-top not-fixed-table">
+                                    <table class="table table-bordered ordinary-table audit-page-table mb-1 ">
+
+                                        <thead>
+                                            <tr>
+                                                <th class="border-top-0" width="15%">#</th>
+                                                <th class="border-top-0" width="35%">{{'year' | translate}}</th>
+                                                <th class="border-top-0" width="50%">{{'value' | translate}}</th>
+                                            </tr>
+
+                                        </thead>
+                                        <tbody>
+                                            <tr *ngFor="let row of duration_table;let num = index">
+                                                <td>{{num + 1}}</td>
+                                                <td>{{row.year}}</td>
+                                                <td>{{row.value}}</td>
+                                            </tr>
+
+                                        </tbody>
+                                    </table>
+
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <!-- tab end -->
+
+                <div class="tab">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <!--    <ckeditor formControlName="specification" id="description" [config]="config"
+                                    [editor]="editor" (ready)="MyCustomUploadAdapterPlugin($event)"
+                                    (change)="descriptionValueChange($event)" rows="10"></ckeditor> -->
+                                <ckeditor id="description" (change)="descriptionValueChange($event)" [editor]="Editor"
+                                    formControlName="specification"></ckeditor>
+                                <p class="form-error pt-1" *ngIf="formErrors && formErrors.specification">
+                                    {{formErrors.specification}}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="tab">
+                    <!-- tab start -->
+
+
+                    <div class="thumb-pics-bg thumb-pics-col-4 clearfix thumb-pics-fix-text" style="padding-top: 30px;"
+                        #uploadArea>
+                        <div class="thumb-pics">
+                            <div class="question-circle-inp"
+                                *ngIf="OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.length > 0"
+                                style="margin-right: 7px;">
+                                <i class="far fa-question-circle"></i>
+                                <div class="message-password-inp">
+                                    <p class="mb-0">{{'allowed_file_types' | translate}}
+                                        {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="form-group form-group-upload">
+                                <div class="darag-dropifile-upload">
+                                    <div class="d-flex justify-content-center align-items-center text-center">
+                                        <div>
+                                            <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                                            <div class="drag-file-name"> {{'drag_drop_file_here' | translate}} </div>
+                                            <div class="upload-btn-wrapper">
+                                                <button (click)="openFileUploadModal()" type="button"
+                                                    class="btn">{{'browse_files' | translate}}</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="thumb-pics" *ngFor="let docs of fileUploadPopupStore.displayFiles ;let i = index">
+                            <div class="upload-pics edit-option" data-toggle="modal">
+                                <div *ngIf="docs.id && !docs.preview" class="browse-form-pic"
+                                    [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                                </div>
+                                <div *ngIf="docs.preview" class="browse-form-pic"
+                                    [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">
+                                </div>
+                                <div class="browse-form-name clearfix">
+                                    <div class="float-left">
+                                        <h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}
+                                        </h6>
+                                        <span *ngIf="docs.is_kh_document" class="mr-2 cmn-clr"><i
+                                                class="fas fa-book"></i></span>
+                                        <span *ngIf="!docs.is_kh_document" class="mr-2 cmn-clr"><i
+                                                class="fas fa-laptop"></i></span>
+                                        <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                                    </div>
+                                    <div class="browse-logo">
+                                        <img *ngIf="checkExtension(docs.ext,'image') != -1" class="folder-picher"
+                                            src="/assets/images/jpg-icone.png">
+                                        <img *ngIf="checkExtension(docs.ext,'doc') != -1" class="folder-picher"
+                                            src="/assets/images/word-icone.png">
+                                        <img *ngIf="checkExtension(docs.ext,'pdf') != -1" class="folder-picher"
+                                            src="/assets/images/pdf-icone.png">
+                                        <img *ngIf="checkExtension(docs.ext,'excel') != -1" class="folder-picher"
+                                            src="/assets/images/excel-icone.png">
+                                        <img *ngIf="checkExtension(docs.ext,'video') != -1" class="folder-picher"
+                                            src="/assets/images/md-video.png">
+                                        <img *ngIf="checkExtension(docs.ext,'audio') != -1" class="folder-picher"
+                                            src="/assets/images/md-audio.png">
+                                        <img *ngIf="checkExtension(docs.ext,'ppt') != -1" class="folder-picher"
+                                            src="/assets/images/md-ppt.png">
+                                    </div>
+                                    <div class="edit-option-show">
+                                        <a (click)="removeBrochure('document-file',docs?.token)"><i
+                                                class="fas fa-trash"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                </div>
+                <!-- tab end -->
+                <div class="tab">
+                    <!-- tab start -->
+                    <div class="widget-body-light asset-preview issuue-new-style">
+
+                        <div class="row">
+                            <div class="col-sm-12 col-lg-7">
+                                <div class="left-box-issue-details pb-2">
+                                    <div class="issue-top-sec">
+                                        <div class="clearfix  ">
+                                            <h5 class="d-inline-block cmn-head-style label-tag-style mr-2">
+                                                <!-- <span
+                                                    class="issue-smoal-head-text"></span> -->
+                                                {{AssetRegisterStore.individualAssetDetails?.title}}<span
+                                                    class="draft-tag label-tag-style-tag label-left-arow-tag d-inline-block status-tag-new-one ml-3">{{AssetRegisterStore.individualAssetDetails?.asset_status?.language[0]?.pivot?.title}}</span>
+                                            </h5>
+
+                                        </div>
+                                        <div class="clearfix">
+                                            <p><i class="fas fa-calendar-alt date-pics-two"></i>
+                                                {{AssetRegisterStore.individualAssetDetails?.purchased_date | date :
+                                                OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</p>
+                                        </div>
+                                        <div class="clearfix">
+                                            <p style="white-space: pre-line;">
+                                                {{AssetRegisterStore.individualAssetDetails?.description}}</p>
+                                        </div>
+
+                                    </div>
+
+                                    <div class="row" *ngIf="AssetManagementSettingStore.assetManagementSettings?.is_asset_contain">
+                                        <div class="col-md-12">
+                                            <h6>{{'asset_contains' | translate}}</h6>
+                                            <p style="white-space: pre-line;">
+                                                {{AssetRegisterStore.individualAssetDetails?.asset_contains?AssetRegisterStore.individualAssetDetails?.asset_contains:AppStore.noContentText}}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+
+                                        <div class="col-lg-4 col-sm-6">
+                                            <h6>{{'asset_type' | translate}}</h6>
+                                            <p>{{AssetRegisterStore.individualAssetDetails?.asset_type?.title ?
+                                                AssetRegisterStore.individualAssetDetails?.asset_type?.title :
+                                                AppStore.noContentText}}</p>
+                                        </div>
+                                        <div class="col-lg-4 col-sm-6">
+                                            <h6>{{'serial_number' | translate}}</h6>
+                                            <p>{{AssetRegisterStore.individualAssetDetails?.serial_number ?
+                                                AssetRegisterStore.individualAssetDetails?.serial_number :
+                                                AppStore.noContentText}}</p>
+                                        </div>
+
+                                        <div class="col-lg-4 col-sm-6">
+                                            <h6>{{'asset_category' | translate}}</h6>
+                                            <p>{{AssetRegisterStore.individualAssetDetails?.asset_category?.title ?
+                                                AssetRegisterStore.individualAssetDetails?.asset_category?.title :
+                                                AppStore.noContentText}}</p>
+                                        </div>
+
+                                        <div class="col-lg-4 col-sm-6">
+                                            <h6>{{'asset_sub_category' | translate}}</h6>
+                                            <p>{{AssetRegisterStore.individualAssetDetails?.asset_sub_category?.title
+                                                ?
+                                                AssetRegisterStore.individualAssetDetails?.asset_sub_category?.title
+                                                : AppStore.noContentText}}</p>
+                                        </div>
+                                        <div class="col-lg-4 col-sm-6">
+                                            <h6>{{'year_purchased' | translate}}</h6>
+                                            <p>{{assetForm?.value?.purchased_date?.year}}</p>
+                                        </div>
+
+                                        <div class="col-lg-4 col-sm-6">
+                                            <h6>{{'asset_lifetime' | translate}}</h6>
+                                            <p>{{AssetRegisterStore.individualAssetDetails?.lifetime_year ?
+                                                AssetRegisterStore.individualAssetDetails?.lifetime_year :
+                                                0}}yrs {{AssetRegisterStore.individualAssetDetails?.lifetime_month?AssetRegisterStore.individualAssetDetails?.lifetime_month:0}}months</p>
+                                        </div>
+
+                                        <div class="col-lg-4 col-sm-6"
+                                            *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_subsidiary">
+                                            <h6>{{'organization' | translate}}</h6>
+                                            <p>{{AssetRegisterStore.individualAssetDetails?.organization?.title ?
+                                                AssetRegisterStore.individualAssetDetails?.organization?.title :
+                                                AppStore.noContentText}}</p>
+                                        </div>
+
+                                        <div class="col-lg-4 col-sm-6"
+                                            *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_division">
+                                            <h6>{{'division' | translate}}</h6>
+                                            <p>{{AssetRegisterStore.individualAssetDetails?.division?.title ?
+                                                AssetRegisterStore.individualAssetDetails?.division?.title :
+                                                AppStore.noContentText}}</p>
+                                        </div>
+
+                                        <div class="col-lg-4 col-sm-6"
+                                            *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_department">
+                                            <h6>{{'department' | translate}}(Owner)</h6>
+                                            <p>{{AssetRegisterStore.individualAssetDetails?.department?.title ?
+                                                AssetRegisterStore.individualAssetDetails?.department?.title :
+                                                AppStore.noContentText}}</p>
+                                        </div>
+
+                                        <div class="col-lg-4 col-sm-6"
+                                            *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_section">
+                                            <h6>{{'section' | translate}}</h6>
+                                            <p>{{AssetRegisterStore.individualAssetDetails?.section?.title ?
+                                                AssetRegisterStore.individualAssetDetails?.section?.title :
+                                                AppStore.noContentText}}</p>
+                                        </div>
+
+                                        <div class="col-lg-4 col-sm-6"
+                                            *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_sub_section">
+                                            <h6>{{'sub_section' | translate}}</h6>
+                                            <p>{{AssetRegisterStore.individualAssetDetails?.sub_section?.title ?
+                                                AssetRegisterStore.individualAssetDetails?.sub_section?.title :
+                                                AppStore.noContentText}}</p>
+                                        </div>
+
+                                        <div class="col-lg-4 col-sm-6">
+                                            <h6>{{'custodian' | translate}}</h6>
+                                            <p>{{AssetRegisterStore.individualAssetDetails?.custodian?.title ?
+                                                AssetRegisterStore.individualAssetDetails?.custodian?.title :
+                                                AppStore.noContentText}}</p>
+                                        </div>
+
+                                        <div class="col-lg-4 col-sm-6">
+                                            <h6>{{'asset_owner' | translate}}</h6>
+                                           
+                                               
+                                                    <div class="label-and-user-pic">
+
+                                                        <!-- <ul *ngIf="schedule.user_ids?.length > 0"
+                                            class="arci-user-tab-dtl workflow-lst-pics-loop clearfix mb-2 d-inline-block">
+                                            <li class="rounde-hov-bg"
+                                                *ngFor="let responsible of schedule.user_ids; let i = index"> -->
+                                                        <app-user-popup-box
+                                                            [source]="getOwnerPopupDetails(AssetRegisterStore.individualAssetDetails?.asset_owner)"
+                                                            [showName]="true" [activateButtons]="false">
+                                                        </app-user-popup-box>
+                                                        <!-- </li>
+                                        </ul> -->
+                                                
+                                                </div>
+                                                <div *ngIf="!AssetRegisterStore.individualAssetDetails?.asset_owner">
+                                                    {{AppStore.noContentText}}</div>
+
+
+                                            
+                                        </div>
+
+
+                                        <div class="col-lg-4 col-sm-6"
+                                            *ngIf="OrganizationGeneralSettingsStore?.organizationSettings?.is_ms_type;let c=index">
+                                            <h6>{{'ms_type' | translate}}</h6>
+                                            <!-- <label
+                                                *ngFor="let type of AssetRegisterStore.msTypes">{{type?.ms_type?.title}}
+                                                <span class="small-text">V
+                                                    {{type?.ms_type_version?.title}}</span></label> -->
+                                            <p
+                                                *ngFor="let type of AssetRegisterStore.individualAssetDetails?.ms_type_organizations">
+                                                {{type.ms_type?.title}}{{AssetRegisterStore.individualAssetDetails?.ms_type_organizations>0&&c!=AssetRegisterStore.individualAssetDetails?.ms_type_organizations?.length-1?',':''}}
+                                            </p>
+                                            <p
+                                                *ngIf="AssetRegisterStore.individualAssetDetails?.ms_type_organizations?.length==0">
+                                                {{AppStore.noContentText}}</p>
+                                        </div>
+
+                                        <div class="col-lg-4 col-sm-6">
+                                            <h6>{{'location' | translate}}</h6>
+                                            <p>{{AssetRegisterStore.individualAssetDetails?.asset_locations?.length>0 ?
+                                                getArrayFormatedString('title',AssetRegisterStore.individualAssetDetails?.asset_locations)
+                                                : AppStore.noContentText}}</p>
+                                        </div>
+
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="issue-top-sec">
+                                                <div class="clearfix draft-tag-none">
+                                                    <h6 class="d-inline-block  label-tag-style">
+                                                        {{'physical_condition_ranking' | translate}}</h6>
+                                                </div>
+
+                                                <div class="clearfix">
+                                                    <p class="label-tag-style">
+                                                        {{AssetRegisterStore.individualAssetDetails?.physical_condition_ranking?.title
+                                                        ?
+                                                        AssetRegisterStore.individualAssetDetails?.physical_condition_ranking?.title
+                                                        : AppStore.noContentText}}</p>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                        <!-- <div class="row">
+                                        <div class="col-md-12">
+                                            <h6>{{'investment_type' | translate}}</h6>
+                                            <p>{{AssetRegisterStore.individualAssetDetails?.asset_investment_type.language[0]?.pivot?.title
+                                                ?
+                                                AssetRegisterStore.individualAssetDetails?.asset_investment_type.language[0]?.pivot?.title
+                                                : AppStore.noContentText}}</p>
+                                        </div>
+                                    </div> -->
+
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <div class="form-group">
+                                                <h6>{{'specifications' | translate}}</h6>
+                                                <p
+                                                    innerHtml="{{AssetRegisterStore.individualAssetDetails?.specification ? AssetRegisterStore.individualAssetDetails?.specification : AppStore.noContentText}}">
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <h6>{{'remark' | translate}}</h6>
+                                            <p style="white-space:pre-line;"
+                                            >{{AssetRegisterStore.individualAssetDetails?.remarks ? AssetRegisterStore.individualAssetDetails?.remarks : AppStore.noContentText}}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <h6>{{'support_file' | translate}}</h6>
+                                            <p *ngIf="fileUploadPopupStore.displayFiles.length==0">
+                                                {{AppStore.noContentText}}</p>
+                                            <div class="scroll-documents" #previewUploadArea>
+                                                <div class="thumb-pics-bg thumb-pics-col-2 clearfix thumb-pics-fix-text"
+                                                    *ngIf="fileUploadPopupStore.displayFiles.length > 0">
+                                                    <div class="thumb-pics"
+                                                        *ngFor="let docs of fileUploadPopupStore.displayFiles ;let i = index">
+                                                        <div class="upload-pics edit-option" data-toggle="modal">
+                                                            <div *ngIf="docs.id && !docs.preview"
+                                                                class="browse-form-pic"
+                                                                [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                                                            </div>
+                                                            <div *ngIf="docs.preview" class="browse-form-pic"
+                                                                [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">
+                                                            </div>
+                                                            <div class="browse-form-name clearfix">
+                                                                <div class="float-left">
+                                                                    <h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}
+                                                                    </h6>
+                                                                    <span *ngIf="docs.is_kh_document"
+                                                                        class="mr-2 cmn-clr"><i
+                                                                            class="fas fa-book"></i></span>
+                                                                    <span *ngIf="!docs.is_kh_document"
+                                                                        class="mr-2 cmn-clr"><i
+                                                                            class="fas fa-laptop"></i></span>
+                                                                    <span>{{docs.size/1048576 |
+                                                                        number:'0.2-2'}}MB</span>
+                                                                </div>
+                                                                <div class="browse-logo">
+                                                                    <img *ngIf="checkExtension(docs.ext,'image') != -1"
+                                                                        class="folder-picher"
+                                                                        src="/assets/images/jpg-icone.png">
+                                                                    <img *ngIf="checkExtension(docs.ext,'doc') != -1"
+                                                                        class="folder-picher"
+                                                                        src="/assets/images/word-icone.png">
+                                                                    <img *ngIf="checkExtension(docs.ext,'pdf') != -1"
+                                                                        class="folder-picher"
+                                                                        src="/assets/images/pdf-icone.png">
+                                                                    <img *ngIf="checkExtension(docs.ext,'excel') != -1"
+                                                                        class="folder-picher"
+                                                                        src="/assets/images/excel-icone.png">
+                                                                    <img *ngIf="checkExtension(docs.ext,'video') != -1"
+                                                                        class="folder-picher"
+                                                                        src="/assets/images/md-video.png">
+                                                                    <img *ngIf="checkExtension(docs.ext,'audio') != -1"
+                                                                        class="folder-picher"
+                                                                        src="/assets/images/md-audio.png">
+                                                                    <img *ngIf="checkExtension(docs.ext,'ppt') != -1"
+                                                                        class="folder-picher"
+                                                                        src="/assets/images/md-ppt.png">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+
+
+                                </div>
+
+                            </div>
+
+                            <div class="col-sm-12 col-lg-5">
+                                <div class="asset-blue-box mb-4 bg-white p-3">
+                                    <div class="text-center">
+                                        <h6>{{'asset_value' | translate}} :
+                                            {{AssetRegisterStore.individualAssetDetails?.asset_value ?
+                                            OrganizationGeneralSettingsStore?.organizationSettings?.currency : ''}}
+                                            {{assetForm.value.value}}
+                                            <span
+                                                    class="draft-tag label-tag-style-tag label-left-arow-tag d-inline-block status-tag-new-one ml-3">{{AssetRegisterStore.individualAssetDetails?.asset_investment_type.language[0]?.pivot?.title}}</span>
+                                                     </h6>
+                                    </div>
+                                </div>
+
+                                <div class="row" *ngIf="AssetManagementSettingStore.assetManagementSettings?.is_asset_depreciation">
+                                    <div class="col-md-12">
+                                        <h6>{{'asset_depreciation' | translate}}</h6>
+                                        <div class="risk-rating-box bg-white mb-3 p-3">
+                                            <div class="row align-items-center">
+                                                <div class="col-md-6 border-right">
+                                                    <div class="text-center">
+                                                        <h6 class="mb-0 big-text-one">
+                                                            {{assetForm.value.depreciation_duration ?
+                                                            assetForm.value.depreciation_duration :
+                                                            AppStore.noContentText}}</h6>
+                                                        <p class="mb-0">{{'depreciation_duration' | translate}} (Yrs)
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="text-center">
+                                                        <h6 class="mb-0 big-text-one">
+                                                            {{assetForm.value.depreciation_percentage ?
+                                                            round(assetForm.value.depreciation_percentage) :
+                                                            AppStore.noContentText}}{{assetForm.value.depreciation_percentage
+                                                            ? '%' : ''}}</h6>
+                                                        <p class="mb-0">{{'depreciation_percentage' | translate}}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p class="mb-1"
+                                            *ngIf="assetForm.value.depreciation_duration && assetForm.value.depreciation_percentage">
+                                            {{'depreciated_asset_value' | translate}}</p>
+
+
+                                        <div class="audit-form-table w-100 table-align-top not-fixed-table mb-3"
+                                            *ngIf="duration_table.length > 0">
+                                            <table class="table table-bordered ordinary-table audit-page-table mb-1 ">
+
+                                                <thead>
+                                                    <tr>
+                                                        <th class="border-top-0" width="35%">Year</th>
+                                                        <th class="border-top-0" width="50%">Value</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr *ngFor="let row of duration_table;let num = index">
+                                                        <td>{{row.year}}</td>
+                                                        <td>{{OrganizationGeneralSettingsStore?.organizationSettings?.currency}}
+                                                            {{row.value}}</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <h6>{{'supplier' | translate}}</h6>
+                                        <div class="bg-white widg-padding-cmn-small mb-3  asset-supplier-box">
+                                            <div class="row align-items-center">
+                                                <div class="col-md-12">
+                                                    <h6><span>{{AssetRegisterStore.individualAssetDetails?.supplier?.title
+                                                            ?
+                                                            AssetRegisterStore.individualAssetDetails?.supplier.title :
+                                                            AppStore.noContentText}}</span></h6>
+
+                                                    <p class="pt-2"
+                                                        *ngIf="AssetRegisterStore.individualAssetDetails?.supplier?.address">
+                                                        {{AssetRegisterStore.individualAssetDetails?.supplier?.address}}
+                                                    </p>
+                                                    <p
+                                                        *ngIf="AssetRegisterStore.individualAssetDetails?.supplier?.website">
+                                                        <i class="fas fa-globe supplier-global-icon"></i>
+                                                        <span
+                                                            class="pl-2">{{AssetRegisterStore.individualAssetDetails?.supplier?.website
+                                                            ?
+                                                            AssetRegisterStore.individualAssetDetails?.supplier?.website
+                                                            :
+                                                            AppStore.noContentText}}</span>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div class="asset-supplier-box-inner cmn-bdr p-3">
+                                                <div class="row align-items-center">
+                                                    <div class="col-md-4 border-right">
+                                                        <div class="text-center">
+                                                            <i class="fas fa-user supplier-global-icon"></i>
+                                                            <p class="mb-0">
+                                                                {{AssetRegisterStore.individualAssetDetails?.supplier?.primary_contact?.name
+                                                                ?
+                                                                AssetRegisterStore.individualAssetDetails?.supplier?.primary_contact.name
+                                                                :
+                                                                AppStore.noContentText}}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-8">
+                                                        <p><i class="fas fa-phone pb-2 supplier-global-icon"></i>
+                                                            <span
+                                                                class="pb-2 pl-2">{{AssetRegisterStore.individualAssetDetails?.supplier?.mobile
+                                                                ?
+                                                                AssetRegisterStore.individualAssetDetails?.supplier?.mobile
+                                                                :
+                                                                AppStore.noContentText}} </span><br>
+                                                            <i class="fas fa-envelope supplier-global-icon"></i>
+                                                            <span
+                                                                class="pl-2">{{AssetRegisterStore.individualAssetDetails?.supplier?.email
+                                                                ?
+                                                                AssetRegisterStore.individualAssetDetails?.supplier?.email
+                                                                :
+                                                                AppStore.noContentText}}</span>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <!-- tab end -->
+                <!-- <div style="overflow:auto;">
+                    <div class="form-next-page-btns pt-0 mt-3" style="float:left;">
+                        <button class="btn" type="button" (click)="confirmCancel()">{{AppStore.loading ?
+                            getButtonText('loading') : getButtonText('cancel')}}</button>
+                        <button class="btn" type="button" id="prevBtn" (click)="nextPrev(-1)">{{AppStore.loading ?
+                            getButtonText('loading') : getButtonText(previousButtonText)}}</button>
+                        <button class="btn btn-active" type="button" id="nextBtn" (click)="nextPrev(1)"
+                            [disabled]="AppStore.loading || !checkFormObject()">{{AppStore.loading ?
+                            getButtonText('loading') : getButtonText(nextButtonText)}}</button>
+                    </div>
+                </div> -->
+
+                <!-- <div style="overflow:auto;">
+                    <div class="form-next-page-btns" style="float:left;">
+                        <button class="btn btn-active" type="button" id="nextBtn"
+                            [disabled]="AppStore.loading||!checkFormObject()"
+                            (click)="nextPrev(1,true)">{{AppStore.loading ?
+                                getButtonText('loading') : getButtonText(nextButtonText)}}</button>
+                        <button class="btn" type="button" id="saveBtn" (click)="saveTabDetails()"
+                            [disabled]="AppStore.loading||!checkFormObject()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save') }}</button>
+                        <button class="btn" type="button" id="prevBtn" (click)="nextPrev(-1)"
+                            [disabled]="AppStore.loading">{{AppStore.loading ? getButtonText('loading') : getButtonText(previousButtonText)}}</button>
+                        <button class="btn" type="button" (click)="confirmCancel()">{{getButtonText('cancel')}}</button>
+                    </div>
+                </div> -->
+
+                <div style="overflow:auto; padding: 3px;">
+                    <div class="form-next-page-btns" style="float:left;">
+                        <button class="btn btn-active" type="button" id="nextBtn"
+                            [disabled]="AppStore.loading||!checkFormObject()"
+                            (click)="nextPrev(1,true)">{{getButtonText(nextButtonText)}}</button>
+                        <button class="btn" type="button" id="saveBtn" (click)="saveTabDetails()"
+                            [disabled]="AppStore.loading||!checkFormObject()">{{getButtonText('save')}}</button>
+                        <button class="btn" type="button" id="prevBtn" (click)="nextPrev(-1)"
+                            [disabled]="AppStore.loading">{{getButtonText(previousButtonText)}}</button>
+                        <button class="btn" type="button" (click)="confirmCancel()">{{getButtonText('cancel')}}</button>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</main>
+
+<div class="modal modal-style-1 fade" id="delete-popup" #cancelPopup data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="confirmationObject"></app-delete-popup>
+</div>
+
+<!-- Modal part -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #assetCategoryModal>
+
+    <app-asset-category-modal *ngIf="assetCategoryObject.type" [source]="assetCategoryObject">
+
+    </app-asset-category-modal>
+
+</div>
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #assetTypeModal>
+
+    <app-asset-types-modal *ngIf="assetTypeObject.type" [source]="assetTypeObject">
+
+    </app-asset-types-modal>
+
+</div>
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static"
+    #assetSubCategoryModal>
+
+    <app-asset-sub-category-modal *ngIf="assetSubCategoryObject.type" [source]="assetSubCategoryObject">
+
+    </app-asset-sub-category-modal>
+
+</div>
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #assetLocationModal>
+
+    <app-asset-location-modal *ngIf="assetLocationObject.type" [source]="assetLocationObject">
+
+    </app-asset-location-modal>
+
+</div>
+<div class="modal modal-style-1 popup-full-width fade" style="overflow: auto scroll;" data-keyboard="false"
+    data-backdrop="static" #supplierModal>
+
+    <app-suppliers-modal *ngIf="supplierObject.type" [source]="supplierObject">
+
+    </app-suppliers-modal>
+
+</div>
+<div class="modal modal-style-1 popup-full-width fade" style="overflow: auto scroll;" data-keyboard="false"
+    data-backdrop="static" #custodianModal>
+
+    <app-designation-modal *ngIf="custodianObject.type" [source]="custodianObject">
+
+    </app-designation-modal>
+
+</div>
+
+<!-----------------------Form Modal Start--------------------------->
+<div class="modal modal-style-1 popup-full-width fade" style="overflow: hidden auto; z-index: 999999;" data-keyboard="false" data-backdrop="static"
+    #organisationChangeFormModal *mobxAutorun>
+    <app-organisation-change-modal *ngIf="openModelPopup" [source]="OrganizationLevelObject.values"
+        (organizationChangeEvent)="closeModal($event)"></app-organisation-change-modal>
+</div>
+<!-----------------------Form Modal End--------------------------->
+
+<!-- * Documetn Attach/Upload Common Component Starts Here -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #fileUploadModal>
+
+    <app-file-upload-popup *ngIf="fileUploadPopupStore.openPopup"></app-file-upload-popup>
+
+</div>
+<!-- * Documetn Attach/Upload Common Component Ends Here -->

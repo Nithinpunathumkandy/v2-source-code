@@ -1,0 +1,839 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navigationBar>
+
+    <app-breadcrumb-menu></app-breadcrumb-menu>
+    <app-sub-menu></app-sub-menu>
+
+</nav>
+
+
+<main class="mt-3 organization-page">
+    <div class="container-fluid">
+        <div class="organization-form-page master-form-page" *mobxAutorun>
+
+            <form id="regForm" [formGroup]="form" class="organization-multi-stup-form multi-stup-form-common"
+                action="/action_page.php">
+                <!-- Circles which indicates the steps of the form: -->
+                <div id="header-sroll-form" class="form-indicates-sec clearfix" #formSteps>
+                    <span class="step pointer" (click)="changeStep(0)"><span class="multi-form-nbr">1</span>{{'info' |
+                        translate}}</span>
+                    <span class="step pointer" (click)="changeStep(1)"><span
+                            class="multi-form-nbr">2</span>{{'auditable_items' | translate}}</span>
+                    <span class="step pointer" (click)="changeStep(2)"><span
+                            class="multi-form-nbr">3</span>{{'checklist' | translate}}</span>
+                    <span class="step pointer" (click)="changeStep(3)"><span
+                            class="multi-form-nbr">4</span>{{'preview_save' | translate}}</span>
+
+                </div>
+                <!-- One "tab" for each step in the form: -->
+                <div class="tab">
+
+
+                    <div class="row">
+
+                        <div class="col-sm-6">
+
+
+                            <div class="form-group">
+                                <label for="name">{{ 'title' | translate }} <span
+                                        class="form-error">*</span></label>
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect">
+                                        <ng-select [placeholder]="'audit_plan_title'| translate" [multiple]="false"
+                                            bindLabel="title" formControlName="audit_plan_id"
+                                            (search)="searchAuditPlan($event)" (open)="getAuditPlan()"
+                                            [readonly]="isReadOnly" (change)="getAuditPlanDetails($event)">
+                                            <ng-container *ngFor="let auditPlan of AuditPlanStore.allItems">
+                                                <ng-option [value]="auditPlan.id"
+                                                    *ngIf="auditPlan.audit_plan_status_id==1">
+                                                    {{auditPlan.title.length > 80 ? auditPlan.title.substring(0,80)+'
+                                                    ...' : auditPlan.title}}
+                                                </ng-option>
+                                            </ng-container>
+                                        </ng-select>
+                                        <p class="pt-1" style="color: red;"
+                                            *ngIf="formErrors && formErrors.audit_plan_id">
+                                            {{formErrors.audit_plan_id}}</p>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6" *ngIf = "OrganizationLevelSettingsStore.organizationLevelSettings?.is_subsidiary">
+                            <div class="form-group">
+                                <label for="name">{{ 'subsidiary' | translate }}<span
+                                        class="form-error">*</span></label>
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect ">
+                                        <!-- (change)="eventChange('organization')" -->
+                                        <ng-select [placeholder]="'subsidiary'| translate" [multiple]="false"
+                                            formControlName="organization_id" bindLabel="title" 
+                                            (open)="getOrganization()"
+                                            (clear)="getOrganization()"                                            
+                                            (search)="searchOrganization($event)">
+                                            <ng-option [value]="org" *ngFor="let org of SubsidiaryStore.subsidiaryList">
+                                                {{org.title.length > 80 ? org.title.substring(0,80)+' ...' : org.title}}
+                                            </ng-option>
+                                        </ng-select>
+                                        <p class="pt-1" style="color: red;"
+                                            *ngIf="formErrors && formErrors.organization_id">
+                                            {{formErrors.organization_id}}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="col-sm-6"
+                            [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_division ? 'none':'block'}">
+                            <div class="form-group">
+                                <label for="name">{{'division' | translate}}<span class="form-error">*</span></label>
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect ">
+                                        <ng-select [placeholder]="'division'| translate" [multiple]="false"
+                                            formControlName="division_id" bindLabel="title"
+                                            (search)="searchDivision($event)"
+                                            (clear)="getDivision()" (open)="getDivision()">
+                                            <ng-option [value]="division" *ngFor="let division of DivisionMasterStore.allItems">
+                                                {{division.title}}
+                                            </ng-option>
+                                        </ng-select>
+                                        <p class="pt-1" style="color: red;"
+                                            *ngIf="formErrors && formErrors.division_id"> {{formErrors.division_id}}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6"
+                            [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_department ? 'none':'block'}">
+                            <div class="form-group">
+                                <label for="name">{{'department' | translate}}<span class="form-error">*</span></label>
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect ">
+                                        <ng-select [placeholder]="'department'| translate" [multiple]="false"
+                                            formControlName="department_id" bindLabel="title"
+                                            (clear)="getDepartment()"
+                                            (search)="searchDepartment($event)" (open)="getDepartment()">
+                                            <ng-option [value]="dept" *ngFor="let dept of DepartmentMasterStore.allItems">
+                                                {{dept.title.length > 80 ? dept.title.substring(0,80)+' ...' :
+                                                dept.title}}
+                                            </ng-option>
+                                        </ng-select>
+                                        <p class="pt-1" style="color: red;"
+                                            *ngIf="formErrors && formErrors.department_id">
+                                            {{formErrors.department_id}}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6"
+                            [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_section ? 'none':'block'}">
+                            <div class="form-group">
+                                <label for="name">{{'section' | translate}}<span class="form-error">*</span></label>
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect ">
+                                        <ng-select [placeholder]="'section'| translate" [multiple]="false"
+                                            formControlName="section_id" bindLabel="title">
+                                            <ng-option [value]="section" *ngFor="let section of AuditPlanScheduleMasterStore.sections">
+                                                {{section.title.length > 80 ? section.title.substring(0,80)+' ...' :
+                                                section.title}}
+                                            </ng-option>
+                                        </ng-select>
+                                        <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.section_id">
+                                            {{formErrors.section_id}}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6"
+                            [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_sub_section ? 'none':'block'}">
+                            <div class="form-group">
+                                <label for="name">{{'sub_section' | translate}}<span class="form-error">*</span></label>
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect ">
+                                        <ng-select [placeholder]="'sub_section'| translate" [multiple]="false"
+                                            formControlName="sub_section_id" bindLabel="title">
+                                            <ng-option [value]="_subsection" *ngFor="let _subsection of AuditPlanScheduleMasterStore.subSections">
+                                                {{_subsection.title.length > 80 ? _subsection.title.substring(0,80)+'
+                                                ...' : _subsection.title}}
+                                            </ng-option>
+                                        </ng-select>
+                                        <p class="pt-1" style="color: red;"
+                                            *ngIf="formErrors && formErrors.sub_section_id ">
+                                            {{formErrors.sub_section_id}}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>{{'auditor' | translate}} <span class="form-error">*</span></label>
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect">
+                                        <ng-select [items]="AuditorsStore.allItems" bindLabel="email"
+                                            [placeholder]="'select_auditor'| translate" multiple="true"
+                                            formControlName="auditor_ids" (search)="searchAuditors($event)"
+                                            (open)="getAuditors()">
+                                            <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                                <img *ngIf="item?.user?.image_token" height="15" width="15"
+                                                    [attr.src]="createImagePreview('user-profile-picture',item?.user?.image_token)"
+                                                    onerror="this.src='/assets/images/user-demo2.png'" />
+                                                <img *ngIf="!item?.user?.image_token" height="15" width="15"
+                                                    [attr.src]="getDefaultImage('user-logo')"
+                                                    onerror = "this.src='/assets/images/user-demo2.png'" />
+                                                <b style="padding-left: 3px;">{{getStringsFormatted([item?.user?.first_name,item?.user?.last_name],50,' ') | titlecase}}</b><span aria-hidden="true"
+                                                    (click)="clear(item)" style="border:none;"
+                                                    class="ng-value-icon left">×</span>
+                                            </ng-template>
+                                            <ng-template ng-option-tmp let-item="item" let-index="index">
+                                                <div class="user-post-department-pic">
+                                                    <img *ngIf="item?.user?.image_token" height="25" width="25"
+                                                        [attr.src]="createImagePreview('user-profile-picture',item?.user?.image_token)"
+                                                        onerror="this.src='/assets/images/user-demo2.png'" />
+                                                    <img *ngIf="!item?.user?.image_token" height="25" width="25"
+                                                        [attr.src]="getDefaultImage('user-logo')"
+                                                        onerror = "this.src='/assets/images/user-demo2.png'" />
+                                                </div>
+                                                <div class="user-post-department-div">
+                                                    <b>{{getStringsFormatted([item?.user?.first_name,item?.user?.last_name],50,' ') | titlecase}}</b>
+                                                    <p class="user-post-department-multiple">
+                                                        {{getStringsFormatted([item?.user?.designation?.title,' '+item?.user?.department?.title],50,',')}}
+                                                    </p>
+                                                </div>
+                                            </ng-template>
+                                        </ng-select>
+                                        <p class="pt-1" style="color: red;"
+                                            *ngIf="formErrors && formErrors.auditor_ids">
+                                            {{formErrors.auditor_ids}}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>{{'auditees' | translate}} <span class="form-error">*</span></label>
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect">
+                                        <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                                            [placeholder]="'select_auditees'| translate" multiple="true"
+                                            formControlName="auditee_ids" (search)="searchAuditees($event)"
+                                            (open)="getAuditees()" [searchFn]="customSearchFn">
+                                            <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                                <img *ngIf="item.image_token" height="15" width="15"
+                                                    [attr.src]="createImagePreview('user-profile-picture',item.image_token)"
+                                                    onerror="this.src='/assets/images/user-demo2.png'" />
+                                                <img *ngIf="!item.image_token" height="15" width="15"
+                                                    [attr.src]="getDefaultImage('user-logo')"
+                                                    onerror = "this.src='/assets/images/user-demo2.png'" />
+                                                <b style="padding-left: 3px;">{{item.first_name | titlecase}}
+                                                    {{item.last_name | titlecase}}</b><span aria-hidden="true"
+                                                    (click)="clear(item)" style="border:none;"
+                                                    class="ng-value-icon left">×</span>
+                                            </ng-template>
+                                            <ng-template ng-option-tmp let-item="item" let-index="index">
+                                                <div class="user-post-department-pic">
+                                                    <img *ngIf="item.image_token" height="25" width="25"
+                                                        [attr.src]="createImagePreview('user-profile-picture',item.image_token)"
+                                                        onerror="this.src='/assets/images/user-demo2.png'" />
+                                                    <img *ngIf="!item.image_token" height="25" width="25"
+                                                        [attr.src]="getDefaultImage('user-logo')"
+                                                        onerror = "this.src='/assets/images/user-demo2.png'" />
+                                                </div>
+                                                <div class="user-post-department-div">
+                                                    <b>{{item.first_name | titlecase}}
+                                                        {{item.last_name | titlecase}}</b>
+                                                    <p class="user-post-department-multiple">
+                                                        {{item.designation_title}}<span
+                                                            *ngIf="item.department">,{{item.department}}</span></p>
+                                                </div>
+                                            </ng-template>
+                                        </ng-select>
+                                        <p class="pt-1" style="color: red;"
+                                            *ngIf="formErrors && formErrors.auditee_ids">
+                                            {{formErrors.auditee_ids}}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <div class="clearfix">
+
+                                    <label for="name">{{'from' | translate}} <span class="form-error">*</span></label>
+                                    <span *ngIf="form.value.audit_plan_id" style="float: right;"> Plan Start Date :
+                                        {{AuditPlanScheduleMasterStore.auditPlanStartDate | date:
+                                        OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</span>
+                                </div>
+                                <div class="password-icon-input">
+                                    <div class="input-group date-picker">
+                                        <!-- <input class="form-control cal3" formControlName="start_date"
+                                            placeholder="yyyy-mm-dd" id="from" ngbDatepicker
+                                            #fromDateInput="ngbDatepicker">
+
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-secondary calendar"
+                                                (click)="fromDateInput.toggle()" type="button"><i
+                                                    class="fas fa-calendar-alt"></i></button>
+                                        </div> -->
+
+                                        <input class="form-control" formControlName="start_date" [owlDateTime]="dt1"
+                                            [owlDateTimeTrigger]="dt1" [min]="AuditPlanScheduleMasterStore.planActualStartDate" placeholder="Date Time">
+                                        <owl-date-time [hour12Timer]="true" #dt1></owl-date-time>
+                                        <div class="input-group-append">
+                                            <button [owlDateTimeTrigger]="dt1"
+                                                class="btn btn-outline-secondary calendar" type="button"><i
+                                                    class="fas fa-calendar-alt"></i></button>
+                                        </div>
+
+                                    </div>
+                                    <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.start_date">
+                                        {{formErrors.start_date}}</p>
+
+                                    <div class="question-circle-inp" style="margin-right: 40px;">
+                                        <i class="far fa-question-circle"></i>
+                                        <div class="message-password-inp">
+                                            <p class="mb-0" *ngIf="AuditPlanScheduleMasterStore.auditPlanStartDate!=null">Audit Plan Schedule start
+                                                date should be {{AuditPlanScheduleMasterStore.auditPlanStartDate | date:
+                                                OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                or greater than {{AuditPlanScheduleMasterStore.auditPlanStartDate | date:
+                                                OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                            </p>
+
+                                            <p class="mb-0" *ngIf="AuditPlanScheduleMasterStore.auditPlanStartDate==null">Please Select Audit Plan
+                                                First</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+
+                                <div class="clearfix">
+
+                                    <label for="name">{{'to' | translate}} <span class="form-error">*</span></label>
+                                    <span *ngIf="form.value.audit_plan_id" style="float: right;"> Plan End Date :
+                                        {{AuditPlanScheduleMasterStore.auditPlanEndDate | date:
+                                        OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</span>
+                                </div>
+
+
+                                <div class="password-icon-input">
+                                    <div class="input-group date-picker">
+                                        <!-- <input class="form-control cal4" formControlName="end_date"
+                                            placeholder="yyyy-mm-dd"
+                                            [minDate]="form.value.start_date?{year: this.form.value.start_date.year, month: this.form.value.start_date.month, day: this.form.value.start_date.day+1}:''"
+                                            id="to" ngbDatepicker #toDateInput="ngbDatepicker">
+
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-secondary calendar"
+                                                (click)="toDateInput.toggle()" type="button"><i
+                                                    class="fas fa-calendar-alt"></i></button>
+                                        </div> -->
+
+                                        <input class="form-control" formControlName="end_date" [owlDateTime]="dt2"
+                                            [owlDateTimeTrigger]="dt2" [max]="AuditPlanScheduleMasterStore.planActualEndDate" placeholder="Date Time">
+                                        <owl-date-time [hour12Timer]="true" #dt2></owl-date-time>
+                                        <div class="input-group-append">
+                                            <button [owlDateTimeTrigger]="dt2"
+                                                class="btn btn-outline-secondary calendar" type="button"><i
+                                                    class="fas fa-calendar-alt"></i></button>
+                                        </div>
+                                    </div>
+                                    <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.end_date">
+                                        {{formErrors.end_date}}</p>
+
+                                    <div class="question-circle-inp" style="margin-right: 40px;">
+                                        <i class="far fa-question-circle"></i>
+                                        <div class="message-password-inp">
+
+                                            <p class="mb-0" *ngIf="AuditPlanScheduleMasterStore.auditPlanEndDate!=null && AuditPlanScheduleMasterStore.auditPlanStartDate!=null">
+                                                Audit Plan Schedule End date should be {{AuditPlanScheduleMasterStore.auditPlanEndDate | date:
+                                                OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                or
+                                                Less than {{AuditPlanScheduleMasterStore.auditPlanEndDate | date:
+                                                OrganizationGeneralSettingsStore.organizationSettings?.date_format}} or
+                                                within {{AuditPlanScheduleMasterStore.auditPlanStartDate | date:
+                                                OrganizationGeneralSettingsStore.organizationSettings?.date_format}} and
+                                                {{AuditPlanScheduleMasterStore.auditPlanEndDate | date:
+                                                OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                date
+                                            </p>
+
+                                            <p class="mb-0" *ngIf="AuditPlanScheduleMasterStore.auditPlanEndDate==null && AuditPlanScheduleMasterStore.auditPlanStartDate==null">
+                                                Please Select Audit Plan First</p>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <!-- <label for="name" class="label-style mb-0">Working Papers</label>
+                    <div class="scroll-documents" #uploadArea>
+                        <div class="row m-0 upload-section" style="padding-top: 0">
+                            <div class="col-sm-3 col-lg-3 costmz-logo-new mt-2">
+
+                                <div class="question-circle-inp" style="margin-right: 7px;">
+                                    <i class="far fa-question-circle"></i>
+                                    <div class="message-password-inp">
+                                        <p class="mb-0">Allowed File Types : JPEG,PNG, DOC,PDF,MPEG, EXCEL</p>
+                                    </div>
+                                </div>
+                                <div class="form-group form-group-upload">
+                                    <div class="darag-dropifile-upload">
+                                        <div class="d-flex justify-content-center align-items-center text-center">
+                                            <div>
+                                                <img src="assets/images/drag-pic.png" class="drag-pic-files">
+                                                <div class="drag-file-name"> Drag &amp; Drop Your File Here </div>
+                                                <div class="upload-btn-wrapper">
+                                                    <input type="file" multiple name="myfile"
+                                                        (change)="onFileChange($event,'support-file')" />
+                                                    <button class="btn">Browse Files</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div [ngClass]="files.success? 'col-sm-3 col-lg-3 up-pic-cf mt-2 hide_loader' : 'col-sm-3 col-lg-3 up-pic-cf mt-2'"
+                                *ngFor="let files of fileUploadsArray">
+                                <div class="upload-pics edit-option file-upload-loader">
+                                    <circle-progress class="browse-form-pic" [percent]=files.uploadProgress
+                                        [title]=files.uploadProgress>
+                                    </circle-progress>
+                                </div>
+                            </div>
+
+                            <div [ngClass]="doc.is_deleted ? 'col-sm-3 col-lg-3 up-pic-cf mt-2 image_deleted':'col-sm-3 col-lg-3 up-pic-cf mt-2'"
+                                *ngFor="let doc of AuditPlanScheduleMasterStore.docDetails">
+                                <div class="upload-pics edit-option">
+                                    <div *ngIf="doc.preview" class="browse-form-pic"
+                                        [ngStyle]="{'background': 'url(' + doc.preview + ') no-repeat 0 0 / cover'}">
+                                    </div>
+                                    <div class="browse-form-name clearfix">
+                                        <div class="float-left">
+                                            <h6>{{doc.name.length>15?doc.name.substring(0,15)+' ...':doc.name}}</h6>
+                                            <span>{{doc.size/1048576 | number:'0.2-2'}}MB</span>
+                                        </div>
+                                        <div class="browse-logo">
+                                            <img *ngIf="checkExtension(doc.ext,'excel') != -1"
+                                                src="/assets/images/md-xl.png">
+                                            <img *ngIf="checkExtension(doc.ext,'image') != -1"
+                                                src="/assets/images/md-jpg.png">
+                                            <img *ngIf="checkExtension(doc.ext,'doc') != -1"
+                                                src="/assets/images/md-doc.png">
+                                            <img *ngIf="checkExtension(doc.ext,'pdf') != -1"
+                                                src="/assets/images/md-pdf.png">
+                                        </div>
+                                    </div>
+                                    <div class="edit-option-show">
+                                        <a (click)="removeDocument(doc.token)"><i class="fas fa-trash"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div> -->
+
+
+
+                </div>
+
+                <div class="tab">
+
+
+                    <div class="col-sm-12">
+
+                        <div class="processes-issue audit-processes-issue clearfix">
+                            <h5><img src="/assets/images/controls-icon.png">{{ 'add_auditable_item' | translate }}</h5>
+
+                            <div class="float-right">
+                                <a class="btn" (click)="openAuditableItemModal()">{{ 'choose_auditable_item' | translate
+                                    }}</a>
+                            </div>
+                        </div>
+                        <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.auditable_item_ids ">
+                            {{formErrors.auditable_item_ids}}</p>
+
+                        <div class="audit-form-table w-100 mb-4"
+                            *ngIf="AuditPlanScheduleMasterStore.auditableItemToDisplay.length > 0">
+                            <table class="table table-bordered ordinary-table cmn-table-style mb-2">
+                                <thead>
+                                    <tr>
+                                        <th class="border-top-0 text text-center" width="3%">
+
+                                            #
+                                        </th>
+                                        <th class="border-top-0" width="8%">Ref.No</th>
+                                        <th class="border-top-0" width="47%">Title</th>
+
+                                        <th class="border-top-0" width="15%">Type</th>
+                                        <th class="border-top-0" width="15%">Category</th>
+                                        <th class="border-top-0" width="14%">Risk Rating</th>
+
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="edit-and-delete-main"
+                                        *ngFor="let items of AuditPlanScheduleMasterStore.auditableItemToDisplay;let num=index">
+                                        <td class="text-center">
+
+                                            {{num+1}}</td>
+                                        <td>#{{items.reference_code}}</td>
+                                        <td>{{items.title}}</td>
+                                        <td>{{items.type ? items.type : AppStore.noContentText}}</td>
+                                        <td> {{items.category ? items.category : AppStore.noContentText}}</td>
+                                        <td *ngIf="items.risk_rating!=null">
+                                            <div class="edit-option-show" style="margin: 30px 0 0 0; ">
+                                                <!-- edit-and-delete starts -->
+                                                <a (click)="deleteAuditableItem(items)"><i class="fas fa-trash"></i></a>
+                                            </div>
+                                            <div [ngClass]="'dot-div '+items?.risk_rating_label+'-dot'">{{items?.risk_rating ? items?.risk_rating : AppStore.noContentText }}</div>
+                                         </td>
+
+                                        <!-- <td *ngIf="items.risk_rating!=null">
+                                            <div class="edit-option-show" style="margin: 30px 0 0 0; ">
+                                                
+                                                <a (click)="deleteAuditableItem(items)"><i class="fas fa-trash"></i></a>
+                                            </div>
+
+                                            <div
+                                                [ngClass]="items.risk_rating=='High'?'dot-div red-dot': items.risk_rating=='Medium'?'dot-div yellow-dot':items.risk_rating=='Low'?'dot-div green-dot':'dot-div red-dot'">
+                                                {{items.risk_rating}}</div>
+                                        </td> -->
+                                        <td class="cursor-pointer" *ngIf="items.risk_rating==null">
+
+                                            <div class="edit-option-show" style="margin: 30px 0 0 0; ">
+                                                
+                                                <a (click)="deleteAuditableItem(items)"><i class="fas fa-trash"></i></a>
+                                            </div>
+                                            {{ AppStore.noContentText}}
+                                        </td>
+                                    </tr>
+
+
+
+                                </tbody>
+                            </table>
+
+
+                        </div>
+
+                        <app-no-data-list [source]="auditableItemEmptyList"
+                            *ngIf="AuditPlanScheduleMasterStore.auditableItemToDisplay.length == 0"></app-no-data-list>
+                    </div>
+                </div>
+
+                <div class="tab">
+
+                    <div class="col-sm-12">
+
+                        <div class="processes-issue audit-processes-issue clearfix">
+                            <h5><img src="/assets/images/controls-icon.png">{{ 'add_checklist' | translate }}</h5>
+
+                            <div class="float-right">
+                                <a class="btn" (click)="addCheckList()">{{ 'choose_checklist' | translate }}</a>
+                            </div>
+                        </div>
+                        <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.checklist_ids ">
+                            {{formErrors.checklist_ids}}</p>
+
+                        <div class="audit-form-table w-100 mb-4"
+                            *ngIf="AuditPlanScheduleMasterStore.checklistToDisplay.length > 0">
+                            <table class="table table-bordered ordinary-table cmn-table-style mb-2">
+                                <tr>
+                                    <th class="border-top-0 text-center" width="15%">SL no</th>
+                                    <th class="border-top-0" width="85%">Checklist</th>
+                                </tr>
+                                <tr class="edit-and-delete-main"
+                                    *ngFor="let check of AuditPlanScheduleMasterStore.checklistToDisplay;let num=index">
+                                    <td class="text-center">{{num+1}}</td>
+                                    <td>{{check.title}}
+                                        <div class="edit-option-show" style="margin: 30px 0 0 0; ">
+                                            <!-- edit-and-delete starts -->
+                                            <a (click)="deleteCheckList(check)"><i class="fas fa-trash"></i></a>
+                                        </div><!-- edit-and-delete end -->
+                                    </td>
+                                </tr>
+
+
+                            </table>
+
+
+                        </div>
+
+
+                        <app-no-data-list [source]="checklistEmptyList"
+                            *ngIf="AuditPlanScheduleMasterStore.checklistToDisplay.length == 0"></app-no-data-list>
+                    </div>
+
+                </div>
+
+                <div class="tab">
+
+
+                    <div class="widget-body-light issuue-new-style p-0">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div class="bg-white">
+
+                                    <div class="row">
+                                        <div class="col-sm-12 col-lg-12 audit-program-details-page-cnt">
+
+                                            <div class="issue-top-sec">
+                                                <div class="clearfix">
+                                                    <h5 class="d-inline-block cmn-head-style label-tag-style">
+
+                                                        <!-- <span
+                                                            class="issue-smoal-head-text">#SC0001</span> -->
+                                                        {{form.value.department_id?form.value.department_id.title:AppStore.noContentText}}
+                                                        <span class="draft-tag label-tag-style-tag label-left-arow-tag"
+                                                            style="line-height: 16px; vertical-align: middle; margin-top: -4px; display: inline-block;">
+                                                            New</span>
+                                                    </h5>
+                                                </div>
+                                                <div class="clearfix">
+                                                    <p *ngIf="AuditPlanScheduleMasterStore.endDate!=null && AuditPlanScheduleMasterStore.startDate!=null" class="label-tag-style">
+                                                        <i class="fas fa-calendar-alt date-pics-two"></i>
+                                                        {{AuditPlanScheduleMasterStore.startDate | date:
+                                                        OrganizationGeneralSettingsStore.organizationSettings?.date_time_format}}
+                                                        To
+                                                        {{AuditPlanScheduleMasterStore.endDate | date:
+                                                        OrganizationGeneralSettingsStore.organizationSettings?.date_time_format}}
+                                                    </p>
+
+                                                    <p *ngIf="AuditPlanScheduleMasterStore.endDate==null && AuditPlanScheduleMasterStore.startDate==null" class="label-tag-style">
+                                                        <i class="fas fa-calendar-alt date-pics-two"></i>
+                                                        {{AppStore.noContentText}}
+
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-lg-3 col-sm-6">
+                                                    <h6>{{'audit_program' | translate}}</h6>
+                                                    <p>{{AuditPlanScheduleMasterStore.auditProgramTitle}}</p>
+                                                </div>
+                                                <div class="col-lg-3 col-sm-6">
+                                                    <h6>{{ 'audit_plans' | translate }}</h6>
+                                                    <p *ngIf="AuditPlanScheduleMasterStore.auditPlanTitle!=null">{{AuditPlanScheduleMasterStore.auditPlanTitle}}
+                                                    </p>
+                                                    <p *ngIf="AuditPlanScheduleMasterStore.auditPlanTitle==null">{{AppStore.noContentText}}
+                                                    </p>
+                                                </div>
+                                                <div class="col-lg-3 col-sm-6" *ngIf = "OrganizationLevelSettingsStore.organizationLevelSettings?.is_subsidiary">
+                                                    <h6>{{ 'subsidiary' | translate }}</h6>
+                                                    <p>{{form.value.organization_id?form.value.organization_id.title:AppStore.noContentText}}
+                                                    </p>
+                                                </div>
+                                                <div class="col-lg-3 col-sm-6" [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_division ? 'none':'block'}">
+                                                    <h6>{{'division' | translate}}</h6>
+                                                    <p>{{form.value.division_id?form.value.division_id.title:AppStore.noContentText}}
+                                                    </p>
+                                                </div>
+                                                <div class="col-lg-3 col-sm-6" [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_section ? 'none':'block'}">
+                                                    <h6>{{'section' | translate}}</h6>
+                                                    <p>{{form.value.section_id?form.value.section_id.title:AppStore.noContentText}}
+                                                    </p>
+                                                </div>
+                                                <div class="col-lg-3 col-sm-6" [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_sub_section ? 'none':'block'}">
+                                                    <h6>{{'sub_section' | translate}}</h6>
+                                                    <p>{{form.value.sub_section_id?form.value.sub_section_id.title:AppStore.noContentText}}
+                                                    </p>
+                                                </div>
+                                                <div class="col-lg-3 col-sm-6" [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_department ? 'none':'block'}">
+                                                    <h6>{{'department' | translate}}</h6>
+                                                    <p>{{form.value.department_id?form.value.department_id.title:AppStore.noContentText}}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <!-- <div class="row">
+                                                <h6>{{'auditor' | translate}}</h6>
+                                                <h6 class="pt-3">{{'auditees' | translate}}</h6>
+                                            </div> -->
+                                       
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <h6>{{'auditor' | translate}}</h6>
+                                                    <ul class="arci-user-tab-dtl workflow-lst-pics-loop clearfix mb-3">
+                                                        <li class="rounde-hov-bg"
+                                                            *ngFor="let auditor of form.value?.auditor_ids; let i = index">
+                                                            <app-user-popup-box [source]="assignUserValues(auditor)"
+                                                                [showName]="false" [activateButtons]="false">
+                                                            </app-user-popup-box>
+                                                        </li>
+                                                    </ul>
+                                                    <p *ngIf="form.value.auditor_ids==null">{{AppStore.noContentText}}
+                                                    </p>
+                                                </div>
+                                          
+
+                                     
+                                            <!-- <div class="row"> -->
+                                                <div class="col-lg-3 col-sm-6">
+                                                    <h6>{{'auditees' | translate}}</h6>
+                                                    <ul class="arci-user-tab-dtl workflow-lst-pics-loop clearfix mb-3">
+                                                        <li class="rounde-hov-bg"
+                                                            *ngFor="let auditee of form.value?.auditee_ids; let i = index">
+                                                            <app-user-popup-box [source]="assignUserValues(auditee)"
+                                                                [showName]="false" [activateButtons]="false">
+                                                            </app-user-popup-box>
+                                                        </li>
+                                                    </ul>
+                                                    <p *ngIf="form.value.auditee_ids==null">{{AppStore.noContentText}}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <!-- </div> -->
+
+
+                                            <h6 class="mt-3">{{'auditable_items' | translate}}</h6>
+                                            <p *ngIf="AuditPlanScheduleMasterStore.auditableItemToDisplay.length==0">
+                                                {{AppStore.noContentText}}</p>
+                                            <div class="audit-form-table w-100"
+                                                *ngIf="AuditPlanScheduleMasterStore.auditableItemToDisplay.length>0">
+                                                <table
+                                                    class="table table-bordered ordinary-table audit-page-table mb-4 table-scroll">
+                                                    <thead>
+                                                        <tr>
+                                                            <th class="border-top-0 text text-center" width="3%">
+
+                                                                #
+                                                            </th>
+                                                            <th class="border-top-0" width="8%">Ref.No</th>
+                                                            <th class="border-top-0" width="47%">Title</th>
+
+                                                            <th class="border-top-0" width="15%">Type</th>
+                                                            <th class="border-top-0" width="15%">Category</th>
+                                                            <th class="border-top-0" width="14%">Risk Rating</th>
+
+
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr
+                                                            *ngFor="let items of AuditPlanScheduleMasterStore.auditableItemToDisplay;let num=index">
+                                                            <td class="text-center">
+
+                                                                {{num+1}}</td>
+                                                            <td>#{{items.reference_code}}</td>
+                                                            <td>{{items.title}}</td>
+                                                            <td>{{items.type ? items.type : AppStore.noContentText}}
+                                                            </td>
+                                                            <td> {{items.category ? items.category :
+                                                                AppStore.noContentText}}</td>
+
+                                                            <td *ngIf="items.risk_rating!=null">
+                                                                <div
+                                                                    [ngClass]="items.risk_rating=='High'?'dot-div red-dot': items.risk_rating=='Medium'?'dot-div yellow-dot':items.risk_rating=='Low'?'dot-div green-dot':'dot-div red-dot'">
+                                                                    {{items.risk_rating}}</div>
+                                                            </td>
+                                                            <td class="cursor-pointer" *ngIf="items.risk_rating==null">
+
+                                                                {{ AppStore.noContentText}}
+                                                            </td>
+
+                                                        </tr>
+
+
+
+                                                    </tbody>
+                                                </table>
+
+                                            </div>
+
+
+
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+
+
+                        <h6>{{'checklist' | translate}}</h6>
+                        <div class="drop-detail-sec mb-3"
+                            *ngIf="AuditPlanScheduleMasterStore.checklistToDisplay.length>0">
+                            <ul class="banking-issue">
+                                <li class="clearfix"
+                                    *ngFor="let pcheck of AuditPlanScheduleMasterStore.checklistToDisplay;let num=index">
+                                    <a>{{pcheck.title}}</a>
+                                </li>
+
+                            </ul>
+                        </div>
+
+                        <div class="drop-detail-sec" *ngIf="AuditPlanScheduleMasterStore.checklistToDisplay.length==0">
+
+                            <p>{{AppStore.noContentText}}</p>
+                        </div>
+
+
+
+
+                    </div>
+
+                </div>
+
+                <div style="overflow:auto;">
+                    <div class="form-next-page-btns" style="float:left;">
+                        <button class="btn" type="button" (click)="confirmCancel()">{{getButtonText('cancel')}}</button>
+                        <button class="btn" type="button" id="prevBtn" (click)="nextPrev(-1)"
+                            [disabled]="AppStore.loading">{{getButtonText(previousButtonText)}}</button>
+                        <button class="btn btn-active" type="button" id="nextBtn" (click)="nextPrev(1)"
+                            [disabled]="AppStore.loading || !checkFormObject()">{{getButtonText(nextButtonText)}}</button>
+                    </div>
+                </div>
+
+
+            </form>
+
+        </div>
+    </div>
+</main>
+
+<!-- Modal part  auditable Items-->
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+    <app-auidtable-items-for-plan-schedule *ngIf="auditableItemObject.type" [source]="auditableItemObject">
+    </app-auidtable-items-for-plan-schedule>
+</div>
+
+<!-- calling add checklist modal -->
+
+
+ <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #checklistPopup>
+    <app-checklist-add-modal *ngIf="checklistObject.type" [source]="checklistObject">
+
+    </app-checklist-add-modal>
+
+</div>
+
+<!-- <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #checklistPopup>
+    <app-mstype-checklist-modal  *ngIf="checklistObject.type" [source]="checklistObject">
+    </app-mstype-checklist-modal >
+
+</div> -->
+
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #cancelPopup data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="confirmationObject"></app-delete-popup>
+</div>

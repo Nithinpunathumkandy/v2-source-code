@@ -1,0 +1,883 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navigationBar>
+
+    <app-breadcrumb-menu></app-breadcrumb-menu>
+    <app-sub-menu></app-sub-menu>
+
+</nav>
+
+
+
+<main class="mt-3 organization-page">
+    <div class="container-fluid">
+        <div class="organization-form-page master-form-page" *mobxAutorun>
+
+            <form id="regForm" [formGroup]="form" class="organization-multi-stup-form multi-stup-form-common"
+                action="/action_page.php">
+                <!-- Circles which indicates the steps of the form: -->
+                <div id="header-sroll-form" class="form-indicates-sec clearfix" #formSteps>
+                    <span class="step pointer" (click)="changeStep(0)"><span class="multi-form-nbr">1</span>{{'info' | translate}}</span>
+                    <span class="step pointer" (click)="changeStep(1)"><span class="multi-form-nbr">2</span>{{'criteria' | translate}}</span>
+                    <span class="step pointer" (click)="changeStep(2)"><span class="multi-form-nbr">3</span>{{'document' | translate}}</span>
+                    <span class="step pointer" (click)="changeStep(3)"><span class="multi-form-nbr">4</span>{{'preview_save' | translate}}</span>
+
+                </div>
+                <!-- One "tab" for each step in the form: -->
+                <div class="tab">
+                    <!-- tab start -->
+
+                    <div class="row">
+
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="name">{{'audit_program' | translate}} <span class="form-error">*</span></label>
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect">
+                                        <ng-select [placeholder]="'select_audit_program'| translate"  [multiple]="false"
+                                            formControlName="audit_program_id" (search)="searchAuditPrograms($event)"
+                                            (open)="getAuditPrograms()" [readonly]="isReadOnly"
+                                            (change)="getAuditProgramDetails($event)">
+                                            <ng-option [value]="auditProgram.id"
+                                                *ngFor="let auditProgram of AuditProgramMasterStore.allItems">
+                                                #{{auditProgram.reference_code}}
+                                                {{auditProgram.title.length > 60 ? auditProgram.title.substring(0,60)+' ...' : auditProgram.title}}
+                                            </ng-option>
+                                        </ng-select>
+                                        <p class="pt-1" style="color: red;"
+                                            *ngIf="formErrors && formErrors.audit_program_id">
+                                            {{formErrors.audit_program_id}}</p>
+                                    </div>
+
+                                </div>
+                            </div>
+
+
+
+
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="name">{{'audit_categories' | translate}}<span
+                                        class="form-error">*</span></label>
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect select-width-plus">
+                                        <ng-select [items]="AuditCategoryMasterStore.allItems"
+                                            [placeholder]="'select_category'| translate" [multiple]="false"
+                                            formControlName="audit_category_id" bindLabel="title"
+                                            (search)="searchAuditableItemCategory($event)"
+                                            (open)="getAuditableItemCategory()">
+                                            <!-- <ng-option [value]="audit"
+                                                *ngFor="let audit of AuditItemCategoryMasterStore.allItems">
+                                                {{audit.title.length > 80 ? audit.title.substring(0,80)+' ...' : audit.title}}
+                                            </ng-option> -->
+                                            <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                                {{item.title.length > 60 ? (item.title | slice:0:60)+' ...' :
+                                                item.title}}<span aria-hidden="true" (click)="clear(item)"
+                                                    style="border:none;" class="ng-value-icon left">×</span>
+                                            </ng-template>
+                                            <ng-template ng-option-tmp let-item="item" let-index="index">
+                                                {{item.title.length > 80 ? (item.title | slice:0:80)+' ...' :
+                                                item.title}}
+                                            </ng-template>
+                                        </ng-select>
+                                        <p class="pt-1" style="color: red;"
+                                            *ngIf="formErrors && formErrors.audit_category_id">
+                                            {{formErrors.audit_category_id}}</p>
+                                    </div>
+                                    <button class="btn multi-add-user" *ngIf = "AuthStore.getActivityPermission(1000,'CREATE_AUDITABLE_ITEM_CATEGORY')" (click)="addAuditableItemCategory()"><i
+                                            class="fas fa-plus"></i></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>{{'audit_leader' | translate}} <span class="form-error">*</span></label>
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect">
+                                        <ng-select [items]="AuditorsStore.allItems" bindLabel="email"
+                                        [placeholder]="'select_audit_leader'|translate" [multiple]="false"
+                                            formControlName="audit_leader_id" (search)="searcAuditLeaders($event)"
+                                            (open)="getAuditLeader()">
+                                            <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                                <img *ngIf="item.user?.image_token" height="15" width="15"
+                                                    [attr.src]="createImagePreview('user-profile-picture',item?.user?.image_token)" onerror = "this.src='/assets/images/user-demo2.png'" />
+                                                <img *ngIf="!item.user?.image_token" height="15" width="15"
+                                                    [attr.src]="getDefaultImage('user-logo')" onerror = "this.src='/assets/images/user-demo2.png'" />
+                                                <b style="padding-left: 3px;">{{getStringsFormatted([item?.user?.first_name,item?.user?.last_name],45,' ') | titlecase}}</b><span aria-hidden="true"
+                                                    (click)="clear(item)" style="border:none;"
+                                                    class="ng-value-icon left">×</span>
+                                            </ng-template>
+                                            <ng-template ng-option-tmp let-item="item" let-index="index">
+                                                <div class="user-post-department-pic">
+                                                    <img *ngIf="item.user?.image_token" height="25" width="25"
+                                                        [attr.src]="createImagePreview('user-profile-picture',item.user?.image_token)" onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                                    <img *ngIf="!item.user?.image_token" height="25" width="25"
+                                                        [attr.src]="getDefaultImage('user-logo')" onerror = "this.src='/assets/images/user-demo2.png'" />
+                                                </div>
+                                                <div class="user-post-department-div">
+                                                    <b>{{getStringsFormatted([item?.user?.first_name,item?.user?.last_name],45,' ') | titlecase}}</b>
+                                                    <p class="user-post-department-multiple">
+                                                        {{getStringsFormatted([item?.user?.designation?.title,' '+item?.user?.department?.title],45,',')}}
+                                                    </p>
+                                                </div>
+                                            </ng-template>
+                                        </ng-select>
+                                        <p class="pt-1" style="color: red;"
+                                            *ngIf="formErrors && formErrors.audit_leader_id">
+                                            {{formErrors.audit_leader_id}}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6"
+                        [ngStyle] = "{display: !OrganizationGeneralSettingsStore.organizationSettings?.is_ms_type ? 'none':'block'}">
+                            <div class="form-group">
+                                <label for="name">{{'ms_types' | translate}}</label>
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect ">
+                                        <ng-select [placeholder]="'select_ms_types'| translate" multiple="true"
+                                            formControlName="ms_type_organization_ids" (search)="searchMsType($event)"
+                                            (open)="getMsType()">
+                                            <ng-option [value]="mstype.id"
+                                                *ngFor="let mstype of MsTypeStore.msTypeDetails">
+                                                <label
+                                                    class="mb-0">{{mstype.ms_type_title.length > 80 ? mstype.ms_type_title.substring(0,80)+' ...' : mstype.ms_type_title }}
+                                                    <span style="color: #7c7a7a;">V
+                                                        {{mstype.ms_type_version_title}}</span></label>
+                                            </ng-option>
+                                        </ng-select>
+                                        <p class="pt-1" style="color: red;"
+                                            *ngIf="formErrors && formErrors.ms_type_organization_ids">
+                                            {{formErrors.ms_type_organization_ids}}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="name">{{'from' | translate}} <span class="form-error">*</span></label>
+                                <div class="password-icon-input">
+                                    <div class="input-group date-picker">
+                                        <input class="form-control cal3" formControlName="start_date"
+                                        [minDate]="auditProgramStartDate?{year: auditProgramStartDate.year, month: auditProgramStartDate.month, day: auditProgramStartDate.day}:''"
+                                        [maxDate]="auditProgramEndDate?{year: auditProgramEndDate.year, month: auditProgramEndDate.month, day: auditProgramEndDate.day}:''"   
+                                        placeholder="yyyy-mm-dd" id="from" ngbDatepicker
+                                            #fromDateInput="ngbDatepicker">
+
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-secondary calendar"
+                                                (click)="fromDateInput.toggle()" type="button"><i
+                                                    class="fas fa-calendar-alt"></i></button>
+                                        </div>
+                                    </div>
+                                    <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.start_date">
+                                        {{formErrors.start_date}}</p>
+
+
+                                    <div class="question-circle-inp" style="margin-right: 40px;">
+                                        <i class="far fa-question-circle"></i>
+                                        <div class="message-password-inp">
+                                            <p class="mb-0" *ngIf="startDateForIfoPopup!=null">Audit Plan start date should be {{startDateForIfoPopup | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}} or
+                                                greater than {{startDateForIfoPopup | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}} </p> 
+                                            <p class="mb-0" *ngIf="startDateForIfoPopup==null">Please Select Audit Program first </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="name">{{'to' | translate}} <span class="form-error">*</span></label>
+                                <div class="password-icon-input">
+                                    <div class="input-group date-picker">
+                                        <input class="form-control cal4" formControlName="end_date"
+                                            placeholder="yyyy-mm-dd"
+                                            [maxDate]="auditProgramEndDate?{year: auditProgramEndDate.year, month: auditProgramEndDate.month, day: auditProgramEndDate.day}:''"
+                                            [minDate]="auditProgramStartDate?{year: auditProgramStartDate.year, month: auditProgramStartDate.month, day: auditProgramStartDate.day}:''"
+                                            id="to" ngbDatepicker #toDateInput="ngbDatepicker">
+
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-secondary calendar"
+                                                (click)="toDateInput.toggle()" type="button"><i
+                                                    class="fas fa-calendar-alt"></i></button>
+                                        </div>
+                                    </div>
+                                    <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.end_date">
+                                        {{formErrors.end_date}}</p>
+
+
+
+                                    <div class="question-circle-inp" style="margin-right: 40px;">
+                                        <i class="far fa-question-circle"></i>
+                                        <div class="message-password-inp">
+                                            <p class="mb-0" *ngIf="startDateForIfoPopup!=null && endDateForIfoPopup!=null">Audit Plan End date should be {{endDateForIfoPopup | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}} or less
+                                                than
+                                                {{endDateForIfoPopup | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}} or within {{startDateForIfoPopup | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}} and 
+                                                {{endDateForIfoPopup | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                            </p>
+                                            <p class="mb-0" *ngIf="startDateForIfoPopup==null && endDateForIfoPopup==null">Please Select Audit Program first </p>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+
+                            </div>
+                        </div>
+
+                        
+
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label for="name">{{'title' | translate}}<sup>*</sup></label>
+                                <input type="text" formControlName='title' class="form-control"
+                                [placeholder]="'audit_plan_title'|translate">
+                                <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.title ">
+                                    {{formErrors.title}}</p>
+                            </div>
+                        </div>
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <div class="clearfix">
+                            
+                                    <label class="float-left">{{'description' | translate}}
+                                    </label>
+                                    <span class="float-right"><p class="text-grey mb-0">{{form?.value.description != null ? form?.value.description?.length : 0}}
+                                        Characters</p></span>
+                                </div>
+                                <textarea class="form-control" formControlName="description" rows="3" id="comment"
+                                [placeholder]="'audit_plan_description'|translate"></textarea>
+                            </div>
+                        </div>
+
+
+
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>{{'auditees_leader' | translate}} <span class="form-error">*</span></label>
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect">
+                                        <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                                        [placeholder]="'select_auditees_leader'|translate" [multiple]="false"
+                                            formControlName="auditee_leader_id" (search)="searchAuditeeLeaders($event)"
+                                            (open)="getAuditeesLeader()" [searchFn]="customSearchFn">
+                                            <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                                <img *ngIf="item.image_token" height="15" width="15"
+                                                    [attr.src]="createImagePreview('user-profile-picture',item.image_token)" onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                                <img *ngIf="!item.image_token" height="15" width="15"
+                                                    [attr.src]="getDefaultImage('user-logo')" onerror = "this.src='/assets/images/user-demo2.png'" />
+                                                <b style="padding-left: 3px;">{{getStringsFormatted([item?.first_name,item?.last_name],45,' ') | titlecase}}</b><span aria-hidden="true"
+                                                    (click)="clear(item)" style="border:none;"
+                                                    class="ng-value-icon left">×</span>
+                                            </ng-template>
+                                            <ng-template ng-option-tmp let-item="item" let-index="index">
+                                                <div class="user-post-department-pic">
+                                                    <img *ngIf="item.image_token" height="25" width="25"
+                                                        [attr.src]="createImagePreview('user-profile-picture',item.image_token)" onerror = "this.src='/assets/images/user-demo2.png'" />
+                                                    <img *ngIf="!item.image_token" height="25" width="25"
+                                                        [attr.src]="getDefaultImage('user-logo')" onerror = "this.src='/assets/images/user-demo2.png'"  />
+                                                </div>
+                                                <div class="user-post-department-div">
+                                                    <b>{{getStringsFormatted([item?.first_name,item?.last_name],45,' ') | titlecase}}</b>
+                                                    <p class="user-post-department-multiple">
+                                                        {{getStringsFormatted([item.designation_title,' '+item.department],45,',')}}</p>
+                                                </div>
+                                            </ng-template>
+                                        </ng-select>
+                                        <p class="pt-1" style="color: red;"
+                                            *ngIf="formErrors && formErrors.auditee_leader_id">
+                                            {{formErrors.auditee_leader_id}}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-12 col-sm-12">
+                            <div class="form-group">
+                               <a class="text-light-blue" data-toggle="modal" (click)="organisationChanges()" style="border-bottom: 1px solid;">{{'change_organization_unit' | translate}}</a>
+                            </div>
+                         </div>
+
+                    </div>
+
+
+
+
+
+
+
+
+
+
+
+                </div><!-- tab end -->
+                <div class="tab">
+                    <!-- tab start -->
+                    <div class="row">
+                        <div class="col-sm-12">
+
+                            <div class="processes-issue audit-processes-issue clearfix">
+                                <h5><img src="/assets/images/controls-icon.png">{{'add_audit_plan_objective' | translate}}</h5>
+
+                                <div class="float-right">
+                                    <a *ngIf = "AuthStore.getActivityPermission(1000,'CREATE_AUDIT_OBJECTIVE')" (click)="openFormModal()" class="btn">{{'add_new_objective' | translate}}</a>
+                                    <a (click)="addobjective()" class="btn">{{'choose_objective' | translate}}</a> 
+                                </div>
+                            </div>
+                            <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.audit_objective_ids ">
+                                {{formErrors.audit_objective_ids}}</p>
+
+                            <div class="audit-form-table w-100 mb-4"
+                                *ngIf="AuditPlanStore.objectiveToDisplay.length > 0">
+                                <table class="table table-bordered ordinary-table cmn-table-style mb-2">
+                                    <tr>
+                                        <th class="border-top-0 text-center" width="5%">#</th>
+                                        <th class="border-top-0" width="95%">Title</th>
+                                    </tr>
+                                    <tr class="edit-and-delete-main"
+                                        *ngFor="let objective of AuditPlanStore.objectiveToDisplay;let num=index">
+                                        <td class="text-center">{{num+1}}</td>
+                                        <td>{{objective.title}}
+                                            <div class="edit-option-show" style="margin: 30px 0 0 0; ">
+                                                <!-- edit-and-delete starts -->
+                                                <a *ngIf = "AuthStore.getActivityPermission(1000,'DELETE_AUDIT_OBJECTIVE')" (click)="deleteObjective(objective)"><i class="fas fa-trash"></i></a>
+                                            </div><!-- edit-and-delete end -->
+                                        </td>
+                                    </tr>
+
+
+                                </table>
+
+
+                            </div>
+
+                        
+                            <div class="mb-3">
+                            <app-no-data-list [source] = "objectiveEmptyList" *ngIf="AuditPlanStore.objectiveToDisplay.length == 0"></app-no-data-list>
+                        </div>
+
+
+
+
+                        </div>
+                        
+                        <div class="col-sm-12">
+
+                            <div class="processes-issue audit-processes-issue clearfix">
+                                <h5><img src="/assets/images/controls-icon.png">{{'add_criteria' | translate}}</h5>
+
+                                <div class="float-right">
+                                    <a (click)="openCriteriaModal()" class="btn">{{'add_new_criteria' | translate}}</a>
+                                    <a (click)="addCriteria()" class="btn">{{'choose_criteria' | translate}}</a>
+                                </div>
+                            </div>
+                            <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.audit_criteria_ids ">
+                                {{formErrors.audit_criteria_ids}}</p>
+
+
+                            <div class="audit-form-table w-100 mb-3"
+                                *ngIf="AuditPlanStore.criteriaToDisplay.length > 0">
+                                <table class="table table-bordered ordinary-table cmn-table-style mb-2">
+                                    <tr>
+                                        <th class="border-top-0 text-center" width="5%">#</th>
+                                        <th class="border-top-0" width="95%">Title</th>
+                                    </tr>
+                                    <tr class="edit-and-delete-main"
+                                        *ngFor="let criteria of AuditPlanStore.criteriaToDisplay;let num=index">
+                                        <td class="text-center">{{num+1}}</td>
+                                        <td>{{criteria.title}}
+                                            <div class="edit-option-show" style="margin: 30px 0 0 0; ">
+                                                <!-- edit-and-delete starts -->
+                                                <a (click)="deleteCriteria(criteria)"><i class="fas fa-trash"></i></a>
+                                            </div><!-- edit-and-delete end -->
+                                        </td>
+                                    </tr>
+
+
+                                </table>
+
+
+                            </div>
+
+                    
+                            <div class="mb-3">
+                            <app-no-data-list [source] = "criteriaEmptyList" *ngIf="AuditPlanStore.criteriaToDisplay.length == 0"></app-no-data-list>
+                        </div>
+
+                        </div>
+                    </div>
+
+                </div><!-- tab end -->
+                <div class="tab">
+                    <!-- tab start -->
+                    <label for="name" class="label-style mb-0">{{'document' | translate}}</label>
+                    <!-- <div class="scroll-documents" #uploadArea>
+                        <div class="row m-0 upload-section" style="padding-top: 0">
+                            <div class="col-sm-3 col-lg-3 costmz-logo-new mt-2">
+
+                                <div class="question-circle-inp" style="margin-right: 7px;">
+                                    <i class="far fa-question-circle"></i>
+                                    <div class="message-password-inp bottom-show">
+                                        <p class="mb-0">{{'allowed_file_types' | translate}} {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}</p>
+                                    </div>
+                                </div>
+                                <div class="form-group form-group-upload">
+                                    <div class="darag-dropifile-upload">
+                                        <div class="d-flex justify-content-center align-items-center text-center">
+                                            <div>
+                                                <img src="assets/images/drag-pic.png" class="drag-pic-files">
+                                                <div class="drag-file-name"> Drag &amp; Drop Your File Here </div>
+                                                <div class="upload-btn-wrapper">
+                                                    <input type="file" multiple name="myfile"
+                                                        (change)="onFileChange($event,'support-file')" [accept]="checkAcceptFileTypes('support-file')"/>
+                                                    <button class="btn">Browse Files</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div [ngClass]="files.success? 'col-sm-3 col-lg-3 up-pic-cf mt-2 hide_loader' : 'col-sm-3 col-lg-3 up-pic-cf mt-2'"
+                                *ngFor="let files of fileUploadsArray">
+                                <div class="upload-pics edit-option file-upload-loader">
+                                    <circle-progress class="browse-form-pic" [percent]=files.uploadProgress
+                                        [title]=files.uploadProgress>
+                                    </circle-progress>
+                                </div>
+                            </div>
+
+                            <div [ngClass]="doc.is_deleted ? 'col-sm-3 col-lg-3 up-pic-cf mt-2 image_deleted':'col-sm-3 col-lg-3 up-pic-cf mt-2'"
+                                *ngFor="let doc of AuditPlanStore.docDetails">
+                                <div class="upload-pics edit-option">
+                                    <div *ngIf="doc.preview" class="browse-form-pic"
+                                        [ngStyle]="{'background': 'url(' + doc.preview + ') no-repeat 0 0 / cover'}">
+                                    </div>
+                                    <div class="browse-form-name clearfix">
+                                        <div class="float-left">
+                                            <h6>{{doc.name.length>15?doc.name.substring(0,15)+' ...':doc.name}}</h6>
+                                            <span>{{doc.size/1048576 | number:'0.2-2'}}MB</span>
+                                        </div>
+                                        <div class="browse-logo">
+                                            <img *ngIf="checkExtension(doc.ext,'excel') != -1"
+                                                src="/assets/images/md-xl.png">
+                                            <img *ngIf="checkExtension(doc.ext,'image') != -1"
+                                                src="/assets/images/md-jpg.png">
+                                            <img *ngIf="checkExtension(doc.ext,'doc') != -1"
+                                                src="/assets/images/md-doc.png">
+                                            <img *ngIf="checkExtension(doc.ext,'pdf') != -1"
+                                                src="/assets/images/md-pdf.png">
+                                        </div>
+                                    </div>
+                                    <div class="edit-option-show">
+                                        <a (click)="removeDocument(doc.token)"><i class="fas fa-trash"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div> -->
+
+               <!-- Common File Upload Starts Here -->
+               <div class="scroll-documents" #uploadArea>
+                <div class="thumb-pics-bg thumb-pics-col-4 clearfix thumb-pics-fix-text" style="padding-top: 0;">
+                   <div class="thumb-pics">
+
+                      <div class="form-group form-group-upload">
+                         <div class="darag-dropifile-upload">
+                            <div class="d-flex justify-content-center align-items-center text-center">
+                               <div>
+                                  <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                                  <div class="drag-file-name"> Select or Upload Your File Here </div>
+                                  <div class="upload-btn-wrapper">                  
+                                     <button (click)="openFileUploadModal()" type="button" class="btn">{{'browse_files' | translate}}</button>
+                                  </div>
+                               </div>
+                            </div>
+                         </div>
+                      </div>
+                   </div>
+
+                      <div class="thumb-pics"  *ngFor="let docs of fileUploadPopupStore.displayFiles ;let i = index">
+                          <div class="upload-pics edit-option" data-toggle="modal">
+                            <div *ngIf="docs.id && !docs.preview" class="browse-form-pic"  [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                            </div>
+                              <div  *ngIf="docs.preview" class="browse-form-pic" [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">              
+                            </div>
+                             <div class="browse-form-name clearfix">
+                              <div class="float-left">
+                                <h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                </h6>
+                                <span *ngIf="docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-book"></i></span>
+                                <span  *ngIf="!docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-laptop"></i></span>
+                                <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                              </div>
+                              <div class="browse-logo">
+                                <img *ngIf="checkExtension(docs.ext,'image') != -1"
+                                    class="folder-picher" src="/assets/images/jpg-icone.png">
+                                <img *ngIf="checkExtension(docs.ext,'doc') != -1"
+                                    class="folder-picher" src="/assets/images/word-icone.png">
+                                <img *ngIf="checkExtension(docs.ext,'pdf') != -1"
+                                    class="folder-picher" src="/assets/images/pdf-icone.png">
+                                <img *ngIf="checkExtension(docs.ext,'excel') != -1"
+                                    class="folder-picher" src="/assets/images/excel-icone.png">
+                                <img *ngIf="checkExtension(docs.ext,'video') != -1"
+                                    class="folder-picher" src="/assets/images/md-video.png">
+                                <img *ngIf="checkExtension(docs.ext,'audio') != -1"
+                                    class="folder-picher" src="/assets/images/md-audio.png">
+                                <img *ngIf="checkExtension(docs.ext,'ppt') != -1"
+                                    class="folder-picher" src="/assets/images/md-ppt.png">
+                            </div>
+                             </div>
+                          </div>
+                       </div>
+
+          
+                </div>
+             </div>
+                        <!-- Common File Upload Ends Here -->
+
+                </div><!-- tab end -->
+                <div class="tab">
+                    <!-- tab start -->
+                    <div class="row">
+                        <div class="col-sm-12 col-lg-6 audit-program-details-page-cnt pdg-mdl-line pt-0 pb-0">
+                            <div class="issue-top-sec">
+                                <div class="clearfix">
+                                    <h5 class="d-inline-block cmn-head-style label-tag-style">
+                                        <!-- <span
+                                            class="issue-smoal-head-text"></span> -->
+                                        #{{reference_code}}
+                                        {{form.value.title?form.value.title:AppStore.noContentText}}
+                                    <span class="draft-tag label-tag-style-tag label-left-arow-tag ml-3"
+                                        style="line-height: 16px; vertical-align: middle; margin-top: -5px;">
+                                       Draft</span></h5>
+                                </div>
+                                <div class="clearfix">
+                                    <p *ngIf="form.value.start_date!=null && form.value.end_date!=null" class="label-tag-style"><i
+                                            class="fas fa-calendar-alt date-pics-two"></i>
+                                            {{startDate | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                            To
+                                            {{endDate | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</p>
+    
+
+                                    <p *ngIf="form.value.start_date==null && form.value.end_date==null" class="label-tag-style"><i
+                                            class="fas fa-calendar-alt date-pics-two"></i>
+                                        {{AppStore.noContentText}}
+
+                                    </p>
+
+
+                                </div>
+                                <p style="white-space: pre-wrap;">
+                                    {{form.value.description?form.value.description:AppStore.noContentText}}</p>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-lg-4 col-sm-6">
+                                    <h6>{{'audit_program' | translate}}</h6>
+                                    <p *ngIf="form.value.audit_program_id!=null">{{auditProgramTitle}}
+                                    </p>
+
+                                    <p *ngIf="form.value.audit_program_id==null">{{AppStore.noContentText}}</p>
+                                </div>
+                                <div class="col-lg-4 col-sm-6">
+                                    <h6>{{'audit_categories' | translate}}</h6>
+                                    <p>{{form.value.audit_category_id?.title?form.value.audit_category_id?.title:AppStore.noContentText}}
+                                    </p>
+                                </div>
+                                <div  class="col-lg-4 col-sm-6">
+                                    <h6>{{'ms_types' | translate}}</h6>
+                                    <p *ngFor="let type of tempArrayPreview">{{type.ms_type_title}}<span style="color: #7c7a7a;">V{{type.ms_type_version_title}}</span></p>
+                                    
+                                </div>
+                                <div class="col-lg-4 col-sm-6" *ngIf = "OrganizationLevelSettingsStore.organizationLevelSettings?.is_subsidiary">
+                                    <h6>{{ 'subsidiaries' | translate }}</h6>
+                                    <div class="loop-cmn-p">
+                                    <p *ngFor="let Subsidiary of form.value.organization_ids; let isLast=last">
+                                        {{Subsidiary.title}} {{isLast ? '' : ',' }}</p></div>
+                                    <p *ngIf="!form.value.organization_ids">{{AppStore.noContentText}}
+                                    </p>
+                                </div>
+                                <div class="col-lg-4 col-sm-6" [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_division ? 'none':'block'}">
+                                    <h6>{{'divisions' | translate}}</h6>
+                                    <div class="loop-cmn-p">
+                                    <p *ngFor="let divisions of form.value.division_ids; let isLast=last">
+                                        {{divisions.title}} {{isLast ? '' : ',' }}</p></div>
+                                    <p *ngIf="!form.value.division_ids">{{AppStore.noContentText}} </p>
+                                </div>
+                                <div class="col-lg-4 col-sm-6" [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_section ? 'none':'block'}">
+                                    <h6>{{'sections' | translate}}</h6>
+                                    <div class="loop-cmn-p">
+                                    <p *ngFor="let sections of form.value.section_ids; let isLast=last">
+                                        {{sections.title}} {{isLast ? '' : ',' }}</p></div>
+                                    <p *ngIf="!form.value.section_ids">{{AppStore.noContentText}} </p>
+                                </div>
+                                <div class="col-lg-4 col-sm-6" [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_sub_section ? 'none':'block'}">
+                                    <h6>{{'sub_sections' | translate}}</h6>
+                                    <div class="loop-cmn-p">
+                                    <p *ngFor="let subsection of form.value.sub_section_ids; let isLast=last">
+                                        {{subsection.title}} {{isLast ? '' : ',' }}</p></div>
+                                    <p *ngIf="!form.value.sub_section_ids">{{AppStore.noContentText}}
+                                    </p>
+                                </div>
+                                <div class="col-lg-4 col-sm-6" [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_department ? 'none':'block'}">
+                                    <h6>{{'departments' | translate}}</h6>
+                                    <div class="loop-cmn-p">
+                                    <p *ngFor="let department of form.value.department_ids; let isLast=last">
+                                        {{department.title}} {{isLast ? '' : ',' }}</p></div>
+                                    <p *ngIf="!form.value.department_ids">{{AppStore.noContentText}}
+                                    </p>
+                                </div>
+                            </div>
+
+
+
+                            <h6>{{'documents' | translate}}</h6>
+                            <p *ngIf="fileUploadPopupStore.displayFiles?.length==0">{{AppStore.noContentText}}</p>
+                            <div class="scroll-documents" #previewUploadArea>
+                                <div class="thumb-pics-bg thumb-pics-col-2 clearfix thumb-pics-fix-text"
+                                    *ngIf="fileUploadPopupStore.displayFiles.length > 0">
+                                    <div class="thumb-pics"
+                                        *ngFor="let docs of fileUploadPopupStore.displayFiles ;let i = index">
+                                        <div class="upload-pics edit-option" data-toggle="modal">
+                                            <div *ngIf="docs.id && !docs.preview" class="browse-form-pic"
+                                                [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                                            </div>
+                                            <div *ngIf="docs.preview" class="browse-form-pic"
+                                                [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">
+                                            </div>
+                                            <div class="browse-form-name clearfix">
+                                                <div class="float-left">
+                                                    <h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                                    </h6>
+                                                    <span *ngIf="docs.is_kh_document"
+                                                        class="mr-2 cmn-clr"><i
+                                                            class="fas fa-book"></i></span>
+                                                    <span *ngIf="!docs.is_kh_document"
+                                                        class="mr-2 cmn-clr"><i
+                                                            class="fas fa-laptop"></i></span>
+                                                    <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                                                </div>
+                                                <div class="browse-logo">
+                                                    <img *ngIf="checkExtension(docs.ext,'image') != -1"
+                                                        class="folder-picher"
+                                                        src="/assets/images/jpg-icone.png">
+                                                    <img *ngIf="checkExtension(docs.ext,'doc') != -1"
+                                                        class="folder-picher"
+                                                        src="/assets/images/word-icone.png">
+                                                    <img *ngIf="checkExtension(docs.ext,'pdf') != -1"
+                                                        class="folder-picher"
+                                                        src="/assets/images/pdf-icone.png">
+                                                    <img *ngIf="checkExtension(docs.ext,'excel') != -1"
+                                                        class="folder-picher"
+                                                        src="/assets/images/excel-icone.png">
+                                                    <img *ngIf="checkExtension(docs.ext,'video') != -1"
+                                                        class="folder-picher"
+                                                        src="/assets/images/md-video.png">
+                                                    <img *ngIf="checkExtension(docs.ext,'audio') != -1"
+                                                        class="folder-picher"
+                                                        src="/assets/images/md-audio.png">
+                                                    <img *ngIf="checkExtension(docs.ext,'ppt') != -1"
+                                                        class="folder-picher"
+                                                        src="/assets/images/md-ppt.png">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- <div class="thumb-pics-bg thumb-pics-col-2 clearfix"
+                                            *ngIf="fileUploadPopupStore.displayFiles?.length > 0">
+                                            <div class="thumb-pics"
+                                                *ngFor="let b of fileUploadPopupStore.displayFiles">
+                                                <div class="upload-pics upload-pics-small edit-option">
+                                                    <div class="browse-form-pic"
+                                                        [ngStyle]="{'background': 'url(' + b?.preview + ') no-repeat 0 0 / cover'}">
+                                                    </div>
+                                                    <div class="browse-form-name clearfix">
+                                                        <div class="float-left">
+                                                            <h6 [attr.title]="b?.name">
+                                                                {{b?.name?.length > 20 ? b?.name?.substring(0,20)+' ...' :
+                                                                b?.name}}</h6>
+                                                            <span>{{b?.size/1048576 | number:'0.2-2'}}MB</span>
+                                                        </div>
+                                                        <div class="browse-logo">
+                                                            <img *ngIf="checkExtension(b?.ext,'excel') != -1"
+                                                                src="/assets/images/md-xl.png">
+                                                            <img *ngIf="checkExtension(b?.ext,'image') != -1"
+                                                                src="/assets/images/md-jpg.png">
+                                                            <img *ngIf="checkExtension(b?.ext,'doc') != -1"
+                                                                src="/assets/images/md-doc.png">
+                                                            <img *ngIf="checkExtension(b?.ext,'pdf') != -1"
+                                                                src="/assets/images/md-pdf.png">
+                                                            <img *ngIf="checkExtension(b?.ext,'video') != -1"
+                                                                src="/assets/images/md-video.png">
+                                                            <img *ngIf="checkExtension(b?.ext,'audio') != -1"
+                                                                src="/assets/images/md-audio.png">
+                                                            <img *ngIf="checkExtension(b?.ext,'ppt') != -1"
+                                                                src="/assets/images/md-ppt.png">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div> -->
+
+                            <!-- <div class="row">
+                                <div class="col-xl-12">
+                                    <hr>
+                                    <div class="d-flex flex-row user-list-sm">
+                                        <img src="images/user-gate.jpg" width="30px" height="30px"
+                                            class="rounded-circle">
+                                        <div>
+                                            <h6>Mohammed Shihabudheen</h6>
+                                            <span>Project Manger | Created on jan 31,2020 11:41:AM</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div> -->
+
+
+                        </div>
+                        <div
+                            class="col-sm-12 col-lg-6 audit-program-details-page-cnt pdg-mdl-line bdr-line-fill bdr-line-fill-tab audit-plan-graph-main pt-0 pb-0">
+
+
+                            <div class="row label-and-user-pic">
+                                <div class="col-md-6">
+                                    <h6>{{'audit_leader' | translate}}</h6>
+                                    <app-user-popup-box [source]="assignUserValues(form.value.audit_leader_id)" [activateButtons] = "false"></app-user-popup-box>
+                                    <p *ngIf="form.value.audit_leader_id==null">{{AppStore.noContentText}}</p>
+                                </div>
+
+
+                                <div class="col-md-6">
+                                    <h6>{{'auditees_leader' | translate}}</h6>
+                                    <app-user-popup-box [source]="assignUserValues(form.value.auditee_leader_id)" [activateButtons] = "false"></app-user-popup-box>
+                                    <p *ngIf="form.value.auditee_leader_id==null">{{AppStore.noContentText}}</p>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h6>{{'audit_objectives' | translate}}</h6>
+                                <p *ngIf="AuditPlanStore.objectiveToDisplay.length==0">{{AppStore.noContentText}}</p>
+                                <div class="drop-detail-sec">
+                                    <ul class="banking-issue"
+                                        *ngFor="let row of AuditPlanStore.objectiveToDisplay;let num = index">
+                                        <li class="clearfix"><a>{{row.title}}</a></li>
+
+                                    </ul>
+                                </div>
+                            </div>
+                            <div>
+                                <h6 class="mt-3">{{'audit_criteria' | translate}}</h6>
+                                <p *ngIf="AuditPlanStore.criteriaToDisplay.length==0">{{AppStore.noContentText}}</p>
+                                <div class="drop-detail-sec">
+                                    <ul class="banking-issue"
+                                        *ngFor="let row of AuditPlanStore.criteriaToDisplay;let num = index">
+                                        <li class="clearfix"><a>{{row.title}}</a></li>
+
+                                    </ul>
+                                </div>
+                            </div>
+
+
+
+
+                        </div>
+                    </div>
+
+
+
+
+
+                </div><!-- tab end -->
+                <div style="overflow:auto;">
+                    <div class="form-next-page-btns" style="float:left;">
+                        <button class="btn" type="button" (click)="confirmCancel()">{{getButtonText('cancel')}}</button>
+                        <button class="btn" type="button" id="prevBtn" (click)="nextPrev(-1)"
+                            [disabled]="AppStore.loading">{{getButtonText(previousButtonText)}}</button>
+                        <button class="btn btn-active" type="button" id="nextBtn" (click)="nextPrev(1)"
+                        [disabled]="AppStore.loading || !checkFormObject()">{{getButtonText(nextButtonText)}}</button>
+                    </div>
+                </div>
+
+            </form>
+
+
+
+
+
+        </div>
+
+
+
+
+
+
+    </div>
+</main>
+
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #cancelPopup data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="confirmationObject"></app-delete-popup>
+</div>
+
+
+<!-- calling add criteria modal -->
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #criteriaPopup>
+    <app-add-criteria-modal *ngIf="addCriteriaObject.type">
+
+    </app-add-criteria-modal>
+
+</div>
+
+<!-- calling add objective modal -->
+
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #objectivePopup>
+    <app-add-objective-modal *ngIf="addObjectiveObject.type">
+
+    </app-add-objective-modal>
+
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+    <app-audit-objective-modal *ngIf="addObjectiveFormObject.type">
+    </app-audit-objective-modal>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #criteriaModal>
+    <app-audit-criterion-modal *ngIf="addCriteriaFormObject.type">
+    </app-audit-criterion-modal>
+</div>
+
+
+<!-- calling add auditable item category modal -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static"
+    #auditableItemCategoryAddPopup>
+    <app-audit-categories-modal>
+
+    </app-audit-categories-modal>
+
+</div>
+<!-- * Documetn Attach/Upload Common Component Starts Here -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #fileUploadModal>
+ 
+    <app-file-upload-popup *ngIf = "fileUploadPopupStore.openPopup" ></app-file-upload-popup>
+  
+  </div>
+  <!-- * Documetn Attach/Upload Common Component Ends Here -->
+    <!-----------------------Form Modal Start--------------------------->
+    <div  class="modal modal-style-1 popup-full-width fade"  data-keyboard="false"
+    data-backdrop="static" #organisationChangeFormModal *mobxAutorun>
+    <app-organisation-change-modal *ngIf = "openModelPopup" [source] = "form.value" 
+    (organizationChangeEvent)="closeModal($event)"></app-organisation-change-modal>
+ </div>
+   <!-----------------------Form Modal End--------------------------->

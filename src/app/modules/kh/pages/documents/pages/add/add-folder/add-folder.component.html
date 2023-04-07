@@ -1,0 +1,236 @@
+
+        <button type="button" class="close" (click)="cancel()" data-dismiss="modal"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+        <div class="modal-dialog modal-lg modal-dialog-centered" #formModal>
+          <div class="modal-content" *mobxAutorun>
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title">{{'add_folder' | translate}}</h4>
+            </div>
+            <!-- Modal body -->
+            <div class="modal-body form-body">
+
+                <form [formGroup]="folderForm">
+                  
+          <p class="head-details">Create a folder to organize your files and set access type to control access the folder.
+          </p>
+              <div class="row">             
+              <div class="col-sm-12">
+                 <div class="form-group">
+                    <label for="name">{{'title' | translate}}<span class="form-error">*</span></label>
+                    <div class="plain-select input-add-report">
+                      <input type="text" class="form-control"  [attr.placeholder]="'folder_title' | translate" formControlName="title">
+                      <p class="form-error" *ngIf="folderFormErros"> {{folderFormErros.title}}</p>
+                    </div>
+                  </div>
+               </div>
+  
+              <div class="col-sm-12">
+                <div class="form-group">
+                   <label for="name">{{'document_acess_type' | translate}}<span class="form-error">*</span></label>
+                   <div class="mb-3 box-cnt-one tab-type-btn-small">
+                    <label *ngFor="let item of DoccumentAccessTypeStore.allItems"  (click) = "DocumentsStore.accessVerification() && selectAccessType(item.id) ; addValidation(item.id)" [ngClass] = "findSelectedAccessType(item.id) ? 'outline-tag active pointer' : 'outline-tag pointer'"><i [class]="setAccessCLass(item)"></i>{{item.title}}</label>
+                   </div>
+                   <p class="form-error" *ngIf="folderFormErros && folderFormErros.document_access_type_id">{{'select_any_document_acess_type' | translate}} </p>
+               </div>
+             </div>
+            </div>           
+             <div class="row" [hidden]="!isShared">
+              <div class="col-sm-12" *ngIf = "OrganizationLevelSettingsStore.organizationLevelSettings?.is_subsidiary">
+                 <div class="form-group">
+                    <label for="name">{{'organization' | translate}}<span class="form-error">*</span></label>
+                    <div class="clearfix">
+                        <div class="multiple-plain-ngselect">
+                          <ng-select [items]="SubsidiaryStore.subsidiaryList"
+                          bindLabel="title"
+                          [readonly]="DocumentsStore.readOnlyVerification()"
+                          [placeholder]="'subsidiaries' | translate"
+                          [multiple]="true"
+                          [closeOnSelect]="false"
+                          searchable = "false"
+                          formControlName = "organization_ids"
+                          (add) = "getDivision()"
+                          (search) = "searchSubsidiary($event)"
+                          (clear) = "getSubsidiary();getDivision()"
+                          (open) = "getSubsidiary()">
+                       </ng-select>
+                        </div>
+                    </div>
+                </div>
+              </div>
+              <div class="col-sm-6" *ngIf = "OrganizationLevelSettingsStore.organizationLevelSettings?.is_division">
+                 <div class="form-group">
+                    <label for="name">{{'division' | translate}}</label>
+                    <div class="clearfix">
+                        <div class="multiple-plain-ngselect">
+                          <ng-select [items]="DivisionStore.allItems"
+                          bindLabel="title"
+                          [readonly]="DocumentsStore.readOnlyVerification()"
+                          [placeholder]="'division' | translate"
+                          multiple="true"
+                          [closeOnSelect]="false"
+                          searchable = "false"
+                          formControlName = "division_ids"
+                          (add) = "getDepartment()"
+                          (search) = "searchDivision($event)"
+                          (clear) = "getDivision()"
+                          (open) = "getDivision()">
+                       </ng-select>
+                        </div>
+                    </div>
+                </div>
+              </div>
+              <div class="col-sm-6" *ngIf = "OrganizationLevelSettingsStore.organizationLevelSettings?.is_department">
+                 <div class="form-group">
+                    <label for="name">{{'department' | translate}}</label>
+                    <div class="clearfix">
+                        <div class="multiple-plain-ngselect">
+                          <ng-select [items]="DepartmentStore.allItems"
+                          bindLabel="title"
+                          [readonly]="DocumentsStore.readOnlyVerification()"
+                          [placeholder]="'department' | translate"
+                          multiple="true"
+                          [closeOnSelect]="false"
+                          formControlName = "department_ids"
+                          (add) = "getSection()"
+                          (search) = "searchDepartment($event)"
+                          (clear) = "getDepartment()"
+                          (open) = "getDepartment()">
+                       </ng-select>
+                        </div>
+                    </div>
+                </div>
+              </div>
+              <div class="col-sm-6" *ngIf = "OrganizationLevelSettingsStore.organizationLevelSettings?.is_section">
+                 <div class="form-group">
+                    <label for="name">{{'section' | translate}}</label>
+                    <div class="clearfix">
+                        <div class="multiple-plain-ngselect">
+                          <ng-select [items]="SectionStore.allItems"
+                          bindLabel="title"
+                          [readonly]="DocumentsStore.readOnlyVerification()"
+                          [placeholder]="'section' | translate"
+                          multiple="true"
+                          [closeOnSelect]="false"
+                          formControlName = "section_ids"
+                          (add) = "getSubSection()"
+                          (search) = "searchSection($event)"
+                          (clear) = "getSection()"
+                          (open) = "getSection()">
+                       </ng-select>
+                        </div>
+                    </div>
+                </div>
+              </div>
+              <div class="col-sm-6" *ngIf = "OrganizationLevelSettingsStore.organizationLevelSettings?.is_sub_section">
+                 <div class="form-group">
+                    <label for="name">{{'sub_section' | translate}}</label>
+                    <div class="clearfix">
+                        <div class="multiple-plain-ngselect">
+                          <ng-select [items]="SubSectionStore.allItems"
+                          bindLabel="title"
+                          [readonly]="DocumentsStore.readOnlyVerification()"
+                          [placeholder]="'sub_section' | translate"
+                          multiple="true"
+                          [closeOnSelect]="false"
+                          formControlName = "sub_section_ids"
+                          (search) = "searchSubSection($event)"
+                          (clear) = "getSubSection()"
+                          (open) = "getSubSection()">
+                       </ng-select>
+                        </div>
+                    </div>
+                </div>
+              </div>
+              <div class="col-sm-12">
+                 <div class="form-group">
+                     <label for="name">{{'user'|translate}}</label>
+
+                     <div class="clearfix">
+                         <div class="multiple-plain-ngselect">
+                             <ng-select [items]="UsersStore.usersList" bindLabel="email" multiple="true" [closeOnSelect]="false"  [readonly]="DocumentsStore.readOnlyVerification()"
+                                 [placeholder]="'user'|translate" formControlName="user_ids"
+                                 (clear)="getUsers()" (search)="searchUers($event)" [searchFn]="customSearchFn" (open)="getUsers()">
+                                 <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                     <img class="ng-select-user-display" *ngIf="item.image_token" height="15"
+                                         width="15"
+                                         [attr.src]="createImageUrl('user-profile-picture',item.image_token)" />
+                                     <img class="ng-select-user-display" *ngIf="!item.image_token"
+                                         height="15" width="15" [attr.src]="getDefaultImage('user-logo')" />
+                                     <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b><span aria-hidden="true"
+                                         (click)="clear(item)" style="border:none;"
+                                         class="ng-value-icon left">×</span>
+                                 </ng-template>
+                                 <ng-template ng-option-tmp let-item="item" let-index="index">
+                                     <div class="user-post-department-pic">
+                                         <img class="ng-select-user-display" *ngIf="item.image_token"
+                                             height="25" width="25"
+                                             [attr.src]="createImageUrl('user-profile-picture',item.image_token)" />
+                                         <img class="ng-select-user-display" *ngIf="!item.image_token"
+                                             height="25" width="25"
+                                             [attr.src]="getDefaultImage('user-logo')" />
+                                     </div>
+                                     <div class="user-post-department-div">
+                                         <b>{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b>
+                                         <p class="user-post-department-multiple">
+                                          {{getStringsFormatted([item.designation_title,' '+item.department],50,',')}}</p>
+                                     </div>
+                                 </ng-template>
+                             </ng-select>
+                         </div>
+                     </div>
+                 </div>
+             </div>
+             <div class="col-sm-12">
+              <div class="form-group">
+                  <label for="name">{{'designation'|translate}}</label>
+                  <div class="clearfix">
+                      <div class="multiple-plain-ngselect select-new-width">
+                          <ng-select [items]="DesignationMasterStore.designations"
+                          bindLabel="title"
+                          [readonly]="DocumentsStore.readOnlyVerification()"
+                          [placeholder]="'designation' | translate"
+                          multiple="true"
+                          [closeOnSelect]="false"
+                          formControlName = "designation_ids"
+                          (search) = "searchDesignation($event)"
+                          (clear) = "getDesignation()"
+                          (open) = "getDesignation()">
+                       </ng-select>
+                      </div>
+                      <button [disabled]='DocumentsStore.readOnlyVerification()' class="btn multi-add-user" (click)="openDesignationForm()"><i
+                              class="fas fa-plus"></i></button>
+
+                  </div>
+              </div>
+          </div>
+
+           </div>   
+           <div class="row">
+
+           
+                <div class="col-sm-12">
+                  <div class="d-block justify-content-left border-0 mt-3">
+                    <button type="submit" class="btn btn-active" (click)="save()"
+                      [disabled]="folderForm.invalid || AppStore.loading">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save') }}</button>
+                    <button type="button" data-toggle="modal" data-target="#signal-lost" class="btn"
+                      (click)="save(true)"
+                      [disabled]="folderForm.invalid || AppStore.loading">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save_close') }}</button>
+                    <button type="button" data-toggle="modal" data-target="#error-message" class="btn"
+                      (click)="cancel()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('cancel') }}</button>
+      
+                  </div>
+                </div>
+              
+  
+              </div>
+        
+            </form>
+            </div>
+            <!-- Modal footer -->
+          </div>
+        </div>
+    
+
+        <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #designationFormModal>
+            <app-designation-modal *ngIf="openDesignationPopup"></app-designation-modal>
+        </div>

@@ -1,0 +1,172 @@
+<button type="button" class="close" (click)="cancel()"><i class="lni-close"></i><span>esc</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header">
+            <h4 class="fs-title mb-0">{{'event_budget' | translate}}</h4>
+                <br>
+            <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
+        </div>
+        <!-- Modal body -->
+        <div class="modal-body form-body">
+            <p>{{'event_budget_description' | translate}}</p>
+           
+           
+                <form [formGroup]="form">
+                    <div class="">
+                        <div class="table-w-100 not-fixed-table mb-3">
+                           <div class="form-group">
+                              <label>{{'add_project_budget' | translate}}</label>
+                              <button type="button" class="btn btn-active btn-small ml-3" (click)="addBudgets()" data-toggle="modal" > Add</button>
+                              
+                              </div>
+                           <table class="table table-bordered ordinary-table audit-page-table mb-1 text-center">
+                              <thead>
+                                 <tr>
+                                    <th class="border-top-0" width="4%">#</th>
+                                    <th class="border-top-0" width="16%">{{'year' | translate}}</th>
+                                    <th class="border-top-0" width="40%">{{'existing_budget' | translate}}</th>
+                                    <th class="border-top-0" width="40%">{{'new_budget' | translate}}</th>
+                                 </tr>
+                              </thead>
+                              <tbody>
+                                 <tr class="edit-and-delete-main"
+                                    *ngFor="let amt of EventChangeRequestStore.budgets;let num = index">
+                                    <td [ngStyle]="{color: (amt.type=='deleted' && amt.status == 'existing')? 'red' : (amt.status == 'new' || amt.status == 'cr') ? 'green' : ''}">{{num+1}}</td>
+                                    <td [ngStyle]="{color: (amt.type=='deleted' && amt.status == 'existing')? 'red' : (amt.status == 'new' || amt.status == 'cr') ? 'green' : ''}">{{amt.year}}</td>
+                                    <td [ngStyle]="{color: (amt.type=='deleted' && amt.status == 'existing')? 'red' : (amt.status == 'new' || amt.status == 'cr') ? 'green' : ''}">{{amt.amount}}
+               
+                                    </td>
+                                    <td>
+                                       <div class="form-group mb-0"><input [readOnly]="amt.type=='deleted'" type="text"
+                                             [(ngModel)]="amt.newAmount" [ngModelOptions]="{standalone: true}"
+                                             class="form-control ng-pristine ng-valid ng-touched"></div>
+                                       <div *ngIf="amt.type !='deleted'" class="edit-option-show">
+                                          <!-- edit-and-delete starts -->
+                                          <a (click)="delete(amt)"><i class="fas fa-trash"></i></a>
+                                       </div>
+                                    </td>
+                                 </tr>
+                                 <tr>
+                                    <td colspan="2">{{'total' | translate}}</td>
+                                    <td>{{getExistingTotal()}}</td>
+                                    <td>{{getNewAmountTotal()}}<span *ngIf="getNewAmountTotal() - getExistingTotal()>0"
+                                            [ngClass]="getNewAmountTotal() >= getExistingTotal() ? 'text-green' : 'text-red'">(
+                                            {{getNewAmountTotal() > getExistingTotal() ? '+'
+                                            : ''}} {{getNewAmountTotal() -
+                                            getExistingTotal()}} )</span></td>
+                                </tr>
+                              </tbody>
+                           </table>
+               
+                        </div>
+                     </div>
+                   
+                   <div class="form-group">
+                    <label for="name">{{'em_cr_justification' | translate}}<span class="form-error">*</span></label>
+                    <textarea class="form-control" formControlName="justification_event_budget" rows="3" id="comment"
+                       [attr.placeholder]="'em_cr_justification_placeholder' | translate"></textarea>
+                       <p class="form-error pt-1" *ngIf="formErrors && formErrors.justification">{{formErrors.justification}}
+                    </p>
+                 </div>
+                 <label for="name" class="label-style mb-0">{{'evidence' | translate}}</label>
+                     <div class="row m-0 upload-section" style="padding-top: 0">
+                        <div class="col-sm-4 col-lg-4 costmz-logo-new mt-2">
+                           <div class="question-circle-inp" style="margin-right: 7px;">
+                              <i class="far fa-question-circle"></i>
+                              <div class="message-password-inp">
+                                 <p class="mb-0">{{'allowed_file_types' | translate}}
+                                    {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                                 </p>
+                              </div>
+                           </div>
+                           <div class="form-group form-group-upload">
+                              <div class="darag-dropifile-upload">
+                                 <div class="d-flex justify-content-center align-items-center text-center">
+                                    <div class="drag-file-sec">
+                                       <img src="assets/images/drag-pic.png" class="drag-pic-files">
+                                       <div class="drag-file-name">Select or Upload Your File Here</div>
+                                          <div class="upload-btn-wrapper">
+                                            
+                                            <button (click)="openFileUploadModal('budget')" type="button" class="btn">{{'browse_files' |
+                                             translate}}</button>
+                                          </div>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                        <div *ngFor="let docs of budgetFiles ;let i = index" [ngClass]="docs?.is_deleted ? 'col-sm-4 col-lg-3 up-pic-cf mt-2 image_deleted' : 'col-sm-4 col-lg-3 up-pic-cf mt-2'">
+                         
+                              <div class="upload-pics edit-option" data-toggle="modal">
+                                <div *ngIf="docs.id && !docs.preview" class="browse-form-pic"
+                                  [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                                </div>
+                                <div *ngIf="docs.preview" class="browse-form-pic"
+                                  [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">
+                                </div>
+                                <div class="browse-form-name clearfix">
+                                  <div class="float-left">
+                                    <h6>
+                                      {{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                    </h6>
+                                    <span *ngIf="docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-book"></i></span>
+                                    <span *ngIf="!docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-laptop"></i></span>
+                                    <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                                  </div>
+                                  <div class="browse-logo">
+                                    <img *ngIf="checkExtension(docs.ext,'image') != -1" class="folder-picher"
+                                      src="/assets/images/jpg-icone.png">
+                                    <img *ngIf="checkExtension(docs.ext,'doc') != -1" class="folder-picher"
+                                      src="/assets/images/word-icone.png">
+                                    <img *ngIf="checkExtension(docs.ext,'pdf') != -1" class="folder-picher"
+                                      src="/assets/images/pdf-icone.png">
+                                    <img *ngIf="checkExtension(docs.ext,'excel') != -1" class="folder-picher"
+                                      src="/assets/images/excel-icone.png">
+                                    <img *ngIf="checkExtension(docs.ext,'video') != -1" class="folder-picher"
+                                      src="/assets/images/md-video.png">
+                                    <img *ngIf="checkExtension(docs.ext,'audio') != -1" class="folder-picher"
+                                      src="/assets/images/md-audio.png">
+                                    <img *ngIf="checkExtension(docs.ext,'ppt') != -1" class="folder-picher"
+                                      src="/assets/images/md-ppt.png">
+                                  </div>
+                                </div>
+                                <div class="edit-option-show">
+                                  <a (click)="removeDocument(docs,'budget')"><i class="fas fa-trash"></i></a>
+                                </div>
+                              </div>
+                        </div>
+                        
+                     </div>
+                     <div class="row">
+                        <div class="col-sm-12">
+                            <div class="d-block justify-content-left border-0 mt-3">
+                                
+                                <button type="button" data-toggle="modal" 
+                                   class="btn" [disabled]="form.invalid || AppStore.loading" (click) = "save(true)">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save_close') }}</button>
+                                <button type="button" data-toggle="modal" (click) = "cancel()"
+                                   class="btn">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('cancel') }}</button>
+                             </div>
+                        </div>
+                    </div>
+                
+             </form>
+             
+        </div>
+    </div>
+</div>
+
+
+<!-- * Documetn Attach/Upload Common Component Starts Here -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #fileUploadModal>
+    <app-file-upload-popup *ngIf="fileUploadPopupStore.openPopup"></app-file-upload-popup>
+  </div>
+  <div class="modal modal-style-1 popup-full-width fade"  data-keyboard="false" data-backdrop="static" #budget>
+    <app-event-cr-budget [source] = "budgetObject" *ngIf = "budgetObject.type"></app-event-cr-budget>
+ 
+ </div>
+ <!------------------- Delete Confirmation Modal Start --------------------------->
+<div class="modal modal-style-1 fade" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+   
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+ </div>

@@ -1,0 +1,1229 @@
+<app-objective-accordion-loader *ngIf="!StrategyStore.objectivesLoaded">
+</app-objective-accordion-loader>
+
+<div class="tab-pane tab-edit-class assessment-tab-user" id="top-tab-left-three" *mobxAutorun>
+
+    <div class="clearfix small-tab-small-main d-flex">
+        <div class="w-100">
+                <div class="processes-issue audit-processes-issue clearfix bg-white cmn-bdr mb-3 d-flex align-items-center"
+                    *ngIf="StrategyStore.objectivesLoaded">
+                    <h5 class="mb-0 w-100">{{'sm_strategic_objective_mapped_message' | translate}}</h5>
+                    <div class="float-right text-right" style="width: 80px;">
+                        <button [disabled]="StrategyManagementSettingStore?.strategyManagementSettings?.is_weightage ? caluculateObjectWeightage() == 100 : false"
+                            *ngIf="AuthStore.getActivityPermission(3200, 'CREATE_STRATEGY_PROFILE_OBJECTIVE')" data-toggle="modal"
+                            (click)="openStrategyModal()"
+                            [ngClass]="StrategyManagementSettingStore?.strategyManagementSettings?.is_weightage ? (caluculateObjectWeightage() == 100 ? 'btn btn-small1' : 'btn btn-small') : 'btn btn-small'">{{'add'
+                            | translate}}</button>
+                    </div>
+                </div>
+                <ng-container *mobxAutorun>
+                    <app-no-data-list [source]="strategyEmptyList" *ngIf = "StrategyStore.objectivesLoaded && StrategyStore.objectives?.length == 0"></app-no-data-list>
+                </ng-container>
+                <div class="min-height-365">
+                    <div class="row" *ngIf="StrategyStore.objectivesLoaded && StrategyStore.objectives?.length > 0">
+                        <div class="col-md-12">
+                            <!-- test -->
+                            <div class="panel-group panel-drop-sections panel-drop-white" id="jd" role="tablist"
+                                aria-multiselectable="true"
+                                *ngIf="AuthStore.getActivityPermission(3200, 'STRATEGY_PROFILE_OBJECTIVE_LIST')">
+                                <div class="panel panel-default" *ngFor="let o of StrategyStore.objectives; let ind = index">
+                                    <div [ngClass]="selectedObjectiveIndex == ind ? 'panel-heading active' : 'panel-heading'"
+                                        role="tab" id="headingOne">
+                                        <div class="panel-title">
+                                            <a role="button" data-toggle="collapse"
+                                                [attr.aria-expanded]="selectedObjectiveIndex == ind ? 'true' : 'false'"
+                                                aria-controls="collapseOne" (click)="selectObjectiveIndexChange(ind,o.id)"
+                                                [ngClass]="selectedObjectiveIndex == ind ? '' : 'collapsed'">
+                                                <h5 class="width96pc mt-0">{{ind+1}}. {{o.title}}<span class="drop-down-icone"><i
+                                                            class="fas fa-chevron-down"></i></span> </h5>
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div [attr.id]="'objective'+ind"
+                                        [ngClass]="selectedObjectiveIndex == ind ? 'drop-detail-sec panel-collapse collapse show' : 'drop-detail-sec panel-collapse collapse'"
+                                        role="tabpanel" aria-labelledby="headingOne" [attr.data-parent]="'#objective'+ind">
+                                        <app-objective-accordion-loader *ngIf="!StrategyStore.induvalObjectivesLoaded">
+                                        </app-objective-accordion-loader>
+                                        <div *ngIf="StrategyStore.induvalObjectivesLoaded"
+                                            class="panel-body bg-white edit-and-delete-main">
+                                            <div class="edit-option-show" style="margin: -17px 25px 0 0;">
+                                                <a *ngIf="AuthStore.getActivityPermission(3200, 'UPDATE_STRATEGY_PROFILE_OBJECTIVE')"
+                                                    (click)="editObjective(o)"><i class="fas fa-pen" [attr.title]="'edit' | translate" ></i></a>
+            
+                                                <a><i class="far fa-times-circle" [attr.title]="'close' | translate" (click)="closeProfileObjectives(o.id)"
+                                                        *ngIf="o.strategy_profile_status_type != 'closed'"></i></a>
+                                                <a><i class="fas fa-check pointer" [attr.title]="'activate' | translate"
+                                                        *ngIf="o.strategy_status_id == 2 && StrategyManagementSettingStore?.strategyManagementSettings?.is_activate"
+                                                        (click)="activateProfileObjectives(o.id)"></i></a>
+                                                <a><i class="fas fa-ban" [attr.title]="'deactivate' | translate"
+                                                        *ngIf="o.strategy_status_id == 1 && StrategyManagementSettingStore?.strategyManagementSettings?.is_activate"
+                                                        (click)="passivateProfileObjectives(o.id)"></i></a>
+                                                <a *ngIf="AuthStore.getActivityPermission(3200, 'DELETE_STRATEGY_PROFILE_OBEJCTIVE')"
+                                                    (click)="deleteProfileObjectives(o.id)"><i class="fas fa-trash" [attr.title]="'delete' | translate" ></i></a>
+                                                <a><i class="fas fa-history" [attr.title]="'histroy' | translate" (click)="openHistoryModal(o.id,'Objective')"></i></a>
+                                            </div>
+            
+                                            <div class="row">
+            
+                                                <div class="col-xl-3 col-lg-4 col-sm-6">
+                                                    <h6>{{'start_date' | translate}}</h6>
+                                                    <p>{{o.start_date ? o.start_date : AppStore.noContentText }}</p>
+                                                </div>
+                                                <div class=" col-xl-3 col-lg-4 col-sm-6">
+                                                    <h6>{{'end_date' | translate}}</h6>
+                                                    <p>{{o.end_date ? o.end_date : AppStore.noContentText}}</p>
+                                                </div>
+                                                <div class=" col-xl-3 col-lg-4 col-sm-6"
+                                                    *ngIf="StrategyManagementSettingStore?.strategyManagementSettings?.is_weightage">
+                                                    <h6>{{'weightage' | translate}}</h6>
+                                                    <p>{{StrategyManagementSettingStore?.strategyManagementSettings?.is_weightage_fraction
+                                                        ? (o.weightage ? o.weightage : AppStore.noContentText) : (o.weightage ?
+                                                        (o.weightage | number : '1.0-0') : AppStore.noContentText)}} %</p>
+            
+                                                </div>
+                                                <div class=" col-xl-3 col-lg-4 col-sm-6">
+                                                    <h6>{{'target' | translate}}</h6>
+                                                    <p>{{StrategyManagementSettingStore?.strategyManagementSettings?.is_weightage_fraction
+                                                        ? (o.target ? o.target : AppStore.noContentText) : (o.target ? (o.target |
+                                                        number : '1.0-0') : AppStore.noContentText)}} {{o.target ?
+                                                        o.target_unit_title : ''}}</p>
+            
+                                                </div>
+                                            </div>
+                                  
+                                            <div class="row">
+                                                <div class=" col-xl-3 col-lg-4 col-sm-6 " >           
+                                                    <h6>{{'focus_area' | translate}}</h6>
+                                                    <ul class="arrowlist mt-0 p-0" *ngIf="StrategyStore.induvalObjectives?.strategy_profile_focus_areas?.length > 0">
+                                                        <li *ngFor="let focus of StrategyStore.induvalObjectives?.strategy_profile_focus_areas">{{focus?.focus_area?.title}}</li>
+                                                    </ul>  
+                                                    <p *ngIf="StrategyStore.induvalObjectives?.strategy_profile_focus_areas?.length == 0">{{AppStore.noContentText}}</p>                                              
+                                                </div>
+                                            </div>
+
+                                            <h6>{{'responsible_users' | translate}}</h6>
+                                            <div class="row" *ngIf="StrategyStore.induvalObjectives?.responsible_users?.length > 0">
+                                                <div class="col-xl-3 col-lg-4 col-sm-6"
+                                                    *ngFor="let user of StrategyStore.induvalObjectives?.responsible_users">
+                                                    <div class="label-and-user-pic">
+            
+                                                        <div
+                                                            class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                                                            <app-user-popup-box [source]="getPopupDetails(user)" [showName]="true"
+                                                                [activateButtons]="false">
+                                                            </app-user-popup-box>
+                                                        </div>
+                                                    </div>
+                                                </div>
+            
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-lg-12 col-sm-12">
+                                                    <div class="form-group">
+                                                        <a class="text-light-blue" data-toggle="modal"
+                                                            (click)="reviewFrequencyPopupOpen(o.id)"
+                                                            style="border-bottom: 1px solid;">{{'review_frequencies' |
+                                                            translate}}</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+            
+                                            <div>
+                                                <div class="row line-tab">
+                                                    <div class="col-md-12">
+                                                        <div class="cmn-bdr-bottom clearfix">
+                                                            <ul class="nav nav-tabs float-left">
+                                                                <li *ngIf="OrganizationModulesStore.checkOrganizationSubModulesPermission(3200,56901)" class="nav-item"> <a class="nav-link active show"
+                                                                        data-toggle="tab" data-original-title="" title=""
+                                                                        (click)="ChangeKPITab('kpi')">KPI </a> </li>
+                                                                <li class="nav-item"> <a class="nav-link" data-toggle="tab"
+                                                                        data-original-title="" title=""
+                                                                        (click)="getStrategyProfileMapping('mapping')">{{'mapping' |
+                                                                        translate}}</a> </li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="tab-content tab-content-body pt-3 border-0">
+                                                    <div class="tab-pane active show" *ngIf="selectedTab == 'kpi' && OrganizationModulesStore.checkOrganizationSubModulesPermission(3200,56901)">
+                                                        <div class="form-group mb-2">
+                                                            <label class="mt-3">{{'kpi_measures' | translate}}</label>
+                                                            <button
+                                                                *ngIf="AuthStore.getActivityPermission(3200, 'CREATE_STRATEGY_PROFILE_OBJECTIVE_KPI')"
+                                                                type="button" data-toggle="modal"
+                                                                (click)="openStrategyKpiModal(o,ind)"
+                                                                class="btn btn-active btn-small ml-3">{{'add_kpi' |
+                                                                translate}}</button>
+                                                            <div *ngIf="StrategyStore.objectives?.length > 0 && StrategyStore.kpis?.length > 0"
+                                                                class="audit-form-table w-100 table-align-top not-fixed-table">
+                                                                <table
+                                                                    class="table table-bordered ordinary-table audit-page-table mb-0">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th class="border-top-0 text-center" width="4%">#</th>
+                                                                            <th class="border-top-0" width="40%">KPI</th>
+                                                                            <th class="border-top-0" width="15%">{{'minimum' |
+                                                                                translate}}</th>
+                                                                            <th class="border-top-0" width="15%">{{'maximum' |
+                                                                                translate}}</th>
+                                                                            <th class="border-top-0" width="11%">{{'target' |
+                                                                                translate}}</th>
+                                                                            <th class="border-top-0" width="15%">{{'action' |
+                                                                                translate}}</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        <tr class="edit-option"
+                                                                            *ngFor="let k of StrategyStore.kpis;let num = index">
+                                                                            <td class="text-center">{{num+1}}</td>
+                                                                            <td>{{k.kpi_title}}</td>
+                                                                            <td *ngIf="k.minimum">{{k.minimum}} %</td>
+                                                                            <td *ngIf="k.minimum == null">{{AppStore.noContentText}}
+                                                                            </td>
+                                                                            <td *ngIf="k.maximum == null">{{AppStore.noContentText}}
+                                                                            </td>
+                                                                            <td *ngIf="k.maximum">{{k.maximum}} %</td>
+                                                                            <td>{{k.target?k.target:AppStore.noContentText}} {{k.target?k.target_unit_title:''}}
+                                                                            </td>
+                                                                            <td><button type="button"
+                                                                                    (click)="openStrategyKpiDetailsModal(k.id)"
+                                                                                    class="btn btn-small"
+                                                                                    data-toggle="modal">{{'view' |
+                                                                                    translate}}</button>
+                                                                                <div class="edit-option-show-inner"
+                                                                                    style="margin: 0 0 0 0; ">
+                                                                                    <a *ngIf="AuthStore.getActivityPermission(3200, 'UPDATE_STRATEGY_PROFILE_OBJECTIVE_KPI')"
+                                                                                        (click)="editKpi(k.id)"><i
+                                                                                            class="fas fa-pen" [attr.title]="'edit' | translate" ></i></a>
+            
+                                                                                    <a><i class="far fa-times-circle" [attr.title]="'close' | translate"
+                                                                                            (click)="closeProfileKpi(k.id)"
+                                                                                            *ngIf="k.strategy_profile_status_type != 'closed'"></i></a>
+                                                                                    <a><i class="fas fa-check pointer" [attr.title]="'activate' | translate"
+                                                                                            *ngIf="k.strategy_status_id == 2 && StrategyManagementSettingStore?.strategyManagementSettings?.is_activate"
+                                                                                            (click)="activateKPI(k.id)"></i></a>
+                                                                                    <a><i class="fas fa-ban" [attr.title]="'deactivate' | translate"
+                                                                                            *ngIf="k.strategy_status_id == 1 && StrategyManagementSettingStore?.strategyManagementSettings?.is_activate"
+                                                                                            (click)="passiveKPI(k.id)"></i></a>
+                                                                                    <a *ngIf="AuthStore.getActivityPermission(3200, 'DELETE_STRATEGY_PROFILE_OBJECTIVE_KPI')"
+                                                                                        (click)="deleteProfileKpi(k.id)"><i
+                                                                                            class="fas fa-trash" [attr.title]="'delete' | translate" ></i></a>
+                                                                                    <a><i class="fas fa-history" [attr.title]="'histroy' | translate"
+                                                                                            (click)="openHistoryModal(k.id,'KPI')"></i></a>
+                                                                                </div>
+                                                                            </td>
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>                                            
+                                                        </div>
+                                                    </div>
+                                                    <div class="tab-pane active show" *ngIf="selectedTab == 'mapping'">
+                                                        <!-- common-tab-md starts -->
+                                                        <div class="common-tab-md tab-same-height clearfix">
+                                                            <div class="tab-common-left-md">
+                                                                <div class=" issues-tab">
+                                                                    <!-- tab menu start -->
+                                                                    <ul class="nav nav-tabs nav-tabs--vertical nav-tabs--left vertical-tab"
+                                                                        role="navigation">
+                                                                        <li class="nav-item"> <a (click)="gotoSection('process')"
+                                                                                class="nav-link active" data-toggle="tab" role="tab"
+                                                                                aria-controls="lorem"
+                                                                                aria-selected="false">{{'processes' |
+                                                                                translate}}</a>
+                                                                        </li>
+                                                                        <li *ngIf="OrganizationModulesStore.checkOrganizationSubModulesPermission(100,21901)" class="nav-item"> <a (click)="gotoSection('issue')"
+                                                                                class="nav-link" data-toggle="tab" role="tab"
+                                                                                aria-controls="ipsum" aria-selected="false">
+                                                                                {{'issues'
+                                                                                |
+                                                                                translate}}</a>
+                                                                        </li>
+                                                                        <li *ngIf="OrganizationModulesStore.checkOrganizationSubModulesPermission(100,3201)" class="nav-item"> <a (click)="gotoSection('service')"
+                                                                                class="nav-link" data-toggle="tab" role="tab"
+                                                                                aria-controls="lorem"
+                                                                                aria-selected="false">{{'services'
+                                                                                | translate}}</a>
+                                                                        </li>
+                                                                        <li class="nav-item"
+                                                                            *ngIf="OrganizationModulesStore.checkOrganizationSubModulesPermission(100,2901)">
+                                                                            <a (click)="gotoSection('product')" class="nav-link"
+                                                                                data-toggle="tab" role="tab" aria-controls="lorem"
+                                                                                aria-selected="false">{{'products' | translate}}</a>
+                                                                        </li>
+                                                                        <li class="nav-item" *ngIf="OrganizationModulesStore.checkOrganizationSubModulesPermission(900,24401)"> <a (click)="gotoSection('risk')"
+                                                                                class="nav-link" data-toggle="tab" role="tab"
+                                                                                aria-controls="ipsum" aria-selected="false">
+                                                                                {{'risks' |
+                                                                                translate}}</a>
+                                                                        </li>
+                                                                        <li class="nav-item"
+                                                                            *ngIf="OrganizationModulesStore.checkOrganizationSubModulesPermission(1000,15101)">
+                                                                            <a (click)="gotoSection('audit_finding')"
+                                                                                class="nav-link" data-toggle="tab" role="tab"
+                                                                                aria-controls="lorem"
+                                                                                aria-selected="false">{{'audit_findings' |
+                                                                                translate}}</a>
+                                                                        </li>
+                                                                        <!-- <li class="nav-item"
+                                                                                                    *ngIf="OrganizationModulesStore.checkOrganizationSubModulesPermission(100,2901)"> <a
+                                                                                                        (click)="gotoSection('document')" class="nav-link" data-toggle="tab" role="tab"
+                                                                                                        aria-controls="lorem" aria-selected="false">{{'documents' | translate}}</a>
+                                                                                                </li> -->
+                                                                        <li class="nav-item"
+                                                                            *ngIf="OrganizationModulesStore.checkOrganizationSubModulesPermission(3300,54301)">
+                                                                            <a (click)="gotoSection('asset')" class="nav-link"
+                                                                                data-toggle="tab" role="tab" aria-controls="lorem"
+                                                                                aria-selected="false">{{'assets' | translate}}</a>
+                                                                        </li>
+            
+            
+            
+                                                                        <li class="nav-item"
+                                                                            *ngIf="OrganizationModulesStore.checkOrganizationSubModulesPermission(3400,56301)">
+                                                                            <a (click)="gotoSection('training')" class="nav-link"
+                                                                                data-toggle="tab" role="tab" aria-controls="lorem"
+                                                                                aria-selected="false">{{'training' | translate}}</a>
+                                                                        </li>
+                                                                        <li class="nav-item"
+                                                                            *ngIf="OrganizationModulesStore.checkOrganizationSubModulesPermission(3700,71301)">
+                                                                            <a (click)="gotoSection('project_monitoring')" class="nav-link"
+                                                                                data-toggle="tab" role="tab" aria-controls="lorem"
+                                                                                aria-selected="false">{{'project_monitoring' | translate}}</a>
+                                                                        </li>
+                                                                        <li class="nav-item"
+                                                                            *ngIf="OrganizationModulesStore.checkOrganizationSubModulesPermission(400,8101)">
+                                                                            <a (click)="gotoSection('project_management')" class="nav-link"
+                                                                                data-toggle="tab" role="tab" aria-controls="lorem"
+                                                                                aria-selected="false">{{'project_management' | translate}}</a>
+                                                                        </li>
+                                                                        <li class="nav-item"
+                                                                            *ngIf="OrganizationModulesStore.checkOrganizationSubModulesPermission(1900,34801)">
+                                                                            <a (click)="gotoSection('incident')" class="nav-link"
+                                                                                data-toggle="tab" role="tab" aria-controls="lorem"
+                                                                                aria-selected="false">{{'incident_management' | translate}}</a>
+                                                                        </li>
+            
+                                                                    </ul>
+                                                                </div>
+                                                                <!-- tab menu end -->
+                                                            </div>
+            
+            
+                                                            <div class="tab-common-left-content-m bg-white cmn-bdr p-3"
+                                                                style="min-height: 550px;">
+                                                                <div class="tab-content border-none">
+            
+                                                                    <div *ngIf="selectedSection=='process'"
+                                                                        class="tab-pane fade active show" id="tab-two"
+                                                                        role="tabpanel">
+            
+                                                                        <div class="cmn-bdr p-3 d-flex mb-3 align-items-center"
+                                                                            *ngIf="StrategyProfileMappingStore.loaded && processes?.length>0 && AuthStore.getActivityPermission(900,'PROCESS_ASSET_MAPPING_CREATE')">
+                                                                            <h6 class="mb-0 w-100">{{'processes' | translate}}</h6>
+                                                                            <div class="text-right ml-2" style="min-width: 220px;">
+                                                                                <button
+                                                                                    *ngIf="StrategyProfileMappingStore.loaded && processes?.length>0 && AuthStore.getActivityPermission(900,'PROCESS_ASSET_MAPPING_CREATE')"
+                                                                                    type="button" (click)="selectProcesses()"
+                                                                                    class="btn btn-small" data-toggle="modal"
+                                                                                    data-target="#choose-process-popup"
+                                                                                    style="margin: 0 !important;">{{chooseButtonTitle}}</button>
+                                                                            </div>
+                                                                        </div>
+            
+                                                                        <div *ngIf="StrategyProfileMappingStore.loaded && processes?.length>0"
+                                                                            [ngClass]="StrategyProfileMappingStore.loaded && processes?.length == 0?'audit-form-table w-100 risk-form-mapping-table form-table-scroll':'audit-form-table w-100 risk-form-mapping-table form-table-scroll table-scroll-small-device'">
+            
+                                                                            <table
+                                                                                class="table table-bordered ordinary-table cmn-table-style mb-1"
+                                                                                *ngIf="StrategyProfileMappingStore.loaded && processes?.length>0">
+                                                                                <tr>
+                                                                                    <th class="border-top-0" width="2%">#</th>
+                                                                                    <th class="border-top-0" width="9%">{{'ref_id' |
+                                                                                        translate}}</th>
+                                                                                    <th class="border-top-0" width="20%">
+                                                                                        {{'process_group' | translate}}</th>
+                                                                                    <th class="border-top-0" width="30%">{{'process'
+                                                                                        |
+                                                                                        translate}}</th>
+                                                                                    <th class="border-top-0" width="20%">
+                                                                                        {{'process_category' | translate}}</th>
+                                                                                    <th class="border-top-0" width="19%">
+                                                                                        {{'departments'
+                                                                                        | translate}}</th>
+            
+                                                                                </tr>
+                                                                                <tr class="edit-option"
+                                                                                    *ngFor="let selected of processes; let list=index">
+                                                                                    <td>{{list+1}}</td>
+                                                                                    <td>#{{selected.reference_code}}</td>
+                                                                                    <td>{{selected.process_group?.title ?
+                                                                                        selected.process_group?.title :
+                                                                                        AppStore.noContentText}}</td>
+                                                                                    <td> {{selected?.title ? selected?.title :
+                                                                                        AppStore.noContentText}}
+                                                                                    </td>
+                                                                                    <td>{{selected.process_category?.title ?
+                                                                                        selected.process_category?.title :
+                                                                                        AppStore.noContentText}}</td>
+                                                                                    <td>
+                                                                                        <div class="edit-option-show-inner pointer">
+            
+                                                                                            <a [attr.title]="'delete'|translate"
+                                                                                                (click)="deleteProcessMapping(selected.id)"><i
+                                                                                                    class="fas fa-trash"></i></a>
+                                                                                        </div>
+                                                                                        {{selected.department?.title ?
+                                                                                        selected.department?.title :
+                                                                                        AppStore.noContentText}}
+                                                                                    </td>
+                                                                                </tr>
+            
+                                                                            </table>
+            
+            
+            
+                                                                        </div>
+                                                                        <ng-container *mobxAutorun>
+                                                                            <app-no-data
+                                                                                *ngIf="StrategyProfileMappingStore.loaded && processes?.length == 0"
+                                                                                [border]=false>
+                                                                            </app-no-data>
+                                                                        </ng-container>
+                                                                    </div>
+            
+                                                                    <div *ngIf="selectedSection=='issue'"
+                                                                        class="tab-pane fade active show" id="tab-one"
+                                                                        role="tabpanel">
+            
+                                                                        <div class="cmn-bdr p-3 d-flex mb-3 align-items-center"
+                                                                            *ngIf="StrategyProfileMappingStore.loaded && issues?.length>0 && AuthStore.getActivityPermission(900,'ISSUE_ASSET_MAPPING_CREATE')">
+                                                                            <h6 class="mb-0 w-100">{{'issues' | translate}}</h6>
+                                                                            <div class="text-right ml-2" style="min-width: 220px;">
+                                                                                <button
+                                                                                    *ngIf="StrategyProfileMappingStore.loaded && issues?.length>0"
+                                                                                    type="button" (click)="selectIssues()"
+                                                                                    class="btn btn-small" data-toggle="modal"
+                                                                                    data-target="#choose-process-popup"
+                                                                                    style="margin: 0 !important;">{{chooseButtonTitle}}</button>
+                                                                            </div>
+                                                                        </div>
+            
+                                                                        <div *ngIf="StrategyProfileMappingStore.loaded && issues?.length>0"
+                                                                            [ngClass]="StrategyProfileMappingStore.loaded && issues?.length == 0?'audit-form-table w-100 risk-form-mapping-table form-table-scroll':'audit-form-table w-100 risk-form-mapping-table form-table-scroll table-scroll-small-device'">
+                                                                            <table
+                                                                                class="table table-bordered ordinary-table cmn-table-style mb-1"
+                                                                                *ngIf="StrategyProfileMappingStore.loaded && issues?.length>0">
+                                                                                <tr>
+                                                                                    <th class="border-top-0" width="2%">#</th>
+                                                                                    <th class="border-top-0" width="9%">{{'ref_id' |
+                                                                                        translate}}</th>
+                                                                                    <th class="border-top-0" width="30%">{{'issue' |
+                                                                                        translate}}</th>
+                                                                                    <th class="border-top-0" width="11%">
+                                                                                        {{'issue_types'
+                                                                                        | translate}}</th>
+                                                                                    <th class="border-top-0" width="18%">
+                                                                                        {{'issue_categories' | translate}}</th>
+                                                                                    <th class="border-top-0" width="15%">
+                                                                                        {{'issue_domains' | translate}}</th>
+                                                                                    <th class="border-top-0" width="15%">
+                                                                                        {{'departments'
+                                                                                        | translate}}</th>
+                                                                                </tr>
+                                                                                <tr class="edit-option"
+                                                                                    *ngFor="let selected of issues; let list=index">
+                                                                                    <td>{{list+1}}</td>
+                                                                                    <td>#{{selected.reference_code}}</td>
+                                                                                    <td>{{selected.issues_title?selected.issues_title:selected.title}}
+                                                                                    </td>
+                                                                                    <td> <span
+                                                                                            *ngFor="let types of selected.organization_issue_types"
+                                                                                            class="risk-type-bx risk-type-bx-drop">
+                                                                                            <i><img [attr.src]="types.title == 'Internal' ? 'assets/images/internal.svg' : 'assets/images/external.svg'"
+                                                                                                    style="width: 15px;"></i>&nbsp;{{types.title}}
+                                                                                        </span>
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        <span
+                                                                                            *ngFor="let types of selected.organization_issue_categories"
+                                                                                            class="risk-type-bx risk-type-bx-drop">{{types.title}}</span>
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        <span
+                                                                                            *ngFor="let types of selected.organization_issue_domains"
+                                                                                            class="risk-type-bx risk-type-bx-drop">{{types.title}}</span>
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        <div class="edit-option-show-inner pointer"
+                                                                                            style="margin:6px 0 0 0">
+            
+                                                                                            <a [attr.title]="'delete'|translate"
+                                                                                                (click)="deleteIssueMapping(selected.id)"><i
+                                                                                                    class="fas fa-trash"></i></a>
+                                                                                        </div>
+                                                                                        <span
+                                                                                            *ngFor="let types of selected.organization_issue_departments"
+                                                                                            class="risk-type-bx risk-type-bx-drop">{{types.title}}</span>
+            
+                                                                                    </td>
+                                                                                </tr>
+            
+                                                                            </table>
+            
+                                                                        </div>
+                                                                        <ng-container *mobxAutorun>
+                                                                            <app-no-data
+                                                                                *ngIf="StrategyProfileMappingStore.loaded && issues?.length == 0"
+                                                                                [border]=false>
+                                                                            </app-no-data>
+                                                                        </ng-container>
+                                                                    </div>
+            
+                                                                    <div *ngIf="selectedSection=='service'"
+                                                                        class="tab-pane fade active show" id="tab-one"
+                                                                        role="tabpanel">
+                                                                        <div class="cmn-bdr p-3 d-flex mb-3 align-items-center"
+                                                                            *ngIf="StrategyProfileMappingStore.loaded && services?.length>0 && AuthStore.getActivityPermission(900,'BUSINESS_APPLICATION_ASSET_MAPPING_CREATE')">
+                                                                            <h6 class="mb-0 w-100">{{'services' | translate}}</h6>
+                                                                            <div class="text-right ml-2" style="min-width: 220px;">
+                                                                                <button
+                                                                                    *ngIf="StrategyProfileMappingStore.loaded && services?.length>0"
+                                                                                    type="button" (click)="selectServices()"
+                                                                                    class="btn btn-small" data-toggle="modal"
+                                                                                    data-target="#choose-process-popup"
+                                                                                    style="margin: 0 !important;">{{chooseButtonTitle}}</button>
+                                                                            </div>
+                                                                        </div>
+            
+                                                                        <div *ngIf="StrategyProfileMappingStore.loaded && services?.length>0"
+                                                                            [ngClass]="StrategyProfileMappingStore.loaded && services?.length == 0?'audit-form-table w-100 risk-form-mapping-table form-table-scroll':'audit-form-table w-100 risk-form-mapping-table form-table-scroll table-scroll-small-device'">
+                                                                            <table
+                                                                                class="table table-bordered ordinary-table cmn-table-style mb-1"
+                                                                                *ngIf="StrategyProfileMappingStore.loaded && services?.length>0">
+                                                                                <tr>
+                                                                                    <th class="border-top-0" width="2%">#</th>
+                                                                                    <th class="border-top-0" width="32%">{{'title' |
+                                                                                        translate}}</th>
+                                                                                    <th class="border-top-0" width="20%">
+                                                                                        {{'service_category' | translate}}</th>
+                                                                                    <th class="border-top-0" width="46%">
+                                                                                        {{'description'
+                                                                                        | translate}}</th>
+                                                                                </tr>
+            
+                                                                                <tr class="edit-option"
+                                                                                    *ngFor="let selected of services; let list=index">
+                                                                                    <td>{{list+1}}</td>
+                                                                                    <td>{{selected.title}}</td>
+                                                                                    <td>{{selected.service_category?.title}}</td>
+                                                                                    <td>
+                                                                                        <div class="edit-option-show-inner pointer"
+                                                                                            style="margin:6px 0 0 0">
+            
+                                                                                            <a [attr.title]="'delete'|translate"
+                                                                                                (click)="deleteServiceMapping(selected.id)"><i
+                                                                                                    class="fas fa-trash"></i></a>
+                                                                                        </div>
+                                                                                        {{selected?.description ?
+                                                                                        selected?.description
+                                                                                        : AppStore.noContentText}}
+            
+                                                                                    </td>
+                                                                                </tr>
+            
+                                                                            </table>
+            
+                                                                        </div>
+                                                                        <ng-container *mobxAutorun>
+                                                                            <app-no-data
+                                                                                *ngIf="StrategyProfileMappingStore.loaded && services?.length == 0"
+                                                                                [border]=false>
+                                                                            </app-no-data>
+                                                                        </ng-container>
+                                                                    </div>
+            
+                                                                    <div *ngIf="selectedSection=='risk'"
+                                                                        class="tab-pane fade active show" id="tab-two"
+                                                                        role="tabpanel">
+            
+                                                                        <div class="cmn-bdr p-3 d-flex mb-3 align-items-center"
+                                                                            *ngIf="StrategyProfileMappingStore.loaded && risks?.length>0 && AuthStore.getActivityPermission(900,'PROCESS_ASSET_MAPPING_CREATE')">
+                                                                            <h6 class="mb-0 w-100">{{'risks' | translate}}</h6>
+                                                                            <div class="text-right ml-2" style="min-width: 220px;">
+                                                                                <button
+                                                                                    *ngIf="StrategyProfileMappingStore.loaded && risks?.length>0 && AuthStore.getActivityPermission(900,'PROCESS_ASSET_MAPPING_CREATE')"
+                                                                                    type="button" (click)="selectRisks()"
+                                                                                    class="btn btn-small" data-toggle="modal"
+                                                                                    data-target="#choose-process-popup"
+                                                                                    style="margin: 0 !important;">{{chooseButtonTitle}}</button>
+                                                                            </div>
+                                                                        </div>
+            
+                                                                        <div *ngIf="StrategyProfileMappingStore.loaded && risks?.length>0"
+                                                                            [ngClass]="StrategyProfileMappingStore.loaded && risks?.length == 0?'audit-form-table w-100 risk-form-mapping-table form-table-scroll':'audit-form-table w-100 risk-form-mapping-table form-table-scroll table-scroll-small-device'">
+            
+                                                                            <table
+                                                                                class="table table-bordered ordinary-table cmn-table-style mb-1"
+                                                                                *ngIf="StrategyProfileMappingStore.loaded && risks?.length>0">
+                                                                                <tr>
+                                                                                    <th class="border-top-0" width="2%">#</th>
+                                                                                    <th class="border-top-0" width="8%">{{'ref_id' |
+                                                                                        translate}}</th>
+                                                                                    <th class="border-top-0" width="22%">{{'risk' |
+                                                                                        translate}}</th>
+                                                                                    <th class="border-top-0" width="18%">
+                                                                                        {{'department'
+                                                                                        | translate}}</th>
+                                                                                    <th class="border-top-0" width="18%">
+                                                                                        {{'risk_category' | translate}}</th>
+                                                                                    <th class="border-top-0" width="17%">
+                                                                                        {{'risk_type' |
+                                                                                        translate}}</th>
+                                                                                    <th class="border-top-0" width="15%">
+                                                                                        {{'risk_status'
+                                                                                        | translate}}</th>
+            
+                                                                                </tr>
+                                                                                <tr class="edit-option"
+                                                                                    *ngFor="let selected of risks; let list=index">
+                                                                                    <td>{{list+1}}</td>
+                                                                                    <td>{{selected.reference_code}}</td>
+                                                                                    <td>{{selected.title}}</td>
+                                                                                    <td> {{getArrayProcessed(selected.departments)}}
+                                                                                    </td>
+                                                                                    <td>{{
+                                                                                        getArrayProcessed(selected.risk_category?.title?selected.risk_category?.title:selected.risk_category_title)}}
+                                                                                    </td>
+                                                                                    <td>{{checkRiskType(selected.risk_types)}}</td>
+                                                                                    <td>
+                                                                                        <div
+                                                                                            [ngClass]="selected.risk_status ? 'dot-div draft-tag-'+selected.risk_status.label : 'dot-div'">
+                                                                                            {{selected.risk_status ?
+                                                                                            selected.risk_status?.language[0]?.pivot?.title
+                                                                                            : AppStore.noContentText}}
+                                                                                        </div>
+                                                                                        <div class="edit-option-show-inner pointer">
+                                                                                            <a *ngIf="AuthStore.getActivityPermission(1600,'DELETE_RISK_MEETING_PLAN_MAPPING')"
+                                                                                                (click)="deleteRiskMapping(selected.id)"
+                                                                                                [attr.title]="'delete' | translate"><i
+                                                                                                    class="fas fa-trash pointer"></i></a>
+                                                                                        </div>
+                                                                                    </td>
+                                                                                </tr>
+            
+                                                                            </table>
+            
+            
+            
+                                                                        </div>
+                                                                        <ng-container *mobxAutorun>
+                                                                            <app-no-data
+                                                                                *ngIf="StrategyProfileMappingStore.loaded && risks?.length == 0"
+                                                                                [border]=false>
+                                                                            </app-no-data>
+                                                                        </ng-container>
+                                                                    </div>
+            
+                                                                    <div *ngIf="selectedSection=='audit_finding'"
+                                                                        class="tab-pane fade active show" id="tab-one"
+                                                                        role="tabpanel">
+            
+                                                                        <div class="cmn-bdr p-3 d-flex mb-3 align-items-center"
+                                                                            *ngIf="StrategyProfileMappingStore.loaded && audit_findings?.length>0 && AuthStore.getActivityPermission(900,'ISSUE_ASSET_MAPPING_CREATE')">
+                                                                            <h6 class="mb-0 w-100">{{'audit_findings' | translate}}
+                                                                            </h6>
+                                                                            <div class="text-right ml-2" style="min-width: 220px;">
+                                                                                <button
+                                                                                    *ngIf="StrategyProfileMappingStore.loaded && audit_findings?.length>0"
+                                                                                    type="button" (click)="selectAuditFinding()"
+                                                                                    class="btn btn-small" data-toggle="modal"
+                                                                                    data-target="#choose-process-popup"
+                                                                                    style="margin: 0 !important;">{{chooseButtonTitle}}</button>
+                                                                            </div>
+                                                                        </div>
+            
+                                                                        <div *ngIf="StrategyProfileMappingStore.loaded && audit_findings?.length>0"
+                                                                            [ngClass]="StrategyProfileMappingStore.loaded && audit_findings?.length == 0?'audit-form-table w-100 risk-form-mapping-table form-table-scroll':'audit-form-table w-100 risk-form-mapping-table form-table-scroll table-scroll-small-device'">
+                                                                            <table
+                                                                                class="table table-bordered ordinary-table cmn-table-style mb-1"
+                                                                                *ngIf="StrategyProfileMappingStore.loaded && audit_findings?.length>0">
+                                                                                <tr>
+                                                                                    <th class="border-top-0" width="10%">{{'sl' |
+                                                                                        translate}}</th>
+                                                                                    <th class="border-top-0" width="50%">{{'title' |
+                                                                                        translate}}</th>
+                                                                                    <th class="border-top-0" width="15%">
+                                                                                        {{'audit_category' | translate}}</th>
+                                                                                    <th class="border-top-0" width="15%">{{'risk' |
+                                                                                        translate}}</th>
+                                                                                    <th class="border-top-0" width="10%">{{'status'
+                                                                                        |
+                                                                                        translate}}</th>
+                                                                                </tr>
+                                                                                <tr class="edit-option"
+                                                                                    *ngFor="let selected of audit_findings; let list=index">
+                                                                                    <td>{{list+1}}</td>
+                                                                                    <td>{{selected?.title }}</td>
+                                                                                    <td>{{selected?.finding_category ?
+                                                                                        selected?.finding_category?.title :
+                                                                                        AppStore.noContentText}}</td>
+                                                                                    <td class="text-center">
+                                                                                        <div
+                                                                                            class="dot-div {{selected?.risk_rating?.label}}-dot">
+                                                                                            {{selected?.risk_rating?.language[0]?.pivot?.title}}
+                                                                                        </div>
+                                                                                    </td>
+            
+                                                                                    <td>
+                                                                                        <div class="edit-option-show-inner pointer"
+                                                                                            style="margin:6px 0 0 0">
+            
+                                                                                            <a [attr.title]="'delete'|translate"
+                                                                                                (click)="deleteAuditFindingMapping(selected.id)"><i
+                                                                                                    class="fas fa-trash"></i></a>
+                                                                                        </div>
+                                                                                        <div
+                                                                                            class="dot-div {{selected?.finding_status?.label}}">
+                                                                                            {{selected?.finding_status?.language[0]?.pivot?.title}}
+                                                                                        </div>
+            
+                                                                                    </td>
+                                                                                </tr>
+            
+                                                                            </table>
+            
+                                                                        </div>
+                                                                        <ng-container *mobxAutorun>
+                                                                            <app-no-data
+                                                                                *ngIf="StrategyProfileMappingStore.loaded && audit_findings?.length == 0"
+                                                                                [border]=false>
+                                                                            </app-no-data>
+                                                                        </ng-container>
+                                                                    </div>
+            
+                                                                    <div *ngIf="selectedSection=='document'"
+                                                                        class="tab-pane fade active show" id="tab-one"
+                                                                        role="tabpanel">
+                                                                        <div class="cmn-bdr p-3 d-flex mb-3 align-items-center"
+                                                                            *ngIf="StrategyProfileMappingStore.loaded && documents?.length>0 && AuthStore.getActivityPermission(900,'BUSINESS_APPLICATION_ASSET_MAPPING_CREATE')">
+                                                                            <h6 class="mb-0 w-100">{{'documents' | translate}}</h6>
+                                                                            <!-- <div class="text-right ml-2" style="min-width: 220px;">
+                                                                                                        <button *ngIf="StrategyProfileMappingStore.loaded && documents?.length>0" type="button"
+                                                                                                            (click)="selectServices()" class="btn btn-small" data-toggle="modal"
+                                                                                                            data-target="#choose-process-popup"
+                                                                                                            style="margin: 0 !important;">{{chooseButtonTitle}}</button>
+                                                                                                    </div> -->
+                                                                        </div>
+            
+                                                                        <div *ngIf="StrategyProfileMappingStore.loaded && documents?.length>0"
+                                                                            [ngClass]="StrategyProfileMappingStore.loaded && documents?.length == 0?'audit-form-table w-100 risk-form-mapping-table form-table-scroll':'audit-form-table w-100 risk-form-mapping-table form-table-scroll table-scroll-small-device'">
+                                                                            <table
+                                                                                class="table table-bordered ordinary-table cmn-table-style mb-1"
+                                                                                *ngIf="StrategyProfileMappingStore.loaded && documents?.length>0">
+                                                                                <tr>
+                                                                                    <th class="border-top-0" width="2%">#</th>
+                                                                                    <th class="border-top-0" width="32%">{{'title' |
+                                                                                        translate}}</th>
+                                                                                    <th class="border-top-0" width="20%">
+                                                                                        {{'issue_date'
+                                                                                        | translate}}</th>
+                                                                                    <th class="border-top-0" width="46%">
+                                                                                        {{'description'
+                                                                                        | translate}}</th>
+                                                                                </tr>
+            
+                                                                                <tr class="edit-and-delete-main"
+                                                                                    *ngFor="let selected of documents; let list=index">
+                                                                                    <td>{{list+1}}</td>
+                                                                                    <td>{{selected.title}}</td>
+                                                                                    <td>{{selected.issue_date ? selected.issue_date
+                                                                                        :
+                                                                                        AppStore.noContentText}}</td>
+                                                                                    <td>
+                                                                                        <!-- <div class="edit-option-show pointer" style="margin:6px 0 0 0">
+                                                                            
+                                                                                                                    <a [attr.title]="'delete'|translate"
+                                                                                                                        (click)="deleteServiceMapping(selected.id)"><i class="fas fa-trash"></i></a>
+                                                                                                                </div> -->
+                                                                                        {{selected?.expiry_date ?
+                                                                                        selected?.expiry_date
+                                                                                        : AppStore.noContentText}}
+            
+                                                                                    </td>
+                                                                                </tr>
+            
+                                                                            </table>
+            
+                                                                        </div>
+                                                                        <ng-container *mobxAutorun>
+                                                                            <app-no-data
+                                                                                *ngIf="StrategyProfileMappingStore.loaded && documents?.length == 0"
+                                                                                [border]=false>
+                                                                            </app-no-data>
+                                                                        </ng-container>
+                                                                    </div>
+            
+                                                                    <div *ngIf="selectedSection=='asset'"
+                                                                        class="tab-pane fade active show" id="tab-one"
+                                                                        role="tabpanel">
+                                                                        <div class="cmn-bdr p-3 d-flex mb-3 align-items-center"
+                                                                            *ngIf="StrategyProfileMappingStore.loaded && StrategyProfileMappingStore.assets?.length>0">
+                                                                            <h6 class="mb-0 w-100">{{'assets' | translate}}</h6>
+                                                                            <div class="text-right ml-2" style="min-width: 220px;">
+                                                                                <button
+                                                                                    *ngIf="StrategyProfileMappingStore.loaded && StrategyProfileMappingStore.assets?.length>0"
+                                                                                    type="button" (click)="selectAssets()"
+                                                                                    class="btn btn-small" data-toggle="modal"
+                                                                                    data-target="#choose-process-popup"
+                                                                                    style="margin: 0 !important;">{{chooseButtonTitle}}</button>
+                                                                            </div>
+                                                                        </div>
+            
+                                                                        <div *ngIf="StrategyProfileMappingStore.loaded && StrategyProfileMappingStore.assets?.length>0"
+                                                                            [ngClass]="StrategyProfileMappingStore.loaded && StrategyProfileMappingStore.assets?.length == 0?'audit-form-table w-100 risk-form-mapping-table form-table-scroll':'audit-form-table w-100 risk-form-mapping-table form-table-scroll table-scroll-small-device'">
+                                                                            <table
+                                                                                class="table table-bordered ordinary-table cmn-table-style mb-1"
+                                                                                *ngIf="StrategyProfileMappingStore.loaded && StrategyProfileMappingStore.assets?.length>0">
+                                                                                <tr>
+                                                                                    <th class="border-top-0" width="10%">#
+                                                                                    </th>
+                                                                                    <th class="border-top-0" width="90%">{{'title' |
+                                                                                        translate}}</th>
+                                                                                </tr>
+                                                                                <tr class="edit-option"
+                                                                                    *ngFor="let proj of StrategyProfileMappingStore?.assets; let list=index">
+                                                                                    <td>{{list+1}}</td>
+                                                                                    <td>
+                                                                                        <div class="edit-option-show-inner pointer"
+                                                                                            style="margin:6px 0 0 0">
+            
+                                                                                            <a [attr.title]="'delete'|translate"
+                                                                                                (click)="deleteAssetMapping(proj.id)"><i
+                                                                                                    class="fas fa-trash"></i></a>
+                                                                                        </div>
+                                                                                        {{proj.title ? proj.title :
+                                                                                        AppStore.noContentText}}
+                                                                                    </td>
+                                                                                </tr>
+            
+                                                                            </table>
+            
+                                                                        </div>
+                                                                        <ng-container *mobxAutorun>
+                                                                            <app-no-data
+                                                                                *ngIf="StrategyProfileMappingStore.loaded && StrategyProfileMappingStore.assets?.length == 0"
+                                                                                [border]=false></app-no-data>
+                                                                        </ng-container>
+                                                                    </div>
+            
+                                                                    <div *ngIf="selectedSection=='training'"
+                                                                        class="tab-pane fade active show" id="tab-one"
+                                                                        role="tabpanel">
+                                                                        <div class="cmn-bdr p-3 d-flex mb-3 align-items-center"
+                                                                            *ngIf="StrategyProfileMappingStore.loaded && StrategyProfileMappingStore.trainings?.length>0">
+                                                                            <h6 class="mb-0 w-100">{{'trainings' | translate}}</h6>
+                                                                            <div class="text-right ml-2" style="min-width: 220px;">
+                                                                                <button
+                                                                                    *ngIf="StrategyProfileMappingStore.loaded && StrategyProfileMappingStore.trainings?.length>0"
+                                                                                    type="button" (click)="selectTraining()"
+                                                                                    class="btn btn-small" data-toggle="modal"
+                                                                                    data-target="#choose-process-popup"
+                                                                                    style="margin: 0 !important;">{{chooseButtonTitle}}</button>
+                                                                            </div>
+                                                                        </div>
+            
+                                                                        <div *ngIf="StrategyProfileMappingStore.loaded && StrategyProfileMappingStore.trainings?.length>0"
+                                                                            [ngClass]="StrategyProfileMappingStore.loaded && StrategyProfileMappingStore.trainings?.length == 0?'audit-form-table w-100 risk-form-mapping-table form-table-scroll':'audit-form-table w-100 risk-form-mapping-table form-table-scroll table-scroll-small-device'">
+                                                                            <table
+                                                                                class="table table-bordered ordinary-table cmn-table-style mb-1"
+                                                                                *ngIf="StrategyProfileMappingStore.loaded && StrategyProfileMappingStore.trainings?.length>0">
+                                                                                <tr>
+                                                                                    <th class="border-top-0" width="7%">#</th>
+                                                                                    <th class="border-top-0" width="29%">{{'title' |
+                                                                                        translate}}</th>
+                                                                                    <th class="border-top-0" width="18%">
+                                                                                        {{'category' |
+                                                                                        translate}}</th>
+                                                                                    <th class="border-top-0" width="18%">{{'trainer'
+                                                                                        |
+                                                                                        translate}}</th>
+                                                                                    <th class="border-top-0" width="18%">
+                                                                                        {{'start_date'
+                                                                                        | translate}}</th>
+                                                                                    <th class="border-top-0" width="10%">{{'status'
+                                                                                        |
+                                                                                        translate}}</th>
+                                                                                </tr>
+                                                                                <tr class="edit-option"
+                                                                                    *ngFor="let proj of StrategyProfileMappingStore?.trainings; let list=index">
+                                                                                    <td>{{list+1}}</td>
+                                                                                    <td> {{proj.title ? proj.title :
+                                                                                        AppStore.noContentText}}
+                                                                                    </td>
+                                                                                    <td>{{proj.training_category.title ?
+                                                                                        proj.training_category.title :
+                                                                                        AppStore.noContentText}}</td>
+                                                                                    <td>{{proj.trainer ? proj.trainer :
+                                                                                        AppStore.noContentText}}</td>
+                                                                                    <td>{{proj.start_date | date:
+                                                                                        OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                                                        <p *ngIf="!proj.start_date">
+                                                                                            {{AppStore.noContentText}}</p>
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        <div class="edit-option-show-inner pointer"
+                                                                                            style="margin:6px 0 0 0">
+            
+                                                                                            <a [attr.title]="'delete'|translate"
+                                                                                                (click)="deleteTrainingMapping(proj.id)"><i
+                                                                                                    class="fas fa-trash"></i></a>
+                                                                                        </div>
+                                                                                        <div *ngIf="proj.training_status.label"
+                                                                                            [attr.class]="'dot-div '+proj?.training_status.label+'-dot'">
+                                                                                            {{proj.training_status.language[0].pivot.title}}
+                                                                                        </div>
+                                                                                    </td>
+            
+                                                                                </tr>
+            
+                                                                            </table>
+            
+                                                                        </div>
+                                                                        <ng-container *mobxAutorun>
+                                                                            <app-no-data
+                                                                                *ngIf="StrategyProfileMappingStore.loaded && StrategyProfileMappingStore.trainings?.length == 0"
+                                                                                [border]=false></app-no-data>
+                                                                        </ng-container>
+                                                                    </div>
+            
+                                                                    <div *ngIf="selectedSection=='product'"
+                                                                        class="tab-pane fade active show" id="tab-one"
+                                                                        role="tabpanel">
+                                                                        <div class="cmn-bdr p-3 d-flex mb-3 align-items-center"
+                                                                            *ngIf="StrategyProfileMappingStore.loaded && StrategyProfileMappingStore.products?.length>0">
+                                                                            <h6 class="mb-0 w-100">{{'products' | translate}}</h6>
+                                                                            <div class="text-right ml-2" style="min-width: 220px;">
+                                                                                <button
+                                                                                    *ngIf="StrategyProfileMappingStore.loaded && StrategyProfileMappingStore.products?.length>0"
+                                                                                    type="button" (click)="selectProducts()"
+                                                                                    class="btn btn-small" data-toggle="modal"
+                                                                                    data-target="#choose-process-popup"
+                                                                                    style="margin: 0 !important;">{{chooseButtonTitle}}</button>
+                                                                            </div>
+                                                                        </div>
+            
+                                                                        <div *ngIf="StrategyProfileMappingStore.loaded && StrategyProfileMappingStore.products?.length>0"
+                                                                            [ngClass]="StrategyProfileMappingStore.loaded && StrategyProfileMappingStore.products?.length == 0?'audit-form-table w-100 risk-form-mapping-table form-table-scroll':'audit-form-table w-100 risk-form-mapping-table form-table-scroll table-scroll-small-device'">
+                                                                            <table
+                                                                                class="table table-bordered ordinary-table cmn-table-style mb-1"
+                                                                                *ngIf="StrategyProfileMappingStore.loaded && StrategyProfileMappingStore.products?.length>0">
+                                                                                <tr>
+            
+                                                                                    <th class="border-top-0" width="3%">#
+                                                                                    </th>
+                                                                                    <th class="border-top-0" width="22%">{{'title' |
+                                                                                        translate}}</th>
+                                                                                    <th style="width: 22%;">{{'product_category' |
+                                                                                        translate}}</th>
+                                                                                    <th class="border-top-0" width="53%">
+                                                                                        {{'description'
+                                                                                        |
+                                                                                        translate}}
+                                                                                    </th>
+            
+            
+                                                                                </tr>
+                                                                                <tr class="edit-option"
+                                                                                    *ngFor="let prod of StrategyProfileMappingStore?.products; let list=index">
+                                                                                    <td>{{list+1}}</td>
+                                                                                    <td> {{prod?.title}}
+                                                                                    </td>
+                                                                                    <td>{{prod?.product_category?.title}}</td>
+                                                                                    <td>
+                                                                                        <div class="edit-option-show-inner pointer"
+                                                                                            style="margin:6px 0 0 0">
+            
+                                                                                            <a [attr.title]="'delete'|translate"
+                                                                                                (click)="deleteProductMapping(prod.id)"><i
+                                                                                                    class="fas fa-trash"></i></a>
+                                                                                        </div>
+                                                                                        {{prod?.description ? prod?.description :
+                                                                                        AppStore.noContentText}}
+                                                                                    </td>
+                                                                                </tr>
+            
+                                                                            </table>
+            
+                                                                        </div>
+                                                                        <ng-container *mobxAutorun>
+                                                                            <app-no-data
+                                                                                *ngIf="StrategyProfileMappingStore.loaded && StrategyProfileMappingStore.products?.length == 0"
+                                                                                [border]=false></app-no-data>
+                                                                        </ng-container>
+                                                                    </div>
+
+                                                                    <!-- <div *ngIf="selectedSection=='project_monitoring'" class="tab-pane fade active show" id="tab-one" role="tabpanel">                                                           
+                                                                        <ng-container *mobxAutorun>
+                                                                            <app-no-data
+                                                                                [border]=false></app-no-data>
+                                                                        </ng-container>
+                                                                    </div> -->
+                                                                    <div *ngIf="selectedSection=='project_monitoring'" class="tab-pane fade active show" id="tab-one" role="tabpanel">
+                                                                        <div class="clearfix">
+                                                                            <button type="button" class="btn btn-small float-right mb-2" (click)="selectProjectMonitoring()" style="margin-right: 0px !important;"
+                                                                                >{{chooseButtonTitle}}</button>
+                                                                        </div>
+                                                                        <div
+                                                                            [ngClass]="StrategyProfileMappingStore.loaded && project_monitoring?.length == 0?'audit-form-table w-100 risk-form-mapping-table form-table-scroll':'audit-form-table w-100 risk-form-mapping-table form-table-scroll table-scroll-small-device'">
+                                                                            <table class="table table-bordered ordinary-table cmn-table-style mb-1"
+                                                                                *ngIf="StrategyProfileMappingStore.loaded && project_monitoring?.length > 0">
+                                                
+                                                                                <tr>
+                                                                                    <th class="border-top-0" width="4%">#</th>
+                                                                                    <th class="border-top-0" width="10%">{{'ref_id' | translate}}</th>
+                                                                                    <th class="border-top-0" width="86%">{{'title' | translate}}</th>
+                                                                                </tr>
+                                                
+                                                                                <tr class="edit-option" *ngFor="let row of project_monitoring; let list=index">
+                                                                                    <td>{{list+1}}</td>
+                                                                                    <td>{{row.reference_code}}</td>
+                                                                                    <td><div class="edit-option-show-inner pointer" style="margin:6px 0 0 0">
+                                                                                        <a [attr.title]="'delete'| translate" (click)=" deleteProjectMonitoring(row.id)"><i class="fas fa-trash"></i></a>
+                                                                                        </div>{{row.title ? row.title : AppStore.noContentText}}</td>
+                                                                                </tr>
+                                                    
+                                                                            </table>
+                                                                            <ng-container *mobxAutorun>
+                                                                                <app-no-data *ngIf="StrategyProfileMappingStore.loaded && project_monitoring?.length == 0"
+                                                                                    [border]=false></app-no-data>
+                                                                            </ng-container>
+                                                                        </div>
+                                                                    </div>                                                                 
+
+                                                                    <!-- <div *ngIf="selectedSection=='project_management'"
+                                                                        class="tab-pane fade active show" id="tab-one"
+                                                                        role="tabpanel">                                                               
+                                                                        <ng-container *mobxAutorun>
+                                                                            <app-no-data         
+                                                                                [border]=false></app-no-data>
+                                                                        </ng-container>
+                                                                    </div> -->
+                                                                    <div *ngIf="selectedSection=='project_management'" class="tab-pane fade active show" id="tab-one" role="tabpanel">
+                                                                        <div class="clearfix">
+                                                                            <button type="button" class="btn btn-small float-right mb-2" (click)="selectProjectManagement()" style="margin-right: 0px !important;"
+                                                                                >{{chooseButtonTitle}}</button>
+                                                                        </div>
+                                                                        <div
+                                                                            [ngClass]="StrategyProfileMappingStore.loaded && project_management?.length == 0?'audit-form-table w-100 risk-form-mapping-table form-table-scroll':'audit-form-table w-100 risk-form-mapping-table form-table-scroll table-scroll-small-device'">
+                                                                            <table class="table table-bordered ordinary-table cmn-table-style mb-1"
+                                                                                *ngIf="StrategyProfileMappingStore.loaded && project_management?.length > 0">
+                                                
+                                                                                <tr>
+                                                                                    <th class="border-top-0" width="4%">#</th>
+                                                                                    <th class="border-top-0" width="10%">{{'ref_id' | translate}}</th>
+                                                                                    <th class="border-top-0" width="86%">{{'title' | translate}}</th>
+                                                                                </tr>
+                                                
+                                                                                <tr class="edit-option" *ngFor="let row of project_management; let list=index">
+                                                                                    <td>{{list+1}}</td>
+                                                                                    <td>{{row.reference_code}}</td>
+                                                                                    <td><div class="edit-option-show-inner pointer" style="margin:6px 0 0 0">
+                                                                                        <a [attr.title]="'delete'| translate" (click)=" deleteProjectManagementMapping(row.id)"><i class="fas fa-trash"></i></a>
+                                                                                        </div>{{row.title ? row.title : AppStore.noContentText}}</td>
+                                                                                </tr>
+                                                    
+                                                                            </table>
+                                                                            <ng-container *mobxAutorun>
+                                                                                <app-no-data *ngIf="StrategyProfileMappingStore.loaded && project_management?.length == 0"
+                                                                                    [border]=false></app-no-data>
+                                                                            </ng-container>
+                                                                        </div>
+                                                                    </div> 
+
+                                                                    <div *ngIf="selectedSection=='incident'" class="tab-pane fade active show" id="tab-one" role="tabpanel">
+                                                                        <div class="clearfix">
+                                                                            <button type="button" class="btn btn-small float-right mb-2" (click)="selectIncident()" style="margin-right: 0px !important;"
+                                                                                >{{chooseButtonTitle}}</button>
+                                                                        </div>
+                                                                        <div
+                                                                            [ngClass]="StrategyProfileMappingStore.loaded && incidents?.length == 0?'audit-form-table w-100 risk-form-mapping-table form-table-scroll':'audit-form-table w-100 risk-form-mapping-table form-table-scroll table-scroll-small-device'">
+                                                                            <table class="table table-bordered ordinary-table cmn-table-style mb-1"
+                                                                                *ngIf="StrategyProfileMappingStore.loaded && incidents?.length > 0">
+                                                
+                                                                                <tr>
+                                                                                    <th class="border-top-0" width="4%">#</th>
+                                                                                    <th class="border-top-0" width="10%">{{'ref_id' | translate}}</th>
+                                                                                    <th class="border-top-0" width="86%">{{'title' | translate}}</th>
+                                                                                </tr>
+                                                
+                                                                                <tr class="edit-option" *ngFor="let row of incidents; let list=index">
+                                                                                    <td>{{list+1}}</td>
+                                                                                    <td>{{row.reference_code}}</td>
+                                                                                    <td><div class="edit-option-show-inner pointer" style="margin:6px 0 0 0">
+                                                                                        <a [attr.title]="'delete'| translate" (click)=" deleteIncidentMapping(row.id)"><i class="fas fa-trash"></i></a>
+                                                                                        </div>{{row.title ? row.title : AppStore.noContentText}}</td>
+                                                                                </tr>
+                                                    
+                                                                            </table>
+                                                                            <ng-container *mobxAutorun>
+                                                                                <app-no-data *ngIf="StrategyProfileMappingStore.loaded && incidents?.length == 0"
+                                                                                    [border]=false></app-no-data>
+                                                                            </ng-container>
+                                                                        </div>
+                                                                    </div>
+
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <!-- common-tab-md end -->
+                                                    </div>
+                                                </div>
+                                            </div>
+            
+                                        </div>
+                                    </div>
+                                </div>
+            
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" *ngIf="StrategyStore.objectives?.length > 0">
+                    <div class="col-sm-12" *ngIf="StrategyManagementSettingStore?.strategyManagementSettings?.is_weightage">
+                        <hr>
+                        <div class="form-group">
+                            <p class="bold mb-2">{{'total_weightage' | translate}}:
+                                {{caluculateObjectWeightage()}}/100</p>
+                            <div class="progress" style="height: 10px;">
+                                <div class="progress-bar" [ngStyle]="{'width' : caluculateObjectWeightage() + '%'}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            
+        </div>
+    </div>
+
+    <!-- <ng-container *mobxAutorun>
+        <app-no-data-list [source]="strategyEmptyList" [border]="false" [height]="false"
+            *ngIf="StrategyStore.objectives.length == 0"></app-no-data-list>
+    </ng-container> -->
+
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="add-strategic-objective-popup" data-keyboard="false"
+    data-backdrop="static" #strategyAreaModal>
+    <app-strategy-objective-modal *ngIf="strategyModalObject.type" [source]="strategyModalObject">
+    </app-strategy-objective-modal>
+</div>
+<!-- style="z-index: 999999; overflow-x: hidden; overflow-y: auto;" -->
+<div class="modal modal-style-1 popup-full-width fade" id="kpi-measures-popup-two" data-keyboard="false"
+    data-backdrop="static" #strategyKpiModal>
+    <app-add-strategy-kpi *ngIf="strategyKpiObject.type" [source]="strategyKpiObject"></app-add-strategy-kpi>
+</div>
+
+<!-- style="z-index: 999999; overflow-x: hidden; overflow-y: auto;" -->
+<div class="modal modal-style-1 popup-full-width fade" id="view-kpi-measures-popup" data-keyboard="false"
+    data-backdrop="static" #strategyKpiDetailsModal>
+    <app-strategy-kpi-details *ngIf="kpiDetailsObject.type" [source]="kpiDetailsObject"></app-strategy-kpi-details>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="deleteObjects"></app-delete-popup>
+</div>
+
+<!-- review frequency modal -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #addReviewFrequency>
+    <app-review-frequency-popup *ngIf="openReviewFrequencyPopup" [source]="reviewFrequencyObject">
+    </app-review-frequency-popup>
+</div>
+<!-- review frequency modal -->
+
+<!----------------------- History ----------------------->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #historyPopup>
+    <app-strategy-activity-history-popup *ngIf="historyObject.type" [source]="historyObject">
+    </app-strategy-activity-history-popup>
+</div>
+
+<!-- mapping popup start-->
+<div class="modal modal-style-1 popup-full-width fade" id="process-popup" data-keyboard="false" data-backdrop="static"
+    #processFormModal *mobxAutorun>
+    <app-addprocess *ngIf="IssueListStore.processes_form_modal" [processModalTitle]="modalObject">
+    </app-addprocess>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="issue-popup" data-keyboard="false" data-backdrop="static"
+    #issueFormModal *mobxAutorun>
+    <app-issues-modal *ngIf="IssueListStore.issue_select_form_modal" [issuesModalTitle]="modalObject">
+    </app-issues-modal>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="issue-popup" data-keyboard="false" data-backdrop="static"
+    #serviceFormModal *mobxAutorun>
+    <app-service-modal *ngIf="BusinessServiceStore.service_select_form_modal" [serviceModalTitle]="modalObject">
+    </app-service-modal>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="project-popup" data-keyboard="false" data-backdrop="static"
+    #projectFormModal *mobxAutorun>
+    <app-projects-modal *ngIf="BusinessProjectsStore.project_select_form_modal"
+        [projectsModalTitle]="modalObject"></app-projects-modal>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="project-popup" data-keyboard="false" data-backdrop="static"
+    #productFormModal *mobxAutorun>
+    <app-product-modal *ngIf="BusinessProductsStore.product_select_form_modal" [productModalTitle]="modalObject">
+    </app-product-modal>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="process-popup" data-keyboard="false" data-backdrop="static"
+    #assetsFormModal *mobxAutorun>
+    <app-asset-mapping *ngIf="AssetRegisterStore.assets_select_form_modal" [assetModalTitle]="modalObject">
+    </app-asset-mapping>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="process-popup" data-keyboard="false" data-backdrop="static"
+    #trainingFormModal *mobxAutorun>
+    <app-training-mapping *ngIf="TrainingsStore.training_select_form_modal" [trainingModalTitle]="modalObject">
+    </app-training-mapping>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="process-popup" data-keyboard="false" data-backdrop="static"
+    #incidentFormModal *mobxAutorun>
+    <app-incident-mapping *ngIf=" IncidentStore.incident_select_form_modal" [incidentModalTitle]="modalObject">
+    </app-incident-mapping>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="process-popup" data-keyboard="false" data-backdrop="static"
+    #projectMonitoringFormModal *mobxAutorun>
+    <app-project-monitoring-mapping *ngIf=" ProjectMonitoringStore.project_monitoring_select_form_modal" [projectMonitoringTitle]="modalObject">
+    </app-project-monitoring-mapping>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="process-popup" data-keyboard="false" data-backdrop="static"
+    #projectManagementFormModal *mobxAutorun>
+    <app-project-management-mapping *ngIf=" ProjectsStore.project_management_select_form_modal" [projectManagementTitle]="modalObject">
+    </app-project-management-mapping>
+</div>
+
+<!-------------------Risk mapping popup starts here------------->
+<div class="modal modal-style-1 popup-full-width fade" id="risk-popup" data-keyboard="false" data-backdrop="static"
+   #riskFormModal *mobxAutorun>
+   <app-add-risk-mapping-compliance *ngIf="MappingStore.risk_select_form_modal" [riskModalTitle]="modalObject">
+   </app-add-risk-mapping-compliance>
+</div>
+<!-------------------Risk mapping popup ends here--------------->
+
+<!------------------- object mapping starts here---------------->
+<div class="modal modal-style-1 popup-full-width fade" id="finding-popup" data-keyboard="false" data-backdrop="static"
+   #findingFormModal *mobxAutorun>
+   <app-audit-finding-mapping-compliance *ngIf="AuditFindingsStore.finding_select_form_modal"
+      [findingModalTitle]="modalObject"></app-audit-finding-mapping-compliance>
+</div>
+<!--------------------object mapping ends here------------------->
+
+<!-- mapping popup end-->

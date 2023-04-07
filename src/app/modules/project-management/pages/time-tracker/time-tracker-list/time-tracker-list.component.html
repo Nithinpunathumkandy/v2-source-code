@@ -1,0 +1,124 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" scrollPoint #navBar>
+   <app-sub-menu>-</app-sub-menu>
+   <div class="module-name-block module-name-block-space float-left">
+      <a class="dropdown module-title">{{'time_tracker'|translate}}</a>
+   </div>
+</nav>
+
+<main class="audit-program-details-page mt-3">
+   <div class="container-fluid">
+
+      <div class="audit-program-box audit-page-table-main">
+         <div class="row" *mobxAutorun>
+            <div class="col-sm-12">
+               <div class=" full-width-table mb-3">
+                  <table *ngIf="ProjectsStore.totalItems != 0 && ProjectsStore.loaded"
+                     class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                     <thead>
+                        <tr>
+                           <th class="border-top-0 text-center" width="2%">#</th>
+                           <th class="border-top-0" width="10%">{{'ref_code' | translate}}</th>
+                           <th class="border-top-0" width="41%">{{'title' | translate}}</th>
+
+                           <th class="border-top-0" width="20%">{{'project_manager' | translate}}</th>
+                           <th class="border-top-0" width="9%">{{'end_date' | translate}}</th>
+                           <th class="border-top-0" width="8%">{{'man_days' | translate}}</th>
+                           <th class="border-top-0 text-center" width="10%">{{'status' | translate}}</th>
+                        </tr>
+                     </thead>
+                     <tbody>
+                        <tr (click)="getDetails(item)" class="edit-and-delete-main"
+                           *ngFor="let item of ProjectsStore?.projectList | paginate: {currentPage:ProjectsStore.currentPage, itemsPerPage:ProjectsStore.itemsPerPage,totalItems:ProjectsStore.totalItems}; let num = index; ">
+                           <td class="pointer text-center">{{(ProjectsStore.currentPage - 1) * ProjectsStore.itemsPerPage + (num +
+                              1)}}</td>
+                           <td class="pointer">{{item.reference_code ? item.reference_code : AppStore.noContentText}}
+                           </td>
+
+                           <td class="pointer">{{item.title ? item.title : AppStore.noContentText}}</td>
+                           <td class="pointer">
+                              <div *ngIf="item?.project_manager_first_name"
+                                 class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                                 <img *ngIf="item.project_manager_image_token" data-toggle="modal" data-target="#user02"
+                                    data-ui-class="a-zoom"
+                                    [attr.src]="createImagePreview('user-profile-picture',item.project_manager_image_token)"
+                                    width="30px" height="30px" class="rounded-circle rounde-hov details-show-popup"
+                                    onerror="this.src='/assets/images/user-demo2.png'">
+                                 <img *ngIf="!item.project_manager_image_token"
+                                    [attr.src]="getDefaultImage('user-logo')" width="30px" height="30px"
+                                    class="rounded-circle" onerror="this.src='/assets/images/user-demo2.png'">
+                                 <!-- user-dtl-popup start -->
+                                 <!-- user-dtl-popup end -->
+                                 <div class="pointer">
+                                    <h6 class="elips-1">{{item?.project_manager_first_name}}
+                                       {{item?.project_manager_last_name}}</h6>
+                                    <span>{{item.project_manager_designation ? item.project_manager_designation :
+                                       AppStore.noContentText}}</span>
+                                 </div>
+
+                              </div>
+
+                              <p *ngIf="!item?.project_manager_first_name">{{AppStore.noContentText}}</p>
+                           </td>
+                           <td class="pointer">{{item.target_date | date:
+                              OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</td>
+                           <td class="pointer">{{item.total_days?item.total_days:'NA'}}</td>
+
+
+                           <td class="pointer text-center">
+                              <div
+                                 [ngClass]="item.project_monitoring_status_label ? 'dot-div '+item.project_monitoring_status_label : ''">
+                                 {{item.project_status_language_title}}</div>
+                              <!-- <div class="edit-option-show" >
+                     <a (click)="editTimeTracker(item.id,$event)" *ngIf="AuthStore.getActivityPermission(1100,'UPDATE_PROJECT_TIME_TRACKER')" 
+                        [attr.title]="'edit' | translate"><i class="fas fa-pen pointer"></i></a>
+                     <a *ngIf="AuthStore.getActivityPermission(1100,'DELETE_PROJECT_TIME_TRACKER')" (click)="delete(item.id,$event)"
+                        [attr.title]="'delete' | translate"><i class="fas fa-trash pointer"></i></a>
+                  </div> -->
+                           </td>
+                        </tr>
+
+
+
+                     </tbody>
+                  </table>
+
+               </div>
+               <p class="float-right bold mb-0" *ngIf="ProjectsStore.loaded && ProjectsStore.totalItems > 0">
+                  {{'total_Items' | translate}}:{{ProjectsStore?.totalItems}}</p>
+               <ng-container *mobxAutorun>
+                  <app-seven-column-loader *ngIf="!ProjectsStore.loaded"></app-seven-column-loader>
+                  <app-no-data *ngIf="ProjectsStore?.projectList.length == 0 && ProjectsStore.loaded == true">
+                  </app-no-data>
+               </ng-container>
+
+               <div class="col-sm-12"
+                  *ngIf="ProjectsStore.loaded && ProjectsStore?.totalItems > ProjectsStore.itemsPerPage">
+                  <ul class="pagination justify-content-center mt-3">
+                     <div class="list">
+                        <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+                           (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+                     </div>
+                  </ul>
+               </div>
+            </div>
+
+         </div>
+      </div>
+   </div>
+</main>
+
+
+<div class="modal modal-style-1 popup-full-width fade" id="time-tracker" data-keyboard="false" data-backdrop="static"
+   #addTimeTrackerModal>
+   <app-add-time-tracker [source]="timeTrackerObject" *ngIf="timeTrackerObject.type">
+   </app-add-time-tracker>
+</div>
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+   <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+
+<div class="modal modal-style-1 fade email-popup-new" id="custom-date-popup" #customDatePopUp>
+   <app-custom-date-popup (dateEvent)="passDates($event)"></app-custom-date-popup>
+</div>

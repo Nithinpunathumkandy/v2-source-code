@@ -1,0 +1,126 @@
+<div class="tab-pane" id="notification" role="tabpanel"
+    *ngIf="AuthStore.getActivityPermission(200,'USER_EMAIL_NOTIFICATIONS_LIST')">
+   
+    <!-- <div class="widget "> -->
+    <ng-container *mobxAutorun>
+        <div *ngIf="!UserEmailNotificationStore.loaded">
+            <app-acl-list></app-acl-list>
+        </div>
+        <div class="panel-group panel-drop-sections panel-drop-white" id="jd" role="tablist" aria-multiselectable="true"
+            *ngIf="UserEmailNotificationStore?.emailNotificationDetails && UserEmailNotificationStore.loaded && UserEmailNotificationStore?.emailNotificationDetails[0]?.module_groups.length>0">
+
+            <!-- <div class="row" > -->
+            <!-- <div class="col-sm-12 email-notification-settings"> -->
+            <!-- <div id="accordion"> -->
+            <!-- <div class="card">
+                        <div class="card-header" id="headingOne">
+                            <h3 class="mt-2" data-toggle="collapse" data-target="" aria-expanded="true"
+                                aria-controls="collapseOne"> Do not receive any email notification
+                                <label class="switch">
+                                    <input type="checkbox" [checked]="UserEmailNotificationStore?.emailNotificationDetails[0]?.is_enabled" (change)="AllEmailNotificationUpdate($event)">
+                                    <span class="slider"></span> </label>
+                            </h3>
+                        </div>
+                    </div> -->
+
+            <div class="panel panel-default panel-with-switch" *ngIf="AuthStore.getActivityPermission(200,'ACTIVATE_ALL_USER_EMAIL_NOTIFICATIONS') || AuthStore.getActivityPermission(200,'DEACTIVATE_ALL_USER_EMAIL_NOTIFICATIONS')">
+                <div class="panel-heading active">
+                    <div class="panel-title">
+                        <a role="button">
+                            <h5 class="width96pc mt-0">{{'activate_email_notification'|translate}}</h5>
+                        </a>
+                        <div class="small-switch-checkbox">
+                            <label class="switch mt-2">
+                                <input type="checkbox"
+                                    [checked]="UserEmailNotificationStore?.emailNotificationDetails[0]?.is_enabled"
+                                    (change)="AllEmailNotificationUpdate($event)">
+                                <span class="slider"></span> </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-default panel-with-switch"
+                *ngFor="let module of UserEmailNotificationStore?.emailNotificationDetails[0]?.module_groups;let i=index;">
+                <!-- <div class="card" *ngFor = "let module of UserEmailNotificationStore?.emailNotificationDetails[0]?.module_groups;let i=index;"> -->
+                <!-- <div class="card-header card-hov-effect" [attr.id]="i">
+                            <div class="row d-flex align-items-center">
+                                <div class="col-sm-10 pointer" data-toggle="collapse"
+                                [attr.data-target]="'#'+i" aria-expanded="false"
+                                [attr.aria-controls]="i" (click) = "openAccordionList(i)">
+                                    <h3 class="mt-0"> {{module.module_group|titlecase}} </h3>
+                                    <div class="directio-text">Enable, Disable Email Notification in
+                                        {{module.module_group|titlecase}} Mode </div>
+                                </div>
+                                <div class="col-sm-2" *ngIf = "((!(module.is_enabled)) && AuthStore.getActivityPermission(200,'MODULE_GROUP_USER_EMAIL_NOTIFICATIONS_ACTIVATE'))|| (module.is_enabled && AuthStore.getActivityPermission(200,'MODULE_GROUP_USER_EMAIL_NOTIFICATIONS_DEACTIVATE'))">
+                                    <label class="switch mr-4">
+                                        <input type="checkbox" [checked]="module.is_enabled?true:false"
+                                        (change)="emailNotificationUpdate(module.module_group_id,$event)">
+                                        <span class="slider"></span> </label>
+                                </div>
+                            </div>
+                        </div> -->
+                <div [ngClass]="activeIndex == i ?'panel-heading active':'panel-heading'" role="tab" [attr.id]="i">
+                    <div class="panel-title">
+                        <a role="button" data-toggle="collapse" (click)="openAccordionList(i)" aria-expanded="false"
+                            [attr.aria-controls]="i" class="collapsed">
+                            <h5 class="width96pc mt-0">{{module.module_group}} <span
+                                    class="drop-down-icone"><i class="fas fa-chevron-down"></i></span>
+                                <small class="directio-text">{{'enable_disable_module_title'|translate}}
+                                    {{module.module_group}} {{'module'|translate}}</small>
+                            </h5>
+
+                        </a>
+                        <div class="small-switch-checkbox"
+                            *ngIf="((!(module.is_enabled)) && AuthStore.getActivityPermission(200,'USER_EMAIL_NOTIFICATIONS_ACTIVATE'))|| (module.is_enabled && AuthStore.getActivityPermission(200,'USER_EMAIL_NOTIFICATIONS_DEACTIVATE'))">
+                            <label class="switch mt-2">
+                                <input type="checkbox" [checked]="module.is_enabled?true:false"
+                                    (change)="emailNotificationUpdate(module.module_group_id,$event)">
+                                <span class="slider"></span> </label>
+                        </div>
+                    </div>
+                </div>
+                <!-- <div [attr.id]="i" [ngClass]="activeIndex == i ? 'collapse show' : 'collapse'" [attr.aria-labelledby]="i"
+                            data-parent="#accordion">
+                            <div class="card-body pt-0 pb-0"> -->
+                <div [attr.id]="i"
+                    [ngClass]="activeIndex == i ?'drop-detail-sec panel-collapse collapse show':'drop-detail-sec panel-collapse collapse'"
+                    role="tabpanel" [attr.aria-labelledby]="i" [attr.data-parent]="i">
+                    <div class="panel-body bg-white">
+                        <div class="email-notification-settings">
+                            <div class="setting-item" *ngFor="let notification of module.notifications">
+                                <div class="row d-flex align-items-center">
+                                    <div class="col-sm-8">
+                                        <h4>{{notification.title}}
+                                        </h4>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <!-- <label class="switch-sm mt-0">
+                                                <input type="checkbox" [checked]="notification.is_enabled?true:false"
+                                                (change)="emailSubNotificationUpdate(notification.id,$event)">
+                                                <span class="slider"></span> </label> -->
+                                        <div class="small-switch-checkbox">
+                                            <label class="switch mt-2">
+                                                <input type="checkbox" [checked]="notification.is_enabled?true:false"
+                                                    (change)="emailSubNotificationUpdate(notification.id,$event)">
+                                                <span class="slider"></span> </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- </div> -->
+            <!-- </div> -->
+            <!-- </div> -->
+            <!-- Nav tabs -->
+        </div>
+    </ng-container>
+    <ng-container *mobxAutorun>
+        <app-no-data *ngIf="UserEmailNotificationStore?.emailNotificationDetails[0]?.module_groups.length==0">
+        </app-no-data>
+    </ng-container>
+</div>

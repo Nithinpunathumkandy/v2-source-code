@@ -1,0 +1,118 @@
+<nav class="edit-bar" data-toggle="affix" scrollPoint #navigationBar *mobxAutorun>
+   <ul class="nav nav-pills float-left d-none d-lg-block" role="tablist">
+        
+      <li class="nav-item">
+          <a class="nav-link nav-link-show" [routerLink]="['/security/roles']" routerLinkActive="active"
+          [routerLinkActiveOptions]="{exact: true}">{{'roles' | translate}} </a>
+      </li>
+  </ul>
+   <app-sub-menu></app-sub-menu>
+</nav>
+<main class="mt-4 acl-page">
+   <div class="container-fluid">
+      <div class="audit-program-box audit-page-table-main">
+         <div class="row">
+            <div class="col-sm-12"> 
+               <div class="full-width-table mb-3">
+               <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll"  *ngIf = "AclStore.loaded && AclStore.aclRoles.length>0">
+                  <thead>
+                     <tr>
+                        <th class="border-top-0 text-center" width="2%">#</th>
+                        <th class="border-top-0" width="82%">{{'roles' | translate}}</th>
+                        <th class="border-top-0 text-center" width="16%">{{'action' | translate}}</th>
+                     </tr>
+                  </thead>
+                  <tbody>
+                     <tr
+                        *ngFor="let role of AclStore.aclRoles| paginate: {currentPage:AclStore?.currentPage, itemsPerPage:AclStore?.itemsPerPage,totalItems:AclStore?.totalItems};let num = index">
+                        <td class="pointer text-center" (click)="gotoActivities(role.id)">{{num+1}}</td>
+                        <td class="pointer" (click)="gotoActivities(role.id)">{{role.title}}</td>
+                        <td class="text-center">
+                           <div class="edit-option-table">
+                              <button [attr.title]="'delete'|translate" type="button"
+                                 class="edit-btn-table fa-trash-clr"><i class="fas fa-trash" (click)="deleteRole(role.id,num)"></i></button>
+                              <button [attr.title]="'edit'|translate" type="button" class="edit-btn-table" (click)="editRole(role.id)"><i
+                                    class="fas fa-pen"></i></button>
+                           </div>
+                        </td>
+                     </tr>
+                  </tbody>
+               </table>
+               </div>
+               <ng-container *mobxAutorun>
+                  <div *ngIf="!AclStore.loaded">
+                     <app-table-loader></app-table-loader>
+                  </div>
+              </ng-container>
+            </div>
+            <div class="col-sm-12" *ngIf="AclStore.totalItems>AclStore.itemsPerPage">
+               <ul class="pagination justify-content-center mt-3">
+                  <div class="list">
+                     <pagination-controls (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+                  </div>
+               </ul>
+            </div>
+         </div>
+      </div>
+      
+
+
+   </div>
+</main>
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+   <button type="button" class="close" (click)="closeFormModal()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+   <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+         <!-- Modal Header -->
+         <div class="modal-header">
+            <h4 class="modal-title">{{'role' | translate}}</h4>
+         </div>
+         <!-- Modal body -->
+         <div class="modal-body form-body">
+
+            <p class="head-details"></p>
+
+            <form [formGroup]="form" *mobxAutorun>
+
+               <div class="row">
+                  <div class="col-sm-12">
+                     <div class="form-group">
+                        <label>{{'title'|translate}}<sup>*</sup></label>
+                        <input type="text" formControlName="title" class="form-control"
+                           [attr.placeholder]="'title'|translate" id="title" #titleInput>
+                        <p style="color: red;" *ngIf="formErrors&&formErrors.title"> {{formErrors.title}}</p>
+                     </div>
+                  </div>
+               </div>
+
+
+               <div class="clearfix"></div>
+
+               <div class="row">
+                  <div class="col-sm-12">
+                     <div class="d-block justify-content-left border-0 mt-3">
+                        <button type="submit" class="btn ordinary-btn mr-3 btn-active" (click)="save()"
+                           [disabled]="form.invalid || AppStore.loading">{{ AppStore.loading  ? 'Loading...' : 'Save' }}</button>
+                        <button type="button" data-toggle="modal" data-target="#signal-lost"
+                           class="btn ordinary-btn mr-3" (click)="save(true)"
+                           [disabled]="form.invalid || AppStore.loading">{{ AppStore.loading  ? 'Loading...' : 'Save & Close' }}</button>
+                        <button type="button" data-toggle="modal" data-target="#error-message"
+                           class="btn ordinary-btn mr-2"
+                           (click)="closeFormModal()">{{ AppStore.loading  ? 'Loading...' : 'Cancel' }}</button>
+                     </div>
+                  </div>
+               </div>
+            </form>
+         </div>
+         <!-- Modal footer -->
+      </div>
+   </div>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" data-backdrop="static" data-keyboard="false" #deletePopup>
+   <app-delete-popup [source]="deleteObject"></app-delete-popup>
+</div>
+
+<!------------------- Delete Confirmation Modal End --------------------------->

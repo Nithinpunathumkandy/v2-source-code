@@ -1,0 +1,117 @@
+<div class="tab-pane" id="issue-list">
+    <ng-container *mobxAutorun>
+        <div *ngIf = "!IssueListStore.loaded">
+            <app-seven-column-loader></app-seven-column-loader>
+        </div>
+    </ng-container>
+    <ng-container *mobxAutorun>
+        <div class="row" *ngIf = "IssueListStore.loaded && IssueListStore.issueListDetails.length > 0  && AuthStore.getActivityPermission(100,'ORGANIZATION_ISSUE_LIST')">
+            <div class="col-sm-12">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="full-width-table context-issue-tbl-main">
+                        <table class="table table-bordered ordinary-table table-hover issue-list-table-org mb-1">
+                            <thead>
+                                <tr >
+                                    <th class="border-top-0 issue-list-org-tab-one text-center" width="7%">
+                                        <!-- <div class="container2"> -->
+                                            <!-- <label> -->
+                                                <!-- <input type="checkbox" id="selectall" [(ngModel)] = "allIssues" (change) = "selectAll()"/> -->
+                                                <!-- <span class="checkmark"></span>#</label> -->
+                                            <!-- <label><input type="checkbox" id="selectall" [checked] = "IssueListStore.getSelectAllCheckBoxValue(IssueListStore?.currentPage)" (change) = "setSelectAllCheckBox(IssueListStore?.currentPage)"/>
+                                                <span class="checkmark"></span>#</label> -->
+                                               {{'sl' | translate}}
+                                        <!-- </div> -->
+                                    </th>
+                                    <th class="border-top-0 issue-list-org-tab-two pointer" (click) = "setIssueSort('organization_issues.reference_code')" width="12%">{{'reference_code' | translate}} <img *ngIf = "IssueListStore.orderItem == 'organization_issues.reference_code'"
+                                        [attr.src]="IssueListStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" class="sort-down-pics">
+                                    </th>
+                                    <th class="border-top-0 issue-list-org-tab-three pointer" width="25%" (click) = "setIssueSort('organization_issues.title')">{{'issue' | translate}} <img *ngIf = "IssueListStore.orderItem == 'organization_issues.title'"
+                                        [attr.src]="IssueListStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" class="sort-down-pics"></th>
+                                    <th class="border-top-0 issue-list-org-tab-four pointer" width="12%" (click) = "setIssueSort('organization_issues.type')">{{'issue_type' | translate}} <img *ngIf = "IssueListStore.orderItem == 'organization_issues.type'"
+                                        [attr.src]="IssueListStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" class="sort-down-pics"></th>
+                                    <th class="border-top-0 issue-list-org-tab-four pointer" width="15%" (click) = "setIssueSort('issue_categories')">{{'issue_category' | translate}} <img *ngIf = "IssueListStore.orderItem == 'issue_categories'"
+                                        [attr.src]="IssueListStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" class="sort-down-pics"></th>
+                                        <th class="border-top-0 issue-list-org-tab-four pointer" width="15%" (click) = "setIssueSort('issue_domains')">{{'issue_domain' | translate}} <img *ngIf = "IssueListStore.orderItem == 'issue_domains'"
+                                        [attr.src]="IssueListStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" class="sort-down-pics"></th>
+                                    <th *ngIf = "OrganizationLevelSettingsStore.organizationLevelSettings?.is_department" class="border-top-0 issue-list-org-tab-five pointer" width="18%" (click) = "setIssueSort('departments')">{{'department' | translate}} <img *ngIf = "IssueListStore.orderItem == 'departments'"
+                                        [attr.src]="IssueListStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" class="sort-up-pics" ></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+    
+                                <!-- (click) = "gotoIssueDetails(il.id)" -->
+                                <tr [attr.title] = "'View '+il.issues_title" (click) = "AuthStore.getActivityPermission(100,'ORGANIZATION_ISSUE_DETAILS') ? gotoIssueDetails(il.id) : ''" *ngFor = "let il of IssueListStore.issueListDetails | paginate: {currentPage:IssueListStore?.currentPage, itemsPerPage:IssueListStore?.itemsPerPage,totalItems:IssueListStore?.totalItems};let num = index" class="cursor-pointer tr-action edit-and-delete-main" [ngStyle] = "{opacity: il.status_id == AppStore.inActiveStatusId ? '0.5' : '1' }">
+    
+                                    <td class="text-center">
+                                        <!-- (click) = "issueSelected(il)" -->
+                                        <!-- <div class="container2" (click) = "issueSelected(il)">
+                                            <label><input type="checkbox" class="case" name="case" [(ngModel)] = "il.checked"/>
+                                                <span class="checkmark"></span>{{(IssueListStore?.currentPage - 1) * IssueListStore?.itemsPerPage + (num + 1)}}</label>
+                                        </div> -->
+                                        {{(IssueListStore?.currentPage - 1) * IssueListStore?.itemsPerPage + (num + 1)}}
+                                    </td>
+                                    <td>{{il.reference_code}}</td>
+                                    <td>
+                                        {{il.title}}
+                                    </td>
+                                    <td>
+                                        <span *ngFor = "let types of il.issue_types_list" class="risk-type-bx risk-type-bx-drop">
+                                            <i><img [attr.src]="types == 'Internal' ? 'assets/images/internal.svg' : 'assets/images/external.svg'">{{types}}</i>&nbsp;
+                                        </span>
+                                        <ng-container *ngIf = "il.issue_types_list.length == 0">
+                                            {{AppStore.noContentText}}
+                                        </ng-container>
+                                    </td>
+                                    <td [attr.title] = "il.issue_categories">{{ !il.issue_categories ? AppStore.noContentText : il.issue_categories?.length > 25 ? il.issue_categories?.substring(0,25)+'...' : il.issue_categories }}
+                                    </td>
+                                    <td [attr.title] = "il.issue_domains">{{ !il.issue_domains ? AppStore.noContentText : il.issue_domains?.length > 25 ? il.issue_domains?.substring(0,25)+'...' : il.issue_domains }}
+                                        <div class="edit-option-show" *ngIf = "!OrganizationLevelSettingsStore.organizationLevelSettings?.is_department">
+                                            <a *ngIf = "AuthStore.getActivityPermission(100,'UPDATE_ORGANIZATION_ISSUE')" (click) = "editIssue(il)" [attr.title]="'edit' | translate"><i class="fas fa-pen pointer"></i></a>
+                                            <a *ngIf = "AuthStore.getActivityPermission(100,'DELETE_ORGANIZATION_ISSUE')" (click) = "deleteIssue(il)" [attr.title]="'delete' | translate"><i class="fas fa-trash pointer"></i></a>
+                                            <a *ngIf = "AuthStore.getActivityPermission(100,'ACTIVATE_ORGANIZATION_ISSUE') && il.status_id == AppStore.inActiveStatusId" (click) = "activate(il.id)" [attr.title]="'activate' | translate"><i class="fas fa-check pointer"></i></a>
+                                            <a *ngIf = "AuthStore.getActivityPermission(100,'DEACTIVATE_ORGANIZATION_ISSUE') && il.status_id == AppStore.activeStatusId" (click) = "deactivate(il.id)" [attr.title]="'deactivate' | translate"><i class="fas fa-ban pointer"></i></a>
+                                         </div>
+                                    </td>
+                                    <td [attr.title] = "il.departments" *ngIf = "OrganizationLevelSettingsStore.organizationLevelSettings?.is_department">
+                                        {{!il.departments ? AppStore.noContentText : il.departments?.length > 35 ? il.departments?.substring(0,35)+'...' : il.departments}}
+                                        <div class="edit-option-show">
+                                            <a *ngIf = "AuthStore.getActivityPermission(100,'UPDATE_ORGANIZATION_ISSUE')" (click) = "editIssue(il)" [attr.title]="'edit' | translate"><i class="fas fa-pen pointer"></i></a>
+                                            <a *ngIf = "AuthStore.getActivityPermission(100,'DELETE_ORGANIZATION_ISSUE')" (click) = "deleteIssue(il)" [attr.title]="'delete' | translate"><i class="fas fa-trash pointer"></i></a>
+                                            <a *ngIf = "AuthStore.getActivityPermission(100,'ACTIVATE_ORGANIZATION_ISSUE') && il.status_id == AppStore.inActiveStatusId" (click) = "activate(il.id)" [attr.title]="'activate' | translate"><i class="fas fa-check pointer"></i></a>
+                                            <a *ngIf = "AuthStore.getActivityPermission(100,'DEACTIVATE_ORGANIZATION_ISSUE') && il.status_id == AppStore.activeStatusId" (click) = "deactivate(il.id)" [attr.title]="'deactivate' | translate"><i class="fas fa-ban pointer"></i></a>
+                                         </div>
+                                    </td>
+                                </tr>
+    
+                            </tbody>
+                        </table>
+                        <p class="float-right bold mb-0" *ngIf="IssueListStore.loaded && IssueListStore.issueListDetails.length > 0">{{'total_Items' | translate}}:{{IssueListStore?.totalItems}}</p>
+                    </div>
+                        <!-- <p class="float-right bold mb-0" *ngIf="IssueListStore.loaded && IssueListStore.issueListDetails.length > 0">{{'total_items' | translate}}:{{IssueListStore?.totalItems}}</p> -->
+                    
+                    </div>
+    
+                    <div class="col-sm-12" *ngIf = "IssueListStore?.totalItems > IssueListStore?.itemsPerPage">
+                        <ul class="pagination justify-content-center mt-3">
+                           <div class="list">
+                              <pagination-controls [previousLabel]="'previous' | translate"  [nextLabel]="'next' | translate" (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+                           </div>
+                        </ul>
+                     </div>
+                </div>
+            </div>
+        </div>
+    </ng-container>
+    <ng-container *mobxAutorun>
+        <app-no-data *ngIf = "IssueListStore.loaded && IssueListStore.issueListDetails.length == 0"></app-no-data>
+    </ng-container>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #deletePopup  data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source] = "deleteObject"></app-delete-popup>
+ </div>
+ 
+ <!------------------- Delete Confirmation Modal End --------------------------->

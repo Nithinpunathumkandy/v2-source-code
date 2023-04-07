@@ -1,0 +1,539 @@
+
+<ng-container *mobxAutorun>
+    <div class="tab-pane active" id="risk-context">
+        <div class="widget"
+            *ngIf="IsmsRisksStore.individual_risk_loaded && AuthStore.getActivityPermission(3600,'ISMS_RISK_DETAILS')">
+            <div class="row">
+                <div class="col-lg-8 col-sm-12 padding-right-0">
+                    
+                    <div [ngClass]="IsmsRisksStore.individualRiskDetails?.workflow_items?.length>0?'bg-white widg-padding-cmn edit-and-delete-main':'bg-white widg-padding-cmn'">
+                        <div class="edit-option-show" style="margin: 40px 0px 0 0;" *ngIf="IsmsRisksStore.individualRiskDetails?.workflow_items?.length>0"><!-- edit-and-delete starts -->
+                            <a (click)="openHistoryPopup()"><i class="fas fa-history"></i><span>{{'history'|translate}}</span></a>
+                            <a (click)="openWorkflowPopup()"><i class="fas fa-tasks"></i><span>{{'workflow'|translate}}</span></a>
+                          </div>
+                        <div class="min-height-64">
+                        <div class="issue-top-sec">
+                            <div class="clearfix">
+                                <h5 class="d-inline-block cmn-head-style label-tag-style mr-2"><span
+                                        class="issue-smoal-head-text">#{{IsmsRisksStore.individualRiskDetails?.reference_code?IsmsRisksStore.individualRiskDetails?.reference_code:'xxxx'}}</span>
+                                    {{IsmsRisksStore.individualRiskDetails?.title?IsmsRisksStore.individualRiskDetails?.title:AppStore.noContentText}}
+                                    <span
+                                        [ngClass]="'draft-tag draft-tag-'+IsmsRisksStore.individualRiskDetails?.risk_status?.label+' label-tag-style-tag label-left-arow-tag d-inline-block status-tag-new-one ml-3'">{{IsmsRisksStore.individualRiskDetails?.risk_status.language[0].pivot.title}}</span>
+                                </h5>
+                            </div>
+                            <!-- <p style="white-space: pre-wrap;">
+                            {{IsmsRisksStore.individualRiskDetails?.description?IsmsRisksStore.individualRiskDetails?.description:AppStore.noContentText}}
+                        </p> -->
+                            <div class="pt-1" [innerHTML]="IsmsRisksStore.individualRiskDetails?.risk_observation | safeHtml"></div>
+    
+    
+    
+                        </div>
+                        <div class="mb-2 mt-2" *ngIf="OrganizationGeneralSettingsStore?.organizationSettings?.is_ms_type">
+                            <label class="outline-tag"
+                                *ngFor="let type of IsmsRisksStore.individualRiskDetails?.ms_type_organizations">{{type.ms_type.title}}
+                                <span>V.{{type.ms_type_version.title}}</span>
+                            </label>
+                        </div>
+    
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h6>Risk Description</h6>
+                                <p style="white-space:pre-line">
+                                    {{IsmsRisksStore.individualRiskDetails?.description?IsmsRisksStore.individualRiskDetails?.description:AppStore.noContentText}}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="row">
+                                    <div class="col-md-12">
+                                    <div class="audit-form-table not-fixed-table mb-3">
+                                        <div>
+                                          
+                                      <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll" 
+                                      *ngIf="IsmsRisksStore.individualRiskDetails?.risk_assets?.length>0 || IsmsRisksStore.individualRiskDetails?.risk_asset_categories?.length>0">
+                                      <thead>
+                                        <tr>
+                                          <th class="border-top-0 text-center" width="2%">#</th>
+                                          <th class="border-top-0" width="38%" *ngIf="IsmsRisksStore.individualRiskDetails?.risk_assets?.length>0">Asset</th>
+                                          <th class="border-top-0" width="78%" *ngIf="IsmsRisksStore.individualRiskDetails?.risk_asset_categories?.length>0">Asset Category</th>
+                                          
+                                          <th class="border-top-0" width="20%" *ngIf="IsmsRisksStore.individualRiskDetails?.risk_assets?.length>0">Asset Type</th>
+                                          <th class="border-top-0 text-center" width="20%" *ngIf="IsmsRisksStore.individualRiskDetails?.risk_assets?.length>0">Asset Value</th>
+                                          <th class="border-top-0" width="20%">Asset Criticality</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody *ngIf="IsmsRisksStore.individualRiskDetails?.risk_assets?.length>0">
+                                        <tr *ngFor="let asset of IsmsRisksStore.individualRiskDetails?.risk_assets;let ind=index">
+                                            <td class="text-center">{{ind+1}}</td>
+                                            <td>{{asset.asset?.title}}</td>
+                                            <td >{{asset.asset?.asset_type?.title}}</td>
+                                            <td class="text-center">{{asset.asset?.value}}</td>
+                                            <td [ngClass]="'text-'+asset.asset?.asset_rating?.label">{{asset.asset?.asset_rating?.language[0]?.pivot?.title}} ({{asset.asset?.asset_rating_score}})</td>
+                                        </tr>
+                                        
+                                      
+                                    </tbody>
+                                    <tbody *ngIf="IsmsRisksStore.individualRiskDetails?.risk_asset_categories?.length>0">
+                                      <tr *ngFor="let cat of IsmsRisksStore.individualRiskDetails?.risk_asset_categories;let ind=index">
+                                          <td class="text-center">{{ind+1}}</td>
+                                          <td>{{cat.asset_category?.title}}</td>
+                                  
+                                          <td [ngClass]="'text-'+cat.asset_rating?.label">{{cat.asset_rating?.language[0]?.pivot?.title}} ({{cat.asset_criticality_score}})</td>
+                                      </tr>
+                                      
+                                    
+                                  </tbody>
+                                      </table>
+                                    </div>
+                                  </div>
+                                </div>
+    
+                                
+                                    <div class="col-md-12">
+                                        <h6>{{'vulnerabilities' | translate}}</h6>
+                                        <p>{{IsmsRisksStore.individualRiskDetails?.isms_vulnerabilities?.length>0?getArrayFormatedString('title',IsmsRisksStore.individualRiskDetails?.isms_vulnerabilities):AppStore.noContentText}}
+                                        </p>
+                                    </div>
+                                    </div>
+    
+                        <!-- <div class="row">
+                        <div class="col-md-10">
+                            <h6>Root Cause</h6>
+                            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
+                                incididunt.Lorem ipsum dolor sit amet, consectetur adipisicing lit, sed do eiusmod </p>
+                        </div>
+                    </div> -->
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h6>{{'risk_impacts'|translate}}</h6>
+                                <!-- <p style="white-space:pre-line">
+                                    {{IsmsRisksStore.individualRiskDetails?.impact?IsmsRisksStore.individualRiskDetails?.impact:AppStore.noContentText}}
+                                </p> -->
+                                <ul class="arrowlist pl-0 mt-2" *ngIf="IsmsRisksStore.individualRiskDetails.risk_impacts?.length>0">
+    
+                                    <li class="clearfix" *ngFor="let impact of IsmsRisksStore.individualRiskDetails.risk_impacts"><a>{{impact.title}}</a>
+                                    </li>
+    
+                                </ul>
+                                <p *ngIf="IsmsRisksStore.individualRiskDetails.risk_impacts?.length==0">{{AppStore.noContentText}}</p>
+                            </div>
+                        </div>
+                       
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h6>{{'risk_causes'|translate}}</h6>
+                                <ul class="arrowlist pl-0 mt-2" *ngIf="IsmsRisksStore.individualRiskDetails.risk_causes?.length>0">
+    
+                                    <li class="clearfix" *ngFor="let cause of IsmsRisksStore.individualRiskDetails.risk_causes"><a>{{cause.title}}</a>
+                                    </li>
+    
+                                </ul>
+                                <p *ngIf="IsmsRisksStore.individualRiskDetails.risk_causes?.length==0">{{AppStore.noContentText}}</p>
+                           
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h6>{{'last_review_note'|translate}}</h6>
+                                <p style="white-space:pre-line">
+                                    {{IsmsRisksStore.individualRiskDetails?.last_review_note?IsmsRisksStore.individualRiskDetails?.last_review_note:AppStore.noContentText}}
+                                </p>
+                            </div>
+                        </div>
+    
+                        <div class="row">
+                            <!-- <div class="col-md-4">
+                                <h6>{{'issue_domains' | translate}}</h6>
+                                <p>{{IsmsRisksStore.individualRiskDetails?.issueDomains.length>0?getArrayFormatedString('title',IsmsRisksStore.individualRiskDetails?.issueDomains):AppStore.noContentText}}
+                                </p>
+                            </div> -->
+                            <div class="col-lg-4 col-sm-6">
+                                <h6>{{'risk_source' | translate}}</h6>
+                                <p>{{IsmsRisksStore.individualRiskDetails?.risk_sources?.length>0?getArrayFormatedString('title',IsmsRisksStore.individualRiskDetails?.risk_sources):AppStore.noContentText}}
+                                </p>
+                            </div>
+    
+    
+                            <div class="col-lg-4 col-sm-6">
+                                <h6>{{'risk_category' | translate}}</h6>
+                                <p>{{IsmsRisksStore.individualRiskDetails?.risk_category?.title?IsmsRisksStore.individualRiskDetails?.risk_category?.title:AppStore.noContentText}}
+                                </p>
+                            </div>
+                            <div class="col-lg-4 col-sm-6">
+                                <h6>{{'risk_sub_category' | translate}}</h6>
+                                <p>{{IsmsRisksStore.individualRiskDetails?.risk_sub_category?.title?IsmsRisksStore.individualRiskDetails?.risk_sub_category?.title:AppStore.noContentText}}
+                                </p>
+                            </div>
+    
+                            <!-- <div class="col-md-4">
+                                <h6>Risk Library</h6>
+                                <p>{{IsmsRisksStore.individualRiskDetails?.risk_library?IsmsRisksStore.individualRiskDetails?.risk_library.title:AppStore.noContentText}}
+                                </p>
+                            </div> -->
+                            <div class="col-lg-4 col-sm-6" *ngIf="IsmsRisksStore.individualRiskDetails?.risk_types.length>0">
+                                <h6>{{'risk_types' | translate}}</h6>
+                                <p *ngFor="let types of IsmsRisksStore.individualRiskDetails?.risk_types"
+                                    class="risk-type-bx risk-type-bx-drop">
+                                    <i class="ml-0"><img
+                                            [attr.src]="types.is_internal == 1 ? 'assets/images/internal.svg' : 'assets/images/external.svg'" style="width: 15px;"></i>&nbsp;{{types.language[0].pivot.title}}
+                                </p>
+                                <!-- <p>{{IsmsRisksStore.individualRiskDetails?.risk_types.length>0?getArrayFormatedString('title',IsmsRisksStore.individualRiskDetails?.risk_types,true):AppStore.noContentText}}</p> -->
+                            </div>
+                            <div class="col-lg-4 col-sm-6">
+                                <h6>{{'risk_areas' | translate}}</h6>
+                                <p>{{IsmsRisksStore.individualRiskDetails?.risk_areas.length>0?getArrayFormatedString('title',IsmsRisksStore.individualRiskDetails?.risk_areas):AppStore.noContentText}}
+                                </p>
+                            </div>
+    
+                            <div class="col-lg-4 col-sm-6">
+                                <h6>{{'corporate' | translate}}/{{'functional' | translate}}</h6>
+    
+                                <p>{{IsmsRisksStore.individualRiskDetails?.is_corporate?'Corporate':'Functional'}}</p>
+                            </div>
+    
+                            <!-- <div class="col-md-4">
+                            <h6>{{'review_frequency' | translate}}</h6>
+                            <p>{{IsmsRisksStore.individualRiskDetails?.risk_review_frequency?.type?IsmsRisksStore.individualRiskDetails?.risk_review_frequency?.type:AppStore.noContentText}}
+                            </p>
+                        </div> -->
+    
+                            <div class="col-lg-4 col-sm-6">
+                                <h6>{{'risk_date' | translate}}</h6>
+                                <p *ngIf="IsmsRisksStore.individualRiskDetails?.risk_date">
+                                    {{IsmsRisksStore.individualRiskDetails?.risk_date|date:
+                                    OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                </p>
+                                <p *ngIf="!IsmsRisksStore.individualRiskDetails?.risk_date">
+                                    {{AppStore.noContentText}}
+                                </p>
+                            </div>
+                            <div class="col-lg-4 col-sm-6">
+                                <h6>{{'next_review_date' | translate}} <br> ({{'review_frequency' | translate}})
+                                </h6>
+                                <p *ngIf="IsmsRisksStore.individualRiskDetails?.next_review_date">
+                                    {{IsmsRisksStore.individualRiskDetails?.next_review_date|date:
+                                    OrganizationGeneralSettingsStore?.organizationSettings?.date_format}}
+                                    ({{IsmsRisksStore.individualRiskDetails?.risk_review_frequency?.language[0]?.pivot?.title?IsmsRisksStore.individualRiskDetails?.risk_review_frequency?.language[0].pivot.title:AppStore.noContentText}}
+                                    )
+                                </p>
+                                <p *ngIf="!IsmsRisksStore.individualRiskDetails?.next_review_date">
+                                    {{AppStore.noContentText}}
+                                </p>
+                            </div>
+                        <!-- </div> -->
+    
+                        <!-- <div class="row"> -->
+                            <div class="col-lg-4 col-sm-6" *ngIf = "OrganizationLevelSettingsStore.organizationLevelSettings?.is_subsidiary">
+                                <h6>{{'organizations' | translate}}</h6>
+                                <p>{{IsmsRisksStore.individualRiskDetails?.organizations.length>0?getArrayFormatedString('title',IsmsRisksStore.individualRiskDetails?.organizations):AppStore.noContentText}}
+                                </p>
+                            </div>
+                            <div class="col-lg-4 col-sm-6" *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_division">
+                                <h6>{{'divisions' | translate}}</h6>
+                                <p>{{IsmsRisksStore.individualRiskDetails?.divisions.length>0?getArrayFormatedString('title',IsmsRisksStore.individualRiskDetails?.divisions):AppStore.noContentText}}
+                                </p>
+                            </div>
+    
+                            <div class="col-lg-4 col-sm-6" *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_branch">
+                                <h6>{{'branches' | translate}}</h6>
+                                <p>{{IsmsRisksStore.individualRiskDetails?.branches?.length>0?getArrayFormatedString('title',IsmsRisksStore.individualRiskDetails?.branches):AppStore.noContentText}}
+                                </p>
+                            </div>
+    
+                            <div class="col-lg-4 col-sm-6" *ngIf = "OrganizationLevelSettingsStore.organizationLevelSettings?.is_department">
+                                <h6>{{'departments' | translate}}</h6>
+                                <p>{{IsmsRisksStore.individualRiskDetails?.departments.length>0?getArrayFormatedString('title',IsmsRisksStore.individualRiskDetails?.departments):AppStore.noContentText}}
+                                </p>
+                            </div>
+                            <div class="col-lg-4 col-sm-6" *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_section">
+                                <h6>{{'sections' | translate}}</h6>
+                                <p>{{IsmsRisksStore.individualRiskDetails?.sections.length>0?getArrayFormatedString('title',IsmsRisksStore.individualRiskDetails?.sections):AppStore.noContentText}}
+                                </p>
+                            </div>
+                            <div class="col-lg-4 col-sm-6" *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_sub_section">
+                                <h6>{{'sub_sections' | translate}}</h6>
+                                <p>{{IsmsRisksStore.individualRiskDetails?.sub_sections.length>0?getArrayFormatedString('title',IsmsRisksStore.individualRiskDetails?.sub_sections):AppStore.noContentText}}
+                                </p>
+                            </div>
+                        </div>
+    
+    
+    
+                       
+    
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="label-and-user-pic">
+                                <h6>{{'risk_owner' | translate}}</h6>
+    
+                                <div class="row" *ngIf="IsmsRisksStore.individualRiskDetails?.risk_owner">
+                                    <div class="col-sm-12 animation-pulse">
+                                        <app-user-popup-box
+                                            [source]="getOwnerPopupDetails(IsmsRisksStore.individualRiskDetails?.risk_owner)">
+                                        </app-user-popup-box>
+                                    </div>
+                                </div>
+                                <div class="row" *ngIf="!IsmsRisksStore.individualRiskDetails?.risk_owner">
+                                    <div class="col-sm-12">
+                                        <p>{{AppStore.noContentText}}</p>
+                                    </div>
+                                </div>
+                                </div>
+    
+                            </div>
+                        </div>
+    
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h6>{{'responsible_users' | translate}}</h6>
+    
+                                <div class="pb-3" *ngIf="IsmsRisksStore.individualRiskDetails?.responsible_users?.length > 3">
+                                    <ul class="arci-user-tab-dtl workflow-lst-pics-loop clearfix" 
+                                        >
+                                        <li class="rounde-hov-bg"
+                                        *ngFor="let user of IsmsRisksStore.individualRiskDetails?.responsible_users;let i=index">
+                                            <app-user-popup-box [showName]="false" [source]="getPopupDetails(user)"></app-user-popup-box>
+                                        </li>
+                                    </ul>
+                                </div>
+                    <!-- <div class="pb-3"> -->
+                    <div class="row" *ngIf="!(IsmsRisksStore.individualRiskDetails?.responsible_users?.length > 3)" >
+                        <div class="col-xl-3 col-lg-4 col-sm-6 animation-pulse"
+                        *ngFor="let user of IsmsRisksStore.individualRiskDetails?.responsible_users;let i=index">
+                            <div class="label-and-user-pic">
+                            <app-user-popup-box [source]="getPopupDetails(user)">
+                            </app-user-popup-box>
+                        </div>
+                        </div>
+    
+                    </div>
+    
+                                <!-- <div class="row">
+                                    <div class="col-lg-4 col-sm-6 animation-pulse"
+                                        *ngFor="let user of IsmsRisksStore.individualRiskDetails?.responsible_users;let i=index">
+                                        <app-user-popup-box [source]="getPopupDetails(user)">
+                                        </app-user-popup-box>
+                                    </div>
+                                </div> -->
+    
+    
+    
+                                <p *ngIf="IsmsRisksStore.individualRiskDetails?.responsible_users.length==0">
+                                    {{AppStore.noContentText}}</p>
+    
+                            </div>
+                        </div>
+    
+                    </div>
+                        <div class="row">
+                            <div class="col-xl-12">
+                                <hr>
+                                <div class="d-flex flex-row user-list-sm">
+                                    <img [attr.src]="IsmsRisksStore.individualRiskDetails?.created_by.image?.token ? createImageUrl(IsmsRisksStore.individualRiskDetails?.created_by.image?.token) : getDefaultImage('user-logo')"
+                                        width="40px" height="40px" class="rounded-circle">
+                                    <div>
+                                        <h6>{{IsmsRisksStore.individualRiskDetails?.created_by.first_name}}
+                                            {{IsmsRisksStore.individualRiskDetails?.created_by.last_name}}</h6>
+                                        <span>{{ IsmsRisksStore.individualRiskDetails?.created_by.designation }}|
+                                            {{'uploaded_at' |
+                                            translate}}
+                                            {{IsmsRisksStore.individualRiskDetails?.created_at | date:
+                                            OrganizationGeneralSettingsStore.organizationSettings?.date_time_format}}</span>
+    
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-sm-12">
+    
+    
+                    <div class="bg-white widg-padding-cmn-small mb-3">
+                        <h6 class="text-left">{{'risk_analysis' | translate}}</h6>
+                        <hr class="mt-0 mb-3">
+                        <div *ngIf="IsmsRisksStore.individualRiskDetails?.is_analysis_performed && IsmsRisksStore.contextChartLoaded"
+                        [ngClass]="'risk-rating-box risk-rating-box-small w-100 risk-rating-box-color bg-'+IsmsRisksStore.contextChartDetails?.risk_analysis?.risk_rating?.label">
+                        <h3 class="text-white">
+                            {{IsmsRisksStore.contextChartDetails?.risk_analysis?.risk_rating?.language[0]?.pivot?.title}}
+                                ({{IsmsRisksStore.contextChartDetails?.risk_analysis?.score}})</h3>
+                        <!-- <p class="text-white mb-0">{{'risk_rating' | translate}} ({{'risk_score' | translate}})
+                        </p> -->
+                    </div>
+    
+    
+                        <div class="text-center mt-3"
+                            *ngIf="IsmsRisksStore.individualRiskDetails?.is_analysis_performed && IsmsRisksStore.contextChartLoaded">
+                            <!-- <h3 [ngClass]="'text-'+IsmsRisksStore.contextChartDetails?.risk_analysis?.risk_rating.label+' bold'">
+                                {{IsmsRisksStore.contextChartDetails?.risk_analysis?.risk_rating?.language[0]?.pivot?.title}}
+                                ({{IsmsRisksStore.contextChartDetails?.risk_analysis?.score}})</h3> -->
+                                <p class="cmn-bdr d-inline-block mb-0 p-2 mr-2 mb-2">{{'asset_criticality_score'|translate}} :
+                                    {{IsmsRisksStore.individualRiskDetails?.asset_criticality_score?.rating?.language[0]?.pivot?.title}}
+                                    <span>({{IsmsRisksStore.individualRiskDetails?.asset_criticality_score?.score}})</span>
+                                </p>
+                            <p class="cmn-bdr d-inline-block mb-0 p-2 mr-2 mb-2">{{'likelihood' | translate}} :
+                                {{IsmsRisksStore.contextChartDetails?.risk_analysis?.likelihood_details?.language[0]?.pivot?.title}}
+                                <span>({{IsmsRisksStore.contextChartDetails?.risk_analysis?.likelihood_details?.score}})</span></p>
+                            <p class="cmn-bdr d-inline-block mb-0 p-2 mr-2 mb-2">{{'impact' | translate}} :
+                                {{IsmsRisksStore.contextChartDetails.risk_analysis?.impact_details?.language[0]?.pivot?.title}}
+                                <span>({{IsmsRisksStore.contextChartDetails.risk_analysis?.impact_details?.score}})</span></p>
+                            <div class="text-center">
+                                <button type="button" class="btn mt-2" (click)="gotoRiskMatrix()">{{'view_risk_matrix' |
+                                    translate}}</button>
+                            </div>
+                        </div>
+                        <ng-container
+                            *ngIf="IsmsRisksStore.individual_risk_loaded && !(IsmsRisksStore.individualRiskDetails?.is_analysis_performed)">
+                            <app-no-data-list [source]="emptyAnalysis" [height]="false" [border]=false></app-no-data-list>
+                        </ng-container>
+    
+    
+                    </div>
+    
+    
+    
+    
+    
+    
+                    <div class="bg-white widg-padding-cmn-small mb-3"
+                        *ngIf="IsmsRiskSettingStore.loaded && IsmsRiskSettingStore.ismsRiskSettings?.is_control_efficiency">
+                        <h6>{{'control_efficiency' | translate}}</h6>
+                        <hr class="mt-0 mb-3">
+                        <div *ngIf="IsmsRisksStore?.individualRiskDetails?.is_analysis_performed && IsmsRisksStore.contextChartLoaded"
+                            [ngClass]="IsmsRisksStore.contextChartDetails.control_efficiency>50?'progress-circle progress-circle-big-one over50 p'+IsmsRisksStore.contextChartDetails.control_efficiency:'progress-circle progress-circle-big-one p'+IsmsRisksStore.contextChartDetails.control_efficiency">
+                            <span>{{IsmsRisksStore.contextChartDetails.control_efficiency!=null?IsmsRisksStore.contextChartDetails.control_efficiency:0}}%</span>
+                            <div class="left-half-clipper">
+                                <div class="first50-bar"></div>
+                                <div class="value-bar"></div>
+                            </div>
+                        </div>
+    
+                        <ng-container
+                            *ngIf="IsmsRisksStore.individual_risk_loaded && !IsmsRisksStore?.individualRiskDetails?.is_analysis_performed">
+                            <app-no-data-list [source]="emptyControlEfficiency" [height]=false [border]=false>
+                            </app-no-data-list>
+                        </ng-container>
+    
+                    </div>
+    
+                    <div class="bg-white widg-padding-cmn-small mb-3"
+                        *ngIf="IsmsRiskSettingStore.loaded && IsmsRiskSettingStore.ismsRiskSettings?.is_budget">
+                        <h6>{{'budget_allocation' | translate}} vs {{'used' | translate}}</h6>
+                        <hr class="mt-0 mb-3">
+    
+                        <div *ngIf="IsmsRisksStore?.individualRiskDetails?.is_analysis_performed && IsmsRisksStore.contextChartLoaded"
+                            [ngClass]="IsmsRisksStore.contextChartDetails?.budget_used?.used_percentage>50?'progress-circle progress-circle-big-one over50 p'+IsmsRisksStore.contextChartDetails?.budget_used?.used_percentage:'progress-circle progress-circle-big-one p'+IsmsRisksStore.contextChartDetails?.budget_used?.used_percentage">
+                            <span>{{IsmsRisksStore.contextChartDetails?.budget_used?.used_percentage!=null?IsmsRisksStore.contextChartDetails?.budget_used?.used_percentage:0}}%</span>
+                            <div class="left-half-clipper">
+                                <div class="first50-bar"></div>
+                                <div class="value-bar"></div>
+                            </div>
+                        </div>
+    
+                        <h5 class="text-light-blue text-center pt-2"
+                            *ngIf="IsmsRisksStore?.individualRiskDetails?.is_analysis_performed && IsmsRisksStore.contextChartLoaded">
+                            {{OrganizationGeneralSettingsStore?.organizationSettings?.currency}}
+                            {{IsmsRisksStore.contextChartDetails?.budget_used?.total_amount_used?IsmsRisksStore.contextChartDetails?.budget_used?.total_amount_used:0}}/
+                            {{OrganizationGeneralSettingsStore?.organizationSettings?.currency}}
+                            {{IsmsRisksStore.contextChartDetails?.budget_used?.total_budget?IsmsRisksStore.contextChartDetails?.budget_used?.total_budget:0}}
+                        </h5>
+                        <ng-container
+                            *ngIf="IsmsRisksStore.individual_risk_loaded && !IsmsRisksStore?.individualRiskDetails?.is_analysis_performed">
+                            <app-no-data-list [source]="emptyBudgetList" [height]="false" [border]=false></app-no-data-list>
+                        </ng-container>
+                    </div>
+    
+                </div>
+            </div>
+    
+        </div>
+    </div>
+</ng-container>
+
+<ng-container *mobxAutorun>
+    <div *ngIf="!IsmsRisksStore.individual_risk_loaded">
+        <app-risk-context-detail></app-risk-context-detail>
+    </div>
+</ng-container>
+<!-- <div class="modal modal-style-1 popup-full-width fade" id="process-popup" data-keyboard="false" data-backdrop="static"
+    #matrixForm *mobxAutorun>
+    <button type="button" class="close" (click)="closeMatrix()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+
+    <div class="bg-white risk-matrix-page-main">
+        <h3>{{'risk_matrix'|translate}}</h3>
+        <div class="risk-matrix-new-type-table">
+            <div class="risk-matrix-new-type-table-inner">
+                <div class="risk-matrix-table-main clearfix d-flex">
+                    <div class="header-not-fixed-table risk-matrix-table-name risk-matrix-table-left">
+                        <h4 class="risk-table-graph risk-table-graph-left">{{'likelihood_capital'|translate}}</h4>
+                        <table class="ordinary-table cmn-table-style">
+                            <tr *ngFor="let likelihood of IsmsLikelihoodStore.likelihoodDetails;let num=index">
+                                <td>{{likelihood.risk_matrix_likelihood_title}}<span
+                                        class="risk-table-nbr">{{likelihood.score}}</span></td>
+                            </tr>
+
+                        </table>
+                    </div>
+                    <div class="widget-body header-not-fixed-table audit-program-box risk-matrix-table">
+                        <div class="fix-table">
+                            <table class="table table-bordered ordinary-table cmn-table-style mb-0">
+                                <tbody>
+                                    <tr *ngFor="let score of IsmsRiskScoreStore.riskScoreDetails">
+                                        <td *ngFor="let rating of score" data-toggle="tooltip"
+                                            [style.width.%]="100/score.length">
+                                            <div [ngClass]="'circle-status matrix-'+rating.rating.color"><span
+                                                    *ngIf="rating.rating?.rating_level">{{rating.rating?.rating_level}}
+                                                    ({{rating.score}})</span></div>
+                                        </td>
+                                    </tr>
+
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="header-not-fixed-table risk-matrix-table-name risk-matrix-table-bottom">
+                            <table class="ordinary-table cmn-table-style">
+                                <tr>
+                                    <td *ngFor="let impact of IsmsImpactStore?.impactDetails"
+                                        [style.width.%]="100/IsmsImpactStore?.impactDetails.length"><span
+                                            class="risk-table-nbr">{{impact.score}}</span>{{impact.risk_matrix_impact_title}}
+                                    </td>
+
+                                </tr>
+                            </table>
+                            <h4 class="risk-table-graph risk-table-graph-btm">{{'impact_capital'|translate}}</h4>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div> -->
+<div class="modal modal-style-1 image-download-popup-new fade" id="loadMe" aria-labelledby="loadMeLabel" tabindex="-1" role="dialog" #loaderPopUp>
+    <app-loader [source] = "downloadMessage"></app-loader>
+ </div>
+
+ <div class="modal modal-style-1 popup-full-width fade" id="process-popup" data-keyboard="false" data-backdrop="static"
+    #workflowModal *mobxAutorun>
+    <app-isms-risk-info-workflow *ngIf="workflowModalOpened == true"></app-isms-risk-info-workflow>
+    </div>
+
+    <div class="modal modal-style-1 popup-full-width fade" id="process-popup" data-keyboard="false" data-backdrop="static"
+    #workflowHistory *mobxAutorun>
+    <app-isms-risk-workflow-history *ngIf="workflowHistoryOpened == true"></app-isms-risk-workflow-history>
+    </div>
+
+    
+<ng-container>
+    <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false"  data-backdrop="static" #commentModal>
+       <app-isms-workflow-comment-popup *ngIf="IsmsRiskInfoWorkflowStore.commentForm" ></app-isms-workflow-comment-popup>
+      </div>
+ </ng-container>
+
+ <!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" data-backdrop="static" data-keyboard="false" #deletePopup>
+    <app-delete-popup [source]="deleteObject"></app-delete-popup>
+</div>
+
+<!------------------- Delete Confirmation Modal End --------------------------->

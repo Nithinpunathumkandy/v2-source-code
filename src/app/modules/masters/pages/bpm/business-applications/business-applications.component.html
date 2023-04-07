@@ -1,0 +1,107 @@
+<div class="widget bg-white">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item pointer" [routerLink]="['/masters/bpm']">
+                <a>{{'bpm' | translate}}</a>
+            </li>
+            <li class="breadcrumb-item active">{{'business_application' | translate}}</li>
+        </ol>
+    </nav>
+
+    <div class="audit-form-table w-100 not-fixed-table mb-0">
+        <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll"
+        *ngIf="BusinessApplicationsMasterStore?.loaded && BusinessApplicationsMasterStore.businessApplications.length > 0">
+        <tr>
+            <th style="width: 5%; text-align: center;">{{'sl' | translate}}</th>
+            <th style="width: 20%;">{{'business_application' | translate}}</th>
+            <th style="width: 20%;" (click)="sortTitle('business_applications.title')"
+                class="border-top-0 issue-list-org-tab-three pointer">
+                <span>{{'title' | translate}}</span>
+                <img _ngcontent-twv-c17="" *ngIf="BusinessApplicationsMasterStore.orderItem=='business_applications.title'" class="sort-down-pics pl-2" [attr.src]="BusinessApplicationsMasterStore.orderBy=='desc' ? 
+                'assets/images/sort-up.png' : BusinessApplicationsMasterStore.orderBy=='asc' ? 
+                'assets/images/sort-down.png' : 'assets/images/sort-empty.png'">
+            </th>
+            <th style="width: 13%;">{{'supplier' | translate}}</th>
+            <th style="width: 10%;">{{'is_amc' | translate}}</th>
+            <th style="width: 10%;">{{'amc_start' | translate}}</th>
+            <th style="width: 10%;">{{'amc_end' | translate}}</th>
+            <!-- <th>{{'description' | translate}}</th> -->
+            <th style="width: 12%; text-align: center;">{{'status' | translate}}</th>
+        </tr>
+        <ng-container *mobxAutorun>
+            <tr class="edit-and-delete-main pointer"
+            (click)="getBusinessApplications(row.id)" [ngStyle] = "{ 'pointer-events' : AuthStore.getActivityPermission(1100,'UPDATE_BUSINESS_APPLICATION') ? '' : 'none'}"
+                *ngFor="let row of BusinessApplicationsMasterStore?.businessApplications | paginate: {currentPage:BusinessApplicationsMasterStore?.currentPage, itemsPerPage:BusinessApplicationsMasterStore?.itemsPerPage,totalItems:BusinessApplicationsMasterStore?.totalItems}; let num = index">
+
+                <td style="text-align: center;">{{(BusinessApplicationsMasterStore?.currentPage - 1) *
+                    BusinessApplicationsMasterStore?.itemsPerPage + (num + 1)}}</td>
+                <td>{{row.business_application_type_title}}</td>
+                <td>{{row.title}}</td>
+                <!-- <td>{{row.description}}</td> -->
+                <td>{{row.supplier_title}}</td>
+                <td>{{row.is_amc==1?'True':'False'}}</td>
+                <td>{{row?.amc_start ? row.amc_start : AppStore.noContentText}}</td>
+                <td>{{row?.amc_end ? row.amc_end : AppStore.noContentText}}</td>
+                <td style="padding:0.75rem; text-align: center;">
+                    <div [attr.class]="'dot-div '+row.status_label">{{row.status}}</div>
+
+                    <div class="edit-option-show">
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'UPDATE_BUSINESS_APPLICATION')"
+                            (click)=" getBusinessApplications(row.id)" [attr.title]="'edit' | translate"><i
+                                class="fas fa-pen pointer"></i></a>
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'DELETE_BUSINESS_APPLICATION')"
+                            (click)="delete(row.id)" [attr.title]="'delete' | translate"><i class="fas fa-trash pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(1100,'ACTIVATE_BUSINESS_APPLICATION')"
+                            (click)="activate(row.id)" [attr.title]="'activate' | translate"><i class="fas fa-check pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.activeStatusId && AuthStore.getActivityPermission(1100,'DEACTIVATE_BUSINESS_APPLICATION')"
+                            (click)="deactivate(row.id)" [attr.title]="'deactivate' | translate"><i class="fas fa-ban pointer"></i></a>
+                    </div> 
+                </td> 
+            </tr>
+        </ng-container>
+    </table>
+
+    </div>
+    <p class="float-right" *ngIf="BusinessApplicationsMasterStore?.loaded && BusinessApplicationsMasterStore.totalItems > 0"><b>{{'total_Items' | translate}}:{{BusinessApplicationsMasterStore?.totalItems}}</b></p>
+
+    <ng-container *mobxAutorun>
+        <div *ngIf="!BusinessApplicationsMasterStore.loaded">
+            <app-table-loader></app-table-loader>
+        </div>
+        <app-no-data
+            *ngIf="BusinessApplicationsMasterStore.businessApplications.length == 0 && BusinessApplicationsMasterStore.loaded == true">
+        </app-no-data>
+
+    </ng-container>
+
+    <div *ngIf="BusinessApplicationsMasterStore.totalItems>BusinessApplicationsMasterStore.itemsPerPage"
+        class="col-sm-12">
+        <ul class="pagination justify-content-center mt-3">
+            <div class="list">
+                <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+                    (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+            </div>
+        </ul>
+    </div>
+</div>
+
+<!--Modal part-->
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+
+    <app-business-applications-modal *ngIf="businessApplicationsObject.type" [source]="businessApplicationsObject">
+
+    </app-business-applications-modal>
+
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+
+<div class="modal modal-style-1 email-popup-new fade" data-backdrop="static" data-keyboard="false"
+    id="email-notification-popup" #mailConfirmationPopup>
+    <app-mail-send-popup [source]="mailConfirmationData"></app-mail-send-popup>
+</div>

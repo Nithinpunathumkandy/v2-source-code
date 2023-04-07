@@ -1,0 +1,493 @@
+<nav class="edit-bar" data-toggle="affix" #navBar>
+    <app-sub-menu>-</app-sub-menu>
+    <ul class="nav nav-pills float-left d-none d-lg-block" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link nav-link-show" [routerLink]="['/project-management/projects']" routerLinkActive="active"
+                [routerLinkActiveOptions]="{exact: true}">{{'projects' | translate}}</a>
+    </ul>
+</nav>
+<ng-container *mobxAutorun>
+<main class="mt-3 acl-page" *ngIf="projectStore?.getPinnedProjects?.data?.length > 0 && projectStore?.currentPage == 1 && !projectStore?.is_loading ">
+    <div class="container-fluid">
+      
+
+
+<div class="pinned-projects-heading pointer" (click)="togglePinnedItems()">
+    <i class="fa fa-thumbtack thumbtack-transform" [ngClass]="isPinnedOpen? '':'thumbtack-active'" aria-hidden="true"></i> &nbsp;
+    Pinned Projects 
+</div>
+<div class=""
+>
+<!-- *ngIf="!projectStore?.is_loading && projectStore?.projectList?.length > 0" -->
+<div class="row" *ngIf="isPinnedOpen">
+    <div class="container-fluid">
+        <div class="widget">
+            <div class="project-list-main">
+                <div *ngFor="let item of projectStore?.getPinnedProjects?.data; let i = index"  class="panel-group panel-drop-sections pt-0" id="pinned" role="tablist" aria-multiselectable="true" (click)="toNumber( item?.sub_project_count) > 0 ? '' : goToProject(item?.id)"
+                >
+                     <div class="panel panel-default"  >
+                        <div class="panel-heading" role="tab">
+                           <div class="panel-title">
+                           
+                            <a role="button" [attr.data-parent]="'#pinned'" [attr.href]="item?.projects?.length > 0 ? '#pinnedId'+item.id: 'javascript:void(0)'"    [attr.data-toggle]="toNumber( item?.sub_project_count) > 0? 'collapse':''"  aria-expanded="false" aria-controls="collapseOne" class="collapsed">
+                                 <div class="width96pc mt-0  ">
+                                     <div class="row align-items-center edit-and-delete-main">
+                                         <div class="col-lg-12 col-xl-6 col-md-12 col-sm-12 padding-bottom-10">
+                                             <div class="row align-items-center">
+                                                <div class="col-md-7 col-sm-12 padding-bottom-10">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="progress-circle" [ngClass]="'p'+(( toNumber(item?.task_closed)/item?.total_task || 0) | number: '1.0-0')">
+                                                            <span>{{( toNumber(item?.task_closed)/item?.total_task || 0) | number: '1.0-0'}}%</span>
+                                                            <div class="left-half-clipper">
+                                                            <div class="first50-bar" ></div>
+                                                            <div class="value-bar"></div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="w-100 ml-3">
+                                                        <h6 class="mb-0">#{{item?.id}}
+                                                           <span class="star ml-2" (click)="togglePinnedProject(item?.id, 'unpin')" href="javascript:void(0)"><i class="fa-solid fa fa-thumbtack thumbtack-icon active"></i> </span><br>
+                                                            {{item?.title}}</h6>
+                                                        </div>
+                                                    </div> 
+                                                </div>
+   
+                                                <div class="col-md-5 col-sm-12 ">
+                                                    <div class="progress">
+                                                        <div class="progress-bar" role="progressbar" [attr.aria-valuenow]="toNumber(item?.task_closed )/ item?.total_task || 0" aria-valuemin="0" [attr.aria-valuemax]="100" [style.width]="toNumber(item?.task_closed) / item?.total_task || 0+'%'">
+                                                          <span class="sr-only">{{ toNumber(item?.task_closed)/ toNumber(item?.total_task) || 0 }} % Complete</span>
+                                                        </div>
+                                                    </div>
+   
+                                                    <div class="d-flex align-items-center mt-2">
+                                                       <div class=" padding-bottom-10 w-33 w-40">
+                                                           <p class="mb-0"><span class="font-weight-bold">{{item?.total_task}} </span> &nbsp; <span> Total</span></p>
+                                                       </div>
+                                                       <div class=" padding-bottom-10 w-33 w-30">
+                                                            <p class="mb-0"><span class="text-green">{{item?.task_closed}} </span> &nbsp;<span> Closed</span></p>
+                                                        </div>
+                                                        <div class=" padding-bottom-10 w-33 w-30">
+                                                            <p class="mb-0"><span class="text-red">{{item?.task_opened}} </span> &nbsp;<span> Open</span></p>
+                                                        </div>
+                                                    </div> 
+   
+   
+                                                </div>
+                                            </div>
+                                        </div>
+   
+                                        <div class="col-lg-12 col-xl-6 col-md-12 col-sm-12">
+                                            <div class="row align-items-center">
+                                                <div class="col-md-3 padding-bottom-10">
+                                                        <h6>Category</h6>
+                                                        <p class="mb-0">{{item?.project_category_title || AppStore?.noContentText}}</p>
+                                                </div>
+   
+                                                <div class="col-md-3 padding-bottom-10">
+                                                    <h6>Target Date</h6>
+                                                    <p class="mb-0">{{item?.target_date | date: 'mediumDate' || AppStore?.noContentText}}</p>
+                                                </div>
+   
+                                                <div class="col-md-4 padding-bottom-10">
+                                                    <div class="label-and-user-pic mb-0">
+                                                        <div class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                                                            <img [src]="createImagePreview('user-profile-picture', item?.project_manager_image_token)"  onerror = "this.src='/assets/images/user-demo2.png'" data-toggle="modal" data-target="#user-details-popup" data-ui-class="a-zoom" class="rounded-circle rounde-hov details-show-popup" width="35px" height="35px">                                                            <div class="pointer new-size-text">
+                                                                <h6>{{item?.project_manager_first_name}} {{item?.project_manager_last_name}} </h6>
+                                                                <h6 *ngIf="!item?.project_manager_first_name && !item?.project_manager_last_name"> {{ AppStore?.noContentText}}</h6>
+                                                                <span>{{item?.project_manager_designation || AppStore?.noContentText}}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+   
+                                                <div class="col-md-2">
+                                                    <div class="dot-div" [ngClass]="item?.project_status_icon_class">{{item?.project_status_language_title}}</div>
+                                                    <div class="edit-option-show" style="margin: 20px -22px 0 0; ">
+                                                        <a (click)="goToProject(item?.id)"><i
+                                                            class="fas fa-list-ul"></i></a>
+                                                        <a (click)="openNewProjectModal(item)"><i
+                                                                class="fas fa-pen"></i></a>
+                                                        <a (click)="deleteConfirm(item?.id)"><i
+                                                                class="fas fa-trash"></i></a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <span class="drop-down-icone" *ngIf="item?.sub_project_count > 0"><i class="fas fa-chevron-down"></i></span>
+                                </div>
+                                </a>
+                           </div>
+                        </div>
+                        <div   [attr.id]="'pinnedId'+item.id"  class="drop-detail-sec panel-collapse collapse show" role="tabpanel"  *ngIf="item?.projects?.length > 0">
+                           <div class="panel-body bg-white">
+                              <div class="drop-detail-sec">
+                                  <div class="not-fixed-table">
+                                <div class=" audit-page-table-main">
+                                    <div class="row">
+                                       <div class="col-sm-12 full-width-table">
+                                          <div class="fix-table">
+
+                                              <table class="table table-bordered ordinary-table audit-page-table not-fixed-table table-scroll">
+                                             <thead>
+                                                <tr>
+                                                   <th class="border-top-0" width="2%">Sl</th>
+                                                   <th class="border-top-0" width="30%">Projects</th>
+                                                   <th class="border-top-0 text-center" width="10%">% Completion</th>
+                                                   <th class="border-top-0 text-center" width="20%">Date</th>
+                                                   <th class="border-top-0 text-center" width="10%">Remaining  Days</th>
+                                                   <th class="border-top-0  text-center" width="18%">Manager</th>
+                                                   <th class="border-top-0 text-center" width="10%">Status</th>
+                                                </tr>
+                                             </thead>
+                                             <tbody>
+                                                <tr class="text-center" *ngIf="projectStore?.is_subproject_loading">
+                                                    <td colspan="7">
+                                                        Loading..
+                                                    </td>
+                                                </tr>
+                                                <ng-container *ngFor="let sub_project of item?.projects; let ind = index">
+                                                <tr class="pointer edit-and-delete-main"  *ngIf="item?.projects?.length > 0 && !projectStore?.is_subproject_loading" (click)="goToProject(sub_project?.id)">
+                                                   <td>{{ind +1}}</td>
+                                                   <td>
+                                                    {{sub_project?.title}}
+                                                    <!-- <span class="blinking">( 20 Days Remaining )</span> -->
+                                                   </td>
+                                                   <td class="text-center text-green">{{(toNumber(sub_project?.task_closed) / toNumber(sub_project?.total_task)) || 0}} {{toNumber(sub_project?.total_task) > 0? '%':''}}</td>
+                                                   <td class="text-center">{{sub_project?.start_date | date:'mediumDate'}} - {{sub_project?.target_date | date:'mediumDate'}}</td>
+                                                   <td class="text-center">{{diffDays(sub_project?.target_date)}}</td>
+                                                   <td class="cursor-pointer text-center" >
+                                                    <div class="d-inline-flex  flex-row user-list-sm">
+                                                        <img *ngIf="sub_project.project_manager_image_token"
+                                                            [attr.src]="createImagePreview('user-profile-picture',sub_project.project_manager_image_token)"
+                                                            width="30px" height="30px" class="rounded-circle" onerror = "this.src='/assets/images/user-demo2.png'">
+                                                        <img *ngIf="!sub_project.project_manager_image_token"
+                                                            [attr.src]="getDefaultImage('user-logo')" width="30px" height="30px"
+                                                            class="rounded-circle" onerror = "this.src='/assets/images/user-demo2.png'">
+                                                        <div>
+                                                            <h6>{{sub_project.project_manager_first_name}}&nbsp;{{sub_project.project_manager_last_name}}
+                                                            </h6>
+                                                            <span >{{sub_project.project_manager_designation}}</span>
+                                                        </div>
+                                                    </div>
+                                                </td> 
+                                                   <td class="text-center"><div class="dot-div" [ngClass]="sub_project?.project_status_icon_class">{{sub_project?.project_status_language_title}}</div>
+                                                    <div class="edit-option-show" style="margin: 30px 0 0 0; ">
+                                                        <a (click)="openNewProjectModal(sub_project, item)"><i
+                                                                class="fas fa-pen"></i></a>
+                                                        <a (click)="deleteConfirm(sub_project?.id)"><i
+                                                                class="fas fa-trash"></i></a>
+                                                    </div>
+                                                   </td>
+                                                </tr>
+                                            </ng-container>
+                                                
+                                             </tbody>
+                                          </table></div>
+                                       </div>
+                                      
+                                    </div>
+                                  </div>
+                                </div>
+   
+                             </div>
+                           </div>
+                        </div>
+                     </div> 
+            </div>
+            <div *ngIf="projectStore.getPinnedProjects?.total>projectStore.getPinnedProjects?.per_page" class="col-sm-12">
+                <ul class="pagination justify-content-center mt-3">
+                    <div class="list">
+                        <pagination-controls (pageChange)="getPinnedProjects($event)" id="pinnedProjectList"
+                            class="my-pagination">
+                        </pagination-controls>
+                    </div>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</ng-container>
+
+
+<main class="mt-3 acl-page" *mobxAutorun>
+    <div class="container-fluid">
+        
+        <div class="tab-content">
+            <div class="tab-pane tab-edit-class fade" [ngClass]="projectStore?.listStyle == 'table'? 'active show':''"
+                id="list-view-file">
+
+                <div class="audit-program-box audit-page-table-main"
+                    *ngIf="!projectStore?.is_loading && projectStore?.projectList?.length > 0">
+                    <div class="pinned-projects-heading">
+                        All Projects
+                    </div>
+                    <div class="row">
+                        <div class="container-fluid">
+                            <div class="widget">
+                                <div class="project-list-main">
+                                    <div class="panel-group panel-drop-sections pt-0" id="jd" role="tablist" aria-multiselectable="true"
+                                    *ngFor="let item of projectStore?.projectList | paginate: {currentPage:projectStore.currentPage, id:'projectList', itemsPerPage:projectStore.itemsPerPage,totalItems:projectStore.totalItems}; let i = index; 
+                                    " (click)="toNumber( item?.sub_project_count) > 0 ? getSubProject(i, item?.id) : goToProject(item?.id)">
+                                         <div class="panel panel-default">
+                                            <div class="panel-heading" role="tab" id="headingOne">
+                                               <div class="panel-title">
+                                                <a role="button" [attr.data-toggle]="toNumber( item?.sub_project_count) > 0? 'collapse':''" [href]="item?.sub_project_count> 0? '#pmList' + item?.id : 'javascript:void(0)'" aria-expanded="false" aria-controls="collapseOne" class="collapsed">                                                     
+                                                     <div class="width96pc mt-0  ">
+                                                         <div class="row align-items-center edit-and-delete-main">
+                                                             <div class="col-lg-12 col-xl-6 col-md-12 col-sm-12 padding-bottom-10">
+                                                                 <div class="row align-items-center">
+                                                                    <div class="col-md-7 col-sm-12 padding-bottom-10">
+                                                                        <div class="d-flex align-items-center">
+                                                                            <div class="progress-circle" [ngClass]="'p'+((item?.task_closed/item?.total_task || 0) | number: '1.0-0')">
+                                                                                <span>{{(item?.task_closed/item?.total_task || 0) | number: '1.0-0'}}%</span>
+                                                                                <div class="left-half-clipper">
+                                                                                <div class="first50-bar" ></div>
+                                                                                <div class="value-bar"></div>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="w-100 ml-3">
+                                                                            <h6 class="mb-0">#{{item?.id}}
+                                                                                <span class="star ml-2" (click)="togglePinnedProject(item?.id, 'pin')" href="javascript:void(0)"><i class="fa-solid fa fa-thumbtack thumbtack-icon"></i> </span><br>
+                                                                                {{item?.title}}</h6>
+                                                                            </div>
+                                                                        </div> 
+                                                                    </div>
+                       
+                                                                    <div class="col-md-5 col-sm-12 ">
+                                                                        <div class="progress">
+                                                                            <div class="progress-bar" role="progressbar" [attr.aria-valuenow]="item?.task_closed / item?.total_task || 0" aria-valuemin="0" [attr.aria-valuemax]="100" [style.width]="item?.task_closed / item?.total_task || 0+'%'">
+                                                                              <span class="sr-only">{{item?.task_closed / item?.total_task || 0 }} % Complete</span>
+                                                                            </div>
+                                                                        </div>
+                       
+                                                                        <div class="d-flex align-items-center mt-2">
+                                                                           <div class=" padding-bottom-10 w-33 w-40">
+                                                                               <p class="mb-0"><span class="font-weight-bold">{{item?.total_task}} </span> &nbsp; <span> Total</span></p>
+                                                                           </div>
+                                                                           <div class=" padding-bottom-10 w-33 w-30">
+                                                                                <p class="mb-0"><span class="text-green">{{item?.task_closed}} </span> &nbsp;<span> Closed</span></p>
+                                                                            </div>
+                                                                            <div class=" padding-bottom-10 w-33 w-30">
+                                                                                <p class="mb-0"><span class="text-red">{{item?.task_opened}} </span> &nbsp;<span> Open</span></p>
+                                                                            </div>
+                                                                        </div> 
+                       
+                       
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                       
+                                                            <div class="col-lg-12 col-xl-6 col-md-12 col-sm-12">
+                                                                <div class="row align-items-center">
+                                                                    <div class="col-md-3 padding-bottom-10">
+                                                                            <h6>Category</h6>
+                                                                            <p class="mb-0">{{item?.project_category_title || AppStore?.noContentText}}</p>
+                                                                    </div>
+                       
+                                                                    <div class="col-md-3 padding-bottom-10">
+                                                                        <h6>Target Date</h6>
+                                                                        <p class="mb-0">{{item?.target_date | date: 'mediumDate' || AppStore?.noContentText}}</p>
+                                                                    </div>
+                       
+                                                                    <div class="col-md-4 padding-bottom-10">
+                                                                        <div class="label-and-user-pic mb-0">
+                                                                            <div class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                                                                                <img onerror = "this.src='/assets/images/user-demo2.png'" [src]="createImagePreview('user-profile-picture', item?.project_manager_image_token)"data-toggle="modal" data-target="#user-details-popup" data-ui-class="a-zoom" class="rounded-circle rounde-hov details-show-popup" width="35px" height="35px">
+                                                                                <div class="pointer new-size-text">
+                                                                                    <h6>{{item?.project_manager_first_name}} {{item?.project_manager_last_name}} </h6>
+                                                                                    <h6 *ngIf="!item?.project_manager_first_name && !item?.project_manager_last_name"> {{ AppStore?.noContentText}}</h6>
+                                                                                    <span>{{item?.project_manager_designation || AppStore?.noContentText}}</span>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                       
+                                                                    <div class="col-md-2">
+                                                                        <div class="dot-div" [ngClass]="item?.project_status_icon_class">{{item?.project_status_language_title}}</div>
+                                                                        <div class="edit-option-show" style="margin: 20px -22px 0 0; ">
+                                                                            <a (click)="goToProject(item?.id)"><i
+                                                                                class="fas fa-list-ul"></i></a>
+                                                                            <a (click)="openNewProjectModal(item)"><i
+                                                                                    class="fas fa-pen"></i></a>
+                                                                            <a (click)="deleteConfirm(item?.id)"><i
+                                                                                    class="fas fa-trash"></i></a>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <span class="drop-down-icone" *ngIf="item?.sub_project_count > 0"><i class="fas fa-chevron-down"></i></span>
+                                                    </div>
+                                                    </a>
+                                               </div>
+                                            </div>
+                                            <div [id]="'pmList' + item?.id"  class="drop-detail-sec panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne" [attr.data-target]="'#pmList' + item?.id">                                               <div class="panel-body bg-white">
+                                                  <div class="drop-detail-sec">
+                                                      <div class="not-fixed-table">
+                                                    <div class=" audit-page-table-main">
+                                                        <div class="row">
+                                                           <div class="col-sm-12 full-width-table">
+                                                              <div class="fix-table">
+
+                                                                  <table class="table table-bordered ordinary-table audit-page-table not-fixed-table table-scroll">
+                                                                 <thead>
+                                                                    <tr>
+                                                                       <th class="border-top-0" width="2%">Sl</th>
+                                                                       <th class="border-top-0" width="30%">Projects</th>
+                                                                       <th class="border-top-0 text-center" width="10%">% Completion</th>
+                                                                       <th class="border-top-0 text-center" width="20%">Date</th>
+                                                                       <th class="border-top-0 text-center" width="10%">Remaining  Days</th>
+                                                                       <th class="border-top-0" width="18%">Manager</th>
+                                                                       <th class="border-top-0 text-center" width="10%">Status</th>
+                                                                    </tr>
+                                                                 </thead>
+                                                                 <tbody>
+                                                                    <tr class="text-center" *ngIf="projectStore?.is_subproject_loading">
+                                                                        <td colspan="7">
+                                                                            Loading..
+                                                                        </td>
+                                                                    </tr>
+                                                                    <ng-container *ngFor="let sub_project of item?.projects; let ind = index">
+                                                                    <tr class="pointer edit-and-delete-main"  *ngIf="item?.projects?.length > 0 && !projectStore?.is_subproject_loading" (click)="goToProject(sub_project?.id)">
+                                                                       <td>{{ind +1}}</td>
+                                                                       <td>
+                                                                        {{sub_project?.title}}
+                                                                        <!-- <span class="blinking">( 20 Days Remaining )</span> -->
+                                                                       </td>
+                                                                       <td class="text-center text-green">{{(toNumber(sub_project?.task_closed) / toNumber(sub_project?.total_task)) || 0}} {{toNumber(sub_project?.total_task) > 0? '%':''}}</td>
+                                                                       <td class="text-center">{{sub_project?.start_date | date:'mediumDate'}} - {{sub_project?.target_date | date:'mediumDate'}}</td>
+                                                                       <td class="text-center">{{diffDays(sub_project?.target_date)}}</td>
+                                                  
+                                                                        <td class="cursor-pointer text-center" >
+                                                                            <div class="d-inline-flex flex-row user-list-sm">
+                                                                                <img *ngIf="sub_project.project_manager_image_token"
+                                                                                    [attr.src]="createImagePreview('user-profile-picture',sub_project.project_manager_image_token)"
+                                                                                    width="30px" height="30px" class="rounded-circle" onerror = "this.src='/assets/images/user-demo2.png'">
+                                                                                <img *ngIf="!sub_project.project_manager_image_token"
+                                                                                    [attr.src]="getDefaultImage('user-logo')" width="30px" height="30px"
+                                                                                    class="rounded-circle" onerror = "this.src='/assets/images/user-demo2.png'">
+                                                                                <div>
+                                                                                    <h6>{{sub_project.project_manager_first_name}}&nbsp;{{sub_project.project_manager_last_name}}
+                                                                                    </h6>
+                                                                                    <span >{{sub_project.project_manager_designation}}</span>
+                                                                                </div>
+                                                                            </div>
+                                                                        </td>
+                                                                       <td class="text-center"><div class="dot-div" [ngClass]="sub_project?.project_status_icon_class">{{sub_project?.project_status_language_title}}</div>
+                                                                        <div class="edit-option-show" style="margin: 30px 0 0 0; ">
+                                                                            <a (click)="openNewProjectModal(sub_project, item)"><i
+                                                                                    class="fas fa-pen"></i></a>
+                                                                            <a (click)="deleteConfirm(sub_project?.id)"><i
+                                                                                    class="fas fa-trash"></i></a>
+                                                                        </div>
+                                                                       </td>
+                                                                    </tr>
+                                                                </ng-container>
+                                                                    
+                                                                 </tbody>
+                                                              </table></div>
+                                                           </div>
+                                                          
+                                                        </div>
+                                                      </div>
+                                                    </div>
+                       
+                                                 </div>
+                                               </div>
+                                            </div>
+                                         </div> 
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div *ngIf="projectStore.totalItems>projectStore.itemsPerPage" class="col-sm-12">
+                        <ul class="pagination justify-content-center mt-3">
+                            <div class="list">
+                                <pagination-controls (pageChange)="getItems($event)" id="projectList"
+                                    class="my-pagination">
+                                </pagination-controls>
+                            </div>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <app-simple-table-loader *ngIf="projectStore?.is_loading"></app-simple-table-loader>
+        </div>
+
+        <div class="tab-pane tab-edit-class" [ngClass]="projectStore?.listStyle == 'grid'? 'active show':''"
+            id="grid-view-file">
+            <div class="annual-box-main project-grid-box-main clearfix" *ngIf="!projectStore?.is_loading">
+                <div class="annual-box-bg project-grid-box edit-and-delete-main"
+                    *ngFor="let item of projectStore?.projectList; let i = index">
+                    <div class="edit-option-show" style="margin: 44px 4px 0 0;">
+                        <!-- edit-and-delete starts -->
+                        <a><i class="fas fa-download"></i></a>
+                    </div><!-- edit-and-delete end -->
+                    <div class="annual-box pointer" routerLink="/project-management/projects/1">
+                        <div class="d-flex">
+                            <div class="title-logo rounded-circle" style="width: 40px; height: 40px;">
+                                <img src="/assets/images/round-logo.png" class="img-fluid">
+                            </div>
+                            <div class="round-logo-right-box project-grid-cnt pl-2">
+                                <h5 class="d-inline-block mb-0">{{item?.title}}<span
+                                        class="draft-tag label-tag-style-tag label-left-arow-tag ml-3"
+                                        style="line-height: 16px; vertical-align: middle; margin-top: -2px; display: inline-block;">
+                                        Draft</span></h5>
+                                <span class="risk-type-bx risk-type-bx-drop" style="color: #506e91;"><i
+                                        class="ml-0"><img src="/assets/images/risk-type-icon.png">
+                                    </i>Internal</span>
+                                <p class="mb-1"><i class="fas fa-calendar-alt date-pics-two"></i>21 Jan 2020 - 31
+                                    Dec 2020</p>
+                                <div class="clearfix mb-2">
+                                    <button type="button" class="btn btn-small float-left mt-2">Software</button>
+                                    <div class="progress-md-sm float-right">
+                                        <div class="progress-round blue">
+                                            <span class="progress-left">
+                                                <span class="progress-bar"></span>
+                                            </span>
+                                            <span class="progress-right">
+                                                <span class="progress-bar"></span>
+                                            </span>
+                                            <div class="progress-value">92%</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <hr>
+                                <div class="d-flex flex-row user-list-sm p-0">
+                                    <img src="/assets/images/shihab-pic.png" width="30px" height="30px"
+                                        class="rounded-circle">
+                                    <div>
+                                        <h6>Mohammed Shihabudheen</h6>
+                                        <span>Project Manger</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <app-simple-table-loader *ngIf="projectStore?.is_loading"> </app-simple-table-loader>
+        </div>
+    </div>
+    </div>
+    <app-no-data *ngIf="!projectStore.is_loading && projectStore?.projectList?.length==0"></app-no-data>
+</main>
+
+
+
+<app-project-modal [editData]="editData" [dataID]="editData?.id" [popupType]="popupType" #projectModal></app-project-modal>
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>

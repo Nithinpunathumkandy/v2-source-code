@@ -1,0 +1,914 @@
+
+<nav class="edit-bar" data-toggle="affix" #navigationBar>
+   <app-breadcrumb-menu></app-breadcrumb-menu>
+   <app-sub-menu></app-sub-menu>
+</nav>
+<main class="mt-3 organization-page" >
+   <div class="container-fluid">
+      <div class="organization-form-page" *mobxAutorun>
+         <form id="regForm" [formGroup]="processForm" class="organization-multi-stup-form multi-stup-form-common">
+            <!-- Circles which indicates the steps of the form: -->
+            <div id="header-sroll-form" class="form-indicates-sec clearfix"  #formSteps>
+               <span class="step pointer" (click) = "changeStep(0)"><span class="multi-form-nbr">1</span>{{'info' | translate}}</span>
+               <span class="step pointer" (click) = "changeStep(1)"><span class="multi-form-nbr">2</span>{{'controls' | translate}}</span>
+               <span class="step pointer" (click) = "changeStep(2)"><span class="multi-form-nbr">3</span>{{'documents' | translate}}</span>
+               <span class="step pointer" (click) = "changeStep(3)"><span class="multi-form-nbr">4</span>{{'preview_save' | translate}}</span>
+            </div>
+            <!-- One "tab" for each step in the form: -->
+            <div class="tab" style="display: block;">
+               <!-- tab start -->
+               <div class="row">
+                  <div class="col-sm-6">
+                     <div class="form-group">
+                        <label>{{'process_group' | translate}}<span class="form-error">*</span></label>
+                        <div class="clearfix d-flex">
+                          <div class="multiple-plain-ngselect w-100">
+                            <ng-select [placeholder]="'select_process_group' | translate" [multiple]="false" formControlName="process_group_id"
+                               (clear)="getProcessGroup()" (search) = "searchProcessGroups($event)"
+                              (open)="getProcessGroup()">
+                              <ng-option [value]="processGroup.id" *ngFor="let processGroup of ProcessGroupsMasterStore.processGroups">
+                                  {{processGroup.title.length > 80 ? processGroup.title.substring(0,80)+' ...' : processGroup.title }}
+                               </ng-option>
+          
+                            </ng-select>
+                          </div>
+                          <button type="button" class="btn multi-add-user ml-2" (click) = "addProcessGroup()" style="width: 42px;"><i class="fas fa-plus"></i></button>
+                        </div>
+                        <p class="form-error pt-1" *ngIf="processFormErrors && processFormErrors.process_group_id"> {{'select_any_group' | translate}}</p>
+                     </div>
+                  </div>
+                  <div class="col-sm-6">
+                     <div class="form-group">
+                        <label>{{'process_category' | translate}}</label>
+                        <div class="clearfix d-flex">
+                          <div class="multiple-plain-ngselect w-100">
+                            <ng-select [placeholder]="'select_process_category'|translate" [multiple]="false" formControlName="process_category_id"
+                               (clear)="getProcessCategory()" (search) = "searchProcessCategories($event)"
+                              (open)="getProcessCategory()">
+                              <ng-option [value]="controlCategory.id" *ngFor="let controlCategory of ProcessCategoryMasterStore.processCategories">
+                                  {{controlCategory.title.length > 80 ? controlCategory.title.substring(0,80)+' ...' : controlCategory.title }}
+                               </ng-option>
+          
+                            </ng-select>
+                          </div>
+                          <button class="btn multi-add-user ml-2" (click) = "addProcessCategory()" style="width: 42px;"><i class="fas fa-plus"></i></button>
+                        </div>
+                        <p class="form-error pt-1" *ngIf="processFormErrors && processFormErrors.process_category_id"> {{'select_any_category' | translate}}</p>
+                     </div>
+                  </div>
+                  <div class="col-sm-6">
+                     <div class="form-group">
+                        <label for="name">{{'process' | translate}}<span class="form-error">*</span></label>
+                        <input type="text" class="form-control" (keydown.enter)="$event.preventDefault()" formControlName="title" [attr.placeholder]="'title_of_the_process' | translate">
+                        <p class="form-error pt-1" *ngIf="processForm.value.title && processForm.value.title.length>500 && !processFormErrors">
+                           {{'maximum_500_characters' | translate}}</p>
+                         <p class="form-error pt-1" *ngIf="processFormErrors&&processFormErrors.title">
+                           {{processFormErrors.title}}</p>
+                     </div>
+                  </div>
+                  <div class="col-sm-6">
+                     <div class="form-group">
+                        <label>{{'process_owner'| translate}}<span class="form-error">*</span></label>
+                        <div class="clearfix">
+                           <div class="multiple-plain-ngselect">
+                             <ng-select 
+                              [items]="UsersStore.usersList" 
+                               bindLabel="email"
+                               [placeholder]="'select_process_owner' | translate" 
+                               formControlName="process_owner_id"
+                               (clear)="getAccountableUsers()" 
+                               (search)="searchUers($event)"
+                                (open)="dropdownItemType('processOwner');getAccountableUsers()"
+                                [searchFn]="customSearchFn">                        
+                                <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                 <img class="ng-select-user-display"
+                                     *ngIf="item.image?.token||item.image_token" height="15" width="15"
+                                     [attr.src]="item.image?.token?createImageUrl('user-profile-picture',item.image?.token):createImageUrl('user-profile-picture',item.image_token)" onerror = "this.src='/assets/images/user-demo2.png'" />
+                                 <img class="ng-select-user-display"
+                                     *ngIf="!item.image?.token && !item.image_token" height="15" width="15"
+                                     [attr.src]="getDefaultImage()"  />
+                                 <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],300,'
+                                     ') | titlecase}}</b><span aria-hidden="true" (click)="clear(item)"
+                                     style="border:none;" class="ng-value-icon left">×</span>
+                               </ng-template>
+                              <ng-template ng-option-tmp let-item="item" let-index="index">
+                                 <div class="user-post-department-pic">
+                                    <img *ngIf = "item.image_token" class="ng-select-user-display" height="25" width="25" [attr.src]="createImageUrl('user-profile-picture',item.image_token)" onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                    <img *ngIf = "!item.image_token" class="ng-select-user-display" height="25" width="25" [attr.src]="getDefaultImage()"/>
+                                 </div>
+                                 <div class="user-post-department-div">
+                                    <b>{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b>
+                                    <p class="user-post-department-multiple">{{getStringsFormatted([item.designation_title,' '+item.department],50,',')}}</p>
+                                 </div>
+                              </ng-template>
+                             </ng-select>
+                           </div>
+                         </div>
+                         <p class="form-error pt-1" *ngIf="processFormErrors && processFormErrors.process_owner_id"> {{'choose_process_owner' | translate}}</p>                   
+                     </div>
+                  </div>
+                  <div class="col-sm-12">
+                     <div class="form-group">
+                        <span class="text-grey mb-0"
+                        style="float: right;">{{processForm?.value.description != null ? processForm?.value.description?.length : 0}}
+                        {{'characters' | translate}}</span>
+                        <label for="name">{{'description' | translate}}</label>
+                        <textarea class="form-control" rows="3"  formControlName="description" [attr.placeholder]="'write_a_short_description_of_the_process' | translate"></textarea>
+                     </div>
+                  </div>
+                  <!-- <div class="row"> -->
+                     <!-- <div class="col-sm-6">
+                       <div class="form-group">
+                         <label for="name">{{'process_risk' | translate}}</label>
+                         <div class="clearfix">
+                           <div class="multiple-plain-ngselect select-width-plus">
+                           <input type="text" formControlName="process_risks" class="form-control" [attr.placeholder]="'title_of_the_process_risk' | translate">
+                         <p class="form-error pt-1" *ngIf="processFormErrors"> {{processFormErrors.process_risks}}</p>
+                       </div>
+                           <button  [disabled]='!processForm.value.process_risks' class="btn multi-add-user" (click)=addProcessRisks()><i class="fas fa-plus"></i></button>
+                         </div>
+              
+                       <div *ngIf = "processRisks.length > 0 "  #processRisksItemDiv style="max-height: 100px;" class="delete-bullet-point mt-2">
+                         <ul class="arrowlist m-0 p-0">
+                           <li *ngFor = "let objectives of processRisks; let it = index">{{objectives}} 
+                              <Button type="button" (click) = "removeProcessRisks(it)" class="btn btn-small float-right btn-small-delete" style="border: none;"><i class="fas fa-trash"></i></Button>
+                           </li>
+                        </ul>
+                       </div>
+                       <p class="form-error pt-1" *ngIf="processRiskError"> {{processRiskError | translate}}</p>
+                     </div>
+                     </div> -->
+                   <!-- </div> --> 
+                  
+            
+               </div>
+
+               <div class="row">
+                  <div class="col-sm-6"
+                  [ngStyle] = "{display: !OrganizationGeneralSettingsStore.organizationSettings?.is_ms_type ? 'none':'block'}">
+                     <div class="form-group">
+                        <label>{{'ms_type' | translate}}</label>
+                        <div class="clearfix">
+                          <div class="multiple-plain-ngselect">
+                            <ng-select [placeholder]="'select_ms_types'| translate " multiple="true" formControlName="ms_type_organization_ids"
+                            (search) = "searchMsType($event)"
+                               (clear)="getMsType()"
+                              (open)="getMsType()">
+                              <ng-option  [value]="mstypes.id" *ngFor="let mstypes of MsTypeStore.msTypeDetails">
+                                  <label class="mb-0">{{mstypes.ms_type_title.length > 80 ? mstypes.ms_type_title.substring(0,80)+' ...' : mstypes.ms_type_title }} <span style="color: #7c7a7a;">V {{mstypes.ms_type_version_title}}</span></label>
+                                 </ng-option>
+          
+                            </ng-select>
+                          </div>
+      
+                        </div>
+                     </div>
+                  </div>
+                  <div class="col-sm-6">
+                     <div class="form-group">
+                        <label for="name">{{'cycle_time' | translate}}</label>
+                        <input type="text" class="form-control" (keydown.enter)="$event.preventDefault()" formControlName="cycle_time" [attr.placeholder]="'enter_the_cycle_time'|translate">
+                     </div>
+                  </div>
+                  <div class="col-sm-12">
+                     <div class="form-group add-kpi-textarea">
+                        <label for="name">{{'scope' | translate}}</label>
+                        <textarea class="form-control" rows="11" formControlName="scope" [attr.placeholder]="'title_of_the_scope' | translate"></textarea>
+                     </div>
+                  </div>  
+                  
+                  <div class="col-sm-12">
+                     <div class="form-group">
+                        <a class="text-light-blue" data-toggle="modal" (click)="organisationChanges()" style="border-bottom: 1px solid;">{{'change_organization_unit' | translate}}</a>
+                     </div>
+                  </div>
+
+                  <!-- <div class="col-sm-6" *ngIf = "OrganizationLevelSettingsStore.organizationLevelSettings?.is_subsidiary">
+                     <div class="form-group">
+                        <label for="name">{{'organization' | translate}}<span class="form-error">*</span></label>
+                        <div class="clearfix">
+                            <div class="multiple-plain-ngselect">
+                                <ng-select [placeholder]="'organization' | translate" [multiple]="false"
+                                    searchable="true" formControlName="organization_id"
+                                    (search)="searchSubsidiary($event)"
+                                    (change) = "getDivision()"
+                                    (clear) = "getSubsidiary();getDivision()"
+                                    (open)="getSubsidiary()">
+                                    <ng-option [value]="type.id"
+                                        *ngFor="let type of SubsidiaryStore.subsidiaryList">
+                                        {{type.title}}
+                                    </ng-option>
+                                </ng-select>
+                            </div>
+                        </div>
+                        <p class="form-error pt-1" *ngIf="processFormErrors && processFormErrors.organization_id"> {{processFormErrors.organization_id}}</p>  
+                    </div>
+                  </div>
+                  <div class="col-sm-6" *ngIf = "OrganizationLevelSettingsStore.organizationLevelSettings?.is_branch">
+                     <div class="form-group">
+                        <label for="name">{{'branch' | translate}}</label>
+                        <div class="clearfix">
+                            <div class="multiple-plain-ngselect">
+                                <ng-select [placeholder]="'branch' | translate" [multiple]="false"
+                                    searchable="true" formControlName="branch_id"
+                                    (open)="getBranches()" 
+                                    (search)="searchBranches($event)">
+                                    <ng-option [value]="type.id"
+                                        *ngFor="let type of BranchesStore.branchDetails">
+                                        {{type.title}}
+                                    </ng-option>
+                                </ng-select>
+                            </div>
+                        </div>
+                        <p class="form-error pt-1" *ngIf="processFormErrors && processFormErrors.branch_id"> {{processFormErrors.branch_id}}</p>  
+                    </div>
+                  </div>
+                  <div class="col-sm-6" [ngStyle] = "{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_division ? 'none':'block'}">
+                     <div class="form-group">
+                        <label for="name">{{'division' | translate}}<span class="form-error">*</span></label>
+                        <div class="clearfix">
+                            <div class="multiple-plain-ngselect">
+                                <ng-select  [placeholder]="'division' | translate" [multiple]="false" searchable="true"
+                                    (search)="searchDivision($event)" formControlName="division_id"
+                                    (change)="getDepartment()"                    
+                                    (clear)="getDivision()" 
+                                    (open)="getDivision()">
+                                    <ng-option [value]="type.id" *ngFor="let type of DivisionStore.allItems">
+                                        {{type.title}}
+                                    </ng-option>
+                                </ng-select>
+                            </div>
+                        </div>
+                        <p class="form-error pt-1" *ngIf="processFormErrors && processFormErrors.division_id"> {{processFormErrors.division_id}}</p>  
+                    </div>
+                  </div>
+                  <div class="col-sm-6" *ngIf = "OrganizationLevelSettingsStore.organizationLevelSettings?.is_department">
+                     <div class="form-group">
+                        <label for="name">{{'department' | translate}}<span class="form-error">*</span></label>
+                        <div class="clearfix">
+                            <div class="multiple-plain-ngselect">
+                                <ng-select [placeholder]="'department' | translate" [multiple]="false" searchable="true"
+                                    (search)="searchDepartment($event)" formControlName="department_id"
+                                    (change)="getSection()"
+                                    (clear)="getDepartment()" (open)="getDepartment()">
+                                    <ng-option [value]="type.id"
+                                        *ngFor="let type of DepartmentStore.allItems">
+                                        {{type.title}}
+                                    </ng-option>
+                                </ng-select>
+                            </div>
+                        </div>
+                        <p class="form-error" *ngIf="processFormErrors && processFormErrors.department_id"> {{'select_any_department' | translate}}</p>
+                    </div>
+                  </div>
+                   <div class="col-sm-6" [ngStyle] = "{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_section ? 'none':'block'}">
+                     <div class="form-group">
+                        <label for="name">{{'section' | translate}}<span class="form-error">*</span></label>
+                        <div class="clearfix">
+                            <div class="multiple-plain-ngselect">
+
+
+                                <ng-select [placeholder]="'section' | translate" [multiple]="false" searchable="true"
+                                    (search)="searchSection($event)" formControlName="section_id"
+                                    (change)="getSubSection()"
+                                    (clear)="getSection()" (open)="getSection()">
+                                    <ng-option [value]="type.id" *ngFor="let type of SectionStore.allItems">
+                                        {{type.title}}
+                                    </ng-option>
+                                </ng-select>
+                            </div>
+                        </div>
+                        <p class="form-error pt-1" *ngIf="processFormErrors && processFormErrors.section_id"> {{processFormErrors.section_id}}</p>  
+                    </div>
+                  </div>
+                  <div class="col-sm-6" [ngStyle] = "{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_sub_section ? 'none':'block'}">
+                     <div class="form-group">
+                        <label for="name">{{'sub_section' | translate}}<span class="form-error">*</span></label>
+                        <div class="clearfix">
+                            <div class="multiple-plain-ngselect">
+
+                                <ng-select [placeholder]="'sub_section' | translate" [multiple]="false" searchable="true"
+                                    formControlName="sub_section_id" (clear)="getSubSection()"
+                                    (change)="getAccountableUsers()"
+                                    (search)="searchSubSection($event)" (open)="getSubSection()">
+                                    <ng-option [value]="type.id"
+                                        *ngFor="let type of SubSectionStore.allItems">
+                                        {{type.title}}
+                                    </ng-option>
+                                </ng-select>
+                            </div>
+                        </div>
+                        <p class="form-error pt-1" *ngIf="processFormErrors && processFormErrors.sub_section_id"> {{processFormErrors.sub_section_id}}</p>  
+                    </div>
+                  </div>  -->
+            
+                  <div class="col-sm-6">
+                     <div class="form-group">
+                        <label>{{'accountable_user'| translate}}</label>
+                        <div class="clearfix">
+                           <div class="multiple-plain-ngselect">
+                             <ng-select 
+                              [items]="UsersStore.usersList" 
+                               bindLabel="email"
+                               [placeholder]="'select_the_accountable_user' | translate" 
+                               multiple="true"
+                               formControlName="accountable_user_ids"
+                               (clear)="getAccountableUsers()" 
+                               (search)="searchUers($event)"
+                                (open)="dropdownItemType('accountableUser');getAccountableUsers()"
+                                [searchFn]="customSearchFn">                                                 
+                               <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                        <img class="ng-select-user-display"
+                                            *ngIf="item.image?.token||item.image_token" height="15" width="15"
+                                            [attr.src]="item.image?.token?createImageUrl('user-profile-picture',item.image?.token):createImageUrl('user-profile-picture',item.image_token)" onerror = "this.src='/assets/images/user-demo2.png'" />
+                                        <img class="ng-select-user-display"
+                                            *ngIf="!item.image?.token && !item.image_token" height="15" width="15"
+                                            [attr.src]="getDefaultImage()"   />
+                                        <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],300,'
+                                            ') | titlecase}}</b><span aria-hidden="true" (click)="clear(item)"
+                                            style="border:none;" class="ng-value-icon left">×</span>
+                              </ng-template>
+                              <ng-template ng-option-tmp let-item="item" let-index="index">
+                                 <div class="user-post-department-pic">
+                                    <img *ngIf = "item.image_token" class="ng-select-user-display" height="25" width="25" [attr.src]="createImageUrl('user-profile-picture',item.image_token)" onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                    <img *ngIf = "!item.image_token" class="ng-select-user-display" height="25" width="25" [attr.src]="getDefaultImage()"/>
+                                 </div>
+                                 <div class="user-post-department-div">
+                                    <b>{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b>
+                                    <p class="user-post-department-multiple">{{getStringsFormatted([item.designation_title,' '+item.department],50,',')}}</p>
+                                 </div>
+                              </ng-template>
+                             </ng-select>
+                           </div>
+                         </div>  
+                         <p class="form-error pt-1" *ngIf="processFormErrors && processFormErrors.accountable_user_ids"> {{processFormErrors.accountable_user_ids}}</p>                   
+                     </div>
+                  </div>
+
+
+               </div>
+            </div>
+            <!-- tab end -->
+            <div class="tab">
+              
+                  <div class="row process-form-tab">
+                    <div class="col-sm-12">
+                      <div class="processes-issue clearfix">
+                        <h5><img src="/assets/images/controls-icon.png">{{'map_controls_with_processes' | translate}}</h5>
+                        <a href="#" data-toggle="modal" data-target="#process-popup" class="btn" (click) = "selectControls()">{{'choose_controls' | translate}}</a>
+                        <a  class="btn" (click) = "addControl()">{{'add_control' | translate}}</a>
+                      </div>
+                        <div class="audit-program-box audit-page-table-main"
+                        *ngIf="ControlStore.controlsToDisplay.length>0">
+                        <div class="row">
+                            <div class="col-sm-12">
+                              <div class="full-width-table mb-3">
+                                <table
+                                    class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                                    <thead>
+                                        <tr>
+                                            <th class="border-top-0 text-center" width="5%">{{'sl' | translate}}</th>
+                                            <th class="border-top-0" >{{'ref_no' | translate}}</th>
+                                            <th class="border-top-0" >{{'title' | translate}}</th>
+                                            <th class="border-top-0" >{{'control_category' | translate}}</th>
+                                            <th class="border-top-0" >{{'control_type' | translate}}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr
+                                            *ngFor="let row of ControlStore.controlsToDisplay;let num = index" class="edit-and-delete-main" >
+                                            <td class="text-center">{{num+1}}</td>
+                                            <td>{{ row.reference_code?row.reference_code:AppStore.noContentText}}</td>
+                                            <td>{{ row.control_title?row.control_title:AppStore.noContentText}}</td>
+                                            <td>{{ row.control_category_title?row.control_category_title:AppStore.noContentText}}</td>
+                                            <td>{{ row.control_type_title?row.control_type_title:AppStore.noContentText}}
+                                                <div class="edit-option-show" style="margin:-7px 0 0 0">
+                                                   <a title="View" (click)=openControlDetails(row.id) *ngIf="AuthStore.getActivityPermission(100,'CONTROL_DETAILS')"><i class="fas fa-eye pointer"></i></a>
+                                                   <a title="Delete" (click)=deleteControl(row) *ngIf="AuthStore.getActivityPermission(100,'DELETE_CONTROL')"><i class="fas fa-trash pointer"></i></a>                                              
+                                                </div>  
+                                            </td>
+                                            
+                                          <!-- <td style="padding:0.75rem">
+                                             <div  [attr.class]="'dot-div '+row.control_efficiency_measure_status_label">
+                                               {{row.control_efficiency_measure_title?row.control_efficiency_measure_title : AppStore.noContentText }}
+                                             </div>
+                                             <div class="edit-option-show" style="margin:-7px 0 0 0">
+                                                <a title="View" (click)=openControlDetails(row.id) *ngIf="AuthStore.getActivityPermission(100,'CONTROL_DETAILS')"><i class="fas fa-eye pointer"></i></a>
+                                                <a title="Delete" (click)=deleteControl(row) *ngIf="AuthStore.getActivityPermission(100,'DELETE_CONTROL')"><i class="fas fa-trash pointer"></i></a>                                              
+                                             </div>                                                  
+                                         </td> -->
+
+                                        </tr>
+
+                                    </tbody>
+                                </table>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <app-no-data-list [source]="controlsEmptyList"
+                    *ngIf="ControlStore.controlsToDisplay.length==0"></app-no-data-list>
+                         
+                        <p class = "form-error" *ngIf="processFormErrors && processFormErrors.control_ids"> {{'select_any_control' | translate}}</p>
+                    </div>
+                  </div>
+                
+            </div>
+            <!-- tab end -->
+            <div class="tab">
+               <!-- tab start -->
+               <div class="form-group">
+                  <label class="label-style">{{'process_flow' | translate}}</label>
+              
+                <!-- </div> -->
+
+                <div class="scroll-documents" #uploadArea>
+                  <div class="thumb-pics-bg thumb-pics-col-4 clearfix thumb-pics-fix-text" style="padding-top: 0;">
+                     <div class="thumb-pics">
+                        <div class="question-circle-inp" style="margin-right: 7px;">
+                           <i class="far fa-question-circle"></i>
+                           <div class="message-password-inp">
+                              <p class="mb-0">{{'allowed_file_types' | translate}}
+                                 {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                              </p>
+                           </div>
+                        </div>
+                        <div class="form-group form-group-upload">
+                           <div class="darag-dropifile-upload">
+                              <div class="d-flex justify-content-center align-items-center text-center">
+                                 <div>
+                                    <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                                    <div class="drag-file-name"> Select or Upload Your File Here </div>
+                                    <div class="upload-btn-wrapper">                  
+                                       <button (click)="openFileUploadModal('process')" type="button" class="btn">{{'browse_files' | translate}}</button>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+  
+                        <div class="thumb-pics"  *ngFor = "let docs of ProcessStore.getProcessFlow ;let i = index">
+                            <div class="upload-pics edit-option" data-toggle="modal">
+                              <div *ngIf="docs?.id && !docs?.preview" class="browse-form-pic"  [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                              </div>
+                                <div  *ngIf="docs?.preview" class="browse-form-pic" [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">              
+                              </div>
+                               <div class="browse-form-name clearfix">
+                                <div class="float-left">
+                                  <h6>{{docs?.title?docs?.title:docs?.name?docs?.name:docs?.version_title?docs?.version_title:"NA"}}.{{docs?.ext}}
+                                  </h6>
+                                  <span *ngIf="docs?.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-book"></i></span>
+                                  <span  *ngIf="!docs?.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-laptop"></i></span>
+                                  <span>{{docs?.size/1048576 | number:'0.2-2'}}MB</span>
+                                </div>
+                                <div class="browse-logo">
+                                  <img *ngIf="checkExtension(docs?.ext,'image') != -1"
+                                      class="folder-picher" src="/assets/images/jpg-icone.png">
+                                  <img *ngIf="checkExtension(docs?.ext,'doc') != -1"
+                                      class="folder-picher" src="/assets/images/word-icone.png">
+                                  <img *ngIf="checkExtension(docs?.ext,'pdf') != -1"
+                                      class="folder-picher" src="/assets/images/pdf-icone.png">
+                                  <img *ngIf="checkExtension(docs?.ext,'excel') != -1"
+                                      class="folder-picher" src="/assets/images/excel-icone.png">
+                                  <img *ngIf="checkExtension(docs?.ext,'video') != -1"
+                                      class="folder-picher" src="/assets/images/md-video.png">
+                                  <img *ngIf="checkExtension(docs?.ext,'audio') != -1"
+                                      class="folder-picher" src="/assets/images/md-audio.png">
+                                  <img *ngIf="checkExtension(docs?.ext,'ppt') != -1"
+                                      class="folder-picher" src="/assets/images/md-ppt.png">
+                              </div>
+                               </div>
+                            </div>
+                         </div>
+  
+            
+                  </div>
+               </div>
+               </div>
+
+                          <!-- Common File Upload Ends Here -->
+                <div class="form-group">
+                  <label class="label-style">{{'support_files' | translate}}</label>
+                 
+
+            <div class="scroll-documents" #uploadArea2>
+               <div class="thumb-pics-bg thumb-pics-col-4 clearfix thumb-pics-fix-text" style="padding-top: 0;">
+                  <div class="thumb-pics">
+                     <div class="question-circle-inp" style="margin-right: 7px;">
+                        <i class="far fa-question-circle"></i>
+                        <div class="message-password-inp">
+                           <p class="mb-0">{{'allowed_file_types' | translate}}
+                              {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                           </p>
+                        </div>
+                     </div>
+                     <div class="form-group form-group-upload">
+                        <div class="darag-dropifile-upload">
+                           <div class="d-flex justify-content-center align-items-center text-center">
+                              <div>
+                                 <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                                 <div class="drag-file-name"> Select or Upload Your File Here </div>
+                                 <div class="upload-btn-wrapper">                  
+                                    <button (click)="openFileUploadModal('support')" type="button" class="btn">{{'browse_files' | translate}}</button>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+
+                     <div class="thumb-pics"  *ngFor = "let docs of ProcessStore.getAttachement ;let i = index">
+                         <div class="upload-pics edit-option" data-toggle="modal">
+                           <div *ngIf="docs?.id && !docs?.preview" class="browse-form-pic"  [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                           </div>
+                             <div  *ngIf="docs?.preview" class="browse-form-pic" [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">              
+                           </div>
+                            <div class="browse-form-name clearfix">
+                             <div class="float-left">
+                               <h6>{{docs?.title?docs?.title:docs?.name?docs?.name:docs?.version_title?docs?.version_title:"NA"}}.{{docs?.ext}}
+                               </h6>
+                               <span *ngIf="docs?.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-book"></i></span>
+                               <span  *ngIf="!docs?.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-laptop"></i></span>
+                               <span>{{docs?.size/1048576 | number:'0.2-2'}}MB</span>
+                             </div>
+                             <div class="browse-logo">
+                               <img *ngIf="checkExtension(docs?.ext,'image') != -1"
+                                   class="folder-picher" src="/assets/images/jpg-icone.png">
+                               <img *ngIf="checkExtension(docs?.ext,'doc') != -1"
+                                   class="folder-picher" src="/assets/images/word-icone.png">
+                               <img *ngIf="checkExtension(docs?.ext,'pdf') != -1"
+                                   class="folder-picher" src="/assets/images/pdf-icone.png">
+                               <img *ngIf="checkExtension(docs?.ext,'excel') != -1"
+                                   class="folder-picher" src="/assets/images/excel-icone.png">
+                               <img *ngIf="checkExtension(docs?.ext,'video') != -1"
+                                   class="folder-picher" src="/assets/images/md-video.png">
+                               <img *ngIf="checkExtension(docs?.ext,'audio') != -1"
+                                   class="folder-picher" src="/assets/images/md-audio.png">
+                               <img *ngIf="checkExtension(docs?.ext,'ppt') != -1"
+                                   class="folder-picher" src="/assets/images/md-ppt.png">
+                           </div>
+                            </div>
+                         </div>
+                      </div>
+
+         
+               </div>
+            </div>
+                       <!-- Common File Upload Ends Here -->
+                </div>
+            </div>
+            <!-- tab end -->
+            <div class="tab">
+               <!-- tab start -->
+               <div class="bpm-form-details-inner">
+                       <div class="row">
+                           <div class="col-md-12">
+                              <div class="issue-top-sec">
+                                 <div class="clearfix">                                 
+                                    <h5 class="d-inline-block cmn-head-style label-tag-style">{{processForm.value.title?processForm.value.title:AppStore.noContentText}}</h5>                               
+                                 </div>
+
+                                 <div class="issuue-new-style p-0 mb-2">
+                                    <label *ngFor="let item of ProcessStore._msType" class="outline-tag">{{item.title}} <span style="color: #b2b2b2;">V {{item.version}}</span></label>
+                                 </div>
+                               
+                           
+                                 <p style="white-space: pre-wrap;">{{processForm.value.description?processForm.value.description:AppStore.noContentText}}</p>
+                              </div>
+
+                              <div class="row">
+                                 <div class="col-md-3">
+                                    <h6>{{'process_categories' | translate}}</h6>
+                                    <p>{{ProcessStore._processCategory?ProcessStore._processCategory:AppStore.noContentText}}</p>
+                                 </div>
+                                 <div class="col-md-3">
+                                    <h6>{{'process_group' | translate}}</h6>
+                                    <p>{{ProcessStore._processGroup?ProcessStore._processGroup:AppStore.noContentText}}</p>
+                                 </div>
+                                 <div class="col-md-3" *ngIf = "OrganizationLevelSettingsStore.organizationLevelSettings?.is_subsidiary">
+                                    <h6>{{'organization' | translate}}</h6>
+                                    <p>{{ProcessStore._subsidiary?ProcessStore._subsidiary:AppStore.noContentText}}</p>
+                                 </div>
+                              </div>
+                             
+                             
+                              <div class="row">
+                                 <div class="col-md-3" *ngIf = "OrganizationLevelSettingsStore.organizationLevelSettings?.is_branch">
+                                    <h6>{{'branch' | translate}}</h6>
+                                    <p>{{ProcessStore._branch ? ProcessStore._branch : AppStore.noContentText}}</p>
+                                 </div>
+                                 <div class="col-md-3" [ngStyle] = "{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_division ? 'none':'block'}">
+                                    <h6>{{'division' | translate}}</h6>
+                                    <p>{{ProcessStore._division?ProcessStore._division:AppStore.noContentText}}</p>
+                                 </div>
+                                  <div class="col-md-3" *ngIf = "OrganizationLevelSettingsStore.organizationLevelSettings?.is_department">
+                                    <h6>{{'department' | translate}}</h6>
+                                    <p>{{ProcessStore._department?ProcessStore._department:AppStore.noContentText}}</p>
+                                 </div>
+                                 <div class="col-md-3" [ngStyle] = "{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_section ? 'none':'block'}">
+                                    <h6>{{'section' | translate}}</h6>
+                                    <p>{{ProcessStore._section?ProcessStore._section:AppStore.noContentText}}</p>
+                                 </div>
+                                 <div class="col-md-3" [ngStyle] = "{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_sub_section ? 'none':'block'}">
+                                    <h6>{{'sub_section' | translate}}</h6>
+                                    <p>{{ProcessStore._sub_section?ProcessStore._sub_section:AppStore.noContentText}}</p>
+                                 </div>
+                               
+                              </div>
+                              
+                                                    
+                              <!-- Accountable User Details -->
+                              <h6>{{'accountable_user' | translate}}</h6>
+                              <p *ngIf="!(ProcessStore._accountableUser.length > 0)">{{AppStore.noContentText}}</p>
+                              <div class="label-and-user-pic" *ngFor = "let du of userInfoObject">
+                                 <app-user-popup-box [source]="getPopupDetails(du)" [showName] = "true" [activateButtons] = "false"></app-user-popup-box>
+                              </div>
+                              <h6>{{'process_owner' | translate}}</h6>
+                              <!-- <p *ngIf="!(ProcessStore._accountableUser.length > 0)">{{AppStore.noContentText}}</p> -->
+                              <div class="label-and-user-pic" *ngFor = "let du of userInfoObject">
+                                 <app-user-popup-box *ngIf="displayForm?.process_owner_id" [source]="getPopupDetails(displayForm?.process_owner_id)" [showName] = "true" [activateButtons] = "false"></app-user-popup-box>
+                              </div>
+                              <!-- <app-user-info [source]="userInfoObject" ></app-user-info> -->
+                              <!-- <app-user-popup-box [source]="getPopupDetails(userInfoObject)" [showName] = "true"></app-user-popup-box> -->
+                              <!-- Ends Here -->
+
+                              <div class="row">
+                                 <div class="col-md-12">
+                                    <h6>{{'scope' | translate}}</h6>
+                                    <p style="white-space: pre-wrap;">{{processForm.value.scope?processForm.value.scope:AppStore.noContentText}}</p>
+                                 </div>
+                                 <div class="col-md-12">
+                                    <h6>{{'cycle_time' | translate}}</h6>
+                                    <p>{{processForm.value.cycle_time?processForm.value.cycle_time:AppStore.noContentText}}</p>
+                                 </div>
+                                 <div class="col-md-12">
+                                    <h6>{{'controls' | translate}}</h6>
+                                    <div class="panel-group panel-drop-sections" id="jd" role="tablist" aria-multiselectable="true">
+                                       <div *ngIf="!(ControlStore.controlsToDisplay.length > 0)">                                       
+                                          <p>{{AppStore.noContentText}}</p>
+                                       </div>
+                                     <div class="panel-group panel-drop-sections pt-0" id="cc" role="tablist" aria-multiselectable="true">
+                                       <div class="panel panel-default" *ngFor = "let row of ControlStore.controlsToDisplay;let num = index">
+                                           <div class="pointer" [ngClass]="row.is_accordion_active == true ? 'panel-heading active' : 'panel-heading'" role="tab" id="activityHeader">
+                                             <div class="panel-title">
+                                                <a role="button" data-toggle="collapse" aria-expanded="true"
+                                                    aria-controls="collapseOne" (click)="getControlDetails(row.id,num)">
+                                                    <h5 class="width96pc mt-0"> <span>#{{row.reference_code}}</span> - <span>{{row.control_title}}</span> - <span>{{row.category_title}}</span> <span class="drop-down-icone"><i class="fas fa-chevron-down"></i></span> </h5>
+                                                </a>
+                                            </div>
+                                           </div>
+                                           <div  class="drop-detail-sec" [ngClass]="row.is_accordion_active == true ? 'panel-collapse collapse show' : 'panel-collapse collapse'" role="tabpanel" aria-labelledby="activityHeader">
+                                              <div class="panel-body bg-white">
+                                                 <div class="drop-detail-sec">
+                                                   <ul class="banking-issue" *ngFor = "let list of ControlStore.controlDetails?.control_objectives">
+                                                      <li class="clearfix"><a>{{list.title}}</a></li>
+                                                   </ul>    
+                                                </div>
+                                                <div *ngIf="!(ControlStore.controlDetails?.control_objectives.length > 0)">
+                                                   {{AppStore.noContentText}}
+                                                </div> 
+                                              </div>
+                                           </div>
+                                        </div>                       
+                                    </div>
+                                     
+                                   </div>
+                                 </div>
+                                 <!-- <div class="col-sm-6">
+                                      <h6 for="name">{{'process_risk' | translate}}</h6>                       
+                                    <div *ngIf = "processRisks.length > 0 "  #processRisksPreviewItemDiv style="max-height: 100px;" class="delete-bullet-point mt-2">
+                                      <ul class="arrowlist mt-0 pl-0">
+                                        <li *ngFor = "let objectives of processRisks; let it = index">{{objectives}}</li>
+                                     </ul>
+                                    </div>
+                                    <p *ngIf="processRisks.length== 0">  {{AppStore.noContentText}}</p>
+                                  </div> -->
+                              </div>
+
+                             
+           <!-------------------------------------- Documents Preview----------------------------- -->
+                              
+                                 <label class="label-style">{{'process_flow' | translate}}</label>
+                                 <div *ngIf="!(ProcessStore.getProcessFlow.length > 0)">
+                                    <p>{{AppStore.noContentText}}</p>
+                                 </div>
+                                 <div class="scroll-documents" #previewUploadArea>
+                                    <div class="thumb-pics-bg thumb-pics-col-4 clearfix thumb-pics-fix-text" *ngIf="ProcessStore.getProcessFlow.length > 0">
+                                    <div class="thumb-pics"  *ngFor="let docs of ProcessStore.getProcessFlow ;let i = index">
+                                        <div class="upload-pics edit-option" data-toggle="modal">
+                                          <div *ngIf="docs?.id && !docs?.preview" class="browse-form-pic"  [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                                          </div>
+                                            <div  *ngIf="docs?.preview" class="browse-form-pic" [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">              
+                                          </div>
+                                           <div class="browse-form-name clearfix">
+                                            <div class="float-left">
+                                              <h6>{{docs?.title?docs?.title:docs?.name?docs?.name:docs?.version_title?docs?.version_title:"NA"}}.{{docs?.ext}}
+                                              </h6>
+                                              <span *ngIf="docs?.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-book"></i></span>
+                                              <span  *ngIf="!docs?.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-laptop"></i></span>
+                                              <span>{{docs?.size/1048576 | number:'0.2-2'}}MB</span>
+                                            </div>
+                                            <div class="browse-logo">
+                                              <img *ngIf="checkExtension(docs?.ext,'image') != -1"
+                                                  class="folder-picher" src="/assets/images/jpg-icone.png">
+                                              <img *ngIf="checkExtension(docs?.ext,'doc') != -1"
+                                                  class="folder-picher" src="/assets/images/word-icone.png">
+                                              <img *ngIf="checkExtension(docs?.ext,'pdf') != -1"
+                                                  class="folder-picher" src="/assets/images/pdf-icone.png">
+                                              <img *ngIf="checkExtension(docs?.ext,'excel') != -1"
+                                                  class="folder-picher" src="/assets/images/excel-icone.png">
+                                              <img *ngIf="checkExtension(docs?.ext,'video') != -1"
+                                                  class="folder-picher" src="/assets/images/md-video.png">
+                                              <img *ngIf="checkExtension(docs?.ext,'audio') != -1"
+                                                  class="folder-picher" src="/assets/images/md-audio.png">
+                                              <img *ngIf="checkExtension(docs?.ext,'ppt') != -1"
+                                                  class="folder-picher" src="/assets/images/md-ppt.png">
+                                          </div>
+                                           </div>
+                                        </div>
+                                     </div>
+                                    </div>
+                                </div>
+                                 <!-- <div class="row m-0 upload-section" style="padding-top: 0" *ngIf="ProcessStore.getProcessFlow.length > 0">
+                                    
+                                    
+                                      <div class="col-sm-3 up-pic-cf mt-2"  *ngFor = "let b of ProcessStore.getProcessFlow"> 
+                                       <div class="upload-pics edit-option">
+                                          <div class="browse-form-pic" [ngStyle]="{'background': 'url(' + b?.preview + ') no-repeat 0 0 / cover'}">
+                                          </div>
+                                           <div class="browse-form-name clearfix">
+                                            <div class="float-left">
+                                             <h6 [attr.title] = "b?.name">{{b?.name?.length > 20 ? b?.name.substring(0,20)+' ...' : b?.name}}</h6>
+                                             <span>{{b?.size/1048576 | number:'0.2-2'}}MB</span>
+                                            </div>
+                                            <div class="browse-logo">
+                                              <img *ngIf = "checkExtension(b?.ext,'excel') != -1" src="/assets/images/md-xl.png">
+                                              <img *ngIf = "checkExtension(b?.ext,'image') != -1" src="/assets/images/md-jpg.png">
+                                              <img *ngIf = "checkExtension(b?.ext,'doc') != -1" src="/assets/images/md-doc.png">
+                                              <img *ngIf = "checkExtension(b?.ext,'pdf') != -1" src="/assets/images/md-pdf.png">
+                                              <img *ngIf = "checkExtension(b?.ext,'video') != -1" src="/assets/images/md-video.png">
+                                              <img *ngIf = "checkExtension(b?.ext,'audio') != -1" src="/assets/images/md-audio.png">
+                                              <img *ngIf = "checkExtension(b?.ext,'ppt') != -1" src="/assets/images/md-ppt.png">
+                                            </div>
+                                           </div>
+                                       </div>
+                                    </div> 
+                    
+                                 </div> -->
+
+                                 <label class="label-style">{{'support_files' | translate}}</label>
+                                 <div *ngIf="!(ProcessStore.getAttachement.length > 0)">
+                                    <p>{{AppStore.noContentText}}</p>
+                                 </div>
+                                 <div class="scroll-documents" #previewUploadArea2>
+                                    <div class="thumb-pics-bg thumb-pics-col-4 clearfix thumb-pics-fix-text" *ngIf="ProcessStore.getAttachement.length > 0">
+                                    <div class="thumb-pics"  *ngFor="let docs of ProcessStore.getAttachement ;let i = index">
+                                        <div class="upload-pics edit-option" data-toggle="modal">
+                                          <div *ngIf="docs?.id && !docs?.preview" class="browse-form-pic"  [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                                          </div>
+                                            <div  *ngIf="docs?.preview" class="browse-form-pic" [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">              
+                                          </div>
+                                           <div class="browse-form-name clearfix">
+                                            <div class="float-left">
+                                              <h6>{{docs?.title?docs?.title:docs?.name?docs?.name:docs?.version_title?docs?.version_title:"NA"}}.{{docs?.ext}}
+                                              </h6>
+                                              <span *ngIf="docs?.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-book"></i></span>
+                                              <span  *ngIf="!docs?.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-laptop"></i></span>
+                                              <span>{{docs?.size/1048576 | number:'0.2-2'}}MB</span>
+                                            </div>
+                                            <div class="browse-logo">
+                                              <img *ngIf="checkExtension(docs?.ext,'image') != -1"
+                                                  class="folder-picher" src="/assets/images/jpg-icone.png">
+                                              <img *ngIf="checkExtension(docs?.ext,'doc') != -1"
+                                                  class="folder-picher" src="/assets/images/word-icone.png">
+                                              <img *ngIf="checkExtension(docs?.ext,'pdf') != -1"
+                                                  class="folder-picher" src="/assets/images/pdf-icone.png">
+                                              <img *ngIf="checkExtension(docs?.ext,'excel') != -1"
+                                                  class="folder-picher" src="/assets/images/excel-icone.png">
+                                              <img *ngIf="checkExtension(docs?.ext,'video') != -1"
+                                                  class="folder-picher" src="/assets/images/md-video.png">
+                                              <img *ngIf="checkExtension(docs?.ext,'audio') != -1"
+                                                  class="folder-picher" src="/assets/images/md-audio.png">
+                                              <img *ngIf="checkExtension(docs?.ext,'ppt') != -1"
+                                                  class="folder-picher" src="/assets/images/md-ppt.png">
+                                          </div>
+                                           </div>
+                                        </div>
+                                     </div>
+                                    </div>
+                                </div>
+                                 <!-- <div class="row m-0 upload-section" style="padding-top: 0" *ngIf="ProcessStore.getAttachement.length > 0">
+                                    
+                                    
+                                      <div class="col-sm-3 up-pic-cf mt-2"  *ngFor = "let b of ProcessStore.getAttachement"> 
+                                       <div class="upload-pics edit-option">
+                                          <div class="browse-form-pic" [ngStyle]="{'background': 'url(' + b?.preview + ') no-repeat 0 0 / cover'}">
+                                          </div>
+                                           <div class="browse-form-name clearfix">
+                                            <div class="float-left">
+                                             <h6 [attr.title] = "b?.name">{{b?.name?.length > 20 ? b.name?.substring(0,20)+' ...' : b?.name}}</h6>
+                                             <span>{{b?.size/1048576 | number:'0.2-2'}}MB</span>
+                                            </div>
+                                            <div class="browse-logo">
+                                              <img *ngIf = "checkExtension(b?.ext,'excel') != -1" src="/assets/images/md-xl.png">
+                                              <img *ngIf = "checkExtension(b?.ext,'image') != -1" src="/assets/images/md-jpg.png">
+                                              <img *ngIf = "checkExtension(b?.ext,'doc') != -1" src="/assets/images/md-doc.png">
+                                              <img *ngIf = "checkExtension(b?.ext,'pdf') != -1" src="/assets/images/md-pdf.png">
+                                              <img *ngIf = "checkExtension(b?.ext,'video') != -1" src="/assets/images/md-video.png">
+                                              <img *ngIf = "checkExtension(b?.ext,'audio') != -1" src="/assets/images/md-audio.png">
+                                              <img *ngIf = "checkExtension(b?.ext,'ppt') != -1" src="/assets/images/md-ppt.png">
+                                            </div>
+                                           </div>
+                                       </div>
+                                    </div> 
+                    
+                                 </div> -->
+
+                            <!-------------------------------------- Documents Preview Ends Here----------------------------- -->     
+
+                           </div>
+                           
+                       </div>
+                       
+                       
+                  </div>
+            </div>
+            <!-- tab end -->
+            <div style="overflow:auto;">
+               <div class="form-next-page-btns" style="float:left;">                  
+                   <button class="btn btn-active" type="button" id="nextBtn" (click)="nextPrev(1)" [disabled]="AppStore.loading || !checkFormObject()">{{getButtonText(nextButtonText)}}</button>
+                   <button class="btn" type="button" id="prevBtn" (click)="nextPrev(-1)" [disabled]="AppStore.loading">{{'previous' | translate }}</button>
+                   <button class="btn" type="button" (click)="confirmCancel()">{{'cancel' | translate}}</button>
+               </div>
+           </div>
+         </form>
+      </div>
+   </div>
+</main>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #cancelPopup>
+   <app-delete-popup [source] = "cancelObject"></app-delete-popup>
+ </div>
+ 
+ <!------------------- Delete Confirmation Modal End --------------------------->
+
+ <!-- -------Control Choose Popup -->
+ <div class="modal modal-style-1 popup-full-width fade" id="process-popup" data-keyboard="false" 
+ data-backdrop="static" #processFormModal *mobxAutorun>
+   <app-control-popup *ngIf = "ProcessStore.add_control_form_modal" [controlsModalTitle] = "controlsModalTitle"></app-control-popup>
+</div>
+ <!-- -------Control Choose Popup -->
+
+<!-- Processs Category Modal -->
+<div class="modal modal-style-1 popup-full-width fade"  data-keyboard="false"
+data-backdrop="static" #controlCategoryFormModal *mobxAutorun>
+<button type="button" class="close" data-dismiss="modal" (click) ="closeProcessCategoryModal()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+<app-process-category-modal *ngIf = "ProcessCategoryMasterStore.add_process_category_modal"></app-process-category-modal>
+</div>
+
+<!-- Process Category Modal  Ends Here -->
+
+<!-- Processs Group Modal -->
+<div class="modal modal-style-1 popup-full-width fade"  data-keyboard="false"
+data-backdrop="static" #processGroupFormModal *mobxAutorun>
+<button type="button" class="close" data-dismiss="modal" (click) ="clostProcessGroupModal()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+<app-process-group-modal *ngIf = " ProcessGroupsMasterStore.add_process_group_modal"></app-process-group-modal>
+</div>
+
+<!-- Process Group Modal  Ends Here -->
+
+<!-- Control Preview Modal -->
+
+<div [ngClass]="showDetails ? 'modal modal-style-1 popup-full-width fade show' : 'modal modal-style-1 popup-full-width fade'" id="control-details-popup" data-keyboard="false" #controlDetails *mobxAutorun>
+<button type="button" (click)="closeControlPreview()" class="close" data-dismiss="modal"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+<app-contrl-details-modal *ngIf = "ViewcontrolDetails"></app-contrl-details-modal>
+</div>
+
+<!-- Control Preview Modal Ends Here -->
+
+<!-- Control Add Modal Starts Here -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #controlFormModal>
+ 
+   <app-add-control *ngIf = "controlObject.type" [source] = "controlObject"></app-add-control>
+ 
+ </div>
+<!-- Control Add Modal Ends Here -->
+
+
+<div  class="modal modal-style-1 popup-full-width fade"  data-keyboard="false"
+     data-backdrop="static" #organisationChangeFormModal *mobxAutorun>
+     <app-organisation-change-modal *ngIf = "openModelPopup" [source] = "processForm.value" 
+     (organizationChangeEvent)="closeModal($event)"></app-organisation-change-modal>
+  </div>
+
+<!-- * Documetn Attach/Upload Common Component Starts Here -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #fileUploadModal>
+ 
+   <app-file-upload-popup  *ngIf = "fileUploadPopupStore.openPopup" ></app-file-upload-popup>
+ 
+ </div>
+ <!-- * Documetn Attach/Upload Common Component Ends Here -->

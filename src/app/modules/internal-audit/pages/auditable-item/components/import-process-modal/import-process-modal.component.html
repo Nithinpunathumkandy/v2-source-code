@@ -1,0 +1,172 @@
+<button type="button" class="close" (click)="cancel()"><i class="lni-close"></i><span>esc</span></button>
+<div class="modal-dialog modal-xl modal-dialog-centered">
+   <div class="modal-content">
+      <!-- Modal Header -->
+      <div class="modal-header">
+         <h4 class="modal-title">{{'process' | translate}}</h4>
+         <!-- <button type="button" class="close" data-dismiss="modal">&times;</button> -->
+
+      </div>
+      <!-- Modal body -->
+      <div class="modal-body form-body add-profie-org-pup">
+         <p class="head-details">The processes which were not added as auditable items already are listed below. 
+            Any given process will be added to auditable items first and then to the audit program.</p>
+         <div class="row">
+            <div class="col-sm-12 col-lg-8">
+               <div class="form-group">
+                  <label for="name">{{'search' | translate}}</label>
+                  <form class="form-control issue-select-process-search bg-white search-popup-new"
+                  
+                  autocomplete="off" [formGroup]="form"
+                     (submit) = "searchProcess()"
+                  >
+                     <input type="text" [placeholder]="'search'|translate" name="search" class="search-process" 
+                     [(ngModel)] = "searchTerm" (ngModelChange) = "searchProcess()"  [ngModelOptions]="{standalone: true}">
+                     <a class="search-clear-btn" (click) = "clearSearchBar()" *ngIf = "searchTerm">X</a>
+                     <button type="submit" style="width: 40px;"><i class="fa fa-search"></i></button> 
+                  </form>
+               </div>
+            </div>
+         </div>
+         <div class="row">
+            <div class="col-sm-4 col-lg-4">
+               <div class="form-group">
+                  <label for="name">{{'process_group' | translate}}</label>
+                  <div class="clearfix">
+                      <div class="multiple-plain-ngselect ">
+                          <ng-select [placeholder]="'process_group'|translate" [multiple]="false"
+                              [(ngModel)]="processGroupId" 
+                              (change) = "sortProcesses()"
+                              (search)="searcProcessGroup($event)"
+                              (open)="getProcessCategories()">
+                              <ng-option [value]="group.id" *ngFor="let group of ProcessGroupsMasterStore?.processGroups">
+                                  {{group.title}}
+                              </ng-option>
+                          </ng-select>
+      
+                      </div>
+                  </div>
+              </div>
+            </div>
+            <div class="col-sm-4 col-lg-4">
+               <div class="form-group">
+                  <label for="name">{{'risk_rating' | translate}}</label>
+                  <div class="clearfix">
+                      <div class="multiple-plain-ngselect ">
+                          <ng-select [placeholder]="'risk_rating'|translate" [multiple]="false"
+                              [(ngModel)]="riskRatingId" 
+                              (change) = "sortProcesses()"
+                              (open)="getRiskRating()">
+                              <ng-option [value]="risk.id" *ngFor="let risk of RiskRatingMasterStore.allItems">
+                                 <div [ngClass]="risk.id==1 ? 'dot-div red-dot': risk.id==2 ? 'dot-div orange-dot' : risk.id==3 ? 'dot-div yellow-dot' : 'dot-div green-dot'">
+                                    {{risk.title}}
+                                 </div>
+                              </ng-option>
+                          </ng-select>
+      
+                      </div>
+                  </div>
+              </div>
+            </div>
+            <div class="col-sm-4 col-lg-4">
+               <div class="form-group">
+                  <label for="name">{{'process_category' | translate}}</label>
+                  <div class="clearfix">
+                      <div class="multiple-plain-ngselect ">
+                          <ng-select [placeholder]="'process_category'|translate" [multiple]="false"
+                              [(ngModel)]="processCategoryId" 
+                              (change) = "sortProcesses()"
+                              (search)="searcProcessCategory($event)"
+                              (open)="getProcessCategories()">
+                              <ng-option [value]="category.id" *ngFor="let category of ProcessCategoryMasterStore?.processCategories">
+                                  {{category.title}}
+                              </ng-option>
+                          </ng-select>
+      
+                      </div>
+                  </div>
+              </div>
+            </div>
+         </div>
+
+
+         <div class="audit-form-table w-100">
+            <table class="table table-bordered ordinary-table audit-page-table mb-2 table-scroll">
+               <tr>
+                  <th class="border-top-0" width="6%">
+                     <label class="container2 float-left" style="margin-top: 2px; padding-left: 22px;">
+                        <input type="checkbox" [checked]="allProcesses" (change)="checkAll($event)">
+                        <span class="checkmark"></span>
+                     </label>
+                     #</th>
+                  <th class="border-top-0" width="9%">Ref. ID</th>
+                  <th class="border-top-0" width="15%">{{'process_group' | translate}}</th>
+                  <th class="border-top-0" width="20%">{{'process' | translate}}</th>
+                  <th class="border-top-0" width="20%">{{'process_category' | translate}}</th>
+                  <th class="border-top-0" width="20%">{{'department' | translate}}</th>
+                  <th class="border-top-0" width="20%">{{'risk_rating' | translate}}</th>
+               </tr>
+               
+              
+               <tr  *ngFor="
+               let row of ProcessStore?.processList
+                 | paginate
+                   : {
+                       currentPage: ProcessStore?.currentPage,
+                       itemsPerPage: ProcessStore?.itemsPerPage,
+                       totalItems: ProcessStore?.totalItems
+                     };
+               let num = index
+             "  >
+                  <td>
+                     <label class="container2 float-left" style="margin-top: 2px; padding-left: 22px;">
+                        <input type="checkbox" [id]="row.id" [name]="row.name" [checked] = "checkSelectedStatus(row.id)" (change) = "selectProcessses($event,row, num)">
+                        <span class="checkmark"></span>
+                     </label>
+                     {{
+                        (ProcessStore?.currentPage - 1) *
+                          ProcessStore?.itemsPerPage +
+                          (num + 1)
+                      }}</td>
+                  <td>{{ row.reference_code }}</td>
+                  <td>{{ row.process_group_title }}</td>
+                  <td>{{ row.title }}</td>
+                  <td>{{row.process_category_title}}</td>
+                  <td>{{ row.department }}</td>
+                  <td >
+                     {{row.risk_rating? row.risk_rating : AppStore.noContentText }}</td>
+                  
+                  <!-- <td>
+                     <div *ngIf=" row.status=='Inactive'" class="dot-div red-dot">{{ row.status}}</div>
+                     <div *ngIf=" row.status=='Active'" class="dot-div green-dot">{{ row.status }}</div>
+                   
+                  </td> -->
+               </tr>
+            </table>
+
+            <div *ngIf="ProcessStore.totalItems > ProcessStore.itemsPerPage && ProcessStore?.processes_loaded"
+               class="col-sm-12">
+               <ul class="pagination justify-content-center mt-3">
+                   <div class="list">
+                       <pagination-controls (pageChange)="pageChange($event)" class="my-pagination">
+                       </pagination-controls>
+                   </div>
+               </ul>
+           </div>
+           <app-no-data-list [source] = "importProcessEmptyList" *ngIf = "ProcessStore.totalItems == 0 && ProcessStore.processes_loaded == true"></app-no-data-list>
+
+         </div>
+
+         <div class="d-block justify-content-left border-0 mt-5">
+            <button type="button" data-toggle="modal" data-target="#signal-lost"
+               class="btn btn-active"  [disabled]="AppStore.loading || processArray.length==0" (click)="save()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('add') }}  </button> 
+            <button type="button" data-toggle="modal"  [disabled]="AppStore.loading || processArray.length==0" (click)="save(true)" data-target="#signal-lost" class="btn">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('add_close') }}</button>
+            <button type="button" data-toggle="modal" data-target="#error-message"
+               class="btn"  (click)="cancel()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('cancel') }}</button>
+         </div>
+
+
+      </div>
+      <!-- Modal footer -->
+   </div>
+</div>

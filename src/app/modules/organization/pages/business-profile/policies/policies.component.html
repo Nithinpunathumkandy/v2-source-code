@@ -1,0 +1,268 @@
+    <div *ngIf = "!PolicyStore.loaded">
+       <app-policies-loader></app-policies-loader>
+    </div>
+   <ng-container *mobxAutorun>
+      <!-- common-tab-md starts -->
+      <div class="common-tab-md clearfix mb-3 tab-same-height" *ngIf = "PolicyStore.loaded && PolicyStore.policyDetails.length > 0  && AuthStore.getActivityPermission(1900,'ORGANIZATION_POLICY_LIST')">
+         <div class="tab-common-left-md" *ngIf = "PolicyStore.policyDetails.length > 0 && PolicyStore.loaded == true">
+           <div class=" issues-tab">
+             <ul class="nav nav-tabs nav-tabs--vertical nav-tabs--left vertical-tab" role="navigation">
+               <li class="nav-item" *ngFor = "let pol of PolicyStore.policyDetails" data-toggle="tooltip" data-html="true" [attr.title]="pol.title" style="word-wrap: break-word;"> <a
+                  data-toggle="tab" (click)="AuthStore.getActivityPermission(1900,'ORGANIZATION_POLICY_DETAILS')? viewPolicyDetails(pol.id) : ''" [ngClass] = "PolicyStore.selectedItem == pol.id ? 'nav-link active show':'nav-link'">{{ pol.title.length > 50 ? pol.title.substring(0,50)+' ...' : pol.title }}</a></li>
+             </ul>
+           </div>
+         </div>
+
+         <div class="tab-common-left-content-m">
+           <div class="tab-content widg-padding-cmn bg-white cmn-bdr min-height-83">
+            <div id="policy-details">
+               <div *ngFor = "let poll of PolicyStore.policyDetails; let i = index">
+                  
+                  <div *ngIf = "PolicyStore.selectedItem == poll.id" class="p-0 widget-body-light profile-widg-padding tab-content-body edit-and-delete-main border-none">
+                     <div class="edit-option-show" style="margin: 40px 0 0 0;" *mobxAutorun><!-- edit-and-delete starts -->
+                        <a *ngIf="'UPDATE_ORGANIZATION_POLICY' | permission" (click) = "editPolicy(poll.id)" [attr.title]="'edit' | translate"><i class="fas fa-pen pointer"></i></a>
+                        <a *ngIf = "AuthStore.getActivityPermission(100,'DELETE_ORGANIZATION_POLICY')" (click) = "openDeletePolicyModal(poll.id, i)" [attr.title]="'delete' | translate"><i class="fas fa-trash pointer"></i></a>
+                     </div>
+                     <!-- AuthStore.getActivityPermission(100,'UPDATE_ORGANIZATION_POLICY') -->
+                     <div class="row" *ngIf="PolicyStore.individualLoaded">
+                      <div class="col-md-12">
+                         <h5>{{PolicyStore.getSelectedPolicyDetails?.title}}</h5>
+                         <p class="text-editor-content bullet-point-list" [innerHTML] = "PolicyStore.getSelectedPolicyDetails?.description | safeHtml"></p>
+                         <ng-container *ngIf = "AuthStore.getActivityPermission(100,'ORGANIZATION_POLICY_DETAILS')">
+                           <h6  *ngIf = "PolicyStore.getSelectedPolicyDetails?.documents.length > 0" class="mb-2 mt-2">{{'documents' | translate}}</h6>
+                           <div *ngIf = "PolicyStore.getSelectedPolicyDetails?.documents.length > 0" class="thumb-pics-bg thumb-pics-bg-5 clearfix thumb-pics-fix-text">
+                           <div class="thumb-pics" *ngFor="let docs of PolicyStore.getSelectedPolicyDetails.documents;let i = index">
+
+                              <!-- System Files Starts Here 
+                             style="margin: -10px -25px 0 0;" -->
+                               <div [ngClass]="AuthStore.getActivityPermission(100,'PREVIEW_ORGANIZATION_POLICY_DOCUMENT_FILE') ? 'upload-pics upload-pics-small edit-option pointer' : 'upload-pics upload-pics-small edit-option'" *ngIf="!docs.document_id"  (click) = "AuthStore.getActivityPermission(100,'PREVIEW_ORGANIZATION_POLICY_DOCUMENT_FILE') ? viewBrochureItem('organization-policy-document',docs,docs.id): ''">
+                                 <div class="browse-form-pic"  [ngStyle]="{'background': 'url('+createImageUrl('organization-policy-document',docs?.token)+') no-repeat'}">
+                                 </div>
+                                  <div class="browse-form-name clearfix">
+                                   <div class="float-left">
+                                    <h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                    </h6>
+                                    <span class="mr-2 cmn-clr"><i class="fas fa-laptop"></i></span>
+                                    <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                                   </div>
+                                   <div class="browse-logo">
+                                    <img *ngIf="checkExtension(docs.ext,'image') != -1"
+                                        class="folder-picher" src="/assets/images/jpg-icone.png">
+                                    <img *ngIf="checkExtension(docs.ext,'doc') != -1"
+                                        class="folder-picher" src="/assets/images/word-icone.png">
+                                    <img *ngIf="checkExtension(docs.ext,'pdf') != -1"
+                                        class="folder-picher" src="/assets/images/pdf-icone.png">
+                                    <img *ngIf="checkExtension(docs.ext,'excel') != -1"
+                                        class="folder-picher" src="/assets/images/excel-icone.png">
+                                    <img *ngIf="checkExtension(docs.ext,'video') != -1"
+                                        class="folder-picher" src="/assets/images/md-video.png">
+                                    <img *ngIf="checkExtension(docs.ext,'audio') != -1"
+                                        class="folder-picher" src="/assets/images/md-audio.png">
+                                    <img *ngIf="checkExtension(docs.ext,'ppt') != -1"
+                                        class="folder-picher" src="/assets/images/md-ppt.png">
+                                </div>
+                                  </div>
+                                  <div class="edit-option-show-inner">
+                                    <a *ngIf = "AuthStore.getActivityPermission(100,'DOWNLOAD_ORGANIZATION_POLICY_DOCUMENT_FILE')" [attr.title]="'download_document' | translate"><i class="fas fa-download" (click) = "downloadDocumentFile('organization-policies',docs)"></i></a>
+                                 </div>
+                               </div> 
+
+    <!-- System Files Starts Here -->
+       <!-- KnowledgeHub Files Starts Here -->
+       <!-- style="margin: -10px -25px 0 0;" -->
+                               <div [ngClass]="AuthStore.getActivityPermission(100,'PREVIEW_ORGANIZATION_POLICY_DOCUMENT_FILE') ? 'upload-pics upload-pics-small edit-option pointer' : 'upload-pics upload-pics-small edit-option'" *ngIf="docs.document_id">
+
+                                 <div *ngFor="let mainDoc of docs.kh_document.versions" (click) = "AuthStore.getActivityPermission(100,'PREVIEW_ORGANIZATION_POLICY_DOCUMENT_FILE') ?viewBrochureItem('document-version',docs,mainDoc): ''">
+                                    <div *ngIf="mainDoc.is_latest">
+                                       <div  class="browse-form-pic"  [ngStyle]="{'background': 'url('+createImageUrl('document-version',mainDoc?.token)+') no-repeat'}">
+                                       </div>
+                                        <div class="browse-form-name clearfix">
+                                         <div class="float-left">
+                                          <h6>{{mainDoc.title}}.{{mainDoc.ext}}
+                                          </h6>
+                                          <span class="mr-2 cmn-clr"><i class="fas fa-book"></i></span>
+                                          <span>{{mainDoc.size/1048576 | number:'0.2-2'}}MB</span>                                     
+                                         </div>
+                                         <div class="browse-logo">
+                                          <img *ngIf="checkExtension(mainDoc.ext,'image') != -1"
+                                              class="folder-picher" src="/assets/images/jpg-icone.png">
+                                          <img *ngIf="checkExtension(mainDoc.ext,'doc') != -1"
+                                              class="folder-picher" src="/assets/images/word-icone.png">
+                                          <img *ngIf="checkExtension(mainDoc.ext,'pdf') != -1"
+                                              class="folder-picher" src="/assets/images/pdf-icone.png">
+                                          <img *ngIf="checkExtension(mainDoc.ext,'excel') != -1"
+                                              class="folder-picher" src="/assets/images/excel-icone.png">
+                                          <img *ngIf="checkExtension(mainDoc.ext,'video') != -1"
+                                              class="folder-picher" src="/assets/images/md-video.png">
+                                          <img *ngIf="checkExtension(mainDoc.ext,'audio') != -1"
+                                              class="folder-picher" src="/assets/images/md-audio.png">
+                                          <img *ngIf="checkExtension(mainDoc.ext,'ppt') != -1"
+                                              class="folder-picher" src="/assets/images/md-ppt.png">
+                                      </div>
+                                        </div>
+                                        <div class="edit-option-show-inner">
+                                          <a *ngIf = "AuthStore.getActivityPermission(100,'DOWNLOAD_ORGANIZATION_POLICY_DOCUMENT_FILE')" [attr.title]="'download_document' | translate"><i class="fas fa-download" (click) = "downloadDocumentFile('document-version',docs,mainDoc)"></i></a>
+                                       </div>
+                                    </div>
+                                 </div>
+                               </div>
+   <!-- KnowledgeHub Files Ends Here -->
+                              </div>
+                           </div>
+                        </ng-container>
+                       </div>
+                     </div> 
+                     <div *ngIf="!PolicyStore.individualLoaded">
+                        <app-policies-detials-loader></app-policies-detials-loader>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+           </div>
+         </div>
+       </div>
+   </ng-container>
+   <ng-container *mobxAutorun>
+      <app-no-data *ngIf = "PolicyStore.policyDetails.length == 0 && PolicyStore.loaded == true"></app-no-data>
+   </ng-container>
+    <!-- add-user-btn-popup Start -->
+   <div class="modal modal-style-1 popup-full-width fade" id="add-five-popup" data-keyboard="false"
+   data-backdrop="static" #formModal>
+   <button type="button" class="close" data-dismiss="modal"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+   <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+         <!-- Modal Header -->
+         <div class="modal-header" *mobxAutorun>
+            <h4 class="modal-title" *ngIf = "PolicyStore.addOrEditFlag">{{'edit_policy' | translate}}</h4>
+            <h4 class="modal-title" *ngIf = "!PolicyStore.addOrEditFlag">{{'add_policy' | translate}}</h4>
+         </div>
+         <!-- Modal body -->
+         <div class="modal-body form-body">
+            <p class="head-details">{{'policy_form_message' | translate}}
+            </p>
+            <form [formGroup]="pform" (ngSubmit)="save()" *mobxAutorun>
+               <div class="row">
+                  <div class="col-sm-12">
+                     <div class="form-group">
+                        <label for="title">{{'title' | translate}}<sup>*</sup></label>
+                        <input type="text" class="form-control" formControlName="title" [attr.placeholder]="'title_of_the_policy' | translate" id = "title" #titleInput>
+                        <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.title[0]}}</p>
+                        <p class="form-error pt-1" *ngIf = "!formErrors && pform.get('title').invalid && (pform.controls.title.dirty || pform.controls.title.touched)">{{ pform.hasError('required', ['title']) ? 'Title required' : 'Maximum 500 characters allowed' }}</p>
+                     </div>
+                     <div class="form-group">
+                        <span style="float: right;" class="text-grey">{{pform?.value.description != null ? getDescriptionLength() : 0}} {{'characters' | translate}}</span>
+                        <label for="description">{{'description' | translate}}</label>
+                        <ckeditor id="description" (change)="descriptionValueChange($event)" [editor]="Editor" formControlName="description"></ckeditor>
+                     <!-- </ckeditor> -->
+                     </div>
+                  </div>
+               </div>
+               <label class="label-style">{{'documents' | translate}}</label>
+
+               <!-- Common File Upload Starts Here -->
+                <div class="scroll-documents" #uploadArea> 
+                  <div class="thumb-pics-bg thumb-pics-col-3 clearfix thumb-pics-fix-text" style="padding-top: 0;">
+                     <div class="thumb-pics">
+                        <div class="question-circle-inp" style="margin-right: 7px;">
+                           <i class="far fa-question-circle"></i>
+                           <div class="message-password-inp">
+                              <p class="mb-0">{{'allowed_file_types' | translate}}
+                                 {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                              </p>
+                           </div>
+                        </div>
+                        <div class="form-group form-group-upload">
+                           <div class="darag-dropifile-upload">
+                              <div class="d-flex justify-content-center align-items-center text-center">
+                                 <div>
+                                    <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                                    <div class="drag-file-name">{{'select_or_upload_your_file_here' | translate}}</div>
+                                    <div class="upload-btn-wrapper">                  
+                                       <button (click)="openFileUploadModal()" type="button" class="btn">{{'browse_files' | translate}}</button>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+
+                        <div [ngClass]="docs?.is_deleted ? ' thumb-pics image_deleted':'thumb-pics'"  *ngFor="let docs of fileUploadPopupStore.displayFiles ;let i = index">
+                            <div class="upload-pics edit-option" data-toggle="modal">
+                              <div *ngIf="docs.id && !docs.preview" class="browse-form-pic"  [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                              </div>
+                                <div  *ngIf="docs.preview" class="browse-form-pic" [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">              
+                              </div>
+                               <div class="browse-form-name clearfix">
+                                <div class="float-left">
+                                  <h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                  </h6>
+                                  <span *ngIf="docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-book"></i></span>
+                                  <span  *ngIf="!docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-laptop"></i></span>
+                                  <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                                </div>
+                                <div class="browse-logo">
+                                  <img *ngIf="checkExtension(docs.ext,'image') != -1"
+                                      class="folder-picher" src="/assets/images/jpg-icone.png">
+                                  <img *ngIf="checkExtension(docs.ext,'doc') != -1"
+                                      class="folder-picher" src="/assets/images/word-icone.png">
+                                  <img *ngIf="checkExtension(docs.ext,'pdf') != -1"
+                                      class="folder-picher" src="/assets/images/pdf-icone.png">
+                                  <img *ngIf="checkExtension(docs.ext,'excel') != -1"
+                                      class="folder-picher" src="/assets/images/excel-icone.png">
+                                  <img *ngIf="checkExtension(docs.ext,'video') != -1"
+                                      class="folder-picher" src="/assets/images/md-video.png">
+                                  <img *ngIf="checkExtension(docs.ext,'audio') != -1"
+                                      class="folder-picher" src="/assets/images/md-audio.png">
+                                  <img *ngIf="checkExtension(docs.ext,'ppt') != -1"
+                                      class="folder-picher" src="/assets/images/md-ppt.png">
+                                 </div>
+                              </div>
+                              <div class="edit-option-show">
+                                 <a (click) = "removeBrochure(docs)"><i class="fas fa-trash"></i></a>
+                              </div>
+                            </div>
+                         </div>
+                  </div>
+               </div>
+               <!-- Common File Upload Ends Here -->
+               <div class="row">
+                  <div class="col-sm-12">
+                     <div class="d-block justify-content-left border-0 mt-4">
+                        <button type="button" data-toggle="modal" data-target="#signal-lost"
+                           class="btn  btn-active" (click)="save()"
+                           [disabled]="pform.invalid || AppStore.loading">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save') }}</button>
+                        <button type="button" data-toggle="modal" data-target="#signal-lost"
+                           class="btn " (click)="save(true)" 
+                           [disabled]="pform.invalid || AppStore.loading">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save_close') }}</button>
+                        <button type="button" data-toggle="modal" data-target="#error-message"
+                           class="btn " (click)="cancel()">
+                           {{ AppStore.loading  ? getButtonText('loading') : getButtonText('cancel') }}</button>
+                     </div>
+                  </div>
+               </div>
+            </form>
+         </div>
+         <!-- Modal footer -->
+      </div>
+   </div>
+</div>
+<!-- add-user-btn-popup End -->
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+<div class="modal modal-style-1 fade" id="delete-popup" #deletePopup  data-backdrop="static" data-keyboard="false">
+   <app-delete-popup [source] = "deleteObject"></app-delete-popup>
+</div>
+<!------------------- Delete Confirmation Modal End --------------------------->
+
+<!--------------------Preview Modal-->
+<div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup" data-keyboard="false" data-backdrop="static" #filePreviewModal *mobxAutorun>
+   <button type="button" class="close" data-dismiss="modal" (click) = "closePreviewModal($event)"><i class="lni-close"></i><span>esc</span></button>
+   <app-previewcomponent *ngIf = "previewObject" [source] = "previewObject" (close) = "closePreviewModal($event)"></app-previewcomponent>
+</div>
+<!------------------------------------------------------------------------------>
+<!-- * Documetn Attach/Upload Common Component Starts Here -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #fileUploadModal>
+   <app-file-upload-popup *ngIf = "fileUploadPopupStore.openPopup" ></app-file-upload-popup>
+</div>
+ <!-- * Documetn Attach/Upload Common Component Ends Here -->

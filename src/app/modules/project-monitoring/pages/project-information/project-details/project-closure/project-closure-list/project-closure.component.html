@@ -1,0 +1,104 @@
+    <div class="tab-pane" id="stakehldrs">
+        <div class="container-fluid">
+            <div class="audit-program-box audit-page-table-main"> 
+               <div class="row" *mobxAutorun>
+                   <div class="col-sm-12">
+                      <div class="full-width-table">
+                        <table *ngIf="ProjectClosureStore.loaded && ProjectClosureStore.allItems.length > 0"  
+                            class="table table-bordered ordinary-table audit-page-table mb-4 table-scroll">
+                            <thead>
+                                <tr>
+                                    <th class="border-top-0 text-center" width="4%">#</th>
+                                    <th class="border-top-0" width="12%">{{'ref_no' | translate}} </th>
+                                    <th class="border-top-0">{{'project_title' | translate}}</th>
+                                    <th class="border-top-0" width="15%">{{'created_by' | translate}}</th>
+                                    <th class="border-top-0" width="15%">{{'department' | translate}}</th>
+
+                                    <th class="border-top-0" width="8%">{{'version' | translate}}</th>
+                                    <th class="border-top-0"  width="12%">{{'date' | translate}}</th>
+                                    <th class="border-top-0" width="8%">{{'status' | translate}}</th>
+                                </tr>
+                            </thead>  
+                            <tbody>
+                                <tr class="edit-and-delete-main pointer" *ngFor="let items of ProjectClosureStore.allItems| paginate: {currentPage:ProjectClosureStore.currentPage, itemsPerPage:ProjectClosureStore.itemsPerPage,totalItems:ProjectClosureStore.totalItems};let num=index" 
+                                (click)="gotoDetailsPage(items.id)">
+                                    <td class="pointer text-center"> {{(ProjectClosureStore.currentPage - 1) * ProjectClosureStore.itemsPerPage + (num + 1)}}</td>
+                                    <td >{{items.project_monitor_closure_reference_code ? items.project_monitor_closure_reference_code : AppStore.noContentText}}</td>
+                                    <td >{{items.project_title}}</td>
+                                    <td >
+                                        <div
+                                        class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                                        <img *ngIf="items.created_by_image_token" data-toggle="modal" data-target="#user02"
+                                            data-ui-class="a-zoom"
+                                            [attr.src]="createImagePreview('user-profile-picture',items.created_by_image_token)"
+                                            width="30px" height="30px" class="rounded-circle rounde-hov details-show-popup"
+                                            onerror="this.src='/assets/images/user-demo2.png'">
+                                        <img *ngIf="!items.created_by_image_token" [attr.src]="getDefaultImage('user-logo')"
+                                            width="30px" height="30px" class="rounded-circle"
+                                            onerror="this.src='/assets/images/user-demo2.png'">
+                                        <div class="pointer">
+                                            <h6>{{items.created_by_first_name ? items.created_by_first_name : AppStore.noContentText
+                                                }} {{items.created_by_last_name ? items.created_by_last_name :
+                                                AppStore.noContentText }}</h6>
+                                            <span>{{items.created_by_designation ? items.created_by_designation :
+                                                AppStore.noContentText}}</span>
+                                        </div>
+                                    </div>
+                                    </td>
+                                    <td >{{items.departments ? items.departments : AppStore.noContentText}}</td>
+
+                                    <td >{{items.version_no ? items.version_no : AppStore.noContentText}}</td>
+
+                                    <td >{{items.created_at | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</td>
+                                    <td class="pointer">
+                                        <div
+                                        [ngClass]="items.label ? 'dot-div '+items.label : ''"
+                                        >{{items?.project_monitor_closure_status_title}}</div>
+                                             <div *ngIf="items.type =='draft' || items.type =='send-back'" class="edit-option-show" style="margin: 33px 0px 0px 0px; ">
+                                                <a *ngIf="AuthStore.getActivityPermission(1600,'UPDATE_PROJECT_MONITOR_CLOSURE')"
+                                                (click)="editProjectClosure(items.id)" [attr.title]="'edit' | translate"><i
+                                                    class="fas fa-pen"></i></a>
+                                                <a *ngIf="AuthStore.getActivityPermission(1600,'DELETE_PROJECT_MONITOR_CLOSURE')"
+                                                (click)="delete(items.id)" [attr.title]="'delete' | translate"><i class="fas fa-trash"></i></a>
+                                    </div>
+                                    </td>
+                                </tr>   
+                            </tbody>
+                        </table>
+                        <ng-container *mobxAutorun>
+                            <div *ngIf="!ProjectClosureStore.loaded">
+                                <app-project-monitoring-list-loader></app-project-monitoring-list-loader>
+                           </div>
+                            <app-no-data *ngIf = "ProjectClosureStore.allItems.length == 0 && ProjectClosureStore.loaded == true"></app-no-data>
+                        </ng-container> 
+                    </div>
+                </div> 
+            </div>     
+            <div *ngIf="ProjectClosureStore.totalItems>ProjectClosureStore.itemsPerPage"
+                class="col-sm-12">
+                <ul class="pagination justify-content-center mt-3">
+                    <div class="list">
+                        <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"  class="my-pagination" (pageChange)="pageChange($event)">
+                        </pagination-controls>
+                    </div>
+                </ul>
+            </div> 
+        </div>   
+    </div>                  
+</div>
+
+
+<!------------------- project closure Modal Start --------------------------->
+<div class="modal modal-style-1 popup-full-width fade"  data-keyboard="false"
+data-backdrop="static" #addProjectClosure>
+   <app-add-project-closure-modal [source] ="ProjectClosureObject" *ngIf="ProjectClosureObject.type">
+   </app-add-project-closure-modal>
+</div>
+<!------------------- project closure Modal End --------------------------->
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+<!------------------- Delete Confirmation Modal End --------------------------->
+

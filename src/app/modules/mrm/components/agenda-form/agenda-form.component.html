@@ -1,0 +1,163 @@
+<button type="button" class="close" (click)="closeModal()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered" #formModal>
+   <div class="modal-content" *mobxAutorun>
+    
+      <div class="modal-header">
+         <h4 class="modal-title" *ngIf = "agendaSource.type=='add'">{{'add_agenda' | translate}}</h4>
+         <h4 class="modal-title" *ngIf = "agendaSource.type!='add'">{{'edit_agenda' | translate}}</h4>    
+      </div>
+   
+      <div class="modal-body form-body">
+        <!-- <p class="head-details">{{'agenda_form_message' | translate}}</p>      -->
+        <form [formGroup]="agendaForm">  
+          <div class="row">
+              <div class="col-sm-12">
+                <div class="form-group">
+                  <label for="title">{{'title' | translate}}<span class="form-error">*</span></label>
+                  <input type="text" formControlName="title" class="form-control"  [attr.placeholder]="'title_of_the_agenda' | translate"
+                    id="cctitle">
+                  <p class="form-error pt-1" *ngIf="agendaForm.value.title && agendaForm.value.title.length>500 && !agendaFormErrors">
+                    Maximum 500
+                    characters allowed</p>
+                  <p class="form-error pt-1" *ngIf="agendaFormErrors&&agendaFormErrors.title">
+                    {{agendaFormErrors.title}}</p>
+                </div>
+              </div>
+            </div>
+   
+            <div class="row">
+              <div class="col-sm-12">
+  
+                <div class="form-group">
+                  <span class="text-grey mb-0"
+                    style="float: right;">{{agendaForm?.value.description != null ? agendaForm?.value.description?.length : 0}}
+                    {{'characters' | translate}}</span>
+                  <label>{{'description' | translate}}</label>
+                  <textarea class="form-control" rows="3" id="ccdescription" [attr.placeholder]="'write_a_short_description_of_the_agenda' | translate"
+                    formControlName="description"></textarea>
+                    <p class="form-error pt-1" *ngIf="agendaFormErrors"> {{agendaFormErrors.description}}</p>
+                </div>
+    
+              </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label for="name">{{'start_date/time' | translate}}</label>
+                        <div class="input-group">
+                            <input class="form-control" formControlName="start_time" [owlDateTime]="dt1"
+                                [owlDateTimeTrigger]="dt1" 
+                                [placeholder]="'start_time' | translate" style="background-color: white;">
+                            <owl-date-time [pickerType]="'timer'" [hour12Timer]="OrganizationGeneralSettingsStore?.organizationSettings?.clock_format=='12-hour clock'?true:false" #dt1></owl-date-time>
+                            <div class="input-group-append">
+                                <button [owlDateTimeTrigger]="dt1" class="btn btn-outline-secondary calendar"
+                                    type="button"><i class="fas fa-calendar-alt"></i></button>
+                            </div>
+                        </div>
+                        <p class="pt-1" style="color: red;" *ngIf="agendaFormErrors && agendaFormErrors.start_time">
+                            {{agendaFormErrors.start_time}}
+                        </p>
+                        <!-- <p class="pt-1" style="color: red;" *ngIf="(MeetingPlanStore.editFlag && MeetingPlanStore.individualLoaded) ? passDateChecking():false">
+                            {{'wrong_date_or_time_selected_please_check_and_verify' | translate}}
+                        </p> -->
+
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group">
+                       <label for="name">{{'duration' | translate}}</label>
+                       <input type="number" class="form-control" (keydown.enter)="$event.preventDefault()" formControlName="duration" [attr.placeholder]="'enter_the_duration'|translate">
+                    </div>
+                 </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-6 col-sm-12">
+                    <div class="form-group">
+                        <label>{{'owner' | translate}}</label>
+                        <div class="clearfix">
+                           <div class="multiple-plain-ngselect">
+                              <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                              [placeholder]="'choose_agenda_owner'| translate" [multiple]="false"
+                                 formControlName="owner_id" (search)="searchUsers($event)" (clear)="getUsers()"
+                                 (open)="getUsers()" [searchFn]="customSearchFn">
+                                 <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                    <img *ngIf="item.image_token" height="15" width="15"
+                                       [attr.src]="createImagePreview('user-profile-picture',item.image_token)" />
+                                    <img *ngIf="!item.image_token" height="15" width="15"
+                                       [attr.src]="getDefaultImage()" />
+                                    <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}
+                                     </b>
+                                 </ng-template>
+                                 <ng-template ng-option-tmp let-item="item" let-index="index">
+                                    <div class="user-post-department-pic">
+                                       <img *ngIf="item.image_token" height="25" width="25"
+                                          [attr.src]="createImagePreview('user-profile-picture',item.image_token)" />
+                                       <img *ngIf="!item.image_token" height="25" width="25"
+                                          [attr.src]="getDefaultImage()" />
+                                    </div>
+                                    <div class="user-post-department-div">
+                                       <b>{{getStringsFormatted([item.first_name,item.last_name],35,' ') | titlecase}}</b>
+                                       <p class="user-post-department-multiple">{{getStringsFormatted([item.designation_title,' '+item.department],35,',')}}</p>
+                                    </div>
+                                 </ng-template>
+                              </ng-select>
+                              <p style="color: red;"
+                                 *ngIf="agendaFormErrors && agendaFormErrors.owner_id">
+                                 {{agendaFormErrors.owner_id}}</p>
+                           </div>
+                        </div>
+                     </div>
+                </div>
+            </div>
+
+            <div class="row">
+              <div class="col-sm-6">
+                <div class="form-group">
+                    <label for="name">{{'agenda_type' | translate}}</label>
+                    <div class="clearfix d-flex">
+                        <div class="multiple-plain-ngselect w-100">
+                            <ng-select [placeholder]="'choose_agenda_type' | translate" [multiple]="false"
+                                [items]="MeetingAgendaTypeMasterStore.allItems"
+                                formControlName="meeting_agenda_type_id" (open)="getAgendaType()"
+                                (search)="searchAgendaType($event)" bindLabel="title">
+
+                                <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                    {{item?.title?.length > 60 ? (item.title | slice:0:60)+' ...' :
+                                    item.title}}
+                                </ng-template>
+                                <ng-template ng-option-tmp let-item="item" let-index="index">
+                                    {{item?.title?.length > 80 ? (item.title | slice:0:80)+' ...' :
+                                    item.title}}
+                                </ng-template>
+                            </ng-select>
+                        </div>
+        
+                    </div>
+                </div>
+            </div>
+            </div>
+
+      
+          <div class="clearfix"></div>
+  
+          <div class="row">
+            <div class="col-sm-12">
+              <div class="d-block justify-content-left border-0 mt-3">
+                <button type="submit" class="btn btn-active" (click)="saveAgenda()"
+                  [disabled]="agendaForm.invalid || AppStore.loading">{{ AppStore.loading  ? 'Loading...' : 'save' | translate }}</button>
+                <button type="button" data-toggle="modal" data-target="#signal-lost" class="btn"
+                  (click)="saveAgenda(true)"
+                  [disabled]="agendaForm.invalid || AppStore.loading">{{ AppStore.loading  ? 'Loading...' : 'save_close' | translate }}</button>
+                <button type="button" data-toggle="modal" data-target="#error-message" class="btn"
+                  (click)="closeModal()">{{ AppStore.loading  ? 'Loading...' : 'cancel' | translate }}</button>
+  
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+   
+   </div>
+</div>

@@ -1,0 +1,86 @@
+<!-- common-tab-md starts -->
+<div class="common-tab-md clearfix tab-common-left-small mb-3 tab-same-height" *mobxAutorun>
+   <div class="tab-common-left-md">
+      <div class=" issues-tab">
+         <!-- tab menu start -->
+         <ul class="nav nav-tabs nav-tabs--vertical nav-tabs--left vertical-tab" role="navigation" *ngFor="let obj of TaskPhaseMasterStore.allItems">
+            <li class="nav-item"> <a (click)="setTaskPhase(obj.type,obj.id);setClass(obj.id)" href="#task-tab-one" [ngClass]="obj.id===EventTaskStore.taskPhaseId ? 'nav-link active' :'nav-link'"
+               data-toggle="tab" role="tab" aria-controls="ipsum" aria-selected="true">{{obj.task_phase_language_title}}</a>
+         </li>
+         </ul>
+      </div><!-- tab menu end -->
+   </div>
+
+   <div class="tab-common-left-content-m" *mobxAutorun>
+      <div class="tab-content widg-padding-cmn bg-white cmn-bdr min-height-83">
+         <div class="tab-pane fade active show" id="task-tab-one" role="tabpanel">
+            <div class="audit-program-box audit-page-table-main">
+               <div class="row">
+                  <div class="col-sm-12">
+                     <div class="full-width-table mb-3">
+                        <table *ngIf="EventTaskStore?.eventTaskList.length > 0 && EventTaskStore.loaded" class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                           <thead>
+                              <tr>
+                                 <th class="border-top-0 text-center" width="4%">#</th>
+                                 <th class="border-top-0 text-center" width="15%">{{'reference_code' | translate}}</th>
+                                 <th class="border-top-0" width="30%">{{'task' | translate}}</th>
+                                 <th class="border-top-0" width="20%">{{'responsible_users' | translate}}</th>
+                                 <th class="border-top-0 text-center" width="11%">{{'start_date' | translate}}</th>
+                                 <th class="border-top-0 text-center" width="11%">{{'end_date' | translate}}</th>
+                                 <th class="border-top-0 text-center" width="9%">{{'status' | translate}}</th>
+                              </tr>
+                           </thead>
+                           <tbody>
+                              <ng-container *ngFor="let event of EventTaskStore?.eventTaskList | paginate: {currentPage:EventTaskStore?.currentPage, itemsPerPage:EventTaskStore?.itemsPerPage,totalItems:EventTaskStore?.totalItems}; let num = index">
+                                 <tr (click)="gotoDetails(event.id)" class="pointer edit-option">
+                                    <td class="text-center">{{(EventTaskStore?.currentPage - 1) *EventTaskStore?.itemsPerPage +(num + 1)}}</td>
+                                    <td class="text-center">{{event.event_reference_code ? event.event_reference_code : AppStore.noContentText}}-{{event.id}}</td>
+                                    <td>{{event?.title}}</td>
+                                    <td>{{event?.responsible_users ? event?.responsible_users:AppStore.noContentText}}</td>
+                                    <td class="text-center">{{event?.start_date | date: OrganizationGeneralSettingsStore?.organizationSettings?.date_format}}</td>
+                                    <td class="text-center">{{event?.end_date | date: OrganizationGeneralSettingsStore?.organizationSettings?.date_format}}</td>
+                                    <td class="text-center">
+                                       <div [ngClass]="'dot-div '+ event?.event_task_status_label+'-dot'"> {{event?.event_task_status}}</div>
+                                       <div *ngIf="EventsStore?.eventDetails?.event_status?.type=='draft' || EventsStore?.eventDetails?.event_status?.type=='send-back'" class="edit-option-show-inner" style="margin: 30px 0 0 0; ">
+                                          <!-- edit-and-delete starts -->
+                                          <a  [attr.title]="'edit'|translate" (click)="edit($event,event.id)"><i class="fas fa-pen pointer"></i></a>
+                                          <a [attr.title]="'delete'|translate" (click)="delete($event,event.id)"><i class="fas fa-trash pointer"></i></a>
+                                       </div><!-- edit-and-delete end -->
+                                    </td>
+                                 </tr>
+                              </ng-container>
+                           </tbody>
+                        </table>
+                        <ng-container *mobxAutorun>
+                           <div *ngIf="!EventTaskStore.loaded">
+                              <app-table-loader></app-table-loader>
+                           </div>
+                           <app-no-data [border]='false' *ngIf="EventTaskStore?.eventTaskList.length == 0 && EventTaskStore.loaded == true"></app-no-data>
+                        </ng-container>
+                        <div *ngIf="EventTaskStore.totalItems>EventTaskStore.itemsPerPage && EventTaskStore.loaded == true" class="col-sm-12">
+                           <ul class="pagination justify-content-center mt-3">
+                               <div class="list">
+                                   <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+                                       (pageChange)="getDetails(1,$event)" class="my-pagination"></pagination-controls>
+                               </div>
+                           </ul>
+                       </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+         </div>
+      </div>
+   </div>
+</div>
+<!-- common-tab-md end -->
+<!-------------------------------Form Modal--------------------------------------->
+<div class="modal modal-style-1 popup-full-width fade" style="z-index:99999;overflow: auto;" data-keyboard="false"
+   data-backdrop="static" #taskFormModal>
+   <app-add-event-task *ngIf="taskObject.type" [source]="taskObject"></app-add-event-task>
+</div>
+<!------------------- Delete Confirmation Modal Start --------------------------->
+<div class="modal modal-style-1 fade" id="delete-popup" #deleteModal data-backdrop="static" data-keyboard="false">
+   <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>

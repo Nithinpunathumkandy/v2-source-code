@@ -1,0 +1,611 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navigationBar>
+   <app-breadcrumb-menu></app-breadcrumb-menu>
+   <app-sub-menu></app-sub-menu>
+</nav>
+<main class="mt-3 organization-page tab-btns-three">
+   <div class="container-fluid">
+      <div class="organization-form-page" *mobxAutorun>
+         <form id="regForm" [formGroup]="externalAuidtForm" class="organization-multi-stup-form multi-stup-form-common">
+            <!-- Circles which indicates the steps of the form: -->
+            <div id="header-sroll-form" class="form-indicates-sec clearfix" #formSteps>
+               <span class="step pointer" (click)="changeStep(0)"><span class="multi-form-nbr">1</span>{{'info' |
+                  translate}}</span>
+               <span class="step pointer" (click)="changeStep(1)"><span
+                     class="multi-form-nbr">2</span>{{'finding_and_report' | translate}}</span>
+               <span class="step pointer" (click)="changeStep(2)"><span class="multi-form-nbr">3</span>{{'preview_save'
+                  | translate}}</span>
+            </div>
+
+            <!-- One "tab" for each step in the form: -->
+            <div class="tab">
+
+               <div class="row">
+                  <div class="col-sm-6">
+                     <div class="form-group">
+                        <label>{{'external_audit_type' | translate}}<span class="form-error">*</span></label>
+                        <div class="clearfix d-flex">
+                           <div class="multiple-plain-ngselect w-100">
+                              <ng-select [items]="ExternalAuditTypesMasterStore.allItems" bindLabel="title"
+                                 [placeholder]="'select_external_audit_type'| translate" [multiple]="false"
+                                 formControlName="external_audit_type_id" (search)="searchExternalAuditTypes($event)"
+                                 (open)="getExternalAuditTypes()">
+                                 <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                    {{item.title.length > 80 ? item.title.substring(0,80)+' ...' : item.title}}
+                                 </ng-template>
+                                 <ng-template ng-option-tmp let-item="item" let-index="index">
+                                    {{item.title.length > 80 ? (item.title | slice:0:80)+' ...' : item.title}}
+                                 </ng-template>
+                              </ng-select>
+                           </div>
+                           <button class="btn multi-add-user ml-2" style="width: 42px;"
+                              (click)="addExternalAuditTypes()"
+                              *ngIf="AuthStore.getActivityPermission(1100,'CREATE_EXTERNAL_AUDIT_TYPE')"><i
+                                 class="fas fa-plus"></i></button>
+                        </div>
+                        <p style="color: red;"
+                           *ngIf="externalAuidtFormErrors && externalAuidtFormErrors.external_audit_type_id ">
+                           {{externalAuidtFormErrors.external_audit_type_id}}</p>
+                     </div>
+                  </div>
+
+                  <div class="col-sm-6"
+                     [ngStyle]="{display: !OrganizationGeneralSettingsStore.organizationSettings?.is_ms_type ? 'none':'block'}">
+                     <div class="form-group">
+                        <label>{{'external_ms_types' | translate}}</label>
+                        <div class="clearfix">
+                           <div class="multiple-plain-ngselect">
+                              <ng-select [placeholder]="'select_external_ms_types'| translate" multiple="true"
+                                 formControlName="ms_type_organization_ids" (search)="searchMsType($event)"
+                                 (open)="getMsType()">
+                                 <ng-option [value]="mstypes.id" *ngFor="let mstypes of MsTypeStore.msTypeDetails">
+                                    <!-- {{mstypes.ms_type_title.length > 80 ? mstypes.ms_type_title.substring(0,80)+' ...' : mstypes.ms_type_title }}<span>V {{mstypes.ms_type_version_title}}</span> -->
+                                    <label class="mb-0">{{mstypes.ms_type_title.length > 80 ?
+                                       mstypes.ms_type_title.substring(0,80)+' ...' : mstypes.ms_type_title }}
+                                       <span style="color: #7c7a7a;">V {{mstypes.ms_type_version_title}}</span></label>
+                                 </ng-option>
+
+                              </ng-select>
+                              <p style="color: red;"
+                                 *ngIf="externalAuidtFormErrors && externalAuidtFormErrors.ms_type_organization_ids ">
+                                 {{externalAuidtFormErrors.ms_type_organization_ids}}</p>
+                           </div>
+
+                        </div>
+                     </div>
+                  </div>
+
+
+                  <div class="col-sm-12">
+                     <div class="form-group">
+                        <label for="name">{{'external_audit_title' | translate}}<span
+                              class="form-error">*</span></label>
+                        <input type="text" class="form-control" formControlName="title"
+                           [placeholder]="'external_audit_title_placeholder'| translate">
+                        <p class="form-error" *ngIf="externalAuidtFormErrors && externalAuidtFormErrors.title">
+                           {{externalAuidtFormErrors.title}}</p>
+                     </div>
+                  </div>
+
+                  <div class="col-sm-12">
+                     <div class="form-group">
+                        <span style="float: right;">
+                           <p class="text-grey mb-0">{{externalAuidtForm?.value.description != null ?
+                              externalAuidtForm?.value.description?.length : 0}}
+                              Characters </p>
+                        </span>
+                        <label for="name">{{'external_audit_description' | translate}}</label>
+                        <textarea class="form-control " formControlName="description" rows="3" id="comment"
+                           [placeholder]="'external_audit_description_placeholder'| translate"></textarea>
+                     </div>
+                  </div>
+
+
+
+               </div>
+
+
+               <div class="row">
+
+
+                  <div class="col-sm-6">
+                     <div class="form-group">
+                        <label for="name">{{'start_date' | translate}} <span class="form-error">*</span></label>
+                        <div class="input-group">
+                           <input formControlName="start_date" class="form-control" placeholder="yyyy-mm-dd"
+                              id="start_date" ngbDatepicker #startDateInput="ngbDatepicker">
+
+                           <div class="input-group-append">
+                              <button class="btn btn-outline-secondary calendar" (click)="startDateInput.toggle()"
+                                 type="button"><i class="fas fa-calendar-alt"></i></button>
+                           </div>
+
+
+
+
+                        </div>
+                        <p style="color: red;" *ngIf="externalAuidtFormErrors && externalAuidtFormErrors.start_date">
+                           {{externalAuidtFormErrors.start_date}}</p>
+                     </div>
+                  </div>
+                  <div class="col-sm-6">
+                     <div class="form-group">
+                        <label for="name">{{'end_date' | translate}} <span class="form-error">*</span></label>
+                        <div class="input-group">
+                           <input formControlName="end_date" class="form-control" placeholder="yyyy-mm-dd" id="end_date"
+                              ngbDatepicker #endDateInput="ngbDatepicker">
+
+
+                           <div class="input-group-append">
+                              <button class="btn btn-outline-secondary calendar" (click)="endDateInput.toggle()"
+                                 type="button"><i class="fas fa-calendar-alt"></i></button>
+                           </div>
+
+
+
+
+                        </div>
+                        <p style="color: red;" *ngIf="externalAuidtFormErrors && externalAuidtFormErrors.end_date ">
+                           {{externalAuidtFormErrors.end_date}}</p>
+                     </div>
+                  </div>
+
+
+                  <div class="col-sm-6">
+                     <div class="form-group">
+                        <label for="name">{{'auditor' | translate}} <span class="form-error">*</span></label>
+                        <input type="text" class="form-control" formControlName="auditor_name"
+                           [placeholder]="'ea_add_auditor'| translate">
+                        <p class="form-error" *ngIf="externalAuidtFormErrors && externalAuidtFormErrors.auditor_name">
+                           {{externalAuidtFormErrors.auditor_name}}
+                        </p>
+                     </div>
+                  </div>
+
+
+                  <div class="col-sm-6">
+                     <div class="form-group">
+                        <label>{{'ea_add_responsible_users' | translate}} <span class="form-error">*</span></label>
+                        <div class="clearfix">
+                           <div class="multiple-plain-ngselect">
+                              <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                                 [placeholder]="'select_external_audit_responsible_users'| translate" multiple="true"
+                                 formControlName="responsible_user_ids" (search)="searchUsers($event)"
+                                 (open)="getResponsibleUsers()" [searchFn]="customSearchFn">
+                                 <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                    <img *ngIf="item.image_token" height="15" width="15"
+                                       [attr.src]="createImagePreview('user-profile-picture',item.image_token)" 
+                                       onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                    <img *ngIf="!item.image_token" height="15" width="15"
+                                       [attr.src]="getDefaultImage()" 
+                                       onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                    <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,'
+                                       ') | titlecase}}</b><span aria-hidden="true" (click)="clear(item)"
+                                       style="border:none;" class="ng-value-icon left">×</span>
+                                 </ng-template>
+                                 <ng-template ng-option-tmp let-item="item" let-index="index">
+                                    <div class="user-post-department-pic">
+                                       <img *ngIf="item.image_token" height="25" width="25"
+                                          [attr.src]="createImagePreview('user-profile-picture',item.image_token)" 
+                                          onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                       <img *ngIf="!item.image_token" height="25" width="25"
+                                          [attr.src]="getDefaultImage()" 
+                                          onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                    </div>
+                                    <div class="user-post-department-div">
+                                       <b>{{getStringsFormatted([item.first_name,item.last_name],50,' ') |
+                                          titlecase}}</b>
+                                       <p class="user-post-department-multiple">
+                                          {{getStringsFormatted([item.designation_title,' '+item.department],50,',')}}
+                                       </p>
+                                    </div>
+                                 </ng-template>
+                              </ng-select>
+                              <p style="color: red;"
+                                 *ngIf="externalAuidtFormErrors && externalAuidtFormErrors.responsible_user_ids">
+                                 {{externalAuidtFormErrors.responsible_user_ids}}</p>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+
+
+
+
+
+               </div>
+
+
+
+
+            </div>
+
+            <!-- tab end -->
+            <div class="tab">
+
+
+               <div class="form-group">
+                  <label for="name" class="label-style">{{'upload_report' | translate}}</label>
+                  <!-- <div class="scroll-documents" #uploadArea>
+                     <div class="row m-0 upload-section" style="padding-top: 0">
+                        <div class="col-sm-3 costmz-logo-new mt-2">
+                           <div class="question-circle-inp" style="margin-right: 7px;">
+                              <i class="far fa-question-circle"></i>
+                              <div class="message-password-inp bottom-show">
+                                 <p class="mb-0">{{'allowed_file_types' | translate}}
+                                    {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                                 </p>
+                              </div>
+                           </div>
+                           <div class="form-group form-group-upload">
+                              <div class="darag-dropifile-upload">
+                                 <div class="d-flex justify-content-center align-items-center text-center">
+                                    <div>
+                                       <img src="assets/images/drag-pic.png" class="drag-pic-files">
+                                       <div class="drag-file-name"> Drag &amp; Drop Your File Here </div>
+                                       <div class="upload-btn-wrapper">
+                                          <input type="file" multiple name="myfile"
+                                             (change)="onFileChange($event,'support-file')"
+                                             [accept]="checkAcceptFileTypes('support-file')" />
+                                          <button class="btn">Browse Files</button>
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                        <div
+                           [ngClass]="files.success? 'col-sm-3 up-pic-cf mt-2 hide_loader' : 'col-sm-3 up-pic-cf mt-2'"
+                           *ngFor="let files of fileUploadsArray">
+                           <div class="upload-pics edit-option file-upload-loader">
+                              <circle-progress class="browse-form-pic" [percent]=files.uploadProgress
+                                 [title]=files.uploadProgress>
+                              </circle-progress>
+                           </div>
+                        </div>
+
+                        <div
+                           [ngClass]="b?.is_deleted ? 'col-sm-3 up-pic-cf mt-2 image_deleted':'col-sm-3 up-pic-cf mt-2'"
+                           *ngFor="let b of ExternalAuditMasterStore.docDetails">
+                           <div class="upload-pics edit-option">
+                              <div class="browse-form-pic"
+                                 [ngStyle]="{'background': 'url(' + b?.preview + ') no-repeat 0 0 / cover'}">
+                              </div>
+                              <div class="browse-form-name clearfix">
+                                 <div class="float-left">
+                                    <h6 [attr.title]="b?.name">
+                                       {{b?.name.length > 20 ? b?.name.substring(0,20)+' ...' : b?.name}}</h6>
+                                    <span>{{b?.size/1048576 | number:'0.2-2'}}MB</span>
+                                 </div>
+                                 <div class="browse-logo">
+                                    <img *ngIf="checkExtension(b?.ext,'excel') != -1" src="/assets/images/md-xl.png">
+                                    <img *ngIf="checkExtension(b?.ext,'image') != -1" src="/assets/images/md-jpg.png">
+                                    <img *ngIf="checkExtension(b?.ext,'doc') != -1" src="/assets/images/md-doc.png">
+                                    <img *ngIf="checkExtension(b?.ext,'pdf') != -1" src="/assets/images/md-pdf.png">
+                                    <img *ngIf="checkExtension(b?.ext,'video') != -1" src="/assets/images/md-video.png">
+                                    <img *ngIf="checkExtension(b?.ext,'audio') != -1" src="/assets/images/md-audio.png">
+                                    <img *ngIf="checkExtension(b?.ext,'ppt') != -1" src="/assets/images/md-ppt.png">
+                                 </div>
+                              </div>
+                              <div class="edit-option-show">
+                                 <a (click)="removeDocument(b?.token)"><i class="fas fa-trash"></i></a>
+                              </div>
+                           </div>
+                        </div>
+
+
+                     </div>
+                  </div> -->
+                  <!-- Common File Upload Starts Here -->
+                  <div class="scroll-documents" #uploadArea>
+                     <div class="thumb-pics-bg thumb-pics-col-4 clearfix thumb-pics-fix-text" style="padding-top: 0;">
+                        <div class="thumb-pics">
+                           <div class="question-circle-inp" style="margin-right: 7px;">
+                              <i class="far fa-question-circle"></i>
+                              <div class="message-password-inp">
+                                 <p class="mb-0">{{'allowed_file_types' | translate}}
+                                    {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                                 </p>
+                              </div>
+                           </div>
+                           <div class="form-group form-group-upload">
+                              <div class="darag-dropifile-upload">
+                                 <div class="d-flex justify-content-center align-items-center text-center">
+                                    <div>
+                                       <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                                       <div class="drag-file-name"> Select or Upload Your File Here </div>
+                                       <div class="upload-btn-wrapper">
+                                          <button (click)="openFileUploadModal()" type="button"
+                                             class="btn">{{'browse_files' | translate}}</button>
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+
+                        <div class="thumb-pics" *ngFor="let docs of fileUploadPopupStore.displayFiles ;let i = index">
+                           <div class="upload-pics edit-option" data-toggle="modal">
+                              <div *ngIf="docs.id && !docs.preview" class="browse-form-pic"
+                                 [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                              </div>
+                              <div *ngIf="docs.preview" class="browse-form-pic"
+                                 [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">
+                              </div>
+                              <div class="browse-form-name clearfix">
+                                 <div class="float-left">
+                                    <h6>
+                                       {{docs.fileName?docs.fileName:docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                    </h6>
+                                    <span *ngIf="docs.is_kh_document" class="mr-2 cmn-clr"><i
+                                          class="fas fa-book"></i></span>
+                                    <span *ngIf="!docs.is_kh_document" class="mr-2 cmn-clr"><i
+                                          class="fas fa-laptop"></i></span>
+                                    <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                                 </div>
+                                 <div class="browse-logo">
+                                    <img *ngIf="checkExtension(docs.ext,'image') != -1" class="folder-picher"
+                                       src="/assets/images/jpg-icone.png">
+                                    <img *ngIf="checkExtension(docs.ext,'doc') != -1" class="folder-picher"
+                                       src="/assets/images/word-icone.png">
+                                    <img *ngIf="checkExtension(docs.ext,'pdf') != -1" class="folder-picher"
+                                       src="/assets/images/pdf-icone.png">
+                                    <img *ngIf="checkExtension(docs.ext,'excel') != -1" class="folder-picher"
+                                       src="/assets/images/excel-icone.png">
+                                    <img *ngIf="checkExtension(docs.ext,'video') != -1" class="folder-picher"
+                                       src="/assets/images/md-video.png">
+                                    <img *ngIf="checkExtension(docs.ext,'audio') != -1" class="folder-picher"
+                                       src="/assets/images/md-audio.png">
+                                    <img *ngIf="checkExtension(docs.ext,'ppt') != -1" class="folder-picher"
+                                       src="/assets/images/md-ppt.png">
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+
+
+                     </div>
+                  </div>
+                  <!-- Common File Upload Ends Here -->
+
+               </div>
+            </div>
+
+            <!-- tab end -->
+            <div class="tab">
+               <div class="row">
+                  <div class="col-lg-8 col-sm-12">
+
+
+                     <div class="issue-top-sec">
+                        <div class="clearfix">
+                           <h5 class="d-inline-block cmn-head-style label-tag-style"><span
+                                 class="issue-smoal-head-text">#{{externalAuidtForm.value.reference_code ?
+                                 externalAuidtForm.value.reference_code:'###'}}</span>
+                              {{externalAuidtForm.value.title?externalAuidtForm.value.title:AppStore.noContentText}}
+
+                           </h5>
+                           <!-- <label
+                              class="indication-label indication-label-blue">{{externalAuidtForm.value.external_audit_type_id?externalAuidtForm.value.external_audit_type_id.title:AppStore.noContentText}}</label> -->
+
+                        </div>
+
+
+                        <div class="clearfix">
+                           <p *ngIf="externalAuidtForm.value.start_date!=null && externalAuidtForm.value.end_date!=null"
+                              class="label-tag-style"><i class="fas fa-calendar-alt date-pics-two"></i>
+                              {{startDate | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                              To
+                              {{endDate | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</p>
+
+
+                           <p *ngIf="externalAuidtForm.value.start_date==null && externalAuidtForm.value.end_date==null"
+                              class="label-tag-style"><i class="fas fa-calendar-alt date-pics-two"></i>
+                              {{AppStore.noContentText}}
+
+                           </p>
+
+
+                        </div>
+
+                        <div class="issuue-new-style p-0" *ngIf="ExternalAuditMasterStore._msType.length>0">
+                           <label *ngFor="let item of ExternalAuditMasterStore._msType"
+                              class="outline-tag">{{item.title}} <span style="color: #b2b2b2;">V
+                                 {{item.version}}</span></label>
+
+                           <p *ngIf="ExternalAuditMasterStore._msType.length==0">{{AppStore.noContentText}}</p>
+                        </div>
+                        <div class="clearfix">
+
+                           <p style="white-space: pre-wrap;">
+                              {{externalAuidtForm.value.description?externalAuidtForm.value.description:AppStore.noContentText
+                              }}</p>
+                        </div>
+
+
+                        <div class="row">
+
+
+
+                           <!-- <div class="col-md-6">
+                              <h6>{{'responsible_user' | translate}}</h6>
+                              <p *ngIf="externalAuidtForm.value?.responsible_user_ids?.length == 0">
+                                 {{AppStore.noContentText}}</p>
+                              <ul class="arci-user-tab-dtl workflow-lst-pics-loop clearfix"
+                                 *ngIf="externalAuidtForm.value?.responsible_user_ids?.length > 0">
+                                 <li class="rounde-hov-bg"
+                                    *ngFor="let ruser of externalAuidtForm.value?.responsible_user_ids; let i = index">
+                                    <app-user-popup-box [source]="assignUserValues(ruser)" [showName]="false"
+                                       [activateButtons]="false"></app-user-popup-box>
+                                 </li>
+                              </ul>
+                           </div> -->
+                           <div class="col-md-6">
+                              <h6>{{'external_audit_type' | translate}}</h6>
+
+                              <p>{{externalAuidtForm.value.external_audit_type_id?externalAuidtForm.value.external_audit_type_id.title:AppStore.noContentText}}
+                              </p>
+                           </div>
+                           <div class="col-md-6">
+                              <h6>{{'auditor' | translate}}</h6>
+
+                              <p>{{externalAuidtForm.value.auditor_name?externalAuidtForm.value.auditor_name:AppStore.noContentText}}
+                              </p>
+                           </div>
+
+                        </div>
+
+                     </div>
+                     <h6 class="text-left">{{'attachments' | translate}}</h6>
+                     <p *ngIf="fileUploadPopupStore.displayFiles.length==0">{{AppStore.noContentText}}</p>
+                     <div class="scroll-documents" #previewUploadArea>
+                        <div class="thumb-pics-bg thumb-pics-col-3 clearfix thumb-pics-fix-text"
+                           *ngIf="fileUploadPopupStore.displayFiles.length > 0">
+                           <div class="thumb-pics"
+                              *ngFor="let docs of fileUploadPopupStore.displayFiles ;let i = index">
+                              <div class="upload-pics edit-option" data-toggle="modal">
+                                 <div *ngIf="docs.id && !docs.preview" class="browse-form-pic"
+                                    [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                                 </div>
+                                 <div *ngIf="docs.preview" class="browse-form-pic"
+                                    [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">
+                                 </div>
+                                 <div class="browse-form-name clearfix">
+                                    <div class="float-left">
+                                       <h6>
+                                          {{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                       </h6>
+                                       <span *ngIf="docs.is_kh_document" class="mr-2 cmn-clr"><i
+                                             class="fas fa-book"></i></span>
+                                       <span *ngIf="!docs.is_kh_document" class="mr-2 cmn-clr"><i
+                                             class="fas fa-laptop"></i></span>
+                                       <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                                    </div>
+                                    <div class="browse-logo">
+                                       <img *ngIf="checkExtension(docs.ext,'image') != -1" class="folder-picher"
+                                          src="/assets/images/jpg-icone.png">
+                                       <img *ngIf="checkExtension(docs.ext,'doc') != -1" class="folder-picher"
+                                          src="/assets/images/word-icone.png">
+                                       <img *ngIf="checkExtension(docs.ext,'pdf') != -1" class="folder-picher"
+                                          src="/assets/images/pdf-icone.png">
+                                       <img *ngIf="checkExtension(docs.ext,'excel') != -1" class="folder-picher"
+                                          src="/assets/images/excel-icone.png">
+                                       <img *ngIf="checkExtension(docs.ext,'video') != -1" class="folder-picher"
+                                          src="/assets/images/md-video.png">
+                                       <img *ngIf="checkExtension(docs.ext,'audio') != -1" class="folder-picher"
+                                          src="/assets/images/md-audio.png">
+                                       <img *ngIf="checkExtension(docs.ext,'ppt') != -1" class="folder-picher"
+                                          src="/assets/images/md-ppt.png">
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+
+
+
+                  </div>
+                  <div class="col-lg-4 col-sm-12">
+                     <div class="risk-rating-box bg-white p-3 text-left">
+                        <h6>{{'responsible_user' | translate}}</h6>
+                        <hr class="mt-0 mb-3">
+                        <p *ngIf="externalAuidtForm.value?.responsible_user_ids?.length == 0">
+                           {{AppStore.noContentText}}</p>
+                        <div class="rounde-hov-bg" *ngIf="externalAuidtForm.value?.responsible_user_ids?.length == 1">
+                           <app-user-popup-box [showDepartment]="true"
+                              [source]="assignUserValues(externalAuidtForm.value?.responsible_user_ids[0])">
+                           </app-user-popup-box>
+                        </div> 
+                        <ul class="arci-user-tab-dtl workflow-lst-pics-loop clearfix"
+                           *ngIf="externalAuidtForm.value?.responsible_user_ids?.length > 1">
+                           <li class="rounde-hov-bg"
+                              *ngFor="let ruser of externalAuidtForm.value?.responsible_user_ids; let i = index">
+                              <app-user-popup-box [source]="assignUserValues(ruser)" [showName]="false">
+                              </app-user-popup-box>
+                           </li>
+                        </ul>
+
+                     </div>
+
+                     <!-- <div class="row">
+                        <div class="col-md-3">
+                           <h6>{{'documents' | translate}}</h6>
+
+                           <div *ngIf="ExternalAuditMasterStore.docDetails.length == 0">
+                              <p>{{AppStore.noContentText}}</p>
+                           </div>
+                        </div>
+                     </div> -->
+
+                     <!-- <div class="risk-rating-box bg-white mt-3 p-3 text-left"> -->
+
+                     <!-- <div class="thumb-pics-bg thumb-pics-col-2 clearfix"
+                        *ngIf="ExternalAuditMasterStore.docDetails.length > 0">
+                        <div *ngIf="ExternalAuditMasterStore.docDetails.length == 0">
+                           <p>{{AppStore.noContentText}}</p>
+                        </div>
+                        <div class="thumb-pics" *ngFor="let b of ExternalAuditMasterStore.docDetails">
+                           <div class="upload-pics upload-pics-small edit-option"> -->
+                     <!-- <div class="row m-0 upload-section" style="padding-top: 0" >
+                        <div class="col-sm-4 up-pic-cf mt-2" >
+                           <div class="upload-pics edit-option"> -->
+                     <!-- <div class="browse-form-pic"
+                                 [ngStyle]="{'background': 'url(' + b?.preview + ') no-repeat 0 0 / cover'}">
+                              </div>
+                              <div class="browse-form-name clearfix">
+                                 <div class="float-left">
+                                    <h6 [attr.title]="b?.name">
+                                       {{b?.name.length > 20 ? b.name?.substring(0,20)+' ...' : b?.name}}</h6>
+                                    <span>{{b?.size/1048576 | number:'0.2-2'}}MB</span>
+                                 </div>
+                                 <div class="browse-logo">
+                                    <img *ngIf="checkExtension(b?.ext,'excel') != -1" src="/assets/images/md-xl.png">
+                                    <img *ngIf="checkExtension(b?.ext,'image') != -1" src="/assets/images/md-jpg.png">
+                                    <img *ngIf="checkExtension(b?.ext,'doc') != -1" src="/assets/images/md-doc.png">
+                                    <img *ngIf="checkExtension(b?.ext,'pdf') != -1" src="/assets/images/md-pdf.png">
+                                    <img *ngIf="checkExtension(b?.ext,'video') != -1" src="/assets/images/md-video.png">
+                                    <img *ngIf="checkExtension(b?.ext,'audio') != -1" src="/assets/images/md-audio.png">
+                                    <img *ngIf="checkExtension(b?.ext,'ppt') != -1" src="/assets/images/md-ppt.png">
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                     </div> -->
+                     <!-- </div> -->
+                  </div>
+               </div>
+            </div>
+            <!-- tab end -->
+            <div style="overflow:auto;">
+               <div class="form-next-page-btns" style="float:left;">
+                  <button class="btn btn-active" type="button" id="nextBtn" (click)="nextPrev(1);formatDate()"
+                     [disabled]="AppStore.loading || !checkFormObject()">{{nextButtonText}}</button>
+                  <button class="btn" type="button" id="prevBtn" (click)="nextPrev(-1);formatDate()"
+                     [disabled]="AppStore.loading">{{previousButtonText}}</button>
+                  <button class="btn" type="button" (click)="confirmCancel()">Cancel</button>
+               </div>
+            </div>
+         </form>
+      </div>
+
+   </div>
+</main>
+
+<!-- Add External Audit Types Pop Begin -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static"
+   #externalAuditTypesFormModal>
+   <button type="button" class="close" (click)="cancel()"><i class="lni-close"></i><span>esc</span></button>
+   <app-external-audit-types-modal *ngIf="externalAuditTypesObject" [source]="externalAuditTypesObject">
+   </app-external-audit-types-modal>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+<div class="modal modal-style-1 fade" id="delete-popup" #cancelPopup data-backdrop="static" data-keyboard="false">
+   <app-delete-popup [source]="confirmationObject"></app-delete-popup>
+</div>
+<!-- * Documetn Attach/Upload Common Component Starts Here -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #fileUploadModal>
+   <app-file-upload-popup *ngIf="fileUploadPopupStore.openPopup"></app-file-upload-popup>
+</div>
+<!-- * Documetn Attach/Upload Common Component Ends Here -->

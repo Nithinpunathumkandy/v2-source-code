@@ -1,0 +1,266 @@
+<div class="col-sm-12">
+    <div class="tab-content">
+        <div class="tab-pane tab-edit-class smoal-left-tab-page active" id="project-tab-two">
+            <div *mobxAutorun>
+                <!-- <div class="edit-option-show" style="margin: 40px 0 0 0;">
+                    <a data-toggle="modal" data-target="#add-investigators-popup"><i class="fas fa-plus"></i></a>
+                </div> -->
+                <app-event-team-loader *ngIf="!EventTeamsStore?.assistantManagersLoaded && !EventTeamsStore?.membersLoaded"></app-event-team-loader>
+                
+                <div class="row pm-task-main" *ngIf="EventTeamsStore?.assistantManagersLoaded && EventTeamsStore?.membersLoaded">
+                    <div class="col-sm-12">
+                        <div class="row">
+                            <div class="col-lg-8 col-sm-8 padding-right-0">
+                              <div class="bg-white widg-padding-cmn min-height-590 ">
+                                <div *ngIf="EventsStore.eventDetails?.owner">          
+                                  <h6>{{'event_owner' | translate}}</h6>
+                                <div class="border teamss">
+                                  <div class="d-flex flex-row user-list-sm">
+                                    <app-user-popup-box [source]="getPopupDetails(EventsStore.eventDetails?.owner)" [showName] = "true" [activateButtons] = "true"></app-user-popup-box>
+                
+                                  </div>
+                                </div>
+                                <h6 *ngIf="EventsStore.eventDetails?.owner" >{{'deputy_owners' | translate}}</h6>
+                                <div class="mb-3" *ngIf="EventTeamsStore?.assisstantManagers?.event_assistant_managers?.length == 0">
+                                  <app-context-no-data [sourceData] = "getNoDataSource('left','no_deputy_owners_added')"></app-context-no-data>
+                                </div>
+                                
+                                
+                                <div class="border teamss" *ngFor=" let items of EventTeamsStore?.assisstantManagers?.event_assistant_managers" >
+                                  <div class="d-flex flex-row user-list-sm">
+                                    <app-user-popup-box [source]="getPopupDetails(items)" [showName] = "true" [activateButtons] = "true"></app-user-popup-box>
+                
+                                  </div>
+                                </div>
+                                <h6 *ngIf="EventsStore.eventDetails?.owner"> {{'event_members' | translate}}</h6>
+
+                                <div class="row" *ngIf="EventTeamsStore?.members?.event_members?.length > 0">
+                                  <div class="col-sm-12">
+                                    <div class="full-width-table">
+                                       <table  class="table table-bordered ordinary-table audit-page-table mb-4 table-scroll">
+                                          <thead>
+                                            <tr>
+                                              <th class="border-top-0" width="4%">#</th>
+                                              <th class="border-top-0" width="30%">{{'name' | translate}}</th>
+                                              <th class="border-top-0" width="33%">{{'roles' | translate}}</th>
+                                              <th class="border-top-0" width="33%">{{'responsibilities' | translate}}</th>
+                                            </tr>
+                                          </thead>
+                                          <tbody>
+                                            <tr class="edit-and-delete-main" *ngFor="let items of EventTeamsStore?.members.event_members let num=index" > 
+                                                <td class="pointer"> {{num + 1}}</td>
+                                                <td>
+                                                    <div *ngIf="items?.first_name" class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                                                        <img *ngIf="items.image_token" data-toggle="modal" data-target="#user02" data-ui-class="a-zoom"
+                                                        [attr.src]="createImagePreview('user-profile-picture',items.image_token)"
+                                                        width="30px" height="30px" class="rounded-circle rounde-hov details-show-popup"
+                                                        onerror="this.src='/assets/images/user-demo2.png'">
+                                                        <img *ngIf="!items.image_token" [attr.src]="getDefaultImage('user-logo')" width="30px" height="30px" class="rounded-circle" onerror="this.src='/assets/images/user-demo2.png'">                                                    <!-- user-dtl-popup start -->
+                                                        <!-- user-dtl-popup end -->
+                                                        <div class="pointer" >
+                                                        <h6 class="elips-1">{{items?.first_name}} {{items?.last_name}}</h6>
+                                                        <span>{{items.designation?.title ? items.designation?.title : AppStore.noContentText}}</span>
+                                                      </div>
+                                                    </div>
+                                                </td>
+                                                <td>{{items.pivot?.roles? items.pivot?.roles : AppStore.noContentText}}</td>
+                                                <td>{{items.pivot?.responsibilities? items.pivot?.responsibilities : AppStore.noContentText}}
+                                                <div *ngIf="EventsStore?.eventDetails?.event_status?.type=='draft' || EventsStore?.eventDetails?.event_status?.type=='send-back'" class="edit-option-show">
+                                                    <a (click)="editEventMember(items)"><i class="fas fa-pen"></i></a>
+                                                    <a (click)="deleteEventMemebers(items.pivot.id)"><i class="fas fa-trash"></i></a>
+                                                </div></td>
+                                            </tr> 
+                                          </tbody>
+                                        </table>
+                                    </div>
+                              </div>
+                                </div>
+
+
+                                <div class="mb-3" *ngIf="EventTeamsStore?.members?.event_members?.length == 0">
+                                  <app-context-no-data  [sourceData] = "getNoDataSource('left','no_members_added')"></app-context-no-data>
+                                </div>
+                                
+                                <!-- <div class="border teamss"*ngFor="let items of EventTeamsStore?.members.event_members">
+                                  <div class="d-flex flex-row user-list-sm">
+                                    <app-user-popup-box [source]="getPopupDetails(items)" [showName] = "true" [activateButtons] = "true"></app-user-popup-box>
+                
+                                  </div>
+                                </div> -->
+
+                                <div class="header-back-line mb-2 mt-2">
+                                  <h6>{{'secondary_owners' | translate}} </h6>
+                                      <button *ngIf="AuthStore.getActivityPermission(3200,'CREATE_EVENT_SECONDARY_OWNER') && EventTeamsStore?._eventSecondaryOwners.length==0 && (EventsStore?.eventDetails?.event_status?.type=='draft' || EventsStore?.eventDetails?.event_status?.type=='send-back')"
+                                            data-toggle="modal" title="{{'add' | translate}}" class="btn-plus ng-star-inserted" (click)="openSecondaryOwnerModal()"><i class="fas fa-plus"></i>
+                                      </button>
+                                      <button *ngIf="AuthStore.getActivityPermission(3200,'UPDATE_EVENT_SECONDARY_OWNER') && EventTeamsStore?._eventSecondaryOwners.length >0 && (EventsStore?.eventDetails?.event_status?.type=='draft' || EventsStore?.eventDetails?.event_status?.type=='send-back')"
+                                            data-toggle="modal" title=" {{'edit' | translate}}" class="btn-plus ng-star-inserted" (click)="editSecondaryOwner()"><i class="fas fa-pen"></i>
+                                      </button>
+                                  </div>
+
+                                  <div class="row">
+                                    <!-- <div class="col-lg-6 col-sm-12" *ngIf="EventTeamsStore?._eventSecondaryOwners?.length == 0 && EventTeamsStore?.secondaryOwnersLoaded">
+                                   
+                                    </div> -->
+                                    <div class="col-sm-12">
+                                      <ng-container  *mobxAutorun>
+                                        <div class="mb-3" *ngIf="EventTeamsStore?._eventSecondaryOwners?.length == 0 && EventTeamsStore?.secondaryOwnersLoaded">
+                                          <app-context-no-data  [sourceData] = "getNoDataSource('center','no_secondary_owners_added')"></app-context-no-data>
+                                        
+                                        </div>
+        
+                                     </ng-container>
+                                    </div>
+                                    <div class="col-lg-12 col-sm-12">
+                                      <!-- <div class="edit-option-show" style="margin:12px 0 0 0;" *ngIf="AuthStore.getActivityPermission(3200,'UPDATE_EVENT_SECONDARY_OWNER') && EventTeamsStore?._eventSecondaryOwners.length && (EventsStore?.eventDetails?.event_status?.type=='draft' || EventsStore?.eventDetails?.event_status?.type=='send-back')">
+                                        <a (click)="editSecondaryOwner()"
+                                        [attr.title]="'edit' | translate"><i class="fas fa-pen"></i></a>
+                                      </div> -->
+                                      
+                                      <div class="border teamss mb-2"*ngFor="let items of EventTeamsStore?._eventSecondaryOwners.slice(0,4); let i=index">
+                                        
+                                      <div class="d-flex flex-row user-list-sm">
+                                        <app-user-popup-box [source]="getPopupDetails(items)" [showName] = "true" [activateButtons] = "true"></app-user-popup-box>
+                                      </div>
+                                    </div>
+                                    <a  *ngIf="EventTeamsStore?._eventSecondaryOwners.length>4" (click)="openFullSecondaryOwner()" class="view-more-pestel-box text-center">View More</a>
+                                    </div>
+                                  </div>
+                                  <div class="header-back-line mb-2 mt-2">
+                                    <h6>{{'secondary_departments' | translate}} </h6>
+                                    </div>
+                                  <div class="row">
+                                      <div class="col-lg-12 col-sm-12">
+                                          <p *ngIf="EventTeamsStore?._eventSecondaryDepartentsDetails.length==0">
+                                            {{AppStore.noContentText}}
+                                          </p>
+                                          <p *ngIf="EventTeamsStore?._eventSecondaryDepartentsDetails.length>0" class="d-inline-block mr-2">
+                                            {{getArrayFormatedString('title',EventTeamsStore?._eventSecondaryDepartentsDetails)}}
+                                          </p>
+                                      </div>
+                                      
+                                  </div>
+                                 
+                            </div>
+                             
+                          </div>
+                     
+                   </div>
+
+                            <div class="col-lg-4 col-sm-12">
+                              
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                            <div class="bg-white  mb-3 widg-padding-cmn-small" [ngClass]=" ExternalUsersStore?.allItems?.length == 0 ? 'external-user-no-data-height' : ''"  style="min-height: 519px;">
+                                                <h6 class="clearfix"> {{'event_external_members' | translate}}
+                                                  <button *ngIf="EventsStore?.eventDetails?.event_status?.type=='draft' || EventsStore?.eventDetails?.event_status?.type=='send-back'"
+                                                  class="btn btn-small ml-2 float-right" (click)="openExternalUsersModal()" data-toggle="modal" data-target="#add-external">{{'add' | translate}}
+                                                  </button>
+                                                  </h6>
+
+                                                <hr class="mt-0 mb-3">
+                                                <div class="row">
+                                                  <div class="col-lg-12 edit-and-delete-main" *ngFor="let item of ExternalUsersStore?.allItems">
+                                                    <div class="extr-users border mb-2">
+                                                      <div *ngIf="EventsStore?.eventDetails?.event_status?.type=='draft' || EventsStore?.eventDetails?.event_status?.type=='send-back'" class="edit-option-show" style="margin: 33px 0px 0px 0px">
+                                                        <a (click)="editExternalUsers(item.id, item)" [attr.title]="'edit' | translate" ><i class="fas fa-pen"></i></a>
+                                                        <a (click)="deleteExternalUsers(item.id)" [attr.title]="'delete' | translate" ><i class="fas fa-trash"></i></a>
+                                                      </div>
+                                                      <h6>{{ item?.name }}</h6>
+                                                        <span><i class="fas fa-phone-alt"></i>{{ item?.phone_number }}</span>
+                                                        <span><i class="fas fa-envelope"></i> {{ item?.email }}</span>
+                                                      <hr />
+                                                      <div class="row">
+                                                        <div class="col-sm-6">
+                                                          <div class="d-flex flex-wrap justify-content-between">
+                                                            <div>
+                                                              <label>Company Name</label>
+                                                              <p>{{ item?.company }}</p>
+                                                            </div>
+                                                          </div>
+                                                        </div>
+                                                        <div class="col-sm-6">
+                                                          <div class="d-flex flex-wrap justify-content-between">
+                                                            <div>
+                                                              <label>Designation</label>
+                                                              <p>{{ item?.designation ? item?.designation : AppStore.noContentText }}</p>
+                                                            </div>
+                                                          </div>
+                                                        </div>
+                                                        <div class="col-sm-12">
+                                                          <div class="d-flex flex-wrap justify-content-between">
+                                                            <div>
+                                                              <label>Remarks</label>
+                                                              <p style="white-space: pre-wrap;">{{ item?.remarks ? item?.remarks : AppStore.noContentText }}</p>
+                                                            </div>
+                                                          </div>
+                                                        </div>
+                                                      </div>
+                                                     
+                                                    </div>
+                                                  </div>
+                                                  <div class="col-md-12">
+                                                    <ng-container  *mobxAutorun>
+                                                      <div *ngIf="ExternalUsersStore?.allItems?.length == 0">
+                                                        <app-report-no-data  [source]="noDataSource"  [border]="false" [height]="true" style="height:300px;"></app-report-no-data>
+                                                      </div>
+                                                   </ng-container>
+                                                  </div>
+                                                </div>
+                                            
+                                            </div>
+                  
+                  
+                  
+                                    </div>
+                                </div>
+                            </div>
+                
+                            
+                            
+                                  
+                          </div>
+                        
+                    </div>
+                </div>
+
+
+
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false"
+   data-backdrop="static" #eventTeamPopUp>
+  
+   <app-add-team *ngIf="eventTeamObject.type" [source] = "eventTeamObject">
+   </app-add-team>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false"
+   data-backdrop="static" #eventSecondaryOwnersPopUp>
+  
+   <app-add-event-secondary-owners *ngIf="secondaryOwnersObject.type" [source] = "secondaryOwnersObject">
+   </app-add-event-secondary-owners>
+</div>
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #newExternalUsers >
+  <app-add-external-user [source]="externalUsersObject" *ngIf="externalUsersObject.type">
+  </app-add-external-user>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false"
+   data-backdrop="static" #fullSecondaryOwner>
+  
+   <app-full-of-secondary-owners *ngIf="secondaryOwnersDetailsObject.type" [source] = "secondaryOwnersDetailsObject">
+   </app-full-of-secondary-owners>
+</div>
+<!------------------- Delete Confirmation Modal Start --------------------------->
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+<app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+
+<!-- edit Event Member -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #eventMember >
+  <app-edit-event-member [source]="eventMemberObject" *ngIf="eventMemberObject.type">
+  </app-edit-event-member>
+</div>

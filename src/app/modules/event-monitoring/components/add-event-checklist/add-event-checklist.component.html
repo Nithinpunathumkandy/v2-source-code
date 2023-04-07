@@ -1,0 +1,181 @@
+
+<!-- event-closure-popup Start -->
+<!-- <div class="modal modal-style-1 fade popup-full-width" id="event-closure-popup" data-keyboard="false"
+    data-backdrop="static"> -->
+    <button type="button" class="close" data-dismiss="modal" (click)="closeFormModal()"><i class="lni-close"></i><span>esc</span></button>
+    <div class="modal-dialog modal-lg modal-dialog-centered" *mobxAutorun>
+        <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 *ngIf="source.type == 'Add'" class="modal-title">{{'add_event_checklist' | translate}}</h4>
+                <h4 *ngIf="source.type == 'Edit'" class="modal-title">{{'edit_event_checklist' | translate}}</h4>
+                <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
+            </div>
+            <!-- Modal body -->
+            <form [formGroup]="form" class="modal-body form-body" *ngIf="ChecklistMasterStore?.loaded && ChecklistMasterStore?.checklist.length >0">
+                <p class="head-details">For completing the event checklist input procedures, add planned event completion date, actual event completion date and current status as yes or no. Also, attach supporting file(s), if any.</p>                            
+    
+                <div class="panel-group panel-drop-sections panel-drop-white" id="jd" role="tablist"
+                    aria-multiselectable="true">
+                    <div class="panel panel-default" *ngFor="let list of formNgModal;let num = index">
+                        <div [ngClass]="indexChange == num ? 'panel-heading active' : 'panel-heading'"  role="tab" id="headingOne">
+                            <div class="panel-title">
+                                <a role="button" data-toggle="collapse" (click)="changeIndex(num)" aria-expanded="false"
+                                    aria-controls="collapseOne" [ngClass]="indexChange == num ?'collapsed':''">
+                                    <h5 class="width96pc mt-0"><span class="mr-2 text-18"><i
+                                                class="fas fa-question-circle"></i></span>{{list.event_checklist_title}}<span class="drop-down-icone"><i
+                                                class="fas fa-chevron-down"></i></span> </h5>
+                                </a>
+                            </div>
+                        </div>
+                        <div id="event-acd-01" [ngClass]="indexChange == num ? 'drop-detail-sec panel-collapse collapse show' : 'drop-detail-sec panel-collapse collapse'"
+                         role="tabpanel" 
+                            aria-labelledby="headingOne" data-parent="#event-acd-01">
+                            <div class="panel-body bg-white pb-1">
+    
+                                <div class="row">                                    
+                                    <div class="col-lg-6 col-sm-12 ">
+                                        <div class="form-group">
+                                            <label for="name">{{'event_checklist_status' | translate}}<span class="form-error">*</span></label>
+                                            <div class="clearfix">
+                                                <div class="multiple-plain-ngselect">
+                                                    <ng-select 
+                                                        [placeholder]="'event_checklist_status_placeholder' | translate"
+                                                        [multiple]="false" 
+                                                        [items]="ChecklistStatus"
+                                                        [(ngModel)]="list.event_checklist_status" 
+                                                        [ngModelOptions]="{standalone: true}"
+                                                        bindLabel="title">
+                                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                                            {{item?.length > 60 ? (item | slice:0:60)+' ...' : item}}
+                                                        </ng-template>
+                                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                                            {{item?.length > 80 ? (item | slice:0:80)+' ...' : item}}
+                                                        </ng-template>
+                                                    </ng-select>
+                                                    <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.event_checklist_status">{{formErrors.event_checklist_status}}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-12">
+                                        <div class="form-group">
+                                            <label for="name">{{'comments' | translate}}</label>
+                                            <textarea class="form-control" rows="3" id="comment" [ngModelOptions]="{standalone: true}" [(ngModel)]="list.comments" [placeholder]="'event_checklist_comments' | translate"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+    
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <label for="name" class="label-style mb-0">{{'attachments' | translate}}</label>
+                                        <div #uploadArea>
+                                            <div class="thumb-pics-bg thumb-pics-col-3 clearfix thumb-pics-fix-text" style="padding-top: 0;">
+                                                <div class="thumb-pics">
+                                                    <div class="question-circle-inp" style="margin-right: 7px;">
+                                                        <i class="far fa-question-circle"></i>
+                                                        <div class="message-password-inp">
+                                                            <p class="mb-0">{{'allowed_file_types' | translate}}{{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group form-group-upload">
+                                                        <div class="darag-dropifile-upload">
+                                                            <div class="d-flex justify-content-center align-items-center text-center">
+                                                                <div>
+                                                                    <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                                                                    <div class="drag-file-name"> Select or Upload Your File Here </div>
+                                                                    <div class="upload-btn-wrapper">
+                                                                        <button (click)="openFileUploadModal(list.event_checklist_id)" type="button" class="btn">{{'browse_files' | translate}}</button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <ng-container *ngFor="let docs of fileUploadPopupStore.displayFiles ;let i = index">
+                                                    <div class="thumb-pics" *ngIf="list.event_checklist_id==docs.verificationId">
+                                                        <div class="upload-pics edit-option" data-toggle="modal">
+                                                            <div *ngIf="docs.id && !docs.preview" class="browse-form-pic" [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                                                            </div>
+                                                            <div *ngIf="docs.preview" class="browse-form-pic" [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">
+                                                            </div>
+                                                            <div class="browse-form-name clearfix">
+                                                                <div class="float-left">
+                                                                    <h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}</h6>
+                                                                    <span *ngIf="docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-book"></i></span>
+                                                                    <span *ngIf="!docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-laptop"></i></span>
+                                                                    <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                                                                </div>
+                                                                <div class="browse-logo">
+                                                                    <img *ngIf="checkExtension(docs.ext,'image') != -1"
+                                                                        class="folder-picher" src="/assets/images/jpg-icone.png">
+                                                                    <img *ngIf="checkExtension(docs.ext,'doc') != -1" class="folder-picher"
+                                                                        src="/assets/images/word-icone.png">
+                                                                    <img *ngIf="checkExtension(docs.ext,'pdf') != -1" class="folder-picher"
+                                                                        src="/assets/images/pdf-icone.png">
+                                                                    <img *ngIf="checkExtension(docs.ext,'excel') != -1"
+                                                                        class="folder-picher" src="/assets/images/excel-icone.png">
+                                                                    <img *ngIf="checkExtension(docs.ext,'video') != -1"
+                                                                        class="folder-picher" src="/assets/images/md-video.png">
+                                                                    <img *ngIf="checkExtension(docs.ext,'audio') != -1"
+                                                                        class="folder-picher" src="/assets/images/md-audio.png">
+                                                                    <img *ngIf="checkExtension(docs.ext,'ppt') != -1" class="folder-picher"
+                                                                        src="/assets/images/md-ppt.png">
+                                                                </div>
+                                                            </div>
+                                                            <div class="edit-option-show">
+                                                                <a (click)="removeDocument(docs)"><i class="fas fa-trash"></i></a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </ng-container>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+    
+    
+    
+                            </div>
+                        </div>
+                    </div>
+                </div>
+    
+    
+    
+                <div class="row mt-3">
+                    <div class="col-sm-12">
+                        <div class="d-block justify-content-left border-0 mt-3">
+                           <button type="button" data-toggle="modal" data-target="#signal-lost"
+                           [disabled]=" AppStore.loading || form.invalid"
+                              class="btn btn-primary mr-3 btn-active" (click)="save()">{{ AppStore.loading ?
+                              getButtonText('loading') : getButtonText('save') }}</button>
+                           <button type="button" data-toggle="modal" data-target="#signal-lost" class="btn btn-primary mr-3"
+                           [disabled]=" AppStore.loading || form.invalid"
+                              (click)="save(true)">{{ AppStore.loading ? getButtonText('loading') :
+                              getButtonText('save_close') }}</button>
+                           <button type="button" data-toggle="modal" data-target="#error-message" class="btn btn-primary mr-2"
+                              (click)="cancel()">{{ AppStore.loading ? getButtonText('loading') : getButtonText('cancel')
+                              }}</button>
+                        </div>
+                     </div>
+                </div>
+            <!-- </div> -->
+            </form>
+            <app-no-data-list *ngIf="ChecklistMasterStore?.checklist.length ==0 && ChecklistMasterStore?.loaded" [source]="common_nodata_title"></app-no-data-list>
+            <div class="modal-body form-body" *ngIf=" !ChecklistMasterStore?.loaded">
+                <app-event-checklist-popup-loader></app-event-checklist-popup-loader>
+            </div>
+            <!-- Modal footer -->
+        </div>
+    </div>
+    <!-- </div> -->
+    <!-- event-closure-popup End -->
+    
+    <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #fileUploadModal>
+    
+        <app-file-upload-popup *ngIf="fileUploadPopupStore.openPopup"></app-file-upload-popup>
+     
+     </div>

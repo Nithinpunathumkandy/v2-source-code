@@ -1,0 +1,177 @@
+<button type="button" class="close" (click)="cancel()"><i class="lni-close"></i><span>{{'esc' |
+    translate}}</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered">
+<div class="modal-content">
+    <!-- Modal Header -->
+    <div class="modal-header">
+        <h4 class="modal-title">{{'action_plan_history' | translate}}</h4>
+    </div>
+    <!-- Modal body -->
+    <div class="modal-body form-body" *mobxAutorun>
+        <!-- <p class="head-details">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Excepteur sint occaecat cupidatat non proident.</p> -->
+
+        <div class="row sm-row"
+            *ngIf="MockDrillActionPlanStore?.actionPlanHistoryLoaded && MockDrillActionPlanStore?.historyData?.length>0">
+            <div class=" col-lg-12  col-sm-12 sm-col lg-outline-box" *ngFor="
+            let row of MockDrillActionPlanStore?.historyData
+            | paginate
+                : {
+                    currentPage: MockDrillActionPlanStore?.historyCurrentPage,
+                    itemsPerPage: MockDrillActionPlanStore?.historyItemsPerPage,
+                    totalItems: MockDrillActionPlanStore?.historyTotalItems
+                    };
+            let num = index">
+                <div class="cmn-bdr widg-padding-cmn-small border-radius pointer btm-space-10">
+                    <div class="row ">
+                        <div class="col-sm-12">
+                            <h6>{{'description' | translate}}</h6>
+                            <p>{{row.comment?row.comment:AppStore.noContentText}}</p>
+                        </div>
+                        <div class="col-sm-6">
+                            <h6> {{'status' | translate}} </h6>
+                            <div [attr.class]="'dot-div '+row.mock_drill_action_plan_status_label">
+                                {{row.mock_drill_action_plan_status_title}}
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <h6> {{'completion_percentage' | translate}} </h6>
+                            <p>{{row.percentage}} %</p>
+                        </div>
+                        <div class="col-sm-12 d-none">
+                            <h6 class="">{{'support_files' | translate}}</h6>
+                            <p *ngIf="row?.documents?.length==0">{{AppStore.noContentText}}</p>
+                            <div *ngIf="row?.documents?.length>0"
+                                class="thumb-pics-bg thumb-pics-col-3 thumb-pics-fix-text clearfix"
+                                style="padding-top: 0">
+                                <div class="thumb-pics" *ngFor="let docs of row?.documents;let i = index">
+
+                                    <!-- System Files Starts Here -->
+                                    <div class="upload-pics edit-option" *ngIf="!docs.document_id"
+                                        (click)="viewDocument('mock-drill-action-plan-update-document',docs,docs)">
+                                        <div class="browse-form-pic"
+                                            [ngStyle]="{'background': 'url('+createImageUrl('mock-drill-action-plan-update-document',docs?.token)+') no-repeat'}">
+                                        </div>
+                                        <div class="browse-form-name clearfix">
+                                            <div class="float-left">
+                                                <h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                                </h6>
+                                                <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span><span
+                                                    class="text-blue bold pl-2">System</span>
+                                            </div>
+                                            <div class="browse-logo">
+                                                <img *ngIf="checkExtension(docs.ext,'image') != -1"
+                                                    class="folder-picher" src="/assets/images/jpg-icone.png">
+                                                <img *ngIf="checkExtension(docs.ext,'doc') != -1"
+                                                    class="folder-picher" src="/assets/images/word-icone.png">
+                                                <img *ngIf="checkExtension(docs.ext,'pdf') != -1"
+                                                    class="folder-picher" src="/assets/images/pdf-icone.png">
+                                                <img *ngIf="checkExtension(docs.ext,'excel') != -1"
+                                                    class="folder-picher" src="/assets/images/excel-icone.png">
+                                                <img *ngIf="checkExtension(docs.ext,'video') != -1"
+                                                    class="folder-picher" src="/assets/images/md-video.png">
+                                                <img *ngIf="checkExtension(docs.ext,'audio') != -1"
+                                                    class="folder-picher" src="/assets/images/md-audio.png">
+                                                <img *ngIf="checkExtension(docs.ext,'ppt') != -1"
+                                                    class="folder-picher" src="/assets/images/md-ppt.png">
+                                            </div>
+                                        </div>
+                                        <div class="edit-option-show">
+                                            <a><i class="fas fa-download"
+                                                    (click)="downloadDocumentFile('mock-drill-action-plan-update-document',docs)"></i></a>
+                                        </div>
+                                    </div>
+                                    <div class="upload-pics edit-option" *ngIf="docs.document_id">
+                                        <div *ngFor="let mainDoc of docs.kh_document.versions"
+                                            (click)="viewDocument('document-version',docs,mainDoc)">
+                                            <div *ngIf="mainDoc.is_latest">
+                                                <div class="browse-form-pic"
+                                                    [ngStyle]="{'background': 'url('+createImageUrl('document-version',mainDoc?.token)+') no-repeat'}">
+                                                </div>
+                                                <div class="browse-form-name clearfix">
+                                                    <div class="float-left">
+                                                        <h6>{{mainDoc.title}}.{{mainDoc.ext}}
+                                                        </h6>
+                                                        <span>{{mainDoc.size/1048576 |
+                                                            number:'0.2-2'}}MB</span><span
+                                                            class="text-blue bold pl-2">Knowledge Hub</span>
+                                                    </div>
+                                                    <div class="browse-logo">
+                                                        <img *ngIf="checkExtension(mainDoc.ext,'image') != -1"
+                                                            class="folder-picher"
+                                                            src="/assets/images/jpg-icone.png">
+                                                        <img *ngIf="checkExtension(mainDoc.ext,'doc') != -1"
+                                                            class="folder-picher"
+                                                            src="/assets/images/word-icone.png">
+                                                        <img *ngIf="checkExtension(mainDoc.ext,'pdf') != -1"
+                                                            class="folder-picher"
+                                                            src="/assets/images/pdf-icone.png">
+                                                        <img *ngIf="checkExtension(mainDoc.ext,'excel') != -1"
+                                                            class="folder-picher"
+                                                            src="/assets/images/excel-icone.png">
+                                                        <img *ngIf="checkExtension(mainDoc.ext,'video') != -1"
+                                                            class="folder-picher" src="/assets/images/md-video.png">
+                                                        <img *ngIf="checkExtension(mainDoc.ext,'audio') != -1"
+                                                            class="folder-picher" src="/assets/images/md-audio.png">
+                                                        <img *ngIf="checkExtension(mainDoc.ext,'ppt') != -1"
+                                                            class="folder-picher" src="/assets/images/md-ppt.png">
+                                                    </div>
+                                                </div>
+                                                <div class="edit-option-show">
+                                                    <a><i class="fas fa-download"
+                                                            (click)="downloadDocumentFile('document-version',docs,mainDoc)"></i></a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <hr class="mb-2">
+                            <ng-container *ngIf="row?.created_by_first_name">
+                                <app-user-popup-box [source]=" getEmployeePopupDetails(row, row?.created_at)">
+                                </app-user-popup-box>
+                            </ng-container>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <ng-container *mobxAutorun>
+            <app-no-data-list
+                *ngIf="MockDrillActionPlanStore?.actionPlanHistoryLoaded && MockDrillActionPlanStore?.historyData?.length==0"
+                [source]="historyEmptyList" [border]=false></app-no-data-list>
+        </ng-container>
+    </div>
+    <!-- Modal footer -->
+</div>
+</div>
+
+
+<ng-container *mobxAutorun>
+<div *ngIf="!MockDrillActionPlanStore?.actionPlanHistoryLoaded">
+    <app-action-plan-history-loader></app-action-plan-history-loader>
+</div>
+</ng-container>
+<ng-container *mobxAutorun>
+<div *ngIf="MockDrillActionPlanStore?.actionPlanHistoryLoaded && MockDrillActionPlanStore.historyTotalItems > MockDrillActionPlanStore.historyItemsPerPage"
+    class="col-sm-12">
+    <ul class="pagination justify-content-center mt-3">
+        <div class="list">
+            <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+                (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+        </div>
+    </ul>
+</div>
+
+</ng-container>
+
+<!-- File Preview -->
+<div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup" data-keyboard="false"
+data-backdrop="static" #filePreviewModal *mobxAutorun>
+<button type="button" class="close" (click)="closePreviewModal($event)"><i class="lni-close"></i><span>{{'esc' |
+        translate}}</span></button>
+<app-preview *ngIf="previewObject" [source]="previewObject" (close)="closePreviewModal($event)"></app-preview>
+</div>

@@ -1,0 +1,154 @@
+<button type="button" class="close" (click)="cancel()"><i class="lni-close"></i><span>esc</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header">
+            <h4 class="modal-title">{{'event_deliverables' | translate}}</h4>
+            <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
+        </div>
+        <!-- Modal body -->
+        <div class="modal-body form-body">
+            <p>{{'event_deliverables_description' | translate}}</p>
+
+           
+                <form [formGroup]="form">
+               
+                    <div class="row">
+                        <div class="col-sm-12">
+                           <div class="form-group">
+                              <!-- <label>{{'em_scope' | translate}}</label> -->
+                              <div class="clearfix d-flex">
+                                 <input type="text" [(ngModel)]="deliverableField" [ngModelOptions]="{standalone: true}" class="form-control w-100"
+                                 [attr.placeholder]="'em_deliverable_placeholder' | translate">
+                                 <button (click)="addDeliverables()" type="button" class="btn multi-add-user ml-2" style="width: 42px;"><i
+                                       class="fas fa-plus"></i></button>
+                              </div>
+                              <ul class="arrowlist mt-1 p-0">
+                                 <ng-container *ngFor="let del of deliverables">
+                                    <li><span [ngClass]="del.is_deleted ? 'text-red' : del.type == 'new' ? 'text-green' : ''">
+                                       <del *ngIf="del.is_deleted">{{del.title}}</del>
+                                       <span *ngIf="!del.is_deleted">{{del.title}}</span>
+                                    
+                                    </span>
+                                       <button *ngIf="!del.is_deleted" (click)="deleteDeliverable(del)" type="button" class="btn btn-small float-right btn-small-delete"
+                                          style="border: none;"><i class="fas fa-trash"></i></button>
+
+                                       <button *ngIf="del.is_deleted && del?.type=='existing'" (click)="revertDeliverable(del)" type="button" class="btn btn-small float-right btn-small-delete"
+                                       style="border: none;"><i class="fal fa-redo"></i></button>
+                                    </li>
+                                 </ng-container>
+                              </ul>
+                     
+                              <!-- <div class="col-md-6 text-left">
+                                 <ng-container *mobxAutorun>
+                                    <app-context-no-data *ngIf="inScopes.length == 0" [sourceData]="noDataSourceInscope">
+                                    </app-context-no-data>
+                                 </ng-container>
+                              </div> -->
+                     
+                           </div>
+                        </div>
+                        
+                        
+                        <div class="col-sm-12">
+                           <div class="form-group">
+                              <label for="name">{{'em_cr_justification' | translate}}<span class="form-error">*</span></label>
+                              <textarea class="form-control" formControlName="justification_event_deliverable" rows="3" id="comment"
+                              [attr.placeholder]="'em_cr_justification_placeholder' | translate"></textarea>
+                              <p class="form-error pt-1" *ngIf="formErrors && formErrors.justification">{{formErrors.justification}}
+                           </div>
+                        </div>
+                     </div>
+                     <label for="name" class="label-style mb-0">{{'evidence' | translate}}</label>
+                        <div class="row m-0 upload-section" style="padding-top: 0">
+                           <div class="col-sm-4 col-lg-4 costmz-logo-new mt-2">
+                              <div class="question-circle-inp" style="margin-right: 7px;">
+                                 <i class="far fa-question-circle"></i>
+                                 <div class="message-password-inp">
+                                    <p class="mb-0">{{'allowed_file_types' | translate}}
+                                       {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                                    </p>
+                                 </div>
+                              </div>
+                              <div class="form-group form-group-upload">
+                                 <div class="darag-dropifile-upload">
+                                    <div class="d-flex justify-content-center align-items-center text-center">
+                                       <div class="drag-file-sec">
+                                          <img src="assets/images/drag-pic.png" class="drag-pic-files">
+                                          <div class="drag-file-name">Select or Upload Your File Here</div>
+                                             <div class="upload-btn-wrapper">
+                                              
+                                               <button (click)="openFileUploadModal('deliverable')" type="button" class="btn">{{'browse_files' |
+                                                translate}}</button>
+                                             </div>
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                           <div *ngFor="let docs of deliverableFiles ;let i = index" [ngClass]="docs?.is_deleted ? 'col-sm-4 col-lg-3 up-pic-cf mt-2 image_deleted' : 'col-sm-4 col-lg-3 up-pic-cf mt-2'">
+                             
+                                 <div class="upload-pics edit-option" data-toggle="modal">
+                                   <div *ngIf="docs.id && !docs.preview" class="browse-form-pic"
+                                     [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                                   </div>
+                                   <div *ngIf="docs.preview" class="browse-form-pic"
+                                     [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">
+                                   </div>
+                                   <div class="browse-form-name clearfix">
+                                     <div class="float-left">
+                                       <h6>
+                                         {{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                       </h6>
+                                       <span *ngIf="docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-book"></i></span>
+                                       <span *ngIf="!docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-laptop"></i></span>
+                                       <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                                     </div>
+                                     <div class="browse-logo">
+                                       <img *ngIf="checkExtension(docs.ext,'image') != -1" class="folder-picher"
+                                         src="/assets/images/jpg-icone.png">
+                                       <img *ngIf="checkExtension(docs.ext,'doc') != -1" class="folder-picher"
+                                         src="/assets/images/word-icone.png">
+                                       <img *ngIf="checkExtension(docs.ext,'pdf') != -1" class="folder-picher"
+                                         src="/assets/images/pdf-icone.png">
+                                       <img *ngIf="checkExtension(docs.ext,'excel') != -1" class="folder-picher"
+                                         src="/assets/images/excel-icone.png">
+                                       <img *ngIf="checkExtension(docs.ext,'video') != -1" class="folder-picher"
+                                         src="/assets/images/md-video.png">
+                                       <img *ngIf="checkExtension(docs.ext,'audio') != -1" class="folder-picher"
+                                         src="/assets/images/md-audio.png">
+                                       <img *ngIf="checkExtension(docs.ext,'ppt') != -1" class="folder-picher"
+                                         src="/assets/images/md-ppt.png">
+                                     </div>
+                                   </div>
+                                   <div class="edit-option-show">
+                                     <a (click)="removeDocument(docs,'scope')"><i class="fas fa-trash"></i></a>
+                                   </div>
+                                 </div>
+                             
+                           </div>
+                           
+                        </div>
+                     <div class="row">
+                        <div class="col-sm-12">
+                            <div class="d-block justify-content-left border-0 mt-3">
+                                
+                                <button type="button" data-toggle="modal" 
+                                   class="btn" [disabled]="form.invalid || AppStore.loading" (click) = "save(true)">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save_close') }}</button>
+                                <button type="button" data-toggle="modal" (click) = "cancel()"
+                                   class="btn">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('cancel') }}</button>
+                             </div>
+                        </div>
+                    </div>
+                
+             </form>
+             
+        </div>
+    </div>
+</div>
+
+
+<!-- * Documetn Attach/Upload Common Component Starts Here -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #fileUploadModal>
+    <app-file-upload-popup *ngIf="fileUploadPopupStore.openPopup"></app-file-upload-popup>
+  </div>

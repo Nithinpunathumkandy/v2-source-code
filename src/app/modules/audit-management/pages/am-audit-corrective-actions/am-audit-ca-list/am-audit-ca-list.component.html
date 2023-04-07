@@ -1,0 +1,128 @@
+<div #plainDev></div>
+<div class="widget">
+    <nav class="edit-bar" data-toggle="affix" #navBar>
+        <div class="module-name-block module-name-block-space float-left">
+            <a class="dropdown module-title">{{'corrective_actions'|translate}}</a>
+        </div>
+        <app-sub-menu>-</app-sub-menu>
+    </nav>
+    <main class="mt-3 acl-page" *mobxAutorun>
+        <div class="container-fluid">
+            <app-filter-menu></app-filter-menu>
+            <div class="audit-program-box audit-page-table-main">
+                <div class="row" *ngIf="AmFindingCAStore.loaded && AmFindingCAStore.allItems.length > 0">
+                    <div class="col-sm-12">
+                        <div class="full-width-table mb-3">
+                            <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                                <thead>
+                                    <tr>
+                                        <th class="border-top-0 text-center" width="2%">#</th>
+                                        <th class="border-top-0" width="8%"
+                                            (click)="sortTitle('finding_corrective_actions.reference_code')">{{'ref_no'
+                                            | translate}}
+                                            <img *ngIf="AmFindingCAStore.orderItem=='finding_corrective_actions.reference_code'"
+                                                [attr.src]="AmFindingCAStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                                class="sort-down-pics">
+                                        </th>
+                                        <th class="border-top-0" width="21%"
+                                            (click)="sortTitle('finding_corrective_actions.title')">{{'title' |
+                                            translate}}
+                                            <img *ngIf="AmFindingCAStore.orderItem=='finding_corrective_actions.title'"
+                                                [attr.src]="AmFindingCAStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                                class="sort-down-pics">
+                                        </th>
+                                        <th class="border-top-0" width="15%">{{'responsible_user' | translate}}</th>
+                                        <th class="border-top-0" width="13%"
+                                            (click)="sortTitle('finding_corrective_actions.start_date')">{{'start_date'
+                                            | translate}}
+                                            <img *ngIf="AmFindingCAStore.orderItem=='finding_corrective_actions.start_date'"
+                                                [attr.src]="AmFindingCAStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                                class="sort-down-pics">
+                                        </th>
+                                        <th class="border-top-0" width="13%"
+                                            (click)="sortTitle('finding_corrective_actions.target_date')">
+                                            {{'target_date' | translate}}
+                                            <img *ngIf="AmFindingCAStore.orderItem=='finding_corrective_actions.target_date'"
+                                                [attr.src]="AmFindingCAStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                                class="sort-down-pics">
+                                        </th>
+                                        <th class="border-top-0 text-center" width="10%">{{'status' | translate}}</th>
+                                        <!-- finding_corrective_action_status_langauge.title -->
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr [ngClass]="AuthStore.getActivityPermission(1900,'FINDING_CORRECTIVE_ACTION_DETAILS') ? 'pointer edit-and-delete-main' : 'edit-and-delete-main'"
+                                        *ngFor="let items of AmFindingCAStore.allItems | paginate: {currentPage:AmFindingCAStore.currentPage, itemsPerPage:AmFindingCAStore.itemsPerPage,totalItems:AmFindingCAStore.totalItems};let num=index">
+                                        <td class="text-center" (click)="gotoCorrectiveActionDetails(items.id)">
+                                            {{(AmFindingCAStore.currentPage - 1) * AmFindingCAStore.itemsPerPage + (num
+                                            + 1)}}</td>
+                                        <td class="pointer" (click)="gotoCorrectiveActionDetails(items.id)">
+                                            #{{items.reference_code? items.reference_code : 'NA'}}</td>
+                                        <td class="pointer" (click)="gotoCorrectiveActionDetails(items.id)">
+                                            {{items.title? items.title : 'NA'}} </td>
+                                        <td class="pointer">
+                                            <app-user-popup-box
+                                                [source]=" getResponsiblePopupDetails(items)"></app-user-popup-box>
+                                        </td>
+                                        <td class="pointer" (click)="gotoCorrectiveActionDetails(items.id)">
+                                            {{items.start_date | date:
+                                            OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</td>
+                                        <td class="pointer" (click)="gotoCorrectiveActionDetails(items.id)">
+                                            {{items.target_date | date:
+                                            OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</td>
+                                        <td class="text-center">
+                                            <div *ngIf="items.finding_corrective_action_status_title"
+                                                [attr.class]="'dot-div '+items.finding_corrective_action_status_label">
+                                                {{items.finding_corrective_action_status_title}}</div>
+                                            <p *ngIf="!items.finding_corrective_action_status_title">
+                                                {{AppStore.noContentText}}</p>
+                                            <div class="edit-option-show" style="margin: 30px 0 0 0; "
+                                                *ngIf="items.finding_corrective_action_status_type!='closed' && AuthStore.user?.id==items?.created_by">
+                                                <!-- edit-and-delete starts -->
+                                                <a (click)="editCa(items.id)"><i class="fas fa-pen"></i></a>
+                                                <a (click)="delete(items.id)"><i class="fas fa-trash"></i></a>
+                                            </div><!-- edit-and-delete end -->
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <p class="float-right bold"
+                                *ngIf="AmFindingCAStore?.loaded && AmFindingCAStore.totalItems > 0">Total
+                                Items:{{AmFindingCAStore?.totalItems}}</p>
+                        </div>
+                    </div>
+                    <div *ngIf="AmFindingCAStore.totalItems>AmFindingCAStore.itemsPerPage" class="col-sm-12">
+                        <ul class="pagination justify-content-center mt-3">
+                            <div class="list">
+                                <pagination-controls [previousLabel]="'previous' | translate"
+                                    [nextLabel]="'next' | translate" class="my-pagination"
+                                    (pageChange)="pageChange($event)">
+                                </pagination-controls>
+                            </div>
+                        </ul>
+                    </div>
+                </div>
+                <ng-container *mobxAutorun>
+                    <div *ngIf="!AmFindingCAStore.loaded">
+                        <app-five-column-loader></app-five-column-loader>
+                    </div>
+                    <app-no-data
+                        *ngIf="AmFindingCAStore.allItems.length == 0 && AmFindingCAStore.loaded == true"></app-no-data>
+                </ng-container>
+            </div>
+        </div>
+    </main>
+
+    <!------------------- start add issue ca modal --------------------------->
+    <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #addCAformModal>
+        <app-am-finding-ca-add *ngIf="correctiveActionObject.type" [source]="correctiveActionObject">
+        </app-am-finding-ca-add>
+    </div>
+    <!------------------- end add issue ca modal --------------------------->
+
+    <!------------------- Delete Confirmation Modal Start --------------------------->
+    <div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static"
+        data-keyboard="false">
+        <app-delete-popup [source]="popupObject"></app-delete-popup>
+    </div>
+    <!------------------- Delete Confirmation Modal End --------------------------->

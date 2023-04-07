@@ -1,0 +1,116 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" scrollPoint #navBar>
+
+   <app-sub-menu></app-sub-menu>
+   <div class="module-name-block module-name-block-space float-left">
+      <a class="dropdown module-title">{{'incident_list'|translate}}</a>
+   </div>
+
+</nav>
+
+<main class="mt-3 acl-page" *mobxAutorun>
+   <div class="container-fluid">
+      <app-filter-menu></app-filter-menu>
+      <div class="audit-program-box audit-page-table-main">
+         <div class="row"  *ngIf="CyberIncidentStore.loaded && CyberIncidentStore?.allItems.length">
+            <div class="col-sm-12">
+               <div class=" full-width-table mb-3">
+                  <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                     <thead>
+                        <tr>
+                           <th class="border-top-0 text-center" width="4%">{{'sl' | translate}}</th>
+                           <th class="border-top-0" width="8%">{{'ref_id'| translate}}</th>
+                           <th class="border-top-0" width="27%">{{'title'| translate}}</th>
+                           <th class="border-top-0" width="15%">{{'cyber_occured_date_time'| translate}}</th>
+                           <th class="border-top-0" width="15%">{{'cyber_detected_date_time'| translate}}</th>
+                           <th class="border-top-0" width="13%">{{'created_by'| translate}}</th>
+                           <th class="border-top-0 text-center" width="10%">{{'classification'| translate}}</th>
+                           <th class="border-top-0 text-center" width="8%">{{'status'|translate}}</th>
+                        </tr>
+                     </thead>
+                     <tbody>
+                        <tr class="pointer edit-and-delete-main" 
+                         (click)="gotoDetailsPage(row.id)" *ngFor="
+                         let row of CyberIncidentStore?.allItems| paginate
+                         : {
+                             currentPage: CyberIncidentStore?.currentPage,
+                             itemsPerPage: CyberIncidentStore?.itemsPerPage,
+                             totalItems: CyberIncidentStore?.totalItems
+                           };
+                         let num = index">
+                           <td class="text-center"> {{
+                              (CyberIncidentStore?.currentPage - 1) *
+                              CyberIncidentStore?.itemsPerPage +
+                              (num + 1)
+                              }}</td>
+                           <td>{{row?.reference_code}}</td>
+                           <td>{{row?.title }}</td>
+                           <td>{{row?.occurred
+                              | date: OrganizationGeneralSettingsStore.organizationSettings?.date_time_format}}</td>
+                           <td>{{row?.detected
+                              | date: OrganizationGeneralSettingsStore.organizationSettings?.date_time_format}}</td>
+                           <td>
+                              <div class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg p-0">
+                                 <img [attr.src]="row.created_by_image_token? createImageUrl(row.created_by_image_token):'/assets/images/user-demo.png'"
+                                     class="rounded-circle rounde-hov" width="35px" height="35px"  onerror = "this.src='/assets/images/user-demo2.png'"> 
+                                 <div class="pointer new-size-text text-left">
+                                     <p class="mb-0">{{row.created_by_first_name}} {{row.created_by_last_name}}  </p>
+                                     <span>{{row.created_by_designation}}</span>
+                                 </div>   
+                                 </div>
+                           </td>
+                           <td class="text-center">
+                              <div [attr.class]="'dot-div '+row.classification_label"> {{row?.cyber_incident_classification_title}}</div>
+                              
+                           </td>
+                           <td class="text-center">
+                              <div [attr.class]="'dot-div '+row.status_label+' dot'">
+                                 {{row.cyber_incident_status}}
+                                 </div>
+                                 <div class="edit-option-show"  *ngIf="row?.type=='new'">
+                                     <a (click)="edit(row.id,$event)" [attr.title]="'edit'|translate"  
+                                         ><i class="fas fa-pen pointer"></i></a> 
+                                     <a (click)="deleteIncident(row.id,$event)" [attr.title]="'delete'|translate" 
+                                         ><i class="fas fa-trash pointer"></i></a>
+                                 </div>
+                           </td>
+                        </tr>
+                       
+
+
+                     </tbody>
+                  </table>
+                  <p class="float-right" *ngIf="CyberIncidentStore?.loaded && CyberIncidentStore.totalItems > 0"><b>{{'total_Items' | translate}}:{{CyberIncidentStore?.totalItems}}</b></p>
+               </div>
+            </div>
+            
+         </div>
+
+         <ng-container *mobxAutorun>
+            <div *ngIf="!CyberIncidentStore?.loaded">
+                <app-eight-column-loader></app-eight-column-loader>
+            </div>
+        </ng-container>
+        <app-no-data *ngIf = "CyberIncidentStore.totalItems == 0 && CyberIncidentStore.loaded" [border]='false'></app-no-data>
+        <div *ngIf="CyberIncidentStore.totalItems > CyberIncidentStore.itemsPerPage" class="col-sm-12">
+            <ul class="pagination justify-content-center mt-3">
+                <div class="list">
+                    <pagination-controls [previousLabel]="'previous' | translate"  [nextLabel]="'next' | translate" (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+                </div>
+            </ul>
+        </div>
+
+      </div>
+
+
+
+   </div>
+</main>
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+   <app-add-incident *ngIf="incidentObject.type" [source]="incidentObject"></app-add-incident>
+</div>
+
+<div class="modal modal-style-1 fade" id="delete-popup" #deletePopup data-backdrop="static" data-keyboard="false">
+   <app-delete-popup [source]="deleteObject"></app-delete-popup>
+</div>

@@ -1,0 +1,184 @@
+<main class="pt-3 organization-page">
+    <div class="container-fluid">
+        <div class="organization-form-page mt-0 pt-4">
+            <form [formGroup]="form" id="regForm" class="organization-multi-stup-form multi-stup-form-common">
+                <div class="row">
+                    <div class="col-lg-12 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'mock_drill_title'|translate}}<span class="form-error">*</span></label>
+                            <input type="text" class="form-control" formControlName="mock_drill_title"
+                                placeholder="{{'mock_drill_title'|translate}}">
+                        </div>
+                    </div>
+                    <div class="col-lg-12 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'scope'| translate}}
+                                <!-- <span class="form-error">*</span> -->
+                            </label>
+                            <div class="mb-2">
+                                <ng-container *ngFor="let row of MockDrillScopesMasterStore.allItems">
+                                    <label *ngIf="row.mock_drill_scope_title!='Site'"
+                                        [ngClass]="selectedScope == row.mock_drill_scope_title.toLowerCase() ? 'outline-tag active' : 'outline-tag'"
+                                        (click)="selectScope(row.mock_drill_scope_title.toLowerCase());openIssueProcessModal(row.mock_drill_scope_title.toLowerCase())"
+                                        class="outline-tag pointer">
+                                        {{row.mock_drill_scope_title | translate}}</label>
+                                </ng-container>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'start_date'| translate}}<span class="form-error">*</span></label>
+                            <div class="input-group date-picker cal-time">
+                                <div class="input-group">
+                                    <input class="form-control bg-white" placeholder="{{'start_date' | translate}}"
+                                        id="startDate" name="dp" autocomplete="off" ngbDatepicker
+                                        formControlName="start_date" #sd="ngbDatepicker" (click)="sd.toggle()" readonly>
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary calendar" (click)="sd.toggle()"
+                                            type="button">
+                                            <i class="fas fa-calendar-alt"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'end_date'| translate}}<span class="form-error">*</span></label>
+                            <div class="input-group date-picker cal-time">
+                                <div class="input-group">
+                                    <input class="form-control bg-white" placeholder="{{'end_date' | translate}}"
+                                        id="endDate" name="dp" autocomplete="off" ngbDatepicker
+                                        formControlName="end_date" #ed="ngbDatepicker" (click)="ed.toggle()"
+                                        [minDate]="form.value.start_date?{year: this.form.value.start_date.year, month: this.form.value.start_date.month, day: this.form.value.start_date.day}:''"
+                                        readonly>
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary calendar" (click)="ed.toggle()"
+                                            type="button">
+                                            <i class="fas fa-calendar-alt"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-12 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'mock_drill_type'| translate}}<span class="form-error">*</span></label>
+                            <div class="clearfix d-flex">
+                                <div class="multiple-plain-ngselect w-100">
+                                    <ng-select [placeholder]="'mock_drill_types' | translate" [multiple]="true"
+                                        formControlName="mock_drill_type" (add)="selectmockDrillType($event,false)"
+                                        (remove)="selectmockDrillType($event,true)" [clearOnBackspace]="false"
+                                        (search)="searchMOckDrillType($event)" bindLabel="mock_drill_type_title"
+                                        [clearable]="false" [readonly]="MockDrillProgramStore.mock_drill_program_id">
+                                        <ng-option [value]="mdtype"
+                                            *ngFor="let mdtype of MockDrillTypesMasterStore.allItems">
+                                            {{mdtype.mock_drill_type_title?.length > 30 ?
+                                            mdtype.mock_drill_type_title.substring(0,30)
+                                            + '...' : mdtype.mock_drill_type_title}}
+                                        </ng-option>
+                                    </ng-select>
+                                </div>
+                                <button class="btn multi-add-user ml-2" style="width: 42px;"
+                                    (click)="addNewMockDrillType()"
+                                    *ngIf="!MockDrillProgramStore.mock_drill_program_id"><i
+                                        class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="audit-page-table-main" *ngIf="mockDrillTypeList && mockDrillTypeList.length>0">
+                    <div class="row">
+                        <div class="col-sm-12 full-width-table">
+                            <table class="table table-bordered ordinary-table audit-page-table mb-4 table-scroll">
+                                <thead>
+                                    <tr>
+                                        <th class="border-top-0 text-center" width="2%">{{'sl'|translate}}</th>
+                                        <th class="border-top-0" width="55%">{{'mock_drill_type'| translate}}</th>
+                                        <th class="border-top-0" width="43%">{{'no_of_mock_drill_types'| translate}}<span class="form-error">*</span>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let data of mockDrillTypeList;let idx=index">
+                                        <td class="text-center">{{idx+1}}</td>
+                                        <td>
+                                            <div class="form-group mb-0">
+                                                <div class="clearfix">
+                                                    {{data?.type?.mock_drill_type_title ? data?.type?.mock_drill_type_title :data?.type?.language[0]?.pivot?.title }}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="form-group mb-0">
+                                                <div class="clearfix"
+                                                    *ngIf="MockDrillProgramStore.mock_drill_program_id">
+                                                    {{data?.nooftype}}
+                                                </div>
+                                                <input *ngIf="!MockDrillProgramStore.mock_drill_program_id"
+                                                    type="number" class="form-control" min="1"
+                                                    [ngModelOptions]="{standalone: true}"
+                                                    placeholder="{{'no_of_mock_drill_types' | translate}}"
+                                                    [(ngModel)]="data.nooftype" autocomplete="off">
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <div style="overflow:auto;">
+                <div class="form-next-page-btns" style="float:left;">
+                    <button class="btn btn-active" type="button" (click)="save(false)"
+                        [disabled]="AppStore.loading || form.invalid || !validateMOckDrillType()">
+                        {{ (AppStore.loading ? getButtonText('loading') : getButtonText('save'))| translate }}
+                    </button>
+                    <button class="btn btn-active" type="button" (click)="save(true)"
+                        [disabled]="AppStore.loading || form.invalid || !validateMOckDrillType()"> {{ (AppStore.loading ?
+                        getButtonText('loading') :
+                        getButtonText('save_close'))| translate }}</button>
+                    <button class="btn" type="button" (click)="cancelClicked()">{{'cancel' | translate}}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<!-- Create Mock Drill Type-->
+<div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup" data-keyboard="false"
+    data-backdrop="static" #formModal>
+    <app-mock-drill-type-model *ngIf="mockDrillTypeObject.type" [source]="mockDrillTypeObject">
+    </app-mock-drill-type-model>
+</div>
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopup data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="confirmationObject"></app-delete-popup>
+</div>
+<div class="modal modal-style-1 popup-full-width fade" id="process-popup" data-keyboard="false" data-backdrop="static"
+    #processFormModal *mobxAutorun>
+    <app-addprocess *ngIf="IssueListStore.processes_form_modal" [processModalTitle]="modalObject">
+    </app-addprocess>
+</div>
+<div class="modal modal-style-1 popup-full-width fade" id="location-popup" data-keyboard="false" data-backdrop="static"
+    #locationFormModal *mobxAutorun>
+    <app-location-list-modal *ngIf="LocationMasterStore.location_select_form_modal" [locationModalTitle]="modalObject">
+    </app-location-list-modal>
+</div>
+<div class="modal modal-style-1 popup-full-width fade" id="project-popup" data-keyboard="false" data-backdrop="static"
+    #projectFormModal *mobxAutorun>
+    <app-projects-modal *ngIf="BusinessProjectsStore.project_select_form_modal" [projectsModalTitle]="modalObject">
+    </app-projects-modal>
+</div>
+<div class="modal modal-style-1 popup-full-width fade" id="project-popup" data-keyboard="false" data-backdrop="static"
+    #eventMappingModal *mobxAutorun>
+    <app-event-mapping *ngIf="EventsStore.eventMappingModal" [eventModalTitle]="modalObject"></app-event-mapping>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="project-popup" data-keyboard="false" data-backdrop="static"
+    #sitesMappingModal *mobxAutorun>
+    <app-sites-mapping *ngIf="SitesMasterStore.siteMappingModal" [siteModalTitle]="modalObject"></app-sites-mapping>
+</div>

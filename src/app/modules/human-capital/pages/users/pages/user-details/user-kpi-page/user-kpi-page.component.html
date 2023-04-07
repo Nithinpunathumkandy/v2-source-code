@@ -1,0 +1,240 @@
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" data-backdrop="static" data-keyboard="false" #deletePopup>
+  <app-delete-popup [source]="deleteObject"></app-delete-popup>
+</div>
+
+<!------------------- Delete Confirmation Modal End --------------------------->
+<ng-container *mobxAutorun>
+<div class="tab-pane" id="mstype" *ngIf="UserKpiStore.loaded && UserKpiStore.userKpiDetails.length>0 && AuthStore.getActivityPermission(200,'USER_KPIS')">
+  <div class="row">
+    <div class="col-sm-12">
+      <!-- <div class="widget-body-light right-block" *mobxAutorun> -->
+        <div class="panel-group panel-drop-sections panel-drop-white" id="kpi" role="tablist" aria-multiselectable="true">
+          <div class="panel panel-default"
+            *ngFor="let row of UserKpiStore.userKpiDetails | paginate: {currentPage:UserKpiStore?.currentPage, itemsPerPage:UserKpiStore?.itemsPerPage,totalItems:UserKpiStore?.totalItems};let num = index">
+            <div class="pointer" [ngClass]="row.is_accordion_active == true ? 'panel-heading active' : 'panel-heading'"
+              role="tab" id="headingOne">
+              <div class="panel-title">
+
+                <a role="button" data-toggle="collapse" href="#kpi1" aria-expanded="true" aria-controls="collapseOne"
+                  (click)="getUserKpi(row.id,num)">
+                  <h5 class="width96pc mt-0" [attr.title]="row.kpi_title.length>50?row.kpi_title:''"> {{row.kpi_title.length>50?row.kpi_title.substring(0,50)+' ...':row.kpi_title}} <span class="drop-down-icone"><i class="fas fa-chevron-down"></i></span>  </h5>
+                </a>
+              </div>
+            </div>
+            <div id="kpi1"
+              [ngClass]="row.is_accordion_active == true ? 'drop-detail-sec panel-collapse collapse show' : 'drop-detail-sec panel-collapse collapse'"
+              role="tabpanel" aria-labelledby="headingOne" *ngIf="UserKpiStore?.individual_kpi_loaded">
+              <div class="panel-body bg-white edit-and-delete-main">
+                <div class="edit-option-show" style="margin: -17px 20px 0 0;">
+                  <a class="pointer" [attr.title]="'edit'|translate" (click)="editKpi(row.id,num)" *ngIf = "AuthStore.getActivityPermission(200,'UPDATE_USER_KPI')"><i class="fas fa-pen"></i></a>
+                  <a class="pointer" [attr.title]="'delete'|translate" (click)="deleteKpi(row.id,num)" *ngIf = "AuthStore.getActivityPermission(200,'DELETE_USER_KPI')"><i
+                      class="fas fa-trash"></i></a>
+                </div>
+                <!-- <a (click)="gotoEvaluation()" class="btn mb-3">Performance</a> -->
+                <div class="row">
+                  <div class="col-sm-12">
+               
+                    <h6>{{'process'|translate}}</h6>
+                    <p>{{UserKpiStore?.individualKpiDetails?.process?.title}}</p>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-sm-12">
+                <h6>
+                  {{'target'|translate}}
+                </h6>
+                <!-- <label for="staticEmail" class="col-sm-2 col-form-label"></label> -->
+                <!-- <div class="col-sm-4"> <span> -->
+                 <p> {{UserKpiStore?.individualKpiDetails?.target}}({{UserKpiStore?.individualKpiDetails?.unit.title}})</p>
+                 </div>
+                </div>
+                <div class="form-group row column-label mb-0">
+                  
+                  <!-- </span> </div> -->
+                  <!-- <label for="staticEmail" class="col-sm-2 col-form-label">Unit</label>
+                  <div class="col-sm-4"> <span>{{UserKpiStore?.individualKpiDetails?.unit.title}}</span> </div> -->
+                 
+                  <div class="col-sm-12">
+                    <h6 *ngIf="UserKpiStore?.individualKpiDetails?.kpi.documents?.length>0">{{'documents'|translate}}</h6>
+                    <div class="thumb-pics-bg clearfix thumb-pics-fix-text thump-pics-full">
+                      <div class="thumb-pics"
+                        *ngFor="let document of UserKpiStore?.individualKpiDetails?.kpi.documents">
+                        <div class="upload-pics upload-pics-small edit-option">
+                          <div class="browse-form-pic"
+                            [ngStyle]="{'background': 'url(' + createImagePreview('user-kpis',document.token) + '), url(' + getDefaultImage('no-preview') + ') no-repeat 0 0 / cover'}"
+                            (click)="viewDocument(document)">
+                          </div>
+                          <div class="browse-form-name clearfix">
+                            <div class="float-left">
+                              <h6 [attr.title]="document.title?.length > 10 ? document?.title:''">
+                                {{document?.title?.length > 10 ? document?.title?.substring(0,10)+' ...': document?.title}}
+                              </h6>
+                              <span>{{document.size/1048576 | number:'0.2-2'}}MB</span>
+                            </div>
+                            <div class="browse-logo">
+                              <img *ngIf="checkExtension(document.ext,'image') != -1" src="/assets/images/md-jpg.png">
+                              <img *ngIf="checkExtension(document.ext,'doc') != -1" src="/assets/images/md-doc.png">
+                              <img *ngIf="checkExtension(document.ext,'pdf') != -1" src="/assets/images/pdf-icone.png">
+                              <img *ngIf="checkExtension(document.ext,'excel') != -1" src="/assets/images/md-xl.png">
+                              <img *ngIf = "checkExtension(document.ext,'video') != -1" src="/assets/images/md-video.png">
+                          <img *ngIf = "checkExtension(document.ext,'audio') != -1" src="/assets/images/md-audio.png">
+                          <img *ngIf = "checkExtension(document.ext,'ppt') != -1" src="/assets/images/md-ppt.png">
+                              
+                            </div>
+                          </div>
+                          <div class="edit-option-show-inner">
+                            <a [attr.title]="'Download'" *ngIf = "AuthStore.getActivityPermission(200,'DOWNLOAD_USER_KPI_DOCUMENT_FILE')"
+                              (click)="downloadDocument(document.kpi_id,document.title,document.id,document)"><i
+                                class="fas fa-download"></i></a>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                  
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      <!-- </div> -->
+    </div>
+  </div>
+</div>
+</ng-container>
+
+<ng-container *mobxAutorun>
+  <app-no-data *ngIf = "UserKpiStore.loaded && UserKpiStore.userKpiDetails.length == 0"></app-no-data>
+</ng-container>
+
+<ng-container *ngIf="!UserKpiStore.loaded">
+  <app-user-kpi-loader></app-user-kpi-loader>
+</ng-container>
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal *ngIf="AuthStore.getActivityPermission(200,'CREATE_USER_KPI')">
+  <button type="button" class="close" (click)="cancel()"><i class="lni-close"></i><span>{{'esc'|translate}}</span></button>
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <h4 class="modal-title">KPI</h4>
+      </div>
+      <!-- Modal body -->
+      <div class="modal-body form-body">
+        <p class="head-details">{{'kpi_form_message' | translate}}</p>
+        <form [formGroup]="form" *mobxAutorun>
+          <div class="row">
+            <div class="col-sm-12">
+              <div class="form-group">
+                <label for="name">{{'process'|translate}}<sup>*</sup></label>
+                <div class="clearfix">
+                  <div class="multiple-plain-ngselect">
+
+                    <ng-select [placeholder]="'enter_process'|translate" [multiple]="false" searchable="true"
+                      formControlName="process_id" (clear)="getProcess()" (search)="searchProcess($event)"
+                      (open)="getProcess()">
+                      <ng-option [value]="type.id" [attr.title]="type.title.length>50?type.title:''" *ngFor="let type of UserKpiStore.processes">
+                        {{type.title.length>80?type.title.substring(0,80)+' ...':type.title}}
+                      </ng-option>
+                    </ng-select>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-12">
+           
+              <div class="form-group">
+                <label for="name">KPI<sup>*</sup></label>
+                <div class="clearfix">
+                  <div class="multiple-plain-ngselect select-new-width">
+
+                    <ng-select [items]="KpiMasterStore.kpis" [placeholder]="'select_kpis'|translate" [multiple]="false" searchable="true" formControlName="kpi_id"
+                      (clear)="getKpi()" (search)="searchKpi($event)" (open)="getKpi()" (change) = "kpiSelected($event)">
+                      <!-- <ng-option [value]="type.id" [attr.title]="type.title.length>50?type.title:''" *ngFor="let type of KpiMasterStore.kpis">
+                        {{type.title.length>80?type.title.substring(0,80)+' ...':type.title}}
+                      </ng-option> -->
+                      <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                        {{item?.title?.length > 80 ? item?.title?.substring(0,80)+' ...' : item?.title}}
+                     </ng-template>
+                     <ng-template ng-option-tmp let-item="item" let-index="index">
+                        {{item?.title?.length > 80 ? (item?.title | slice:0:80)+' ...' : item?.title}}
+                     </ng-template>
+                    </ng-select>
+                  </div>
+                  <button class="btn multi-add-user"  *ngIf = "AuthStore.getActivityPermission(200,'CREATE_USER_KPI')" (click)="openKpiModal()"><i class="fas fa-plus"></i></button>
+                </div>
+              </div>
+            
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label for="name">{{'target'|translate}}<sup>*</sup></label>
+                <input type="text" formControlName="target" class="form-control" [attr.placeholder]="'enter_target'|translate">
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label for="name">{{'unit'|translate}}<sup>*</sup></label>
+                <div class="clearfix popup-select-two">
+                  <div class="multiple-plain-ngselect select-width">
+
+                    <ng-select [placeholder]="'select_unit'|translate" [multiple]="false" searchable="true" formControlName="unit_id"
+                      (clear)="getUnit()" (search)="searchUnit($event)" (open)="getUnit()">
+                      <ng-option [value]="type.id" *ngFor="let type of UnitMasterStore.allItems">
+                        {{type.title}}
+                      </ng-option>
+                    </ng-select>
+                  </div>
+                  <button class="btn multi-add-user" *ngIf = "AuthStore.getActivityPermission(200,'CREATE_UNIT')" (click)="openUnitModal()"><i class="fas fa-plus"></i></button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-sm-12">
+              <div class="d-block justify-content-left border-0 mt-3">
+                <button type="submit" class="btn ordinary-btn mr-3 btn-active" (click)="save()"
+                  [disabled]="form.invalid || AppStore.loading">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save') }}</button>
+                <button type="button" data-toggle="modal" data-target="#signal-lost" class="btn ordinary-btn mr-3"
+                  (click)="save(true)"
+                  [disabled]="form.invalid || AppStore.loading">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save_close') }}</button>
+                <button type="button" data-toggle="modal" data-target="#error-message" class="btn ordinary-btn mr-2"
+                  (click)="cancel()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('cancel') }}</button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <!-- Modal footer -->
+    </div>
+  </div>
+</div>
+
+<!-- preview component for image preview -->
+<div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup" data-keyboard="false"
+  data-backdrop="static" #filePreviewModal *mobxAutorun>
+  <button type="button" class="close" data-dismiss="modal" (click)="closePreviewModal($event)"><i
+      class="lni-close"></i><span>{{'esc'|translate}}</span></button>
+  <app-previewcomponent *ngIf="previewObject && AuthStore.getActivityPermission(200,'PREVIEW_USER_KPI_DOCUMENT_FILE')" [source]="previewObject" (close)="closePreviewModal($event)">
+  </app-previewcomponent>
+</div>
+<!-- preview modal end -->
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #kpiModal style="overflow:scroll">
+  <app-user-kpi-modal></app-user-kpi-modal>
+</div>
+
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #unitModal>
+  <app-unit-modal></app-unit-modal>
+
+</div>

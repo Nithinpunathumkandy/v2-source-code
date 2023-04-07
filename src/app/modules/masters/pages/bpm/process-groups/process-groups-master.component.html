@@ -1,0 +1,153 @@
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+  <app-delete-popup [source] = "popupObject"></app-delete-popup>
+</div>
+
+<!------------------- Delete Confirmation Modal End --------------------------->
+
+<div class="widget bg-white">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb cursor-pointer">
+            <li class="breadcrumb-item" [routerLink]="['/masters/bpm']"><a>{{'bpm' | translate}}</a></li>
+            <li class="breadcrumb-item active">{{'process_groups' | translate}}</li>
+        </ol>
+    </nav>
+    <!-- Nav tabs -->
+    <div class="audit-form-table w-100 not-fixed-table mb-0">
+        <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll" *ngIf="ProcessGroupsMasterStore?.loaded && ProcessGroupsMasterStore.processGroups.length > 0">
+            <tr>
+                <th style="width: 5%; text-align: center;">{{'sl' | translate}}</th>
+                <th (click)="sortTitle('process_groups.title')" class="border-top-0 issue-list-org-tab-three pointer" style="width: 40%;"><span>{{'process_groups' | translate}}</span>
+                    <img _ngcontent-twv-c17="" *ngIf="ProcessGroupsMasterStore.orderItem=='process_groups.title'" class="sort-down-pics pl-2" 
+                    [attr.src]="ProcessGroupsMasterStore.orderBy=='desc' ? 
+                    'assets/images/sort-up.png' : ProcessGroupsMasterStore.orderBy=='asc' ? 
+                    'assets/images/sort-down.png' : 'assets/images/sort-empty.png'">
+                </th>
+                <th width="43%">{{'description' | translate}}</th>
+                <th style="width: 12%; text-align: center;">{{'status' | translate}}</th>
+            </tr>
+            <ng-container *mobxAutorun>
+                <tr class="edit-and-delete-main pointer"
+                (click)="getProcessGroups(row.id)" [ngStyle] ="{ 'pointer-events' : AuthStore.getActivityPermission(1100,'UPDATE_PROCESS_GROUP') ? '' : 'none'}"
+                 *ngFor="let row of ProcessGroupsMasterStore?.processGroups | paginate: {currentPage:ProcessGroupsMasterStore?.currentPage, itemsPerPage:ProcessGroupsMasterStore?.itemsPerPage,totalItems:ProcessGroupsMasterStore?.totalItems};let num = index">
+                    <td style="text-align: center;">{{(ProcessGroupsMasterStore?.currentPage - 1) * ProcessGroupsMasterStore?.itemsPerPage + (num + 1)}}</td>
+                    <td>{{row.title}}</td>
+                   <td>{{row?.description ? row.description : AppStore.noContentText}}</td>
+                    <td style="padding:0.75rem; text-align: center;">
+                        <div [attr.class]="'dot-div '+row.status_label">{{row.status}}</div>
+                        <div class="edit-option-show">
+                          <a *ngIf="AuthStore.getActivityPermission(1100,'UPDATE_PROCESS_GROUP')" (click) = "getProcessGroups(row.id)" [attr.title]="'edit' | translate"><i class="fas fa-pen pointer"></i></a>
+                          <a *ngIf="AuthStore.getActivityPermission(1100,'DELETE_PROCESS_GROUP')" (click) = "delete(row.id)" [attr.title]="'delete' | translate"><i class="fas fa-trash pointer"></i></a>
+                          <a *ngIf="row.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(1100,'ACTIVATE_PROCESS_GROUP')" (click) = "activate(row.id)" [attr.title]="'activate' | translate"><i class="fas fa-check pointer"></i></a>                 
+                          <a *ngIf="row.status_id == AppStore.activeStatusId && AuthStore.getActivityPermission(1100,'DEACTIVATE_PROCESS_GROUP')"  (click) = "deactivate(row.id)" [attr.title]="'deactivate' | translate"><i class="fas fa-ban pointer"></i></a>
+                       </div>
+                      </td>
+    
+                </tr>
+            </ng-container>
+        </table>
+    
+    </div>
+    <p class="float-right" *ngIf="ProcessGroupsMasterStore?.loaded && ProcessGroupsMasterStore.totalItems > 0"><b>{{'total_Items' | translate}}:{{ProcessGroupsMasterStore?.totalItems}}</b></p>
+
+    <ng-container *mobxAutorun>
+        <div *ngIf="!ProcessGroupsMasterStore?.loaded">
+            <app-table-loader></app-table-loader>
+            
+        </div>
+        <app-no-data *ngIf = "ProcessGroupsMasterStore.processGroups.length == 0 && ProcessGroupsMasterStore.loaded == true"></app-no-data>
+  
+    </ng-container>
+
+    <!-- <div *ngIf = "ProcessGroupsMasterStore.totalItems == 0 && ProcessGroupsMasterStore.loaded == true" class="no-policy-demo-text bg-white d-flex align-items-center w-100 mt-2" style="height: 200px">
+        <div class="no-policy-demo">
+           <div class="no-file-icon">
+             <i class="far fa-file"></i>
+           </div>
+           <h6 class="bold mb-0">Nothing To Show</h6>
+        </div>
+     </div> -->
+    <div  *ngIf="ProcessGroupsMasterStore.totalItems>ProcessGroupsMasterStore.itemsPerPage" class="col-sm-12">
+        <ul class="pagination justify-content-center mt-3">
+            <div class="list">
+                <pagination-controls [previousLabel]="'previous' | translate"  [nextLabel]="'next' | translate" (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+            </div>
+        </ul>
+    </div>
+
+   
+</div>
+
+<!-- <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+    <button type="button" class="close" (click)="cancel()"><i class="lni-close"></i><span>esc</span></button>
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+           
+            <div class="modal-header">
+                <h4 class="modal-title">Process Groups</h4>
+            
+            </div>
+        
+            <div class="modal-body form-body">
+
+                <p class="head-details"></p>
+
+                <form [formGroup]="form" *mobxAutorun>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label class="red" for="title">Title</label>
+                                <input type="text" formControlName="title" class="form-control"
+                                    placeholder="Process Group" id="title" #titleInput>
+                                <p style="color: red;" *ngIf="formErrors"> {{formErrors.title}}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group add-kpi-textarea">
+                                <label>Description</label>
+                                <textarea class="form-control" rows="11" id="comment11"
+                                    placeholder="Description"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+
+                    <div class="clearfix"></div>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="d-block justify-content-left border-0 mt-3">
+                                <button type="submit" class="btn ordinary-btn mr-3 btn-active" (click)="save()"
+                                    [disabled]="form.invalid || AppStore.loading">{{ AppStore.loading  ? 'Loading...' : 'Save' }}</button>
+                                <button type="button" data-toggle="modal" data-target="#signal-lost"
+                                    class="btn ordinary-btn mr-3" (click)="save(true)"
+                                    [disabled]="form.invalid || AppStore.loading">{{ AppStore.loading  ? 'Loading...' : 'Save & Close' }}</button>
+                                <button type="button" data-toggle="modal" data-target="#error-message"
+                                    class="btn ordinary-btn mr-2"
+                                    (click)="cancel()">{{ AppStore.loading  ? 'Loading...' : 'Cancel' }}</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </form>
+            </div>
+        
+        </div>
+    </div>
+    
+</div> -->
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+    <app-process-group-modal *ngIf = "processGrpObject.type" [source] = "processGrpObject" ></app-process-group-modal>
+
+</div>
+
+<div class="modal modal-style-1 email-popup-new fade" data-backdrop="static" data-keyboard="false"
+  id="email-notification-popup" #mailConfirmationPopup>
+  <app-mail-send-popup [source] = "mailConfirmationData"></app-mail-send-popup>
+</div>

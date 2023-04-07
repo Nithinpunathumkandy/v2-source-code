@@ -1,0 +1,182 @@
+<button type="button" class="close" (click)="closeFormModal()">
+  <i class="lni-close"></i><span>{{ "esc" | translate }}</span>
+</button>
+<div class="modal-dialog modal-lg modal-dialog-centered">
+  <div class="modal-content">
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <h4 class="modal-title">
+        {{ 'add_summary' | translate }}
+      </h4>
+    </div>
+    <!-- Modal body -->
+    <div class="modal-body form-body">
+      <p class="head-details">
+        {{ 'add_summary_content_message' | translate }} 
+      </p>
+      <form [formGroup]="quickSummaryForm" *mobxAutorun>
+        <div class="row">
+          <div class="col-lg-12 col-sm-12">
+            <div class="form-group">
+              <label for="title"
+                >{{ "title" | translate
+                }}<span class="form-error">*</span></label
+              >
+              <input
+                type="text"
+                formControlName="title"
+                class="form-control"
+                [attr.placeholder]="'title' | translate"
+                id="cctitle"
+              />
+              <p class="form-error" *ngIf="quickSummaryFormErros">
+                {{ quickSummaryFormErros.title }}
+              </p>
+            </div>
+          </div>
+          <div class="col-lg-12 col-sm-12">
+            <div class="form-group add-kpi-textarea">
+              <span style="float: right" class="text-grey"
+                >{{
+                  quickSummaryForm?.value.description != null
+                    ? getDescriptionLength()
+                    : 0
+                }}
+                Characters</span
+              >
+
+              <label for="name">{{ "description" | translate }}
+                <span class="form-error">*</span>
+              </label>
+              <ckeditor id="description" (change)="descriptionValueChange($event)" [editor]="Editor" formControlName="description"></ckeditor>
+            </div>
+          </div>
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group mt-2">
+              <label for="name">{{'risk_category' | translate}}<sup>*</sup></label>
+              <div class="clearfix">
+                  <div class="multiple-plain-ngselect">
+                      <ng-select
+                          [placeholder]="'select_risk_category' | translate" 
+                          [multiple]="false" searchable="true"
+                          bindLabel="id" 
+                          formControlName="risk_category_id"
+                          (search)="searchRiskCategory($event)" 
+                          (clear)="getRiskCategory()"
+                          (open)="getRiskCategory()" 
+                          autocomplete="new-password">
+                          
+                          <ng-option
+                          [value]="type.id"
+                          *ngFor="let type of RiskCategoryStore.allItems"
+                        >
+                          {{ type.title }}
+                        </ng-option>
+                      </ng-select>
+                  </div>
+              </div>
+              <p class="form-error pt-1" *ngIf="quickSummaryFormErros && quickSummaryFormErros.risk_category_id">
+                  {{quickSummaryFormErros.risk_category_id}}</p>
+          </div>
+          </div>
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group mt-2">
+              <label for="title"
+                >{{ "score" | translate
+                }}<span class="form-error">*</span></label
+              >
+              <input
+                type="text"
+                formControlName="risk_score"
+                class="form-control"
+                [attr.placeholder]="'score' | translate"
+                id="cctitle"
+              />
+              <p class="form-error" *ngIf="quickSummaryFormErros">
+                {{ quickSummaryFormErros.risk_score }}
+              </p>
+            </div>
+          </div>
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'risk_owner' | translate}}<sup>*</sup></label>
+              <div class="clearfix">
+                  <div class="multiple-plain-ngselect">
+                      <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                          [placeholder]="'risk_owner' | translate " formControlName="risk_owner_id" [multiple]="false"
+                          (clear)="getUsers()" (search)="searchUers($event)" multiple="false"
+                          (open)="getUsers()">
+                          <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                            <img *ngIf = "item?.image_token" class="ng-select-user-display" height="15" width="15" [attr.src]="createImagePreview('user-profile-picture',item.image_token)" onerror = "this.src='/assets/images/user-demo2.png'"/>
+                            <img *ngIf = "!item?.image_token" class="ng-select-user-display" height="15" width="15" [attr.src]="getDefaultImage('user-logo')"/>
+                            <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b><span aria-hidden="true" (click) = "clear(item)" style="border:none;" class="ng-value-icon left">×</span>
+                         </ng-template>
+                         <ng-template ng-option-tmp let-item="item" let-index="index">
+                            <div class="user-post-department-pic">
+                               <img *ngIf = "item?.image_token" class="ng-select-user-display" height="25" width="25" [attr.src]="createImagePreview('user-profile-picture',item.image_token)" onerror = "this.src='/assets/images/user-demo2.png'"/>
+                               <img *ngIf = "!item?.image_token" class="ng-select-user-display" height="25" width="25" [attr.src]="getDefaultImage('user-logo')"/>
+                            </div>
+                            <div class="user-post-department-div">
+                               <b>{{getStringsFormatted([item.first_name,item.last_name],35,' ') | titlecase}}</b>
+                               <p class="user-post-department-multiple">{{getStringsFormatted([item.designation_title,' '+item.department],35,',')}}</p>
+                            </div>
+                         </ng-template>
+                      </ng-select>
+                  </div>
+              </div>
+              <p class="form-error pt-1" *ngIf="quickSummaryFormErros&&quickSummaryFormErros.risk_owner_id">
+                  {{quickSummaryFormErros.risk_owner_id}}</p>
+          </div>
+          </div>
+        </div>
+      </form>
+
+      <div class="row">
+        <div class="col-sm-12">
+          <div class="d-block justify-content-left border-0 mt-3">
+            <button
+              type="submit"
+              class="btn btn-active"
+              (click)="saveExecuteSummary()"
+              [disabled]="quickSummaryForm.invalid || AppStore.loading"
+            >
+              {{
+                AppStore.loading
+                  ? getButtonText("loading")
+                  : getButtonText("save")
+              }}
+            </button>
+            <button
+              type="button"
+              data-toggle="modal"
+              data-target="#signal-lost"
+              class="btn"
+              (click)="saveExecuteSummary(true)"
+              [disabled]="quickSummaryForm.invalid || AppStore.loading"
+            >
+              {{
+                AppStore.loading
+                  ? getButtonText("loading")
+                  : getButtonText("save_close")
+              }}
+            </button>
+            <button
+              type="button"
+              data-toggle="modal"
+              data-target="#error-message"
+              class="btn"
+              (click)="closeFormModal()"
+            >
+              {{
+                AppStore.loading
+                  ? getButtonText("loading")
+                  : getButtonText("cancel")
+              }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Modal footer -->
+  </div>
+</div>

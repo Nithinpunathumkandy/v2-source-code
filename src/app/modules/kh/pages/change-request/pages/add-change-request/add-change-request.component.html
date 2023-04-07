@@ -1,0 +1,216 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navBar>
+    <app-breadcrumb-menu></app-breadcrumb-menu>
+    <app-sub-menu></app-sub-menu>
+</nav>
+
+<main class="mt-3 organization-page" *mobxAutorun>
+    <div class="container-fluid">
+        <div class="organization-form-page compliance-register-form pt-3">
+            <form [formGroup]='requestForm'>
+                <div class="user-details-page mt-2">
+                    <div class="right-block p-0">
+                        <h5 *ngIf="!changeRequestStore.editCheck" class="mt-0"> <span> {{'add_change_request' | translate}} </span> </h5>
+                        <h5 *ngIf="changeRequestStore.editCheck" class="mt-0"> <span>{{'edit_change_request' | translate}} </span> </h5>
+                    </div>
+                </div>
+                <div class="row mb-1">
+                    <div class="col-sm-12">
+                        <div class="form-group clearfix">
+                            <label for="name" class="float-left pr-3 pt-1">{{'request_type' | translate}}</label>
+                            <div class="box-cnt-one tab-type-btn-small float-left">
+                                <label *ngFor="let item of DocumentChangeRequestTypesMasterStore.allItems" (click)="selectRequestType(item.id)" [ngClass]="findSelectedRequestType(item.id) ? 'outline-tag active pointer' : 'outline-tag pointer'"><i [class]="item.icon"></i>{{item.title}}</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <label *ngIf="changeRequestStore.editCheck" class="label-style mb-0">{{'select_document' | translate}}<span class="form-error">*</span></label>
+                <label *ngIf="!changeRequestStore.editCheck" class="label-style mb-0">{{'select_document' | translate}}<span class="form-error">*</span></label>
+                <p style="color: green;" *ngIf="AssessmentsStore?.activeFile && workflowEnabled">{{'workflow_enabled' | translate}}</p>
+                <p style="color: red;" *ngIf="AssessmentsStore?.activeFile && !workflowEnabled">{{'workflow_disabled' | translate}}</p>
+                <p style="color: red;" *ngIf="requestFormErrors && requestFormErrors.document_id">{{requestFormErrors.document_id}}</p>
+                <div class="scroll-documents">
+                    <div class="row m-0 upload-section">
+                        <div class="col-sm-3 costmz-logo-new mt-2" *ngIf="!changeRequestStore.editCheck">
+                            <div class="question-circle-inp"
+                                *ngIf="OrganizationGeneralSettingsStore?.organizationSettings?.support_file_allowed_types?.length > 0"
+                                style="margin-right: 7px;">
+                                <i class="far fa-question-circle"></i>
+                                <div class="message-password-inp">
+                                    <p class="mb-0">Allowed File Types{{OrganizationGeneralSettingsStore?.organizationSettings?.support_file_allowed_types?.toString()}}</p>
+                                </div>
+                            </div>
+                            <div class="form-group form-group-upload">
+                                <div class="darag-dropifile-upload">
+                                    <div class="d-flex justify-content-center align-items-center text-center">
+                                        <div>
+                                            <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                                            <div class="drag-file-name">{{'drag_drop_file_here' | translate}} </div>
+                                            <div class="upload-btn-wrapper">
+                                                <button class="btn" data-toggle="modal"
+                                                    (click)="selectFiles()">{{'browse_files' | translate}}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-3 up-pic-cf mt-2" *ngIf="AssessmentsStore?.activeFile!=null">
+                            <div class="upload-pics edit-option">
+                                <div class="browse-form-pic"
+                                    [ngStyle]="{'background': 'url('+createImageUrl('document-version',AssessmentsStore?.activeFile?.token)+') no-repeat'}">
+                                </div>
+                                <div class="browse-form-name clearfix">
+                                    <div class="float-left">
+                                        <h6>{{AssessmentsStore?.activeFile.title}}.{{AssessmentsStore?.activeFile.ext}}</h6>
+                                        <span>{{AssessmentsStore.activeFile?.size/1048576 | number:'0.2-2'}}MB</span>
+                                    </div>
+                                    <div class="browse-logo">
+                                        <img *ngIf="checkExtension(AssessmentsStore?.activeFile.ext,'image') != -1"
+                                            class="folder-picher" src="/assets/images/jpg-icone.png">
+                                        <img *ngIf="checkExtension(AssessmentsStore?.activeFile.ext,'doc') != -1"
+                                            class="folder-picher" src="/assets/images/word-icone.png">
+                                        <img *ngIf="checkExtension(AssessmentsStore?.activeFile.ext,'pdf') != -1"
+                                            class="folder-picher" src="/assets/images/pdf-icone.png">
+                                        <img *ngIf="checkExtension(AssessmentsStore?.activeFile.ext,'excel') != -1"
+                                            class="folder-picher" src="/assets/images/excel-icone.png">
+                                        <img *ngIf="checkExtension(AssessmentsStore?.activeFile.ext,'video') != -1"
+                                            class="folder-picher" src="/assets/images/md-video.png">
+                                        <img *ngIf="checkExtension(AssessmentsStore?.activeFile.ext,'audio') != -1"
+                                            class="folder-picher" src="/assets/images/md-audio.png">
+                                        <img *ngIf="checkExtension(AssessmentsStore?.activeFile.ext,'ppt') != -1"
+                                            class="folder-picher" src="/assets/images/md-ppt.png">
+                                    </div>
+                                </div>
+                                <div *ngIf="!changeRequestStore.editCheck" class="edit-option-show">
+                                    <a (click)="removeDocument()"><i class="fas fa-trash"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">                
+                    <div class="col-sm-12">
+                        <div class="form-group add-kpi-textarea">
+                            <label for="name">{{'reason' | translate}}<span class="form-error">*</span></label>                            
+                            <textarea class="form-control" rows="11" formControlName="reason"
+                                [attr.placeholder]="'kh_change_request_reason' | translate"></textarea>
+                            <p class="form-error pt-1" *ngIf="requestFormErrors&&requestFormErrors.reason">
+                                {{requestFormErrors.reason}}</p>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-12">
+                        <div class="form-group add-kpi-textarea">
+                            <label for="name">{{'consequences' | translate}}</label>                            
+                            <textarea class="form-control" rows="11" formControlName="consequence"
+                                [attr.placeholder]="'kh_change_request_consequences' | translate"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <label class="label-style mb-0" *ngIf="selectedRequestType==1">{{'new_document' | translate}}<span class="form-error">*</span></label>
+                <div class="row m-0 upload-section" style="padding-top: 0" *ngIf="selectedRequestType==1">
+                    <div class="col-sm-3 costmz-logo-new mt-2">
+                        <div class="question-circle-inp"
+                            *ngIf="OrganizationGeneralSettingsStore?.organizationSettings?.support_file_allowed_types?.length > 0"
+                            style="margin-right: 7px;">
+                            <i class="far fa-question-circle"></i>
+                            <div class="message-password-inp">
+                                <p class="mb-0">Allowed File Types {{OrganizationGeneralSettingsStore?.organizationSettings?.support_file_allowed_types?.toString()}}</p>
+                            </div>
+                        </div>
+                        <div class="form-group form-group-upload">
+                            <div class="darag-dropifile-upload">
+                                <div class="d-flex justify-content-center align-items-center text-center">
+                                    <div>
+                                        <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                                        <div class="drag-file-name"> {{'drag_drop_file_here' | translate}} </div>
+                                        <div class="upload-btn-wrapper">
+                                            <input type="file" name="myfile"
+                                                (change)="onFileChange($event,'support-file')"
+                                                accept="application/msword, application/pdf, image/*, 	application/vnd.ms-excel, 	application/vnd.ms-powerpoint, video/mp4" />
+                                            <button class="btn">{{'browse_files' | translate}}</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div [ngClass]="files.success || files.file_type != 'support-file' ? 'col-sm-3 up-pic-cf mt-2 hide_loader' : 'col-sm-3 up-pic-cf mt-2'"
+                        *ngFor="let files of newFileArray">
+                        <div class="upload-pics edit-option file-upload-loader">
+                            <circle-progress [percent]=files.uploadProgress [title]=files.uploadProgress>
+                            </circle-progress>
+                        </div>
+                    </div>
+
+                    <div [ngClass]="changeRequestStore.getNewDocument?.is_deleted ? 'col-sm-4 col-lg-3 up-pic-cf mt-2 image_deleted':'col-sm-4 col-lg-3 up-pic-cf mt-2'"
+                        *ngIf="changeRequestStore.getNewDocument">
+                        <div class="upload-pics edit-option">
+                            <div class="browse-form-pic"
+                                [ngStyle]="{'background': 'url(' + changeRequestStore.getNewDocument?.preview + ') no-repeat 0 0 / cover'}">
+                            </div>
+                            <div class="browse-form-name clearfix">
+                                <div class="float-left">
+                                    <h6 [attr.title]="changeRequestStore.getNewDocument?.name">
+                                        {{changeRequestStore.getNewDocument?.name.length > 20 ?
+                                        changeRequestStore.getNewDocument?.name.substring(0,20)+' ...' :
+                                        changeRequestStore.getNewDocument?.name}}
+                                    </h6>
+                                    <span>{{changeRequestStore.getNewDocument?.size/1048576 | number:'0.2-2'}}MB</span>
+                                </div>
+                                <div class="browse-logo">
+                                    <img *ngIf="checkExtension(changeRequestStore.getNewDocument?.ext,'excel') != -1"
+                                        src="/assets/images/md-xl.png">
+                                    <img *ngIf="checkExtension(changeRequestStore.getNewDocument?.ext,'image') != -1"
+                                        src="/assets/images/md-jpg.png">
+                                    <img *ngIf="checkExtension(changeRequestStore.getNewDocument?.ext,'doc') != -1"
+                                        src="/assets/images/md-doc.png">
+                                    <img *ngIf="checkExtension(changeRequestStore.getNewDocument?.ext,'pdf') != -1"
+                                        src="/assets/images/md-pdf.png">
+                                    <img *ngIf="checkExtension(changeRequestStore.getNewDocument?.ext,'ppt') != -1"
+                                        src="/assets/images/md-ppt.png">
+                                </div>
+                            </div>
+                            <div class="edit-option-show">
+                                <a (click)="changeRequestStore.unsetFileDetails()"><i class="fas fa-trash"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row form-btns">
+                    <div class="col-sm-12">
+                        <div class="d-block justify-content-left border-0 mt-3">
+                            <button type="submit" class="btn btn-active" (click)="submitRequestForm()"
+                                [disabled]="formValidationCheck()">{{ AppStore.loading ? getButtonText('loading') :
+                                getButtonText('save') }}</button>
+                            <button type="button" data-toggle="modal" data-target="#signal-lost" class="btn"
+                                (click)="submitRequestForm(true)" [disabled]="formValidationCheck()">{{ AppStore.loading
+                                ? getButtonText('loading') : getButtonText('save_close') }}</button>
+                            <button type="button" data-toggle="modal" data-target="#error-message" class="btn"
+                                (click)="cancelClicked()">{{ AppStore.loading ? getButtonText('loading') :
+                                getButtonText('cancel') }}</button>
+
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+<!-- Documents Selection Modal Starts Here -->
+<div [ngClass]="selectFile ? 'modal modal-style-1 popup-full-width fade show': 'modal modal-style-1 popup-full-width fade'" #khDoc>
+    <app-kh-documents [documentStatus]="'published'"></app-kh-documents>
+</div>
+<!-- Documents Selection Modal Ends Here -->
+
+<!-- Confirmation Popup Starts Here -->
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopup data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="confirmationObject"></app-delete-popup>
+</div>
+<!-- Confirmation Poup Ends Here -->

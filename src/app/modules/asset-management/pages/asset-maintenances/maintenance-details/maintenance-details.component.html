@@ -1,0 +1,452 @@
+<!-- <div style="
+position: relative;
+right: 157px;
+top: -30px;
+">
+<ul class="nav nav-pills edit-icons float-right d-none d-xl-block" role="tablist">
+   <li>
+      <button type="button" class="btn btn-small btn-resolve" (click)="gotoAssetProfile()">Go to Asset Profile</button>
+   </li>
+</ul>
+</div> -->
+<ng-container *mobxAutorun>
+
+	<div class="row" *ngIf="AssetMaintenanceStore?.individual_maintenance_loaded">
+
+		<div class="col-sm-12">
+			<div class="widg-padding-cmn bg-white">
+				<div class="min-height-64">
+					<div class="row">
+						<div class="col-md-12">
+							<div class="issue-top-sec">
+								<div class="clearfix ">
+									<h5 class="d-inline-block cmn-head-style label-tag-style mr-2"><span
+											class="issue-smoal-head-text">#{{AssetMaintenanceStore.individualMaintenanceDetails?.reference_code}}</span>{{AssetMaintenanceStore.individualMaintenanceDetails?.title}}
+										<span
+											[ngClass]="'draft-tag draft-tag-'+AssetMaintenanceStore.individualMaintenanceDetails?.asset_maintenance_status?.label+' label-left-arow-tag'">
+											{{AssetMaintenanceStore.individualMaintenanceDetails?.asset_maintenance_status?.language[0]?.pivot?.title}}</span>
+									</h5>
+								</div>
+
+								<p *ngIf="AssetMaintenanceStore.individualMaintenanceDetails?.description != null"
+									style="white-space: pre-line;">
+									{{AssetMaintenanceStore.individualMaintenanceDetails?.description}}
+								</p>
+							</div>
+						</div>
+
+						<div class="col-lg-4 col-sm-6">
+							<h6>{{'asset_title_schedule'|translate}}</h6>
+							<p>{{AssetMaintenanceStore.individualMaintenanceDetails?.asset?.title}}
+							</p>
+						</div>
+
+						<div class="col-lg-4 col-sm-6">
+							<h6>{{'category'|translate}}</h6>
+							<p>{{AssetMaintenanceStore.individualMaintenanceDetails?.asset_maintenance_category?.title}}
+							</p>
+						</div>
+
+						<div class="col-lg-4 col-sm-6">
+							<h6>{{'asset_maintenance_type'|translate}}</h6>
+							<p>{{AssetMaintenanceStore.individualMaintenanceDetails?.asset_maintenance_type?.language[0]?.pivot?.title}}
+							</p>
+						</div>
+
+						<div class="col-lg-4 col-sm-6">
+							<h6>{{'asset_mt_form_guarantee_warranty'|translate}}</h6>
+							<p>
+								{{AssetMaintenanceStore.individualMaintenanceDetails?.warranty_year?AssetMaintenanceStore.individualMaintenanceDetails?.warranty_year+'yrs':''}}
+								{{AssetMaintenanceStore.individualMaintenanceDetails?.warranty_month?AssetMaintenanceStore.individualMaintenanceDetails?.warranty_month+'months':''}}
+								{{AssetMaintenanceStore.individualMaintenanceDetails?.is_warranty?'Warranty':'Guarantee'}}
+							</p>
+						</div>
+
+						<div class="col-lg-4 col-sm-6">
+							<h6>{{'maintenance_cost'|translate}}</h6>
+							<p *ngIf="AssetMaintenanceStore.individualMaintenanceDetails?.total_cost">
+								{{OrganizationGeneralSettingsStore?.organizationSettings?.currency}}{{AssetMaintenanceStore.individualMaintenanceDetails?.total_cost?AssetMaintenanceStore.individualMaintenanceDetails?.total_cost:AppStore?.noContentText}}
+							</p>
+							<p *ngIf="!AssetMaintenanceStore.individualMaintenanceDetails?.total_cost">{{AppStore.noContentText}}</p>
+						</div>
+
+						<div class="col-sm-12 col-lg-12"
+							>
+							<div class="issue-top-sec">
+								<div class="clearfix ">
+									<h6 class="d-inline-block cmn-head-style label-tag-style mr-2">{{'asset_mt_form_maintenance_schedule'|translate}}<span
+											class="draft-tag label-tag-style-tag label-left-arow-tag d-inline-block status-tag-new-one ml-3">{{AssetMaintenanceStore.individualMaintenanceDetails?.asset_maintenance_schedule_frequency?.language[0]?.pivot?.title}}</span>
+									</h6>
+								</div>
+							</div>
+							<p *ngIf="AssetMaintenanceStore.individualMaintenanceDetails?.asset_maintenance_schedules?.length == 0">{{AppStore.noContentText}}</p>
+
+							<!--------accordion starts------>
+
+							<div class="panel-group panel-drop-sections pt-0" id="jd" role="tablist"
+								aria-multiselectable="true" *ngIf="AssetMaintenanceStore.individualMaintenanceDetails?.asset_maintenance_schedules?.length > 0 &&
+								AssetMaintenanceStore.individualMaintenanceDetails?.asset_maintenance_schedules[0]?.is_shutdown == 1">
+								<div class="panel panel-default edit-and-delete-main"
+									*ngFor="let schedule of AssetMaintenanceStore.individualMaintenanceDetails?.asset_maintenance_schedules;let num=index">
+									<div [ngClass]="currentScheduleIndex==num?'panel-heading active':'panel-heading'"
+										role="tab" id="headingOne">
+										<div class="panel-title">
+											<a role="button" data-toggle="collapse" [attr.href]="'#ceo'+num"
+												aria-expanded="false" aria-controls="collapseOne" class="collapsed"
+												(click)="setMaintenanceIndex(num,schedule.id)">
+
+												<h5 class="width96pc mt-0  "><span
+														class="issue-smoal-head-text">{{schedule.title}}</span>
+													<span>
+														<p class="mb-0"><i
+																class="fas fa-calendar-alt date-pics-two"></i>
+															{{getScheduledDate(schedule.scheduled_date)| date :
+															OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+														</p>
+													</span>
+													<span>
+														<div
+															[ngClass]="'dot-div '+schedule.asset_maintenance_status?.label+' ml-3'">
+															{{schedule.asset_maintenance_status?.language[0]?.pivot?.title}}
+														</div>
+													</span>
+													<!--<span class="draft-tag label-tag-style-tag label-left-arow-tag d-inline-block status-tag-new-one ml-3">Ongoing</span>--><span
+														class="drop-down-icone"><i
+															class="fas fa-chevron-down"></i></span>
+												</h5>
+											</a>
+											<div class="edit-option-show mr-4" style="margin: 37px 0 0 0; "
+												>
+												<!-- edit-and-delete starts -->
+												<a *ngIf="schedule?.asset_maintenance_status?.type!='completed'" data-toggle="modal" (click)="openMaintenanceReviewPopup(schedule.id)"
+													style="cursor: pointer"><i class="fas fa-pen-alt"></i></a>
+												<a data-toggle="modal"
+													(click)="openMaintenanceScheduleHistory(schedule.id)"
+													style="cursor: pointer"><i class="fas fa-history"></i></a>
+											</div>
+										</div>
+									</div>
+									<div [attr.id]="'ceo'+num" *ngIf="currentScheduleIndex==num"
+										class="drop-detail-sec panel-collapse collapse" role="tabpanel"
+										aria-labelledby="headingOne" [attr.data-parent]="'#ceo'+num">
+										<div class="panel-body bg-white">
+											<div class="drop-detail-sec">
+												<div class="row">
+													<!-- <div class="col-lg-3 col-sm-12">
+                                                                    <h6>Department</h6>
+                                                                    <p>IT Department</p>
+                                                                    </div> -->
+
+													<div class="mb-2 col-lg-9 col-sm-12"
+														*ngIf="AssetMaintenanceStore.individualMaintenanceDetails.asset_maintenance_type?.type=='internal'">
+														<h6>{{'corrective_action_responsible_user'|translate}}</h6>
+														<div class="row">
+															<div class="col-lg-4 col-sm-6"
+																*ngFor="let responsible of schedule.responsible_users; let i = index">
+																<div class="label-and-user-pic">
+
+																	<!-- <ul *ngIf="schedule.user_ids?.length > 0"
+                                                                        class="arci-user-tab-dtl workflow-lst-pics-loop clearfix mb-2 d-inline-block">
+                                                                        <li class="rounde-hov-bg"
+                                                                            *ngFor="let responsible of schedule.user_ids; let i = index"> -->
+																	<app-user-popup-box
+																		[source]="getCreatedByPopupDetails(responsible)"
+																		[showName]="true">
+																	</app-user-popup-box>
+																	<!-- </li>
+                                                                    </ul> -->
+																</div>
+															</div>
+															<div *ngIf="schedule.user_ids?.length == 0">
+																{{AppStore.noContentText}}</div>
+
+
+														</div>
+													</div>
+
+													<div class="mb-2 col-lg-9 col-sm-12"
+														*ngIf="AssetMaintenanceStore.individualMaintenanceDetails.asset_maintenance_type?.type=='external'">
+														<h6>{{'supplier'|translate}}</h6>
+														<div class="row">
+															<div class="col-lg-3 col-sm-6">
+																<div class="label-and-user-pic">
+
+															
+																	<app-user-popup-box
+																		[source]="getCreatedByPopupDetails(schedule.supplier_id,true)"
+																		[showName]="true">
+																	</app-user-popup-box>
+																	
+																</div>
+															</div>
+															<div *ngIf="schedule.supplier_id==null">
+																{{AppStore.noContentText}}</div>
+
+
+														</div>
+													</div>
+
+
+													<div class="col-lg-12 col-sm-12"
+														*ngIf="schedule?.latest_asset_maintenance_schedule_update">
+														<h6>{{'comment'|translate}}</h6>
+														<p style="white-space: pre-line;">
+															{{schedule?.latest_asset_maintenance_schedule_update?.comment?schedule?.latest_asset_maintenance_schedule_update?.comment:AppStore.noContentText}}
+														</p>
+													</div>
+
+
+
+
+													<div class="col-lg-12 col-sm-12"
+														*ngIf="schedule?.latest_asset_maintenance_schedule_update && schedule?.latest_asset_maintenance_schedule_update?.documents?.length>0">
+														<h6 class="mb-2">{{'attachments'|translate}}</h6>
+														<!-- <div class="row m-0 upload-section" style="padding-top: 0">
+															<div class="col-sm-4 up-pic-cf mt-2"
+																*ngFor="let document of schedule?.latest_asset_maintenance_schedule_update?.documents">
+																<div class="upload-pics edit-option">
+																	<div class="browse-form-pic"
+																		[ngStyle]="{'background': 'url(' + createImagePreview('maintenance-schedule',document.token) + '), url(' + getDefaultImage('no-preview') + ') no-repeat 0 0 / cover'}"
+																		(click)="viewDocument(document,schedule,schedule?.latest_asset_maintenance_schedule_update)">
+																	</div>
+																	<div class="browse-form-name clearfix">
+																		<div class="float-left">
+																			<h6
+																				[attr.title]="document.title.length > 10 ? document.title:''">
+																				{{document.title.length > 10 ?
+																				document.title.substring(0,10)+' ...':
+																				document.title}}
+																			</h6>
+																			<span>{{document.size/1048576 |
+																				number:'0.2-2'}}MB</span>
+																		</div>
+																		<div class="browse-logo">
+																			<img *ngIf="checkExtension(document.ext,'image') != -1"
+																				src="/assets/images/md-jpg.png">
+																			<img *ngIf="checkExtension(document.ext,'doc') != -1"
+																				src="/assets/images/md-doc.png">
+																			<img *ngIf="checkExtension(document.ext,'pdf') != -1"
+																				src="/assets/images/pdf-icone.png">
+																			<img *ngIf="checkExtension(document.ext,'excel') != -1"
+																				src="/assets/images/md-xl.png">
+																			<img *ngIf="checkExtension(document.ext,'video') != -1"
+																				src="/assets/images/md-video.png">
+																			<img *ngIf="checkExtension(document.ext,'audio') != -1"
+																				src="/assets/images/md-audio.png">
+																			<img *ngIf="checkExtension(document.ext,'ppt') != -1"
+																				src="/assets/images/md-ppt.png">
+
+																		</div>
+																	</div>
+																	<div class="edit-option-show">
+																		<a [attr.title]="'download'|translate"
+																			(click)="downloadDocument(document,schedule,schedule?.latest_asset_maintenance_schedule_update)"><i
+																				class="fas fa-download"></i></a>
+																	</div>
+																</div>
+															</div>
+														</div> -->
+
+														<div class="thumb-pics-bg thumb-pics-col-5 thumb-pics-fix-text clearfix" style="padding-top: 0">
+															<div class="thumb-pics" *ngFor="let document of schedule?.latest_asset_maintenance_schedule_update?.documents">
+
+																<div class="upload-pics edit-option" *ngIf="!document.document_id"  (click)="viewDocument(document,schedule,schedule?.latest_asset_maintenance_schedule_update)">
+																	<div class="browse-form-pic"  [ngStyle]="{'background': 'url('+createImagePreview('maintenance-schedule',document.token)+') no-repeat'}">
+																	</div>
+																	 <div class="browse-form-name clearfix">
+																	  <div class="float-left">
+																	   <h6>{{document.title.length > 10 ?
+																		document.title.substring(0,10)+' ...':
+																		document.title}}
+																	   </h6>
+																	   <span>{{document.size/1048576 | number:'0.2-2'}}MB</span><span class="text-blue bold pl-2">System</span>
+																	  </div>
+																	  <div class="browse-logo">
+																	   <img *ngIf="checkExtension(document.ext,'image') != -1"
+																		   class="folder-picher" src="/assets/images/jpg-icone.png">
+																	   <img *ngIf="checkExtension(document.ext,'doc') != -1"
+																		   class="folder-picher" src="/assets/images/word-icone.png">
+																	   <img *ngIf="checkExtension(document.ext,'pdf') != -1"
+																		   class="folder-picher" src="/assets/images/pdf-icone.png">
+																	   <img *ngIf="checkExtension(document.ext,'excel') != -1"
+																		   class="folder-picher" src="/assets/images/excel-icone.png">
+																	   <img *ngIf="checkExtension(document.ext,'video') != -1"
+																		   class="folder-picher" src="/assets/images/md-video.png">
+																	   <img *ngIf="checkExtension(document.ext,'audio') != -1"
+																		   class="folder-picher" src="/assets/images/md-audio.png">
+																	   <img *ngIf="checkExtension(document.ext,'ppt') != -1"
+																		   class="folder-picher" src="/assets/images/md-ppt.png">
+																   </div>
+																	 </div>
+																	 <div class="edit-option-show">
+																	   <a><i class="fas fa-download" (click) = "downloadDocument(document,schedule,schedule?.latest_asset_maintenance_schedule_update)"></i></a>
+																	</div>
+																  </div> 
+
+															</div>
+														</div>
+
+													</div>
+												</div>
+
+												<div>
+
+
+													<ul class="arrowlist pl-0 mt-0 mb-0 subheadings-border-right"
+														*ngIf="AssetMaintenanceStore?.individualMaintenanceDetails?.asset_maintenance_schedules[num]?.asset_maintenance_schedule_shutdown?.length>0">
+														<li Class="clearfix edit-option"
+															*ngFor="let shutdown of AssetMaintenanceStore?.individualMaintenanceDetails?.asset_maintenance_schedules[num]?.asset_maintenance_schedule_shutdown;let s=index">
+															<div class="edit-option-show-inner"
+																style="margin: 32px 0 0 0;"
+																>
+																<a *ngIf="shutdown?.asset_maintenance_status?.type!='completed'" data-toggle="modal"
+																	(click)="openShutdownReviewModal(shutdown.id,schedule.id)"
+																	style="cursor: pointer"><i
+																		class="fas fa-pen"></i></a>
+																<a data-toggle="modal"
+																	(click)="openMaintenanceShutdownistory(shutdown.id,schedule.id)"
+																	style="cursor: pointer"><i
+																		class="fas fa-history"></i></a>
+															</div>
+
+															<h5 class="mb-0 font-normal">{{shutdown.title}}
+																<span>
+																	<div
+																		[ngClass]="'dot-div '+shutdown.asset_maintenance_status?.label+' ml-3'">
+																		{{shutdown.asset_maintenance_status?.language[0]?.pivot?.title}}
+																	</div>
+																</span>
+																<!-- <span class="outline-tag active ml-1"
+                                  [ngClass]="'dot-div '+shutdown?.asset_maintenance_status?.label"
+                                  style="padding: 2px 3px; font-size: 11px;">{{shutdown.asset_maintenance_status?.language[0]?.pivot?.title}}</span> -->
+															</h5>
+
+															<p style="white-space: pre-line;">{{shutdown.start_date |
+																date :
+																OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+																- {{shutdown.end_date
+																| date :
+																OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+																<span class="border-right"></span> <span
+																	class="pl-2">Daily Downtime
+																	({{shutdown.start_date+' '+shutdown.downtime_from|
+																	date: 'hh:mm aa'}} to {{shutdown.end_date+'
+																	'+shutdown.downtime_to| date: 'hh:mm
+																	aa'}})</span><br>
+																{{shutdown.description}}
+															</p>
+															<!-- <div
+                                      *ngIf="!AssetMaintenanceStore?.shutdownLoaded&& currentScheduleIndex!=null?getShutdowns(schedule.id,shutdown.id):''">
+                                    </div> -->
+															<div class="row">
+																<div class="col-lg-4 col-sm-6"
+																	*ngFor="let attachement of shutdown?.latest_asset_maintenance_schedule_shutdown_update?.documents">
+																	<div class="d-flex mb-3 pointer">
+																		<!-- <a data-toggle="modal" > -->
+																		<!-- <div class="browse-form-pic"  [ngStyle]="{'background': 'url(' + createImagePreview('maintenance-shutdown',attachement.token) + '), url(' + getDefaultImage('no-preview') + ') no-repeat 0 0 / cover'}"
+                                      (click)="viewDocument(attachement,schedule,AssetMaintenanceStore?.assetMaintenanceShutdowns[0],shutdown.id)">
+                                               </div> -->
+																		<!-- </a> -->
+																		<img [attr.src]="createImagePreview('maintenance-shutdown',attachement.token)"
+																			class="img-fluid"
+																			style="width: 60px;height: 40px;"
+																			(click)="viewDocument(attachement,schedule,shutdown?.latest_asset_maintenance_schedule_shutdown_update,shutdown.id)">
+																		<div class="w-100 ml-2">
+																			<p class="pl-2"
+																				[attr.title]="attachement.title.length > 25 ? attachement.title:''">
+																				{{attachement.title.length > 25 ?
+																				attachement.title.substring(0,25)+'...':
+																				attachement.title}}
+																				<br>{{attachement.size/1048576 |
+																				number:'0.2-2'}}MB
+																			</p>
+																		</div>
+																	</div>
+																</div>
+															</div>
+
+														</li>
+
+
+													</ul>
+												</div>
+
+											</div>
+										</div>
+									</div>
+								</div>
+
+
+
+							</div>
+
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xl-12">
+						<hr class="mb-2">
+						<div class="d-flex flex-row user-list-sm p-0">
+							<app-user-popup-box
+								[source]=" getCreatedByPopupDetails(AssetMaintenanceStore?.individualMaintenanceDetails?.created_by)">
+							</app-user-popup-box>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+		<!-- <div class="col-sm-12 col-lg-4">
+      <div class="risk-rating-box bg-white text-left p-3 mb-3 min-height-440">
+
+        <h6>Chart</h6>
+
+
+      </div>
+
+
+    </div> -->
+	</div>
+
+	<app-asset-maintenance-details-loader *ngIf="!AssetMaintenanceStore?.individual_maintenance_loaded">
+	</app-asset-maintenance-details-loader>
+</ng-container>
+
+<div class="modal modal-style-1 popup-full-width fade show" id="shut-down-preview-popup" data-keyboard="false"
+	data-backdrop="static" #shutdownReview *mobxAutorun>
+	<app-maintenance-shutdown-review *ngIf="shutdownReviewOpened" [source]="shutdownObject">
+	</app-maintenance-shutdown-review>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade show" id="maintenance-review-popup" data-keyboard="false"
+	data-backdrop="static" #maintenanceReview *mobxAutorun>
+	<app-asset-maintenance-review *ngIf="maintenanceReviewOpened" [source]="scheduleObject">
+	</app-asset-maintenance-review>
+</div>
+
+
+<!-- preview component for image preview -->
+<div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup" data-keyboard="false"
+	data-backdrop="static" #filePreviewModal *mobxAutorun>
+	<button type="button" class="close" data-dismiss="modal" (click)="closePreviewModal($event)"><i
+			class="lni-close"></i><span>{{'esc'|translate}}</span></button>
+	<app-asset-item-preview *ngIf="previewObject" [source]="previewObject" (close)="closePreviewModal($event)">
+	</app-asset-item-preview>
+</div>
+<!-- preview modal end -->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+	<app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade show" id="shutdown-historypopup" data-keyboard="false"
+	data-backdrop="static" #shutdownHistory *mobxAutorun>
+	<app-asset-maintenance-shutdown-history *ngIf="shutdownHistoryOpened" [source]="shutdownHistoryObject">
+	</app-asset-maintenance-shutdown-history>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade show" id="maintenance-historypopup" data-keyboard="false"
+	data-backdrop="static" #maintenanceHistory *mobxAutorun>
+	<app-asset-maintenance-schedule-history *ngIf="maintenanceHistoryOpened" [source]="historyObject">
+	</app-asset-maintenance-schedule-history>
+</div>

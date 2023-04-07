@@ -1,0 +1,292 @@
+
+<div #plainDev></div>
+<div class="common-tab-md clearfix" *mobxAutorun>
+   <div class="tab-common-left-md" *ngIf="ComplianceRegisterActionPlanStore.loaded == true && ComplianceRegisterActionPlanStore.complianceRegisterActionPlans.length >0">
+      <div class=" issues-tab">
+         <ul class="nav nav-tabs nav-tabs--vertical nav-tabs--left vertical-tab" role="navigation">
+            <li class="nav-item" *ngFor="let ap of ComplianceRegisterActionPlanStore.complianceRegisterActionPlans; let i = index">
+               <a (click)="getActionPlan(ap.id)"
+                  [ngClass]="ComplianceRegisterActionPlanStore.selectedItem == ap.id ? 'nav-link active show':'nav-link'"
+                  data-toggle="tab" role="tab" aria-controls="lorem" aria-selected="false">{{ap.reference_code}}-
+                  {{ap.title?.length>10?ap.title.substring(0,10)+'...' :
+                  ap.title}}
+                  <span
+                     [ngClass]="'draft-tag draft-tag-'+ labelDot(ap?.document_action_plan_status_label) +' label-tag-style-tag label-left-arow-tag d-inline-block'">
+                     {{ap?.document_action_plan_status_language_title}}</span>
+               </a>
+            </li>
+         </ul>
+      </div>
+   </div>
+   <div class="tab-common-left-content-m"
+      *ngIf="ComplianceRegisterActionPlanStore.loaded == true && ComplianceRegisterActionPlanStore.complianceRegisterActionPlans.length >0">
+      <div class="tab-content">
+         <div class="tab-pane fade active show" id="tab-two-box-one" role="tabpanel">
+            <ng-container *mobxAutorun>
+               <div *ngIf="!ComplianceRegisterActionPlanStore.details_loaded">
+                  <app-corrective-action-loader></app-corrective-action-loader>
+               </div>
+            </ng-container>
+            <div class="row" *ngIf="ComplianceRegisterActionPlanStore.details_loaded">
+               <div class="col-lg-8 col-sm-12 padding-right-0">
+                  <div class="widg-padding-cmn bg-white cmn-bdr">
+                     <div class="min-height-64 edit-and-delete-main">
+                        <div class="edit-option-show text-right" style="margin: 25px -15px 0 0;" wfd-id="222">
+
+                           <a class="pointer" [attr.title]="'history'|translate" (click)="openHistoryModal()"
+                              *ngIf="AuthStore.getActivityPermission(900,'COMPLIANCE_ACTION_PLAN_UPDATE_LIST')">
+                              <i class="fas fa-history"></i></a>
+
+                           <a class="pointer" [attr.title]="'update'|translate" (click)="openActionPlanStatusUpdateModal()"
+                              *ngIf="ComplianceRegisterActionPlanStore?.complianceRegisterActionPlanDetails?.document_action_plan_status?.type!='closed' && AuthStore.getActivityPermission(900,'CREATE_COMPLIANCE_ACTION_PLAN_UPDATE')">
+                              <i class="fas fa-pen-alt"></i></a>
+
+                           <a *ngIf="ComplianceRegisterActionPlanStore?.complianceRegisterActionPlanDetails?.document_action_plan_status?.type!='closed' && AuthStore.getActivityPermission(900,'UPDATE_COMPLIANCE_REGISTER_ACTION_PLAN')"
+                              (click)="editActionPlan()" [attr.title]="'edit'|translate"><i class="fas fa-pen"></i></a>
+
+
+                           <a *ngIf="ComplianceRegisterActionPlanStore?.complianceRegisterActionPlanDetails?.document_action_plan_status?.type!='closed' && AuthStore.getActivityPermission(900,'DELETE_COMPLIANCE_REGISTER_ACTION_PLAN')"
+                              (click)="deleteActionPlan(ComplianceRegisterActionPlanStore?.complianceRegisterActionPlanDetails.id)"
+                              [attr.title]="'delete'|translate"><i class="fas fa-trash"></i></a>
+
+                        </div>
+                        <div class="issue-top-sec">
+                           <div class="clearfix">
+                              <h5 class="d-inline-block cmn-head-style label-tag-style"><span
+                                    class="issue-smoal-head-text">#
+                                    {{ComplianceRegisterActionPlanStore.details_loaded &&
+                                    ComplianceRegisterActionPlanStore?.complianceRegisterActionPlanDetails?.reference_code}}</span>
+                                 {{ComplianceRegisterActionPlanStore.details_loaded &&
+                                 ComplianceRegisterActionPlanStore?.complianceRegisterActionPlanDetails?.title}}
+                                 <span
+                                    [ngClass]="'draft-tag label-tag-style-tag draft-tag-'+ labelDot(ComplianceRegisterActionPlanStore?.complianceRegisterActionPlanDetails?.document_action_plan_status?.label)+' label-left-arow-tag'"
+                                    style="line-height: 16px; vertical-align: middle; margin-top: -4px; display: inline-block;">
+                                    {{ComplianceRegisterActionPlanStore.complianceRegisterActionPlanDetails?.document_action_plan_status?.language[0]?.pivot?.title}}</span>
+                              </h5>
+                           </div>
+                           <div class="clearfix">
+                              <p class="label-tag-style mb-2"><i class="fas fa-calendar-alt date-pics-two"></i>
+                                 {{ComplianceRegisterActionPlanStore.details_loaded &&
+                                 ComplianceRegisterActionPlanStore?.complianceRegisterActionPlanDetails?.start_date |
+                                 date:
+                                 OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                 To
+                                 {{ComplianceRegisterActionPlanStore.details_loaded &&
+                                 ComplianceRegisterActionPlanStore?.complianceRegisterActionPlanDetails?.target_date |
+                                 date:
+                                 OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                 <span
+                                    *ngIf="ComplianceRegisterActionPlanStore.complianceRegisterActionPlanDetails?.document_action_plan_status?.type!='resolved' && ComplianceRegisterActionPlanStore.complianceRegisterActionPlanDetails?.document_action_plan_status?.type!='closed'"
+                                    class="blinking">( {{getDaysRemaining()}}
+                                    {{'days remaining' | translate}} )
+                                 </span>
+                                 <span class="small-text pt-1 pl-2"
+                                    *ngIf="ComplianceRegisterActionPlanStore.complianceRegisterActionPlanDetails?.document_action_plan_status?.type!='resolved' && ComplianceRegisterActionPlanStore.complianceRegisterActionPlanDetails?.document_action_plan_status?.type!='closed'">{{ComplianceRegisterActionPlanStore.complianceRegisterActionPlanDetails?.completion?ComplianceRegisterActionPlanStore.complianceRegisterActionPlanDetails?.completion:0}}
+                                    %
+                                    {{'completed' | translate}}
+                                 </span>
+                              </p>
+                           </div>
+                           <p style="white-space: pre-line;"
+                              *ngIf="ComplianceRegisterActionPlanStore?.complianceRegisterActionPlanDetails?.description !=null">
+                              {{ComplianceRegisterActionPlanStore.details_loaded &&
+                              ComplianceRegisterActionPlanStore.complianceRegisterActionPlanDetails?.description}}</p>
+                        </div>
+                        <div *ngIf="ComplianceRegisterActionPlanStore.details_loaded && ComplianceRegisterActionPlanStore.complianceRegisterActionPlanDetails?.responsible_user_id" class="label-and-user-pic">
+                           <h6>{{'responsible_user' | translate}}</h6>
+                           <app-user-popup-box
+                              [source]="assignUserValues(ComplianceRegisterActionPlanStore.complianceRegisterActionPlanDetails?.responsible_user_id)">
+                           </app-user-popup-box>
+                        </div>
+
+                        <!-- <div class="row">
+                           <div class="col-sm-12">
+                               <h6 class="mt-3">{{'support_files' | translate}}</h6>
+                               <p *ngIf="ComplianceRegisterActionPlanStore?.complianceRegisterActionPlanDetails?.documents?.length == 0">
+                                   {{AppStore.noContentText}}</p>
+                               <div class="thumb-pics-bg thumb-pics-col-3 thumb-pics-fix-text clearfix"
+                                   style="padding-top: 0">
+                                   <div class="thumb-pics pointer"
+                                       *ngFor="let docs of ComplianceRegisterActionPlanStore?.complianceRegisterActionPlanDetails?.documents;let i = index">
+
+                                       System Files Starts Here
+                                       <div class="upload-pics edit-option" *ngIf="!docs.document_id">
+                                           <div class="browse-form-pic"
+                                               [ngStyle]="{'background': 'url('+createImageUrl('action-plan',docs.token)+') no-repeat'}"
+                                               (click)="viewDocument('action-plan',docs, docs)">
+                                           </div>
+                                           <div class="browse-form-name clearfix">
+                                               <div class="float-left">
+                                                   <h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                                   </h6>
+                                                   <span>{{docs.size/1048576 |
+                                                       number:'0.2-2'}}MB</span><span
+                                                       class="text-blue bold pl-2">System</span>
+                                               </div>
+                                               <div class="browse-logo">
+                                                   <img *ngIf="checkExtension(docs.ext,'image') != -1"
+                                                       class="folder-picher" src="/assets/images/jpg-icone.png">
+                                                   <img *ngIf="checkExtension(docs.ext,'doc') != -1"
+                                                       class="folder-picher" src="/assets/images/word-icone.png">
+                                                   <img *ngIf="checkExtension(docs.ext,'pdf') != -1"
+                                                       class="folder-picher" src="/assets/images/pdf-icone.png">
+                                                   <img *ngIf="checkExtension(docs.ext,'excel') != -1"
+                                                       class="folder-picher" src="/assets/images/excel-icone.png">
+                                                   <img *ngIf="checkExtension(docs.ext,'video') != -1"
+                                                       class="folder-picher" src="/assets/images/md-video.png">
+                                                   <img *ngIf="checkExtension(docs.ext,'audio') != -1"
+                                                       class="folder-picher" src="/assets/images/md-audio.png">
+                                                   <img *ngIf="checkExtension(docs.ext,'ppt') != -1"
+                                                       class="folder-picher" src="/assets/images/md-ppt.png">
+                                               </div>
+                                           </div>
+                                           <div class="edit-option-show-inner">
+                                               <a><i class="fas fa-download"
+                                                       (click)="downloadDocumentFile('action-plan',docs)"></i></a>
+                                           </div>
+                                       </div>
+                                       KnowledgeHub Files Starts Here
+                                       <div class="upload-pics edit-option" *ngIf="docs.document_id">
+
+                                           <div *ngFor="let mainDoc of docs.kh_document.versions">
+                                               <div *ngIf="mainDoc.is_latest">
+                                                   <div class="browse-form-pic"
+                                                       (click)="viewDocument('document-version',docs,mainDoc)"
+                                                       [ngStyle]="{'background': 'url('+createImageUrl('document-version',mainDoc?.token)+') no-repeat'}">
+                                                   </div>
+                                                   <div class="browse-form-name clearfix">
+                                                       <div class="float-left">
+                                                           <h6>{{mainDoc.title}}.{{mainDoc.ext}}
+                                                           </h6>
+                                                           <span>{{mainDoc.size/1048576 |
+                                                               number:'0.2-2'}}MB</span><span
+                                                               class="text-blue bold pl-2">Knowledge
+                                                               Hub</span>
+                                                       </div>
+                                                       <div class="browse-logo">
+                                                           <img *ngIf="checkExtension(mainDoc.ext,'image') != -1"
+                                                               class="folder-picher"
+                                                               src="/assets/images/jpg-icone.png">
+                                                           <img *ngIf="checkExtension(mainDoc.ext,'doc') != -1"
+                                                               class="folder-picher"
+                                                               src="/assets/images/word-icone.png">
+                                                           <img *ngIf="checkExtension(mainDoc.ext,'pdf') != -1"
+                                                               class="folder-picher"
+                                                               src="/assets/images/pdf-icone.png">
+                                                           <img *ngIf="checkExtension(mainDoc.ext,'excel') != -1"
+                                                               class="folder-picher"
+                                                               src="/assets/images/excel-icone.png">
+                                                           <img *ngIf="checkExtension(mainDoc.ext,'video') != -1"
+                                                               class="folder-picher"
+                                                               src="/assets/images/md-video.png">
+                                                           <img *ngIf="checkExtension(mainDoc.ext,'audio') != -1"
+                                                               class="folder-picher"
+                                                               src="/assets/images/md-audio.png">
+                                                           <img *ngIf="checkExtension(mainDoc.ext,'ppt') != -1"
+                                                               class="folder-picher"
+                                                               src="/assets/images/md-ppt.png">
+                                                       </div>
+                                                   </div>
+                                                   <div class="edit-option-show-inner">
+                                                       <a><i class="fas fa-download"
+                                                               (click)="downloadDocumentFile('document-version',docs,mainDoc)"></i></a>
+                                                   </div>
+                                               </div>
+                                           </div>
+                                       </div>
+                                       KnowledgeHub Files Ends Here
+                                   </div>
+                               </div>
+                           </div>
+                       </div> -->
+
+                        <div class="clearfix"></div>
+                     </div>
+                     <div class="row">
+                        <div class="col-xl-12">
+                           <hr class="mb-2">
+                              <app-user-popup-box
+                                 [source]=" getCreatedByPopupDetails(ComplianceRegisterActionPlanStore.complianceRegisterActionPlanDetails.created_by, ComplianceRegisterActionPlanStore.complianceRegisterActionPlanDetails.created_at)">
+                              </app-user-popup-box>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+               <div class="col-lg-4 col-sm-12">
+                  <div class="bg-white widg-padding-cmn-small mb-3 cmn-bdr">
+                     <h6>{{'action_plan'|translate}} % {{'completed' | translate}}</h6>
+                     <hr class="mt-0 mb-3">
+                     <div
+                        [ngClass]="ComplianceRegisterActionPlanStore?.complianceRegisterActionPlanDetails?.completion > 50 ?'progress-circle progress-circle-big-one over50 p'+ComplianceRegisterActionPlanStore?.complianceRegisterActionPlanDetails?.completion:'progress-circle progress-circle-big-one p'+ComplianceRegisterActionPlanStore?.complianceRegisterActionPlanDetails?.completion">
+                        <span>{{ComplianceRegisterActionPlanStore?.complianceRegisterActionPlanDetails?.completion>0?ComplianceRegisterActionPlanStore?.complianceRegisterActionPlanDetails?.completion:0}}%</span>
+                        <div class="left-half-clipper">
+                           <div class="first50-bar"></div>
+                           <div class="value-bar"></div>
+                        </div>
+                     </div>
+                  </div>
+                  <div class="bg-white widg-padding-cmn-small mb-3 cmn-bdr">
+                     <h6>
+                        {{'days_remaining' | translate}}</h6>
+                     <hr class="mt-0 mb-3">
+                     <div class="clearfix">
+                        <div class="mb-3">
+                           <p class="dot-div-new font-normal mb-0 dot-green d-block">
+                              {{'remaining_days'|translate}}
+                              ({{getDaysRemaining()}}{{' days'}})
+                           </p>
+                           <p class="dot-div-new font-normal mb-0 dot-red d-block">{{'total_days'|translate}}
+                              ({{getTotaldays()}}{{' days'}})
+                           </p>
+                        </div>
+                     </div>
+                     <div class="vertical-progress-v2">
+                        <div class="progress-bg-sec">
+                           <div class="progress-inner-color" [style.height.%]="(getDaysRemaining()/getTotaldays())*100">
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+</div>
+
+ <ng-container>
+   <div *ngIf="!ComplianceRegisterActionPlanStore?.loaded">
+      <app-finding-details-corrective-action-loader></app-finding-details-corrective-action-loader>
+   </div>
+</ng-container>
+ 
+<app-no-data *ngIf="ComplianceRegisterActionPlanStore?.loaded && ComplianceRegisterActionPlanStore.complianceRegisterActionPlans.length == 0" [height]="false"
+   [border]="false">
+</app-no-data>
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #actionPlanModal>
+    <app-compliance-action-plans-add [source]="actionPlanData" *ngIf=" ComplianceRegisterActionPlanStore.actionPlanUpdateModal"></app-compliance-action-plans-add>
+  </div>
+
+<!-- Delete Confirmation Modal Start -->
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+   <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+<div class="modal modal-style-1 popup-full-width fade" *mobxAutorun #actionPlanUpdate>
+    <app-action-plan-status-update-modal *ngIf="ComplianceRegisterActionPlanStore.actionPlanStatusUpdateModal"
+        [completion]="ComplianceRegisterActionPlanStore.complianceRegisterActionPlanDetails?.completion"
+        [source]="ComplianceRegisterActionPlanStore.complianceRegisterActionPlanDetails"></app-action-plan-status-update-modal>
+</div>
+<div class="modal modal-style-1 popup-full-width fade" *mobxAutorun #actionPlanHistory>
+    <app-action-plan-status-history-modal *ngIf="ComplianceRegisterActionPlanStore.actionPlanStatusHistoryModal">
+    </app-action-plan-status-history-modal>
+</div>
+
+
+<!-- File Preview -->
+<div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup" data-keyboard="false"
+    data-backdrop="static" #filePreviewModal *mobxAutorun>
+    <button type="button" class="close" data-dismiss="modal" (click)="closePreviewModal($event)"><i
+            class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+    <app-compliance-mangement-preview *ngIf="previewObject" [source]="previewObject" (close)="closePreviewModal($event)"></app-compliance-mangement-preview>
+</div>

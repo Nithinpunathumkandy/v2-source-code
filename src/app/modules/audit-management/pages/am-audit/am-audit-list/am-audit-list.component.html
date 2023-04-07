@@ -1,0 +1,141 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navigationBar *mobxAutorun>
+
+  <app-sub-menu></app-sub-menu>
+  <div class="module-name-block module-name-block-space float-left">
+    <a class="dropdown module-title">{{'am_audits'|translate}}</a>
+  </div>
+
+</nav>
+<main class="mt-3 acl-page" *mobxAutorun>
+  <app-filter-menu></app-filter-menu>
+  <div class="container-fluid" *ngIf="AmAuditsStore.loaded && AmAuditsStore.auditDetails?.length>0">
+    <div class="audit-program-box audit-page-table-main">
+      <div class="row">
+        <div class="col-sm-12">
+          <div class="full-width-table mb-3">
+            <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+              <thead>
+                <tr>
+                  <th class="border-top-0 text-center" width="3%">#</th>
+                  <th (click)="sortTitle('reference_code')" class="border-top-0" width="8%">
+                    <span>{{'reference_code'|translate}}</span>
+                    <img _ngcontent-twv-c17="" style="margin-left: 6px;"
+                      *ngIf="AmAuditsStore.orderItem=='reference_code'"
+                      [attr.src]="AmAuditsStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                      class="sort-down-pics">
+                  </th>
+                  <th class="border-top-0" width="32%">{{'am_auditable_item'|translate}}</th>
+                  <th (click)="sortTitle('start_date')" class="border-top-0" width="8%">
+                    <span>{{'start_date'|translate}}</span>
+                    <img _ngcontent-twv-c17="" style="margin-left: 6px;"
+                      *ngIf="AmAuditsStore.orderItem=='reference_code'"
+                      [attr.src]="AmAuditsStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                      class="sort-down-pics">
+                  </th>
+                  <!-- am_audits.start_date -->
+                  <th (click)="sortTitle('end_date')" class="border-top-0" width="8%">
+                    <span>{{'end_date'|translate}}</span>
+                    <img _ngcontent-twv-c17="" style="margin-left: 6px;"
+                      *ngIf="AmAuditsStore.orderItem=='reference_code'"
+                      [attr.src]="AmAuditsStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                      class="sort-down-pics">
+                  </th>
+
+                  <th (click)="sortTitle('audit_manager_first_name')" class="border-top-0" width="18%">
+                    <span>{{'am_audit_manager'|translate}}</span>
+                    <img _ngcontent-twv-c17="" style="margin-left: 6px;"
+                      *ngIf="AmAuditsStore.orderItem=='reference_code'"
+                      [attr.src]="AmAuditsStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                      class="sort-down-pics">
+                  </th>
+                  <th (click)="sortTitle('audit_manager_department')" class="border-top-0" width="13%">
+                    <span>{{'department'|translate}}</span>
+                    <img _ngcontent-twv-c17="" style="margin-left: 6px;"
+                      *ngIf="AmAuditsStore.orderItem=='reference_code'"
+                      [attr.src]="AmAuditsStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                      class="sort-down-pics">
+                  </th>
+                  <th (click)="sortTitle('am_audit_status_title')" class="border-top-0 text-center" width="10%">
+                    <span>{{'status'|translate}}</span>
+                    <img _ngcontent-twv-c17="" style="margin-left: 6px;"
+                      *ngIf="AmAuditsStore.orderItem=='am_audit_status_title'"
+                      [attr.src]="AmAuditsStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                      class="sort-down-pics">
+                  </th>
+                  <!-- am_audit_status_language.title -->
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  [ngClass]="AuthStore.getActivityPermission(3900,'AM_ANNUAL_PLAN_DETAILS') ? 'pointer edit-and-delete-main' : 'edit-and-delete-main'"
+                  *ngFor="let row of AmAuditsStore.auditDetails | paginate: {currentPage:AmAuditsStore?.currentPage, itemsPerPage:AmAuditsStore?.itemsPerPage,totalItems:AmAuditsStore?.totalItems}; let num = index">
+                  <td class="text-center" (click)="gotoDetailsPage(row.id)">{{(AmAuditsStore?.currentPage -1) *
+                    AmAuditsStore?.itemsPerPage + (num +
+                    1)}}</td>
+                  <td (click)="gotoDetailsPage(row.id)">
+                    #{{row.reference_code?row.reference_code:AppStore.noContentText}}</td>
+                  <td (click)="gotoDetailsPage(row.id)">
+                    <div class="elips-2" [attr.title]="row.title">{{row.title ? row?.title : AppStore.noContentText}}
+                    </div>
+                  </td>
+                  <td (click)="gotoDetailsPage(row.id)">{{row.start_date|
+                    date:OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</td>
+                  <td (click)="gotoDetailsPage(row.id)">{{row.end_date|
+                    date:OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</td>
+                  <td>
+                    <app-user-popup-box [source]=" getPopupDetails(row)"></app-user-popup-box>
+                  </td>
+                  <td>{{row?.department}}
+
+                  </td>
+                  <td class="text-center">
+                    <div [ngClass]="'dot-div '+row.am_audit_status_label">{{row.am_audit_status_title}}</div>
+                    <div class="edit-option-show" style="margin: 30px 0 0 0; "
+                      *ngIf="AuthStore.user?.id == row.audit_manager_id"><!-- edit-and-delete starts -->
+                      <a (click)="editAudit(row.id)"><i class="fas fa-pen"></i></a>
+                      <a (click)="deleteAudit(row.id)"><i class="fas fa-trash"></i></a>
+                    </div><!-- edit-and-delete end -->
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="float-right bold mb-0" *ngIf="AmAuditsStore?.loaded && AmAuditsStore.totalItems > 0">{{'total_Items'
+            | translate}}:{{AmAuditsStore?.totalItems}}</p>
+        </div>
+        <div *ngIf="AmAuditsStore.totalItems>AmAuditsStore.itemsPerPage" class="col-sm-12">
+          <ul class="pagination justify-content-center mt-3">
+            <div class="list">
+              <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+                (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+            </div>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <ng-container *mobxAutorun>
+    <app-no-data [border]="false" *ngIf="AmAuditsStore.loaded && AmAuditsStore.auditDetails?.length==0">
+    </app-no-data>
+  </ng-container>
+  <ng-container *mobxAutorun>
+    <div *ngIf="!AmAuditsStore.loaded">
+      <app-am-audit-plan-loader></app-am-audit-plan-loader>
+    </div>
+  </ng-container>
+</main>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" data-backdrop="static" data-keyboard="false" #deletePopup>
+  <app-delete-popup [source]="deleteObject"></app-delete-popup>
+</div>
+
+<!------------------- Delete Confirmation Modal End --------------------------->
+
+<div class="modal modal-style-1 popup-full-width fade" id="new-audit-popup" data-keyboard="false" data-backdrop="static"
+  style="z-index: 999999; overflow: hidden auto;" #formModal>
+  <app-am-audit-modal *ngIf="auditObject.type" [source]="auditObject">
+  </app-am-audit-modal>
+</div>

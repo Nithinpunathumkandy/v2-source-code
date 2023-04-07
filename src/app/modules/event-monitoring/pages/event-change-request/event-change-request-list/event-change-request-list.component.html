@@ -1,0 +1,123 @@
+<div #plainDev></div>
+<div class="bg-white">
+<nav class="edit-bar" data-toggle="affix" #navBar>
+    <app-sub-menu>-</app-sub-menu>
+    <ul class="nav nav-pills float-left d-none d-lg-block" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link nav-link-show" [routerLink]="['/event-monitoring/event-change-requests']"
+            routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">{{'event_change_request' | translate}} </a>
+        </li>
+    </ul> 
+</nav>
+</div>
+<main class="mt-3 acl-page">
+    <app-filter-menu></app-filter-menu>
+    <div class="container-fluid" *mobxAutorun>
+        <div class="audit-program-box  audit-page-table-main">
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="full-width-table mb-3"
+                        *ngIf="EventChangeRequestStore.allItems.length > 0 && EventChangeRequestStore.loaded == true">
+                        <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                            <thead>
+                                <tr>
+                                    <th class="border-top-0 text-center" width="2%">#</th>
+                                    <th class="border-top-0" width="12%">{{'reference_code' | translate}}</th>
+                                    <th class="border-top-0" width="21%" class="border-top-0 issue-list-org-tab-three pointer" (click)="sortTitle('title')">
+                                        <span>{{'title' | translate}}</span>
+                                        <img _ngcontent-twv-c17=""  *ngIf="EventChangeRequestStore.orderItem=='event_change_request.title'"
+                                        [attr.src]="EventChangeRequestStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" 
+                                        class="sort-down-pics ml-2"></th>
+                                    <th class="border-top-0" width="20%" class="border-top-0 issue-list-org-tab-three pointer" 
+                                    (click)="sortTitle('event_change_request.event_title')">
+                                        <span>{{'event_title_main' | translate}}</span>
+                                        <img _ngcontent-twv-c17=""  *ngIf="EventChangeRequestStore.orderItem=='event_change_request.title'"
+                                        [attr.src]="EventChangeRequestStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" 
+                                        class="sort-down-pics ml-2"></th>
+                                    <th class="border-top-0" width="12%" class="border-top-0 issue-list-org-tab-three pointer" (click)="sortTitle('event_change_request.created_by_first_name')">
+                                        <span>{{'requested_by' | translate}}</span>
+                                        <img _ngcontent-twv-c17=""  *ngIf="EventChangeRequestStore.orderItem=='event_change_request.created_by_first_name'"
+                                        [attr.src]="EventChangeRequestStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" 
+                                        class="sort-down-pics ml-2"></th>
+                                    <th class="border-top-0" width="8%">{{'change_request_type' | translate}}</th>
+                                    <th class="border-top-0 issue-list-org-tab-three pointer" width="12%" (click)="sortTitle('event_change_request.department')">
+                                        <span>{{'department' | translate}}</span>&nbsp;
+                                        <img _ngcontent-twv-c17="" *ngIf="EventChangeRequestStore.orderItem=='event_change_request.department'"
+                                            [attr.src]="EventChangeRequestStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                            class="sort-down-pics">
+                                    </th>
+                                    <th class="border-top-0" width="6%">{{'em_cr_version' | translate}}</th>
+                                    <th class="border-top-0 text-center" width="7%">{{'status' | translate }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr [ngClass]="AuthStore.getActivityPermission(4000,'EVENT_CHANGE_REQUEST_DETAILS') ? 'pointer edit-and-delete-main' : 'edit-and-delete-main'"
+                                    class="edit-and-delete-main" (click)="AuthStore.getActivityPermission(4000,'EVENT_CHANGE_REQUEST_DETAILS') ? gotpChangeRequestDetails(row.id,row.event_id) : ''"
+                                    *ngFor="let row of EventChangeRequestStore.allItems | paginate: {currentPage:EventChangeRequestStore?.currentPage, itemsPerPage:EventChangeRequestStore?.itemsPerPage,totalItems:EventChangeRequestStore?.totalItems};let num = index">
+                                    <td class="text-center">{{(EventChangeRequestStore.currentPage - 1) * EventChangeRequestStore.itemsPerPage + (num + 1)}}</td>
+                                    <td>{{row.event_reference_code ? row.event_reference_code : AppStore.noContentText}}-V{{row.version_no}}</td>
+                                    <td>{{row.title ? row.title : AppStore.noContentText}}</td>
+                                    <td>{{row.event_title ? row.event_title : AppStore.noContentText}}</td>
+                                    <td>
+                                        <div class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                                           <img *ngIf="row.created_by_image_token" data-toggle="modal" data-target="#user02" data-ui-class="a-zoom" [attr.src]="createImagePreview('user-profile-picture',row.created_by_image_token)"
+                                             width="30px" height="30px" class="rounded-circle rounde-hov details-show-popup" onerror = "this.src='/assets/images/user-demo2.png'">
+                                             <img *ngIf="!row.created_by_image_token"
+                                                   [attr.src]="getDefaultImage('user-logo')" width="30px" height="30px"
+                                                   class="rounded-circle" onerror = "this.src='/assets/images/user-demo2.png'">
+                                           <div class="pointer">
+                                              <h6 [attr.title] = "row?.created_by_first_name+' '+row?.created_by_last_name">{{getStringsFormatted([row?.created_by_first_name,row?.created_by_last_name],20,' ') | titlecase}}</h6>
+                                              <span>{{row.created_by_designation ? row.created_by_designation : AppStore.noContentText}}</span>
+                                           </div>
+                                        </div>
+                                      </td>
+                                      <td >{{row?.event_change_request_type_language_title?row?.event_change_request_type_language_title:'NA'}}</td>
+                                    <td >{{row.created_by_department}}</td>
+                                    <td >V{{row.version_no}}</td>
+                                    <td class="text-center">
+                                        <div [ngClass]="row.label ? 'dot-div '+row.label : ''">{{row.event_change_request_status_language_title}}</div>
+                                        <div class="edit-option-show" style="margin: 30px 0 0 0; " *ngIf = "row.type == 'draft' || row.type == 'send-back'">
+                                            <!-- edit-and-delete starts -->
+                                            <a (click)="editChangeRequest($event,row)" *ngIf="AuthStore.getActivityPermission(1100,'UPDATE_EVENT_CHANGE_REQUEST')"><i class="fas fa-pen"></i></a>
+                                            <a *ngIf="AuthStore.getActivityPermission(1100,'DELETE_EVENT_CHANGE_REQUEST')" (click) = "deleteConfirm($event,row)"><i class="fas fa-trash"></i></a>
+                                        </div><!-- edit-and-delete end -->
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="float-right bold mb-0" *ngIf="EventChangeRequestStore.loaded && EventChangeRequestStore.totalItems > 0">{{'total_Items' | translate}}:{{EventChangeRequestStore?.totalItems}}</p>
+                    <div *ngIf="EventChangeRequestStore.totalItems>EventChangeRequestStore.itemsPerPage && EventChangeRequestStore.loaded && EventChangeRequestStore.allItems.length > 0"
+                        class="col-sm-12">
+                        <ul class="pagination justify-content-center mt-3">
+                            <div class="list">
+                                <pagination-controls [previousLabel]="'previous' | translate"
+                                    [nextLabel]="'next' | translate" class="my-pagination"
+                                    (pageChange)="pageChange($event)">
+                                </pagination-controls>
+                            </div>
+                        </ul>
+                    </div>
+                    <ng-container *mobxAutorun>
+                        <div *ngIf="!EventChangeRequestStore.loaded">
+                            <app-six-column-loader></app-six-column-loader>
+                        </div>
+                        <app-no-data
+                            *ngIf="EventChangeRequestStore.allItems.length == 0 && EventChangeRequestStore.loaded == true">
+                        </app-no-data>
+                    </ng-container>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Delete Confirmation Modal Start -->
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #changeRequestModal>
+    <app-create-event-change-request [source]="changeRequestObject" *ngIf="changeRequestObject.type">
+    </app-create-event-change-request>
+</div>

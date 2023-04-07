@@ -1,0 +1,472 @@
+
+<div class="tab-pane active" id="ca"
+    *ngIf="CustomerComplaintActionPlanStore.loaded && CustomerComplaintActionPlanStore.allItems.length > 0">
+
+    <!-- common-tab-md starts -->
+    <div class="common-tab-md clearfix"
+        *ngIf="CustomerComplaintActionPlanStore.loaded && CustomerComplaintActionPlanStore.allItems.length > 0">
+        <div class="tab-common-left-md">
+            <div class=" issues-tab">
+                <!-- tab menu start -->
+                <ul class="nav nav-tabs nav-tabs--vertical nav-tabs--left vertical-tab" role="navigation">
+                    <li class="nav-item"
+                        *ngFor="let ca of CustomerComplaintActionPlanStore.allItems | paginate: {currentPage:CustomerComplaintActionPlanStore?.currentPage, itemsPerPage:CustomerComplaintActionPlanStore?.itemsPerPage,totalItems:CustomerComplaintActionPlanStore?.totalItems}; let i = index">
+                        <a (click)="AuthStore.getActivityPermission(1900,'CUSTOMER_COMPLAINT_ACTION_PLAN_DETAILS') ? getActionPlanDetails(ca.id) : setSelectedActionPlanId(ca.id)"
+                            [ngClass]="CustomerComplaintActionPlanStore.complaintActionPlanId == ca.id ? 'nav-link active show':'nav-link'"
+                            data-toggle="tab" role="tab" aria-controls="lorem"
+                            aria-selected="false" [title]="ca.title">{{ca.reference_code}}-
+                            {{ca.title?.length>10?ca.title.substring(0,10)+'...' :
+                            ca.title}}
+                            <span class="draft-tag label-tag-style-tag label-left-arow-tag ml-3"
+                                [ngClass]="ca?.customer_complaint_action_plan_status_color_code?.length > 0 ? getColorKey(ca.customer_complaint_action_plan_status_color_code) : ''"
+                                style="line-height: 16px; vertical-align: middle; margin-top: -5px; display: inline-block;">{{ca.customer_complaint_action_plan_status_title}}</span>
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div><!-- tab menu end -->
+        </div>
+        <div class="tab-common-left-content-m">
+            <div class="tab-content">
+                <div class="tab-pane fade active show" id="tab-two-box-one" role="tabpanel">
+                    <ng-container *mobxAutorun>
+                        <div *ngIf="!CustomerComplaintActionPlanStore.individualLoaded">
+                            <app-corrective-action-loader></app-corrective-action-loader>
+                        </div>
+                    </ng-container>
+                    <!-- <div class="row" *ngIf="CustomerComplaintActionPlanStore.individualLoaded">
+                    </ng-container> -->
+                    <div class="row" *ngIf="CustomerComplaintActionPlanStore.individualLoaded && AuthStore.getActivityPermission(1900,'CUSTOMER_COMPLAINT_ACTION_PLAN_DETAILS')">
+                        <div class="col-lg-8 col-sm-12 padding-right-0">
+
+                            <div class="widg-padding-cmn bg-white cmn-bdr">
+                                <div class="min-height-64 edit-and-delete-main">
+                                    <div class="edit-option-show text-right" style="margin: 25px -15px 0 0;"
+                                        wfd-id="222">
+                                        <!-- edit-and-delete starts -->                                                                     
+                                        <a class="pointer" [attr.title]="'history'|translate"
+                                            (click)="openHistoryModal()">
+                                            <i class="fas fa-history"></i></a>
+
+                                        <a class="pointer" [attr.title]="'update'|translate"
+                                            (click)="updateCorrectiveAction()"
+                                            *ngIf="CustomerComplaintActionPlanStore.indivitualCustomerComplaintActionPlan?.customer_complaint_action_plan_status?.type!='resolved'">                                           
+                                            <i class="fas fa-pen-alt"></i>
+                                        </a>
+                                        <a *ngIf="AuthStore.getActivityPermission(1600,'UPDATE_CUSTOMER_COMPLAINT_ACTION_PLAN') && 
+                                            CustomerComplaintActionPlanStore.indivitualCustomerComplaintActionPlan?.customer_complaint_action_plan_status?.type!='resolved'"
+                                            (click)="editCustomerComplaintActionPlan(CustomerComplaintActionPlanStore.indivitualCustomerComplaintActionPlan?.id)"
+                                            [attr.title]="'edit' | translate"><i class="fas fa-pen"></i></a>
+                                            
+                                        <a *ngIf="AuthStore.getActivityPermission(1600,'DELETE_CUSTOMER_COMPLAINT_ACTION_PLAN') && 
+                                            CustomerComplaintActionPlanStore.indivitualCustomerComplaintActionPlan?.customer_complaint_action_plan_status?.type!='resolved'"
+                                            (click)="delete(CustomerComplaintActionPlanStore.indivitualCustomerComplaintActionPlan?.id)" [attr.title]="'delete' | translate"><i
+                                                class="fas fa-trash"></i></a>
+                                    </div>
+                                    <div class="issue-top-sec">
+                                        <div class="clearfix">
+                                            <h5 class="d-inline-block cmn-head-style label-tag-style"><span
+                                                    class="issue-smoal-head-text">#
+                                                    {{CustomerComplaintActionPlanStore.indivitualCustomerComplaintActionPlan?.reference_code}}</span>
+                                                {{CustomerComplaintActionPlanStore?.indivitualCustomerComplaintActionPlan?.title}}<span
+                                                class="draft-tag label-tag-style-tag label-left-arow-tag ml-3"
+                                                [ngClass]="CustomerComplaintActionPlanStore.indivitualCustomerComplaintActionPlan?.customer_complaint_action_plan_status?.color_code?.length > 0 ? getColorKey() : ''"
+                                                style="line-height: 16px; vertical-align: middle; margin-top: -5px; display: inline-block;">{{CustomerComplaintActionPlanStore.indivitualCustomerComplaintActionPlan?.customer_complaint_action_plan_status?.language[0]?.pivot?.title}}</span>
+                                            </h5>  
+                                        </div>
+                                        <div class="clearfix">
+                                            <p [ngClass]="CustomerComplaintActionPlanStore?.indivitualCustomerComplaintActionPlan?.description ? 'label-tag-style mb-2' : 'label-tag-style mb-3'"><i
+                                                    class="fas fa-calendar-alt date-pics-two"></i>
+                                                {{CustomerComplaintActionPlanStore?.indivitualCustomerComplaintActionPlan?.start_date
+                                                | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                To
+                                                {{CustomerComplaintActionPlanStore?.indivitualCustomerComplaintActionPlan?.target_date
+                                                | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                <span
+                                                    *ngIf="CustomerComplaintActionPlanStore.indivitualCustomerComplaintActionPlan?.customer_complaint_action_plan_status?.type!='resolved' && 
+                                                    CustomerComplaintActionPlanStore.indivitualCustomerComplaintActionPlan?.customer_complaint_action_plan_status?.type!='closed'"
+                                                    class="blinking">( {{getDaysRemaining()}}
+                                                    {{'days remaining' | translate}} )
+                                                </span>
+                                                
+
+                                            </p>
+                                        </div>
+                                      
+                                        <p *ngIf="CustomerComplaintActionPlanStore?.indivitualCustomerComplaintActionPlan?.description != null"
+                                            style="white-space: pre-line;">
+                                            {{CustomerComplaintActionPlanStore?.indivitualCustomerComplaintActionPlan?.description}}
+                                        </p>
+                                    </div>
+                                    <div class="label-and-user-pic">
+                                        <h6>{{'responsible_person'|translate}}</h6>
+                                        <app-user-popup-box
+                                            [source]="assignUserValues(CustomerComplaintActionPlanStore?.indivitualCustomerComplaintActionPlan?.responsible_user)">
+                                        </app-user-popup-box>
+                                        <div
+                                            *ngIf="!CustomerComplaintActionPlanStore?.indivitualCustomerComplaintActionPlan?.responsible_user">
+                                            {{AppStore.noContentText}}</div>
+                                    </div>
+                                    <div class="label-and-user-pic">
+                                        <h6>{{'watchers'|translate}}</h6>
+                                        <div class="pb-3" *ngIf="CustomerComplaintActionPlanStore.indivitualCustomerComplaintActionPlan?.customer_complaint_action_plan_watchers?.length > 3">
+                                        <ul class="arci-user-tab-dtl workflow-lst-pics-loop clearfix"
+                                            >
+                                            <li *ngFor="let watcher of CustomerComplaintActionPlanStore.indivitualCustomerComplaintActionPlan.customer_complaint_action_plan_watchers"
+                                                class="rounde-hov-bg">
+                                                <app-user-popup-box [source]="getWatcherPopupDetails(watcher)" [showName]="false" [activateButtons]="true">
+                                                </app-user-popup-box>
+                                            </li>
+                                        </ul>
+                                       </div>
+                                       <div class="row"  *ngIf="!(CustomerComplaintActionPlanStore.indivitualCustomerComplaintActionPlan?.customer_complaint_action_plan_watchers?.length > 3)">
+                                        <div class="col-xl-4 col-lg-6 col-sm-6"
+                                        *ngFor="let watcher of CustomerComplaintActionPlanStore.indivitualCustomerComplaintActionPlan.customer_complaint_action_plan_watchers; let i = index">
+                                            <div class="label-and-user-pic">
+                                                
+                                                <!-- <div> -->
+                                                    <app-user-popup-box [source]="getWatcherPopupDetails(watcher)" [showName]="true" [activateButtons]="false">
+                                                    </app-user-popup-box>
+                                                <!-- </div> -->
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                        <p *ngIf="CustomerComplaintActionPlanStore.indivitualCustomerComplaintActionPlan.customer_complaint_action_plan_watchers?.length==0">
+                                            {{AppStore.noContentText}}</p>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <h6 >{{'support_files' | translate}}</h6>
+                                            <p
+                                                *ngIf="CustomerComplaintActionPlanStore.indivitualCustomerComplaintActionPlan?.documents?.length == 0">
+                                                {{AppStore.noContentText}}</p>
+                                            <div class="thumb-pics-bg thumb-pics-col-3 thumb-pics-fix-text clearfix"
+                                                style="padding-top: 0">
+                                                <div class="thumb-pics"
+                                                    *ngFor="let docs of CustomerComplaintActionPlanStore.indivitualCustomerComplaintActionPlan?.documents;let i = index">
+
+                                                    <!-- System Files Starts Here -->
+                                                    <div [ngClass]="AuthStore.getActivityPermission(1600,'PREVIEW_CUSTOMER_COMPLAINT_ACTION_PLAN_DOCUMENT_FILE') ? 'upload-pics edit-option pointer' : 'upload-pics edit-option'" *ngIf="!docs.document_id">
+                                                        <div class="browse-form-pic"
+                                                            [ngStyle]="{'background': 'url('+createImageUrl('corrective-action',docs.token)+') no-repeat'}"
+                                                            (click)="AuthStore.getActivityPermission(1600,'PREVIEW_CUSTOMER_COMPLAINT_ACTION_PLAN_DOCUMENT_FILE') ? viewAttachments('corrective-action',docs) : ''">
+                                                        </div>
+                                                        <div class="browse-form-name clearfix">
+                                                            <div class="float-left">
+                                                                <h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                                                </h6>
+                                                                <span>{{docs.size/1048576 |
+                                                                    number:'0.2-2'}}MB</span><span
+                                                                    class="text-blue bold pl-2">System</span>
+                                                            </div>
+                                                            <div class="browse-logo">
+                                                                <img *ngIf="checkExtension(docs.ext,'image') != -1"
+                                                                    class="folder-picher"
+                                                                    src="/assets/images/jpg-icone.png">
+                                                                <img *ngIf="checkExtension(docs.ext,'doc') != -1"
+                                                                    class="folder-picher"
+                                                                    src="/assets/images/word-icone.png">
+                                                                <img *ngIf="checkExtension(docs.ext,'pdf') != -1"
+                                                                    class="folder-picher"
+                                                                    src="/assets/images/pdf-icone.png">
+                                                                <img *ngIf="checkExtension(docs.ext,'excel') != -1"
+                                                                    class="folder-picher"
+                                                                    src="/assets/images/excel-icone.png">
+                                                                <img *ngIf="checkExtension(docs.ext,'video') != -1"
+                                                                    class="folder-picher"
+                                                                    src="/assets/images/md-video.png">
+                                                                <img *ngIf="checkExtension(docs.ext,'audio') != -1"
+                                                                    class="folder-picher"
+                                                                    src="/assets/images/md-audio.png">
+                                                                <img *ngIf="checkExtension(docs.ext,'ppt') != -1"
+                                                                    class="folder-picher"
+                                                                    src="/assets/images/md-ppt.png">
+                                                            </div>
+                                                        </div>
+                                                        <div class="edit-option-show-inner" *ngIf="AuthStore.getActivityPermission(1600,'DOWNLOAD_CUSTOMER_COMPLAINT_ACTION_PLAN_DOCUMENT_FILE')" style="margin: 0 -8px 0 0;">
+                                                            <a *ngIf="AuthStore.getActivityPermission(1600,'DOWNLOAD_CUSTOMER_COMPLAINT_ACTION_PLAN_DOCUMENT_FILE')"><i class="fas fa-download"
+                                                                    (click)="downloadDocument('corrective-action',docs)"></i></a>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- System Files Starts Here -->
+                                                    <!-- KnowledgeHub Files Starts Here -->
+                                                    <div [ngClass]="AuthStore.getActivityPermission(1600,'PREVIEW_CUSTOMER_COMPLAINT_ACTION_PLAN_DOCUMENT_FILE') ? 'upload-pics edit-option pointer' : 'upload-pics edit-option'" *ngIf="docs.document_id">
+
+                                                        <div *ngFor="let mainDoc of docs.kh_document.versions">
+                                                            <div *ngIf="mainDoc.is_latest">
+                                                                <div class="browse-form-pic"
+                                                                    (click)="AuthStore.getActivityPermission(1600,'PREVIEW_CUSTOMER_COMPLAINT_ACTION_PLAN_DOCUMENT_FILE') ? viewAttachments('document-version',docs,mainDoc) : ''"
+                                                                    [ngStyle]="{'background': 'url('+createImageUrl('document-version',mainDoc?.token)+') no-repeat'}">
+                                                                </div>
+                                                                <div class="browse-form-name clearfix">
+                                                                    <div class="float-left">
+                                                                        <h6>{{mainDoc.title}}.{{mainDoc.ext}}
+                                                                        </h6>
+                                                                        <span>{{mainDoc.size/1048576 |
+                                                                            number:'0.2-2'}}MB</span><span
+                                                                            class="text-blue bold pl-2">Knowledge
+                                                                            Hub</span>
+                                                                    </div>
+                                                                    <div class="browse-logo">
+                                                                        <img *ngIf="checkExtension(mainDoc.ext,'image') != -1"
+                                                                            class="folder-picher"
+                                                                            src="/assets/images/jpg-icone.png">
+                                                                        <img *ngIf="checkExtension(mainDoc.ext,'doc') != -1"
+                                                                            class="folder-picher"
+                                                                            src="/assets/images/word-icone.png">
+                                                                        <img *ngIf="checkExtension(mainDoc.ext,'pdf') != -1"
+                                                                            class="folder-picher"
+                                                                            src="/assets/images/pdf-icone.png">
+                                                                        <img *ngIf="checkExtension(mainDoc.ext,'excel') != -1"
+                                                                            class="folder-picher"
+                                                                            src="/assets/images/excel-icone.png">
+                                                                        <img *ngIf="checkExtension(mainDoc.ext,'video') != -1"
+                                                                            class="folder-picher"
+                                                                            src="/assets/images/md-video.png">
+                                                                        <img *ngIf="checkExtension(mainDoc.ext,'audio') != -1"
+                                                                            class="folder-picher"
+                                                                            src="/assets/images/md-audio.png">
+                                                                        <img *ngIf="checkExtension(mainDoc.ext,'ppt') != -1"
+                                                                            class="folder-picher"
+                                                                            src="/assets/images/md-ppt.png">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="edit-option-show-inner" *ngIf="AuthStore.getActivityPermission(1600,'DOWNLOAD_CUSTOMER_COMPLAINT_ACTION_PLAN_DOCUMENT_FILE')" style="margin: 0 -8px 0 0;">
+                                                                    <a *ngIf="AuthStore.getActivityPermission(1600,'DOWNLOAD_CUSTOMER_COMPLAINT_ACTION_PLAN_DOCUMENT_FILE')"><i class="fas fa-download"
+                                                                            (click)="downloadDocument('document-version',docs,mainDoc)"></i></a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <!-- KnowledgeHub Files Ends Here -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="clearfix"></div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <h6>{{'complaint'|translate}}</h6>
+                                            <p>#{{CustomerComplaintStore.indivitualCustomerComplaint?.reference_code}}
+                                                {{CustomerComplaintStore.indivitualCustomerComplaint?.title
+                                                ? CustomerComplaintStore.indivitualCustomerComplaint?.title:AppStore.noContentText}}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <h6>{{'description'|translate}}</h6>
+                                            <p style="white-space: pre-wrap;"
+                                                [innerHTML]="CustomerComplaintStore.indivitualCustomerComplaint?.description ? CustomerComplaintStore.indivitualCustomerComplaint?.description:AppStore.noContentText">
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <h6>{{'complaint_source' | translate}}</h6>
+                                            <p>{{CustomerComplaintStore.indivitualCustomerComplaint?.customer_complaint_source ?
+                                                CustomerComplaintStore.indivitualCustomerComplaint?.customer_complaint_source?.title :
+                                                AppStore.noContentText}}</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <h6>{{'complaint_type' | translate}}</h6>
+                                            <p>{{CustomerComplaintStore.indivitualCustomerComplaint?.customer_complaint_type?.language[0]?.pivot?.title}}</p>
+                                        </div>
+                                        <div class="col-md-4" *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_division">
+                                            <h6>{{'division' | translate}}</h6>
+                                            <p>{{CustomerComplaintStore.indivitualCustomerComplaint?.division
+                                                ? CustomerComplaintStore.indivitualCustomerComplaint?.division?.title
+                                                : AppStore.noContentText}}</p>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4" *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_department">
+                                            <h6>{{'department' | translate}}</h6>
+                                            <p>{{CustomerComplaintStore.indivitualCustomerComplaint?.department ? CustomerComplaintStore.indivitualCustomerComplaint?.department?.title
+                                                : AppStore.noContentText}}</p>
+                                        </div>
+                                        <div class="col-md-4" *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_section">
+                                            <h6>{{'section' | translate}}</h6>
+                                            <p>{{CustomerComplaintStore.indivitualCustomerComplaint?.section ? CustomerComplaintStore.indivitualCustomerComplaint?.section?.title
+                                                : AppStore.noContentText}}</p>
+                                        </div>
+                                        <div class="col-md-4" *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_sub_section">
+                                            <h6>{{'sub_section' | translate}}</h6>
+                                            <p>{{CustomerComplaintStore.indivitualCustomerComplaint?.sub_section ? CustomerComplaintStore.indivitualCustomerComplaint?.sub_section?.title
+                                                : AppStore.noContentText}}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-xl-12">
+                                        <hr class="mb-2">
+                                        <div class="d-flex flex-row user-list-sm pb-0">
+                                            <app-user-popup-box
+                                                [source]=" getCreatedByPopupDetails(CustomerComplaintActionPlanStore?.indivitualCustomerComplaintActionPlan?.created_by, CustomerComplaintActionPlanStore?.indivitualCustomerComplaintActionPlan?.created_at)">
+                                            </app-user-popup-box>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-12">
+                            <div class="bg-white widg-padding-cmn-small cmn-bdr mb-3">
+                                <h6>{{'corrective_action'|translate}} % {{'completed' | translate}}</h6>
+                                <hr class="mt-0 mb-3">
+                                <div
+                                    [ngClass]="CustomerComplaintActionPlanStore?.indivitualCustomerComplaintActionPlan?.customer_complaint_action_plan_update.slice(-1)[0]?.percentage > 50 ?'progress-circle progress-circle-big-one over50 p'+CustomerComplaintActionPlanStore?.indivitualCustomerComplaintActionPlan?.customer_complaint_action_plan_update.slice(-1)[0]?.percentage:'progress-circle progress-circle-big-one p'+CustomerComplaintActionPlanStore?.indivitualCustomerComplaintActionPlan?.customer_complaint_action_plan_update.slice(-1)[0]?.percentage">
+                                    <span>{{CustomerComplaintActionPlanStore?.indivitualCustomerComplaintActionPlan?.customer_complaint_action_plan_update.slice(-1)[0]?.percentage>0?CustomerComplaintActionPlanStore?.indivitualCustomerComplaintActionPlan?.customer_complaint_action_plan_update.slice(-1)[0]?.percentage:0}}%</span>
+                                    <div class="left-half-clipper">
+                                        <div class="first50-bar"></div>
+                                        <div class="value-bar"></div>
+                                    </div>
+                                </div>                
+                            </div>                            
+
+                            <div class="bg-white widg-padding-cmn-small cmn-bdr mb-3">
+                                <h6>{{'days_remaining' | translate}}</h6>
+                                <hr class="mt-0 mb-3">
+                                <div class="clearfix mb-3">
+                                    <p class="dot-div-new dot-green mb-0 span-dot-color d-block"><span style="background: #028f14;"></span>{{'remaining_days'|translate}}
+                                        ({{getDaysRemaining()}}{{' days'}})</p>
+                                    <p class="dot-div-new dot-red mb-0 span-dot-color d-block"><span style="background: #ffe6e6;"></span>{{'total_days'|translate}}
+                                        ({{getTotaldays()}}{{' days'}})</p>
+                                    <!-- <div class="mb-3">
+                                        <p class="dot-div-new mb-0 dot-green d-block font-normal">{{'remaining_days'|translate}}
+                                            ({{getDaysRemaining()}}{{' days'}})
+                                        </p>
+                                        <p class="dot-div-new dot-red d-block font-normal">{{'total_days'|translate}}
+                                            ({{getTotaldays()}}{{' days'}})
+                                        </p>
+                                    </div> -->
+                                </div>
+                                <div class="vertical-progress-v2">
+                                    <div class="progress-bg-sec">
+                                        <div class="progress-inner-color" 
+                                        [style.height.%]="(getDaysRemaining()/getTotaldays())*100">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" *ngIf="!AuthStore.getActivityPermission(1900,'CUSTOMER_COMPLAINT_ACTION_PLAN_DETAILS') && CustomerComplaintActionPlanStore.complaintActionPlanId">
+                        <div class="col-lg-8 col-sm-12 padding-right-0">
+
+                            <div class="widg-padding-cmn bg-white cmn-bdr">
+                                <div class="min-height-64 edit-and-delete-main">
+                                    <div class="issue-top-sec">
+                                        <div class="clearfix">
+                                            <h5 class="d-inline-block cmn-head-style label-tag-style"><span
+                                                    class="issue-smoal-head-text">#
+                                                    {{CustomerComplaintActionPlanStore.getCustomerComplaintActionPlanById(CustomerComplaintActionPlanStore.complaintActionPlanId)?.reference_code}}</span>
+                                                {{CustomerComplaintActionPlanStore?.getCustomerComplaintActionPlanById(CustomerComplaintActionPlanStore.complaintActionPlanId)?.title}}<span
+                                                class="draft-tag label-tag-style-tag label-left-arow-tag ml-3"
+                                                [ngClass]="'draft-tag-'+CustomerComplaintActionPlanStore.getCustomerComplaintActionPlanById(CustomerComplaintActionPlanStore.complaintActionPlanId)?.customer_complaint_action_plan_status_color_code"
+                                                style="line-height: 16px; vertical-align: middle; margin-top: -5px; display: inline-block;">{{CustomerComplaintActionPlanStore.getCustomerComplaintActionPlanById(CustomerComplaintActionPlanStore.complaintActionPlanId)?.customer_complaint_action_plan_status_title}}</span>
+                                            </h5>  
+                                        </div>
+                                        <div class="clearfix">
+                                            <p [ngClass]="CustomerComplaintActionPlanStore?.indivitualCustomerComplaintActionPlan?.description ? 'label-tag-style mb-2' : 'label-tag-style mb-3'"><i
+                                                    class="fas fa-calendar-alt date-pics-two"></i>
+                                                {{CustomerComplaintActionPlanStore?.getCustomerComplaintActionPlanById(CustomerComplaintActionPlanStore.complaintActionPlanId)?.start_date
+                                                | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                To
+                                                {{CustomerComplaintActionPlanStore?.getCustomerComplaintActionPlanById(CustomerComplaintActionPlanStore.complaintActionPlanId)?.target_date
+                                                | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                            </p>
+                                        </div>
+                                        <p *ngIf="CustomerComplaintActionPlanStore?.getCustomerComplaintActionPlanById(CustomerComplaintActionPlanStore.complaintActionPlanId)?.description != null"
+                                            style="white-space: pre-line;">
+                                            {{CustomerComplaintActionPlanStore?.getCustomerComplaintActionPlanById(CustomerComplaintActionPlanStore.complaintActionPlanId)?.description}}
+                                        </p>
+                                    </div>
+                                    <div class="clearfix"></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-xl-12">
+                                        <hr class="mb-2">
+                                        <div class="d-flex flex-row user-list-sm pb-0">
+                                            <app-user-popup-box
+                                                [source]=" getCreatedByFromList()">
+                                            </app-user-popup-box>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- common-tab-md end -->
+
+
+
+    <div class="row">
+        <div class="col-md-12">
+            <div *ngIf="CustomerComplaintActionPlanStore.totalItems > CustomerComplaintActionPlanStore.itemsPerPage"
+                class="col-sm-12">
+                <ul class="pagination justify-content-center mt-3">
+                    <div class="list">
+                        <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+                            (pageChange)="getActionPlan($event)" class="my-pagination">
+                        </pagination-controls>
+                    </div>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<ng-container *mobxAutorun>
+    <div *ngIf="!CustomerComplaintActionPlanStore.loaded">
+        <app-action-plan-accordion></app-action-plan-accordion>
+    </div>
+    <app-no-data
+        *ngIf="CustomerComplaintActionPlanStore.totalItems == 0 && CustomerComplaintActionPlanStore.loaded == true">
+    </app-no-data>
+</ng-container>
+
+<!-----------------------Form Modal--------------------------->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+    <app-add-customer-complaint-action-plan *ngIf="customerComplaintActionPLanObject.type"
+        [source]="customerComplaintActionPLanObject">
+    </app-add-customer-complaint-action-plan>
+</div>
+<!-----------------------Form Modal--------------------------->
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<!-- preview component for image preview -->
+<div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup" data-keyboard="false"
+    data-backdrop="static" #filePreviewModal *mobxAutorun>
+    <app-preview *ngIf="previewObject" [source]="previewObject">
+    </app-preview>
+</div>
+<!-- preview modal end -->
+
+<!-- update modal end -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #UpdateCAformModal>
+    <app-customer-corrective-action-update-modal *ngIf="caUpdateObject.type" [source]="caUpdateObject">
+    </app-customer-corrective-action-update-modal>
+</div>
+<!-- update modal end -->
+
+<!-- history modal end -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #historyPopup>
+    <app-customer-corrective-action-history-modal>
+    </app-customer-corrective-action-history-modal>
+</div>
+<!-- history modal end -->

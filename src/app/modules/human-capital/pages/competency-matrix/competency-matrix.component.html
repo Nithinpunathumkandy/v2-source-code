@@ -1,0 +1,188 @@
+<nav class="edit-bar" data-toggle="affix">
+   <div class="module-name-block module-name-block-space float-left">
+      <a class="dropdown module-title">{{'competency_matrix'|translate}}</a>
+  </div>
+   <app-sub-menu></app-sub-menu>
+   <!-- <div class="dropdown edit-dropdown d-lg-none">
+      <a class="btn btn-primary float-left three-dots-dropdown dropdown-toggle" data-toggle="dropdown"><i
+          class="fas fa-ellipsis-v"></i></a>
+      <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+        <a class="dropdown-item" data-toggle="pill" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" [routerLink]="['/human-capital/competency-matrix']">{{'competency_matrix'|translate}}</a>
+      </div>
+    </div>
+    <ul class="nav nav-pills float-left  d-none d-lg-block" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link active" data-toggle="pill" routerLinkActive = "active" [routerLinkActiveOptions]="{exact: true}" [routerLink]="['/human-capital/competency-matrix']">{{'competency_matrix'|translate}}</a>
+      </li>
+    </ul> -->
+    
+    <div class="float-right">
+      <div class="form-group header-ng-select-new mb-0" style="width: 300px;">
+         <div class="clearfix">
+            <div class="multiple-plain-ngselect">
+               <ng-select [placeholder]="'designation'|translate" [multiple]="false" searchable="true"
+               [(ngModel)]="designation" (search)="searchDesignation($event)"
+               (clear)="getDesignation()" (open)="getDesignation()" (change)="listUsers($event)">
+               <ng-option [value]="type.id" [attr.title]="type.title?.length > 28 ? type.title : ''"
+               *ngFor="let type of DesignationMasterStore.designations">
+               {{type.title?.length > 28 ? type.title.substring(0,28) + '...' : type.title}}
+            </ng-option>
+         </ng-select>
+      </div>
+   </div>
+</div>
+</div>
+</nav>
+
+<main class="mt-3 acl-page main-right-sidebar" id="main-rightbar" *ngIf = "AuthStore.getActivityPermission(200,'COMPETENCY_MATRIX_LIST')">
+   <div class="container-fluid widget">
+      <div class="row">
+         <div class="col-sm-12">
+            <div class="competency-matrix-new relative" style="z-index: 1;">
+               <div class="table100 ver4 m-b-110">
+                  <div class="fix-table">
+                     <div *ngIf="CompetencyMatrixStore?.matrixLoaded && CompetencyMatrixStore.competencyMatrix?.competencies?.length>0 && CompetencyMatrixStore.competencyMatrix?.user_score?.length>0 && designation!=null">
+                        <table data-vertable="ver4" class="fixed-table" style="display: none;"></table>
+                        <table data-vertable="ver4">
+                           <tbody>
+                              <tr class="row100">
+                                 <td colspan="2" class="left-name-matrix left-name-matrix-big sticky-col first-col table-heading-vertical">Competency</td>
+                                 <td *ngFor="let user of CompetencyMatrixStore.competencyMatrix?.user_score;let m=index" class="column100 column1" [attr.data-column]="columnClass(m)"  >
+                                    <img *ngIf = "user[0].first_name" data-toggle="modal" data-target="#user-popup" data-ui-class="a-zoom"
+                                    [attr.src]="user[0].image_token?createImagePreview('user-profile-picture',user[0].image_token):'/assets/images/user-demo2.png'" class="rounded-circle" width="45px" height="45px">
+                                    <!-- <label *ngIf = "!user[0].first_name">{{AppStore.noContentText}}</label> -->
+                                    <div *ngIf = "user[0].first_name">
+                                       <h6 [attr.title]="user[0].last_name?.length > 5 ? user[0].last_name : ''">{{user[0].first_name}} {{user[0].last_name?.length > 5 ? user[0].last_name?.substring(0,5)+ '...' : user[0].last_name}}</h6>
+                                       <!-- <span>{{user[0].designation}}</span> -->
+                                    </div>
+                                    <img *ngIf = "!user[0].first_name"
+                                    src="/assets/images/no-user.svg" class="rounded-circle pointer" width="45px" height="45px">
+                                 </td>
+                              </tr>
+                              <ng-container *ngFor="let group of CompetencyMatrixStore.competencyMatrix?.competency_group;let i=index;">
+                                 <ng-container *ngFor="let competency of CompetencyMatrixStore.competencyMatrix?.competencies;let j=index;">
+                                    <tr class="row100" *ngIf="competency?.competency_group_id==group?.id">
+
+                                       <td [attr.rowspan]="group.competency_count" *ngIf="j==findCompetencyGroupIndex(group?.id)"  class="vertical-text-matrix border-right-0 sticky-col first-col table-heading-vertical" >
+                                          <span class="bold text-13" [attr.title]="group.title?.length>4?group.title:''"> {{group.competency_count < 3 ? group.title.substring(0,4)+'..' : group.title}}</span>
+                                       </td>
+
+                                       <td class="left-name-matrix border-left-0 sticky-col second-col">
+                                          {{competency.title}}
+                                       </td>
+                                       
+                                       <ng-container *ngFor="let user of CompetencyMatrixStore.competencyMatrix?.user_score;let k=index">
+                                          <ng-container *ngFor="let marks of user?.slice(1);let m=index">
+                                             <td  class="column100 column1" [attr.data-column]="columnClass(m)" *ngIf="marks?.competency_id==competency?.id">
+                                                <label *ngIf="(marks.competency_score > marks.required) || (marks.competency_score==marks.required)" class="matrix-color-box box-red"> {{competencyPresent(marks.competency_group_id,marks.competency_id,m)?marks.competency_score?marks.competency_score:0:0}} </label>
+                                                <label (click)="setTraining(marks, user[0].user_id)" *ngIf="(!(marks.competency_score > marks.required || marks.competency_score == marks.required)) && (marks.competency_score > 2)" class="matrix-color-box box-yellow"> {{competencyPresent(marks.competency_group_id,marks.competency_id,m)?marks.competency_score?marks.competency_score:0:0}} </label>
+                                                <label (click)="setTraining(marks, user[0].user_id)" *ngIf="(!(marks.competency_score > 2)) && (!(marks.competency_score >= marks.required))" class="matrix-color-box box-green"> {{competencyPresent(marks.competency_group_id,marks.competency_id,m)?marks.competency_score?marks.competency_score:0:0}} </label>
+                                             </td>
+                                             <td  class="column100 column1" [attr.data-column]="columnClass(m)" *ngIf="!marks?.competency_id">
+                                                {{AppStore.noContentText}}
+                                             </td>
+                                          </ng-container>
+                                       </ng-container>
+
+                                    </tr>
+                                 </ng-container>
+                              </ng-container>
+                           </tbody>
+                        </table>
+                     </div>
+                     
+                     <ng-container *mobxAutorun>
+                        <app-no-data *ngIf = "designation!=null && CompetencyMatrixStore?.matrixLoaded && CompetencyMatrixStore.competencyMatrix?.competencies?.length==0 && CompetencyMatrixStore.competencyMatrix?.user_score?.length==0"></app-no-data>
+                     </ng-container>
+                     <ng-container *mobxAutorun>
+                        <app-no-data *ngIf = "designation==null"></app-no-data>
+                     </ng-container>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+</main>
+
+
+<!-- <main class="mt-3 acl-page" *ngIf = "AuthStore.getActivityPermission(200,'COMPETENCY_MATRIX_LIST')">
+   <div class="container-fluid"  *mobxAutorun>
+      <div class="audit-page-table-main">
+         <div class="row">
+            <div class="col-sm-12">
+               <div class="widget bg-white competency-matrix-main-new widg-padding-cmn min-height-83">
+                  <div class="zui-wrapper competency-matrix-first-height">
+                     <div class="competency-matrix-select">
+                        <div class="form-group">
+                           <label for="name">{{'select_designation'|translate}}</label>
+                           <div class="clearfix">
+                              <div class="multiple-plain-ngselect">
+                                  <ng-select [placeholder]="'designation'|translate" [multiple]="false" searchable="true"
+                                      [(ngModel)]="designation" (search)="searchDesignation($event)"
+                                      (clear)="getDesignation()" (open)="getDesignation()" (change)="listUsers($event)">
+                                      <ng-option [value]="type.id"
+                                          *ngFor="let type of DesignationMasterStore.designations">
+                                          {{type.title}}
+                                      </ng-option>
+                                  </ng-select>
+                              </div>
+                          </div>
+                         </div>
+                      </div>
+                     <div class="zui-scroller" *ngIf="CompetencyMatrixStore.matrixLoaded && CompetencyMatrixStore.competencyMatrix?.competencies?.length>0 && CompetencyMatrixStore.competencyMatrix?.user_score?.length>0 && designation!=null">
+                        <table class="zui-table" >
+                           <thead>
+                              <tr>
+                                 <th class="zui-sticky-col text-center skill-label">#</th>
+                                 <th class="zui-sticky-col2 skill-label">{{'user'|translate}}</th>
+                                 <th class="main-skill bl-2" [attr.colspan]="group.competency_count" *ngFor="let group of CompetencyMatrixStore.competencyMatrix.competency_group" style="text-align: center;"> {{group.title}}</th>
+                              </tr>
+                              <tr>
+                                 <th class="zui-sticky-col text-center skill-label">#</th>
+                                 <th class="zui-sticky-col2 skill-label">{{'user'|translate}}</th>
+                                 <th class="skill bl-2" *ngFor="let competency of CompetencyMatrixStore.competencyMatrix.competencies" [attr.title]="competency.title?.length>10?competency.title:''"> <span [attr.title]="competency.title?.length>10?competency.title:''">{{competency.title?.length>10?competency.title.substring(0,10)+'..':competency.title}}</span></th>
+                              </tr>
+                           </thead>
+                           <tbody>
+                              <tr *ngFor="let user of CompetencyMatrixStore.competencyMatrix.user_score;let ind=index">
+                                 <td class="zui-sticky-col text-center col-id">{{ind+1}}</td>
+                                 <td class="zui-sticky-col2">
+                                    <div class="d-flex user-list-sm">
+                                       <img [attr.src]="user[0].image_token?createImagePreview('user-profile-picture',user[0].image_token):'/assets/images/user-demo2.png'" 
+                                       width="30px" height="30px" class="rounded-circle"
+                                       onerror = "this.src='/assets/images/user-demo2.png'">
+                                       <div>
+                                          <h6>{{user[0].first_name}} {{user[0].last_name}}</h6>
+                                          <span>{{user[0].designation}}</span>
+                                       </div>
+                                    </div>
+                                 </td>
+                                 <td *ngFor="let marks of user.slice(1);let m=index">
+                                    <label *ngIf="(marks.competency_score > marks.required) || (marks.competency_score==marks.required)" class="score-matrix label-success"> {{competencyPresent(marks.competency_group_id,marks.competency_id,m)?marks.competency_score?marks.competency_score:0:0}} </label>
+                                    <label (click)="setTraining(marks, user[0].user_id)" *ngIf="(!(marks.competency_score > marks.required || marks.competency_score == marks.required)) && (marks.competency_score > 2)" [ngClass]="marks.trainings?'score-matrix label-warning new-ripple-animation-yellow pointer':'score-matrix label-warning pointer'"> {{competencyPresent(marks.competency_group_id,marks.competency_id,m)?marks.competency_score?marks.competency_score:0:0}} </label>
+                                    <label (click)="setTraining(marks, user[0].user_id)" *ngIf="(!(marks.competency_score > 2)) && (!(marks.competency_score >= marks.required))" [ngClass]="marks.trainings?'score-matrix label-danger new-ripple-animation-red pointer':'score-matrix label-danger pointer'"> {{competencyPresent(marks.competency_group_id,marks.competency_id,m)?marks.competency_score?marks.competency_score:0:0}} </label>
+                                 </td>
+                              </tr>
+                           </tbody>
+                        </table>
+                     </div>
+                     <ng-container *mobxAutorun>
+                        <app-no-data *ngIf = "designation!=null && CompetencyMatrixStore.matrixLoaded && CompetencyMatrixStore.competencyMatrix?.competencies?.length==0 && CompetencyMatrixStore.competencyMatrix?.user_score?.length==0"></app-no-data>
+                      </ng-container>
+                      <ng-container *mobxAutorun>
+                        <app-no-data *ngIf = "designation==null"></app-no-data>
+                      </ng-container>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+</main> -->
+
+<!-- matrix training details Modal part -->
+<div class="modal modal-style-1 fade popup-full-width" id="recommended-training-popup" data-keyboard="false"  data-backdrop="static" #trainingDetails>
+   <app-training-matrix-details *ngIf="matrixTrainingObject.competency_id" [source]="matrixTrainingObject">
+   </app-training-matrix-details>
+</div>

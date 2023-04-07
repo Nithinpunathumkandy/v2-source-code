@@ -1,0 +1,163 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navigationBar>
+    <app-sub-menu></app-sub-menu>
+    <!-- <app-sub-menu-drop-down></app-sub-menu-drop-down> -->
+    <div class="module-name-block module-name-block-space float-left">
+        <a class="dropdown module-title">{{'departments'|translate}}</a>
+    </div>
+    <!-- <ul class="nav nav-pills float-left d-none d-lg-block" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" data-toggle="pill" routerLinkActive = "active" [routerLinkActiveOptions]="{exact: true}" [routerLink]="['/human-capital/departments']">{{'departments'|translate}}</a>
+        </li>
+    </ul>  -->
+</nav>
+<main class="mt-3">
+    <!-- <div *ngIf = "!ProfileStore.loaded">
+    </div> -->
+    <div class="container-fluid">
+        <app-filter-menu></app-filter-menu>
+        <div class="widget">
+            <!--<nav aria-label="breadcrumb">
+        <app-sub-menu></app-sub-menu>
+         <ol class="breadcrumb">
+            <li class="breadcrumb-item pointer" [routerLink]="['/masters/organization']"><a>The organization</a></li>
+            <li class="breadcrumb-item active">Department</li>
+        </ol> 
+    </nav> -->
+    <div class="audit-program-box audit-page-table-main">
+        <div class="row">
+           <div class="col-sm-12">
+               <div class="full-width-table">
+            <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll" *ngIf="DepartmentMasterStore?.loaded && DepartmentMasterStore.allItems.length > 0">
+                <tr>
+                    <th style="width: 4%; text-align: center;">{{'sl' | translate}}</th>
+                    <th (click)="sortTitle('departments.title')" class="border-top-0 issue-list-org-tab-three pointer"
+                        style="width: 24%;"><span>{{'hc_department_name'|translate}}</span>
+                        <img _ngcontent-twv-c17="" class="sort-down-pics pl-2"
+                            *ngIf="DepartmentMasterStore.orderItem=='departments.title'" [attr.src]="DepartmentMasterStore.orderBy=='desc' ? 
+                'assets/images/sort-up.png' : DepartmentMasterStore.orderBy=='asc' ? 
+                'assets/images/sort-down.png' : 'assets/images/sort-empty.png'">
+                    </th>
+                    <th style="width: 14%;">{{'hc_department_code' | translate}}</th>
+                    <th style="width: 17%;">{{'department_head'|translate}}</th>
+                    <th *ngIf = "OrganizationLevelSettingsStore.organizationLevelSettings?.is_division" (click)="sortTitle('divisions.title')" class="border-top-0 issue-list-org-tab-three pointer" style="width: 17%;">
+                        <span>{{'division'|translate}}</span>
+
+                        <img _ngcontent-twv-c17="" class="sort-down-pics pl-2"
+                            *ngIf="DepartmentMasterStore.orderItem=='divisions.title'" [attr.src]="DepartmentMasterStore.orderBy=='desc' ? 
+                'assets/images/sort-up.png' : DepartmentMasterStore.orderBy=='asc' ? 
+                'assets/images/sort-down.png' : 'assets/images/sort-empty.png'">
+
+
+                    </th>
+                    <th style="width: 16%;">{{'organization'|translate}}</th>
+                    <th style="width: 8%;" class="text-center">{{'status'|translate}}</th>
+                </tr>
+                <ng-container *mobxAutorun>
+                    <tr class="edit-and-delete-main cursor-pointer" 
+                    (click) = "AuthStore.getActivityPermission(200,'DEPARTMENT_DETAILS') ? getToDetails(row.id) : ''"
+                    
+                        *ngFor="let row of DepartmentMasterStore.allItems | paginate: {currentPage:DepartmentMasterStore.currentPage, itemsPerPage:DepartmentMasterStore.itemsPerPage,totalItems:DepartmentMasterStore.totalItems}; let num = index">
+                        <td style="text-align: center;">
+                            {{(DepartmentMasterStore.currentPage - 1) * DepartmentMasterStore.itemsPerPage + (num + 1)}}
+                        </td>
+                        <td><a>{{row.title}}</a></td>
+                        <td>{{row.code}}</td>
+                        <td>
+                            <div class="row" *ngIf = "row.head_id">
+                                <div class="col-xl-12">
+                                    <!-- <div class="d-flex flex-row user-list-sm">
+                                        <img  [attr.src]="row.head_image_token?createImageUrl('user-profile-picture',row.head_image_token):getDefaultGeneralImage()"
+                                        onerror="this.src='/assets/images/placeholder.png'"
+                                        width="30px" height="30px" class="rounded-circle">
+                                        <div>
+                                            <h6>{{row.head_first_name|titlecase}} {{row.head_last_name|titlecase}}</h6>
+                                            <span>{{row.head_designation}}</span>
+                                        </div>
+                                    </div> -->
+                                    <app-user-popup-box [source]="getPopupDetails(row)"></app-user-popup-box>
+                            
+                                </div>
+                            </div>
+                            <div *ngIf ="!row.head_id">
+                                {{AppStore.noContentText}}
+                            </div>
+                        </td>
+                        <td *ngIf = "OrganizationLevelSettingsStore.organizationLevelSettings?.is_division">{{row.division_title}}</td>
+                        <td>{{row.organization_title}}</td>
+                        
+                        <td class="text-center">
+                            <div [attr.class]="'dot-div '+row.status_label">{{row.status}}</div>
+                            <div class="edit-option-show" style="margin:-6px 0 0 0">
+                                <a (click)=" getDepartment(row.id)" [attr.title]="'edit' | translate" *ngIf="AuthStore.getActivityPermission(200,'UPDATE_DEPARTMENT')"><i class="fas fa-pen pointer"></i></a>
+                                <a (click)="delete(row.id)" [attr.title]="'delete' | translate" *ngIf="AuthStore.getActivityPermission(200,'DELETE_DEPARTMENT')"><i class="fas fa-trash pointer"></i></a>
+                                <a (click)="activate(row.id)" [attr.title]="'activate' | translate" *ngIf="row.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(200,'ACTIVATE_DEPARTMENT')"><i
+                                        class="fas fa-check pointer"></i></a>
+                                <a (click)="deactivate(row.id)" [attr.title]="'deactivate' | translate" *ngIf="row.status_id == AppStore.activeStatusId && AuthStore.getActivityPermission(200,'DEACTIVATE_DEPARTMENT')"><i
+                                        class="fas fa-ban pointer"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-container>
+            </table>  
+        </div>
+        <p class="float-right" *ngIf="DepartmentMasterStore?.loaded && DepartmentMasterStore.totalItems > 0"><b>{{'total_Items' | translate}}:{{DepartmentMasterStore?.totalItems}}</b></p>
+        <ng-container *mobxAutorun>
+            <div *ngIf="!DepartmentMasterStore.loaded">
+                <app-table-loader></app-table-loader>
+            </div>
+            <app-no-data *ngIf = "DepartmentMasterStore.allItems.length == 0 && DepartmentMasterStore.loaded == true"></app-no-data>
+        </ng-container>
+           </div>
+        </div>
+    </div>
+            
+
+            <div *ngIf=" DepartmentMasterStore.loaded && DepartmentMasterStore.totalItems > 15" class="col-sm-12">
+                <ul class="pagination justify-content-center mt-3">
+                    <div *ngIf="DepartmentMasterStore.totalItems>DepartmentMasterStore.itemsPerPage" class="list">
+                        <pagination-controls [previousLabel]="'previous' | translate"  [nextLabel]="'next' | translate" (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls> 
+                    </div>
+                    <label class="per-page-pagination" *ngIf="DepartmentMasterStore.totalItems!= 0">
+                        <span>{{'per_page' | translate}}:</span> 
+                    <button 
+                        [class.active]="DepartmentMasterStore.itemsPerPage==15" 
+                        (click)="setPerPage(15)">15</button>
+                    <button 
+                        [class.active]="DepartmentMasterStore.itemsPerPage==25" 
+                        [class.disabled-pagination]="15>=DepartmentMasterStore.totalItems"
+                        (click)="setPerPage(25)">25</button>
+                    <button 
+                        [class.active]="DepartmentMasterStore.itemsPerPage==50" 
+                        [class.disabled-pagination]="25>=DepartmentMasterStore.totalItems"
+                        (click)="setPerPage(50)">50</button>
+                    <button 
+                        [class.active]="DepartmentMasterStore.itemsPerPage==100" 
+                        [class.disabled-pagination]="50>=DepartmentMasterStore.totalItems"
+                        (click)="setPerPage(100)">100</button>
+                    <button 
+                        [class.active]="DepartmentMasterStore.itemsPerPage==200" 
+                        [class.disabled-pagination]="100>=DepartmentMasterStore.totalItems"
+                        (click)="setPerPage(200)">200</button>
+                    </label>
+                </ul>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Modal part -->
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+
+    <app-department-modal *ngIf="departmentObject.type" [source]="departmentObject">
+
+    </app-department-modal>
+
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>

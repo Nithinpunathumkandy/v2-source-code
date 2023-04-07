@@ -1,0 +1,522 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navigationBar>
+
+    <app-breadcrumb-menu></app-breadcrumb-menu>
+    <app-sub-menu></app-sub-menu>
+
+</nav>
+
+
+
+<main class="mt-3 organization-page">
+    <div class="container-fluid">
+        <div class="organization-form-page master-form-page" *mobxAutorun>
+
+            <form id="regForm" [formGroup]="form" class="organization-multi-stup-form multi-stup-form-common"
+                action="/action_page.php">
+                <!-- Circles which indicates the steps of the form: -->
+                <div id="header-sroll-form" class="form-indicates-sec clearfix" #formSteps>
+                    <span class="step pointer" (click)="changeStep(0)"><span class="multi-form-nbr">1</span>Audit
+                        Plans</span>
+                    <span class="step pointer" (click)="changeStep(1)"><span class="multi-form-nbr">2</span>Audit
+                        Info</span>
+                    <span class="step pointer" (click)="changeStep(2)"><span class="multi-form-nbr">3</span>Working
+                        Papers</span>
+                    <span class="step pointer" (click)="changeStep(3)"><span class="multi-form-nbr">4</span>Preview &
+                        Save</span>
+
+                </div>
+                <!-- One "tab" for each step in the form: -->
+                <div class="tab">
+                    <!-- tab start -->
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="panel-group panel-drop-sections panel-multi-sec" id="jd" role="tablist"
+                                aria-multiselectable="true" disabled="form.value.id">
+
+                                <div class="panel panel-default"
+                                    *ngFor="let row of AuditProgramMasterStore?.allItems| paginate: {currentPage:AuditProgramMasterStore.currentPage, itemsPerPage:AuditProgramMasterStore.itemsPerPage,totalItems:AuditProgramMasterStore.totalItems} ;let num = index">
+                                    <div class="pointer"
+                                        [ngClass]="selectedIndex==num ? 'panel-heading active' : 'panel-heading'"
+                                        role="tab" id="headingOne">
+                                        <div class="panel-title" [ngClass]="{'my-disable':form.value.id}">
+                                            <a role="button" (click)="getAuditProgramDetails(row.id, num)"
+                                                aria-expanded="false" aria-controls="collapseOne" class="collapsed">
+                                                <h5 class="width96pc mt-0"> 
+                                                    <span class="d-flex align-items-center">
+                                                        <span class="w-100"> 
+                                                    # {{row.reference_code}} {{row.title}}
+                                                    </span>
+                                                    <span class="ml-2 text-14 font-weight-600">{{row.audit_plan_count}}</span>
+                                                        </span>
+                                                    <span class="drop-down-icone"><i
+                                                            class="fas fa-chevron-down"></i></span>
+                                                </h5>
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div [ngClass]="selectedIndex==num ? 'panel-collapse collapse show' : 'panel-collapse collapse'"
+                                        role="tabpanel" aria-labelledby="headingOne">
+                                        <app-auditable-item-loader *ngIf="!AuditPlanStore.loaded"></app-auditable-item-loader>
+                                        <div class="panel-body bg-white" *ngIf="AuditPlanStore.loaded">
+                                            <div class="audit-preplan-table accodion-inner-table">
+                                                <table class="table table-bordered ordinary-table cmn-table-style mb-4"
+                                                    style="width: 100%;">
+                                                    <tr>
+                                                        <th class="border-top-0 text-center" width="2%">#</th>
+                                                        <th class="border-top-0" width="40%">Audit Plan</th>
+                                                        <th class="border-top-0" width="12%">Start Date</th>
+                                                        <th class="border-top-0" width="12%">End Date</th>
+                                                        <th class="border-top-0 text-center" width="8%">Action</th>
+
+
+                                                    </tr>
+                                                    <ng-container *ngFor="let audit_plan of AuditPlanStore?.allItems;let num=index">
+                                                    <tr *ngIf="audit_plan.audit_plan_status_id==2">
+                                                        <td class="text-center">{{num+1}}</td>
+                                                        <td>{{audit_plan.title}}</td>
+                                                        <td>{{audit_plan.start_date | date:
+                                                            OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                        </td>
+
+
+                                                        <td>{{audit_plan.end_date | date:
+                                                            OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                        </td>
+
+                                                        <td class="text-center">
+
+                                                            <button type="button" class="btn-table"
+                                                                (click)="getPlan(audit_plan)"
+                                                                *ngIf="selectedPlan==false">Select</button>
+                                                            <button type="button" class="btn-table btn-tic"
+                                                                (click)="changePlan()"
+                                                                *ngIf="selectedPlan==true && currentPlan == audit_plan.id"><i
+                                                                    class="fas fa-check"></i></button>
+                                                        </td>
+                                                    </tr>
+                                                </ng-container>
+
+                                                </table>
+                                            </div>
+
+                                            <app-no-data-list [source]="auditPlanEmptyList"
+                                                *ngIf="AuditProgramMasterStore?.individualAuditProgram?.audit_plan.length == 0 && AuditProgramMasterStore?.individualLoaded == true">
+                                            </app-no-data-list>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <div *ngIf="AuditProgramMasterStore.totalItems>AuditProgramMasterStore.itemsPerPage"
+                                    class="col-sm-12">
+                                    <ul class="pagination justify-content-center mt-3">
+                                        <div class="list">
+                                            <pagination-controls (pageChange)="pageChange($event)"
+                                                class="my-pagination">
+                                            </pagination-controls>
+                                        </div>
+                                    </ul>
+                                </div>
+                            </div>
+
+
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab">
+
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="name">From <span class="form-error">*</span></label>
+                                <div class="password-icon-input">
+                                    <div class="input-group date-picker">
+                                        <input class="form-control cal3" formControlName="start_date"
+                                            placeholder="yyyy-mm-dd" id="from" ngbDatepicker
+                                            #fromDateInput="ngbDatepicker">
+
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-secondary calendar"
+                                                (click)="fromDateInput.toggle()" type="button"><i
+                                                    class="fas fa-calendar-alt"></i></button>
+                                        </div>
+                                    </div>
+                                    <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.start_date">
+                                        {{formErrors.start_date}}</p>
+
+
+                                    <div class="question-circle-inp" style="margin-right: 40px;">
+                                        <i class="far fa-question-circle"></i>
+                                        <div class="message-password-inp">
+                                            <p class="mb-0">Audit Plan start date should be Audit Program start date or
+                                                greater than Audit Program start date </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="name">To <span class="form-error">*</span></label>
+                                <div class="password-icon-input">
+                                    <div class="input-group date-picker">
+                                        <input class="form-control cal4" formControlName="end_date"
+                                            placeholder="yyyy-mm-dd"
+                                            [minDate]="form.value.start_date?{year: this.form.value.start_date.year, month: this.form.value.start_date.month, day: this.form.value.start_date.day}:''"
+                                            id="to" ngbDatepicker #toDateInput="ngbDatepicker">
+
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-secondary calendar"
+                                                (click)="toDateInput.toggle()" type="button"><i
+                                                    class="fas fa-calendar-alt"></i></button>
+                                        </div>
+                                    </div>
+                                    <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.end_date">
+                                        {{formErrors.end_date}}</p>
+
+
+
+                                    <div class="question-circle-inp" style="margin-right: 40px;">
+                                        <i class="far fa-question-circle"></i>
+                                        <div class="message-password-inp">
+                                            <p class="mb-0">Audit Plan End date should be Audit Program end date or less
+                                                than
+                                                Audit Program end date or within Audit Program Start date and End date
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+
+                            </div>
+                        </div>
+
+
+
+
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label for="name">Title<sup>*</sup></label>
+                                <input type="text" formControlName='title' class="form-control"
+                                    [placeholder]="'audit_title_form' | translate">
+                                <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.title ">
+                                    {{formErrors.title}}</p>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <div class="clearfix">
+
+                                    <label class="float-left">Description
+                                    </label>
+                                    <span class="float-right">
+                                        <p class="text-grey mb-0">{{form?.value.description != null ?
+                                            form?.value.description?.length : 0}}
+                                            Characters</p>
+                                    </span>
+                                </div>
+                                <textarea class="form-control" rows="3" id="comment11" [placeholder]="'audit_title_form_desc' | translate"
+                                    formControlName="description"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+
+                </div>
+
+                <div class="tab">
+                    <!-- tab start -->
+                    <label for="name" class="label-style mb-0">Working Papers</label>
+
+                    <!-- <div class="scroll-documents" #uploadArea>
+                        <div class="row m-0 upload-section" style="padding-top: 0">
+                            <div class="col-sm-3 col-lg-3 costmz-logo-new mt-2">
+
+                                <div class="question-circle-inp" style="margin-right: 7px;">
+                                    <i class="far fa-question-circle"></i>
+                                    <div class="message-password-inp bottom-show">
+                                        <p class="mb-0">{{'allowed_file_types' | translate}}
+                                            {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="form-group form-group-upload">
+                                    <div class="darag-dropifile-upload">
+                                        <div class="d-flex justify-content-center align-items-center text-center">
+                                            <div>
+                                                <img src="assets/images/drag-pic.png" class="drag-pic-files">
+                                                <div class="drag-file-name"> Drag &amp; Drop Your File
+                                                    Here </div>
+                                                <div class="upload-btn-wrapper">
+                                                    <input type="file" multiple name="myfile"
+                                                        (change)="onFileChange($event,'support-file')"
+                                                        [accept]="checkAcceptFileTypes('support-file')" />
+                                                    <button class="btn">Browse Files</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div [ngClass]="files.success? 'col-sm-3 col-lg-3 up-pic-cf mt-2 hide_loader' : 'col-sm-3 col-lg-3 up-pic-cf mt-2'"
+                                *ngFor="let files of fileUploadsArray">
+                                <div class="upload-pics edit-option file-upload-loader">
+                                    <circle-progress class="browse-form-pic" [percent]=files.uploadProgress
+                                        [title]=files.uploadProgress>
+                                    </circle-progress>
+                                </div>
+                            </div>
+
+                            <div [ngClass]="doc.is_deleted ? 'col-sm-3 col-lg-3 up-pic-cf mt-2 image_deleted':'col-sm-3 col-lg-3 up-pic-cf mt-2'"
+                                *ngFor="let doc of AuditStore.docDetails">
+                                <div class="upload-pics edit-option">
+                                    <div *ngIf="doc.preview" class="browse-form-pic"
+                                        [ngStyle]="{'background': 'url(' + doc.preview + ') no-repeat 0 0 / cover'}">
+                                    </div>
+                                    <div class="browse-form-name clearfix">
+                                        <div class="float-left">
+                                            <h6>{{doc.name.length>15?doc.name.substring(0,15)+' ...':doc.name}}
+                                            </h6>
+                                            <span>{{doc.size/1048576 | number:'0.2-2'}}MB</span>
+                                        </div>
+                                        <div class="browse-logo">
+                                            <img *ngIf="checkExtension(doc.ext,'excel') != -1"
+                                                src="/assets/images/md-xl.png">
+                                            <img *ngIf="checkExtension(doc.ext,'image') != -1"
+                                                src="/assets/images/md-jpg.png">
+                                            <img *ngIf="checkExtension(doc.ext,'doc') != -1"
+                                                src="/assets/images/md-doc.png">
+                                            <img *ngIf="checkExtension(doc.ext,'pdf') != -1"
+                                                src="/assets/images/md-pdf.png">
+                                        </div>
+                                    </div>
+                                    <div class="edit-option-show">
+                                        <a (click)="removeDocument(doc.token)"><i class="fas fa-trash"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div> -->
+               <!-- Common File Upload Starts Here -->
+               <div class="scroll-documents" #uploadArea>
+                <div class="thumb-pics-bg thumb-pics-col-4 clearfix thumb-pics-fix-text" style="padding-top: 0;">
+                   <div class="thumb-pics">
+
+                      <div class="form-group form-group-upload">
+                         <div class="darag-dropifile-upload">
+                            <div class="d-flex justify-content-center align-items-center text-center">
+                               <div>
+                                  <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                                  <div class="drag-file-name"> Select or Upload Your File Here </div>
+                                  <div class="upload-btn-wrapper">                  
+                                     <button (click)="openFileUploadModal()" type="button" class="btn">{{'browse_files' | translate}}</button>
+                                  </div>
+                               </div>
+                            </div>
+                         </div>
+                      </div>
+                   </div>
+
+                      <div class="thumb-pics"  *ngFor="let docs of fileUploadPopupStore.displayFiles ;let i = index">
+                          <div class="upload-pics edit-option" data-toggle="modal">
+                            <div *ngIf="docs.id && !docs.preview" class="browse-form-pic"  [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                            </div>
+                              <div  *ngIf="docs.preview" class="browse-form-pic" [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">              
+                            </div>
+                             <div class="browse-form-name clearfix">
+                              <div class="float-left">
+                                <h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                </h6>
+                                <span *ngIf="docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-book"></i></span>
+                                <span  *ngIf="!docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-laptop"></i></span>
+                                <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                              </div>
+                              <div class="browse-logo">
+                                <img *ngIf="checkExtension(docs.ext,'image') != -1"
+                                    class="folder-picher" src="/assets/images/jpg-icone.png">
+                                <img *ngIf="checkExtension(docs.ext,'doc') != -1"
+                                    class="folder-picher" src="/assets/images/word-icone.png">
+                                <img *ngIf="checkExtension(docs.ext,'pdf') != -1"
+                                    class="folder-picher" src="/assets/images/pdf-icone.png">
+                                <img *ngIf="checkExtension(docs.ext,'excel') != -1"
+                                    class="folder-picher" src="/assets/images/excel-icone.png">
+                                <img *ngIf="checkExtension(docs.ext,'video') != -1"
+                                    class="folder-picher" src="/assets/images/md-video.png">
+                                <img *ngIf="checkExtension(docs.ext,'audio') != -1"
+                                    class="folder-picher" src="/assets/images/md-audio.png">
+                                <img *ngIf="checkExtension(docs.ext,'ppt') != -1"
+                                    class="folder-picher" src="/assets/images/md-ppt.png">
+                            </div>
+                             </div>
+                          </div>
+                       </div>
+
+          
+                </div>
+             </div>
+                        <!-- Common File Upload Ends Here -->
+                </div>
+
+                <div class="tab">
+
+                    <div class="row">
+                        <div class="col-sm-12 col-lg-6 ">
+                            <div class="issue-top-sec">
+                                <div class="clearfix">
+                                    <h5 class="d-inline-block cmn-head-style label-tag-style">
+                                        {{form.value.title?form.value.title:AppStore.noContentText}} <span
+                                            class="draft-tag label-tag-style-tag label-left-arow-tag"
+                                            style="line-height: 16px; vertical-align: middle; margin-top: -5px; display: inline-block;">
+                                            New</span> </h5>
+                                </div>
+                                <div class="clearfix">
+
+                                    <p *ngIf="endDate!=null && startDate!=null" class="label-tag-style"><i
+                                            class="fas fa-calendar-alt date-pics-two"></i>
+                                        {{startDate | date:
+                                        OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                        To
+                                        {{endDate | date:
+                                        OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</p>
+
+                                    <p *ngIf="endDate==null && startDate==null" class="label-tag-style"><i
+                                            class="fas fa-calendar-alt date-pics-two"></i>
+                                        {{AppStore.noContentText}}
+
+                                    </p>
+                                </div>
+                                <h6>Description</h6>
+                                <p style="white-space: pre-wrap;">
+                                    {{form.value.description?form.value.description:AppStore.noContentText}}</p>
+                            </div>
+
+
+                        </div>
+                        <div class="col-sm-12 col-lg-6 ">
+
+                            <h6>Working Papers</h6>
+                            <p *ngIf="fileUploadPopupStore.displayFiles.length==0">{{AppStore.noContentText}}</p>
+                            <div class="scroll-documents" #previewUploadArea>
+                            <div class="thumb-pics-bg thumb-pics-col-2 clearfix thumb-pics-fix-text" *ngIf="fileUploadPopupStore.displayFiles.length > 0">
+                            <div class="thumb-pics"  *ngFor="let docs of fileUploadPopupStore.displayFiles ;let i = index">
+                                <div class="upload-pics edit-option" data-toggle="modal">
+                                  <div *ngIf="docs.id && !docs.preview" class="browse-form-pic"  [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                                  </div>
+                                    <div  *ngIf="docs.preview" class="browse-form-pic" [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">              
+                                  </div>
+                                   <div class="browse-form-name clearfix">
+                                    <div class="float-left">
+                                      <h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                      </h6>
+                                      <span *ngIf="docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-book"></i></span>
+                                      <span  *ngIf="!docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-laptop"></i></span>
+                                      <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                                    </div>
+                                    <div class="browse-logo">
+                                      <img *ngIf="checkExtension(docs.ext,'image') != -1"
+                                          class="folder-picher" src="/assets/images/jpg-icone.png">
+                                      <img *ngIf="checkExtension(docs.ext,'doc') != -1"
+                                          class="folder-picher" src="/assets/images/word-icone.png">
+                                      <img *ngIf="checkExtension(docs.ext,'pdf') != -1"
+                                          class="folder-picher" src="/assets/images/pdf-icone.png">
+                                      <img *ngIf="checkExtension(docs.ext,'excel') != -1"
+                                          class="folder-picher" src="/assets/images/excel-icone.png">
+                                      <img *ngIf="checkExtension(docs.ext,'video') != -1"
+                                          class="folder-picher" src="/assets/images/md-video.png">
+                                      <img *ngIf="checkExtension(docs.ext,'audio') != -1"
+                                          class="folder-picher" src="/assets/images/md-audio.png">
+                                      <img *ngIf="checkExtension(docs.ext,'ppt') != -1"
+                                          class="folder-picher" src="/assets/images/md-ppt.png">
+                                  </div>
+                                   </div>
+                                </div>
+                             </div>
+                            </div>
+                        </div>
+                            <!-- <div class="thumb-pics-bg thumb-pics-col-2 clearfix"
+                                *ngIf="AuditStore.docDetails.length > 0">
+                                <div class="thumb-pics" *ngFor="let b of AuditStore.docDetails">
+                                    <div class="upload-pics upload-pics-small edit-option">
+                                        <div class="browse-form-pic"
+                                            [ngStyle]="{'background': 'url(' + b?.preview + ') no-repeat 0 0 / cover'}">
+                                        </div>
+                                        <div class="browse-form-name clearfix">
+                                            <div class="float-left">
+                                                <h6 [attr.title]="b?.name">
+                                                    {{b?.name.length > 20 ? b.name?.substring(0,20)+' ...' :
+                                                    b?.name}}</h6>
+                                                <span>{{b?.size/1048576 | number:'0.2-2'}}MB</span>
+                                            </div>
+                                            <div class="browse-logo">
+                                                <img *ngIf="checkExtension(b?.ext,'excel') != -1"
+                                                    src="/assets/images/md-xl.png">
+                                                <img *ngIf="checkExtension(b?.ext,'image') != -1"
+                                                    src="/assets/images/md-jpg.png">
+                                                <img *ngIf="checkExtension(b?.ext,'doc') != -1"
+                                                    src="/assets/images/md-doc.png">
+                                                <img *ngIf="checkExtension(b?.ext,'pdf') != -1"
+                                                    src="/assets/images/md-pdf.png">
+                                                <img *ngIf="checkExtension(b?.ext,'video') != -1"
+                                                    src="/assets/images/md-video.png">
+                                                <img *ngIf="checkExtension(b?.ext,'audio') != -1"
+                                                    src="/assets/images/md-audio.png">
+                                                <img *ngIf="checkExtension(b?.ext,'ppt') != -1"
+                                                    src="/assets/images/md-ppt.png">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div> -->
+                        </div>
+                    </div>
+
+
+
+                </div>
+
+                <div style="overflow:auto;">
+                    <div class="form-next-page-btns" style="float:left;">
+                        <button class="btn" type="button" (click)="confirmCancel()">Cancel</button>
+                        <button class="btn" type="button" id="prevBtn" (click)="nextPrev(-1)"
+                            [disabled]="AppStore.loading">{{previousButtonText}}</button>
+                        <button class="btn btn-active" type="button" id="nextBtn" (click)="nextPrev(1)"
+                            [disabled]="AppStore.loading || !checkFormObject()">{{nextButtonText}}</button>
+                    </div>
+                </div>
+
+
+
+            </form>
+
+        </div>
+    </div>
+</main>
+
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #cancelPopup data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="confirmationObject"></app-delete-popup>
+</div>
+<!-- * Documetn Attach/Upload Common Component Starts Here -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #fileUploadModal>
+ 
+    <app-file-upload-popup *ngIf = "fileUploadPopupStore.openPopup" ></app-file-upload-popup>
+  
+  </div>
+  <!-- * Documetn Attach/Upload Common Component Ends Here -->

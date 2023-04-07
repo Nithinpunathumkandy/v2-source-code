@@ -1,0 +1,216 @@
+<!-- <div class="modal modal-style-1 popup-full-width fade" id="start-investigation" data-keyboard="false"  data-backdrop="static"> -->
+<button type="button" class="close" data-dismiss="modal" (click)="cancel()"><i
+      class="lni-close"></i><span>esc</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered">
+   <div class="modal-content">
+      <!-- Modal Header -->
+      <div class="modal-header">
+         <h4 class="modal-title" *ngIf="customerInvestigationObjectSource.type == 'Add'">
+            {{'customer_engagement_investigation_new_header' | translate}}</h4>
+         <h4 class="modal-title" *ngIf="customerInvestigationObjectSource.type == 'Edit'">
+            {{'customer_engagement_investigation_edit_header' | translate}}</h4>
+         <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
+      </div>
+      <!-- Modal body -->
+      <div class="modal-body form-body">
+
+         <!-- <hr class="mt-0"> -->
+         <p class="head-details">{{'customer_investigate_modal_title' | translate}}</p>
+         <form [formGroup]="form" *mobxAutorun>
+            <div class="row">
+               <div class="col-sm-12">
+                  <div class="form-group">
+                     <label>{{'customer_complaint' | translate}}<span class="form-error">*</span></label>
+                     <div class="clearfix">
+                        <div class="multiple-plain-ngselect">
+                           <ng-select [readonly]="CustomerInvestigationStore.hideSubMenu"
+                              [placeholder]="'select_customer_complaint_placeholder' | translate" [multiple]="false"
+                              (clear)="getCustomerComplaint()" formControlName="customer_complaint_id"
+                              (open)="getCustomerComplaint()" (search)="searchCustomerComplaint($event)"
+                              bindLabel="title">
+                              <ng-option [value]="item.id" *ngFor="let item of CustomerComplaintStore.allItems">
+                                 {{item.title}}
+                              </ng-option>
+
+                           </ng-select>
+                           <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.customer_complaint_id">
+                              {{formErrors.customer_complaint_id}}
+                           </p>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+               <div class="col-sm-12">
+                  <div class="form-group">
+                     <span style="float: right;">
+                        <p class="text-grey">{{form?.value.description != null ? form?.value.description?.length : 0}}
+                           {{'characters' | translate}}</p>
+                     </span>
+                     <label>{{'description' | translate}}</label>
+                     <div class="clearfix">
+                        <textarea class="form-control" rows="5" id="comment"
+                           [attr.placeholder]="'customer_engagement_investigation_description_placeholder' | translate"
+                           formControlName="description"></textarea>
+                     </div>
+                  </div>
+               </div>
+
+               <div class="col-sm-6">
+                  <div class="form-group">
+                     <label>{{'is_this_previous_non_confirmity' | translate}}? <span class="form-error">*</span></label>
+                     <div class="clearfix">
+                        <div class="multiple-plain-ngselect">
+
+                           <ng-select [placeholder]="'is_this_previous_non_confirmity' | translate" [multiple]="false"
+                              formControlName="is_previous_non_conformity" bindLabel="title"
+                              (change)="showNonConfimity()">
+                              <ng-option [value]="item.type" *ngFor="let item of previous_non_conformity">
+                                 {{item.title}}
+                              </ng-option>
+
+                           </ng-select>
+                           <p class="pt-1" style="color: red;"
+                              *ngIf="formErrors && formErrors.is_previous_non_conformity">
+                              {{formErrors.is_previous_non_conformity}}
+                        </div>
+                     </div>
+                  </div>
+               </div>
+               <!-- <div class="col-sm-6">
+                   <div class="form-group">
+                      <label>Non-Confirmity ID
+                    </label>
+                      <div class="clearfix">
+                        <input type="text" class="form-control" placeholder="Absence of system generated pricing and costingr">
+              
+                      </div>
+                   </div>
+                </div> -->
+               <div class="col-sm-6" *ngIf="enableNonConfirmity">
+                  <div class="form-group">
+                     <label for="name">{{'non_confirmity' | translate}}</label>
+                     <div class="clearfix d-flex">
+                        <div class="multiple-plain-ngselect w-100">
+
+                           <ng-select [placeholder]="'select_non_confirmity'| translate"
+                              [multiple]="false" bindLabel="title" formControlName="non_conformity_id"
+                              (search)="searchFindings($event)" (clear)="getFindings()" (open)="getFindings()">
+                              <ng-option [value]="row.id" *ngFor="let row of FindingsStore.allItems">
+                                      {{row.title}}
+                                  </ng-option>
+
+                           </ng-select>
+
+                           <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.non_conformity_id">
+                              {{formErrors.non_conformity_id[0]}}
+                           </p>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+            <label class="label-style mb-0">{{'support_files' | translate}}</label>           
+            <div class="scroll-documents" #uploadArea>
+               <div class="thumb-pics-bg thumb-pics-col-3 clearfix thumb-pics-fix-text" style="padding-top: 0;">
+                  <div class="thumb-pics">
+                     <div class="question-circle-inp" style="margin-right: 7px;">
+                        <i class="far fa-question-circle"></i>
+                        <div class="message-password-inp">
+                           <p class="mb-0">{{'allowed_file_types' | translate}}
+                              {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                           </p>
+                        </div>
+                     </div>
+                     <div class="form-group form-group-upload">
+                        <div class="darag-dropifile-upload">
+                           <div class="d-flex justify-content-center align-items-center text-center">
+                              <div>
+                                 <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                                 <div class="drag-file-name"> Select or Upload Your File Here </div>
+                                 <div class="upload-btn-wrapper">
+                                    <button (click)="openFileUploadModal()" type="button" class="btn">{{'browse_files' |
+                                       translate}}</button>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+
+                  <div class="thumb-pics" *ngFor="let docs of fileUploadPopupStore.displayFiles ;let i = index">
+                     <div class="upload-pics edit-option" data-toggle="modal">
+                        <div *ngIf="docs.id && !docs.preview" class="browse-form-pic"
+                           [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                        </div>
+                        <div *ngIf="docs.preview" class="browse-form-pic"
+                           [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">
+                        </div>
+                        <div class="browse-form-name clearfix">
+                           <div class="float-left">
+                              <h6>
+                                 {{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                              </h6>
+                              <span *ngIf="docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-book"></i></span>
+                              <span *ngIf="!docs.is_kh_document" class="mr-2 cmn-clr"><i
+                                    class="fas fa-laptop"></i></span>
+                              <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                           </div>
+                           <div class="browse-logo">
+                              <img *ngIf="checkExtension(docs.ext,'image') != -1" class="folder-picher"
+                                 src="/assets/images/jpg-icone.png">
+                              <img *ngIf="checkExtension(docs.ext,'doc') != -1" class="folder-picher"
+                                 src="/assets/images/word-icone.png">
+                              <img *ngIf="checkExtension(docs.ext,'pdf') != -1" class="folder-picher"
+                                 src="/assets/images/pdf-icone.png">
+                              <img *ngIf="checkExtension(docs.ext,'excel') != -1" class="folder-picher"
+                                 src="/assets/images/excel-icone.png">
+                              <img *ngIf="checkExtension(docs.ext,'video') != -1" class="folder-picher"
+                                 src="/assets/images/md-video.png">
+                              <img *ngIf="checkExtension(docs.ext,'audio') != -1" class="folder-picher"
+                                 src="/assets/images/md-audio.png">
+                              <img *ngIf="checkExtension(docs.ext,'ppt') != -1" class="folder-picher"
+                                 src="/assets/images/md-ppt.png">
+                           </div>
+                        </div>
+                        <div class="edit-option-show">
+                           <a (click) = "removeDocument(docs)"><i class="fas fa-trash"></i></a>
+                        </div>
+                     </div>
+                  </div>
+
+
+               </div>
+            </div>
+
+            <div class="clearfix"></div>
+            <div class="row mt-2">
+               <div class="col-sm-12">
+                  <div class="d-block justify-content-left border-0 mt-3">
+                     <button type="button" data-toggle="modal" data-target="#signal-lost"
+                     [disabled]="form.invalid || AppStore.loading || checkFileIsUploading()"
+                        class="btn btn-primary mr-3 btn-active" (click)="save()">{{ AppStore.loading ?
+                        getButtonText('loading') : getButtonText('save') }}</button>
+                     <button type="button" data-toggle="modal" data-target="#signal-lost" class="btn btn-primary mr-3"
+                     [disabled]="form.invalid || AppStore.loading || checkFileIsUploading()"
+                        (click)="save(true)">{{ AppStore.loading ? getButtonText('loading') :
+                        getButtonText('save_close') }}</button>
+                     <button type="button" data-toggle="modal" data-target="#error-message" class="btn btn-primary mr-2"
+                        (click)="cancel()">{{ AppStore.loading ? getButtonText('loading') : getButtonText('cancel')
+                        }}</button>
+                  </div>
+               </div>
+            </div>
+         </form>
+      </div>
+      <!-- Modal footer -->
+   </div>
+</div>
+<!-- </div> -->
+
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #fileUploadModal>
+
+   <app-file-upload-popup *ngIf="fileUploadPopupStore.openPopup"></app-file-upload-popup>
+
+</div>

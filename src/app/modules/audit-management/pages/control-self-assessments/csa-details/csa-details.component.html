@@ -1,0 +1,558 @@
+<nav class="edit-bar" data-toggle="affix" scrollPoint #navigationBar *mobxAutorun>
+  <app-breadcrumb-menu></app-breadcrumb-menu>
+  <app-sub-menu></app-sub-menu>
+
+</nav>
+<main class="mt-3 organization-page">
+
+  <div class="container-fluid" *mobxAutorun>
+    <ng-container>
+      <div *ngIf="!AmCSAStore.individual_csa_loaded">
+        <app-assessment-detail-loader></app-assessment-detail-loader>
+      </div>
+    </ng-container>
+    <div class="row user-main-sec" *ngIf="AmCSAStore.individual_csa_loaded">
+      <div class="col-xl-3 col-lg-4 col-md-12 user-side-bar user-side-left" style="z-index: 100;" #userSideBar>
+        <div class="organization-profile-sidebar cmn-bdr">
+          <div class="min-height-64">
+          <div class="relative">
+            <a class="curve-toggle curv-2" (click)="collapseSide()" #curveToggle></a>
+
+            <!-- <div class="thump-pic-box-top"> -->
+            <h5 class="cmn-head-style mb-1">
+              #{{AmCSAStore.individualCSADetails?.reference_code?AmCSAStore.individualCSADetails?.reference_code:'XXXX'}}
+              <span
+                [ngClass]="'draft-tag draft-tag-'+removeDot(AmCSAStore.individualCSADetails?.am_audit_control_self_assessment_status?.label)+' label-tag-style-tag label-left-arow-tag d-inline-block status-tag-new-one ml-3'">
+                {{AmCSAStore.individualCSADetails?.am_audit_control_self_assessment_status?.type|translate}}</span>
+            </h5>
+            <!-- </div> -->
+            <h5 class="cmn-head-style mb-2">{{AmCSAStore.individualCSADetails?.title}}</h5>
+            <div *ngIf="!CSAAssessmentsStore.view_more &&AmCSAStore.individualCSADetails?.description?.length > 0 ">
+
+              <div *ngIf="!CSAAssessmentsStore.view_more &&AmCSAStore.individualCSADetails?.description?.length > 0"
+                class="text-editor-content bullet-point-list mb-1"
+                [innerHTML]="AmCSAStore.individualCSADetails?.description?.length > 150?AmCSAStore.individualCSADetails?.description?.substring(0,150)+'...':AmCSAStore.individualCSADetails?.description">
+              </div>
+
+              <a *ngIf="AmCSAStore.individualCSADetails?.description?.length > 150" (click)="viewMore('more')"
+                class="view-more-pestel-box pointer view-more-doted">{{'view_more'|translate}}
+              </a>
+            </div>
+
+            <!-- <div *ngIf="doc?.description==null">
+           {{AppStore.noContentText}}
+         </div> -->
+            <div *ngIf="CSAAssessmentsStore.view_more">
+
+              <div class="text-editor-content bullet-point-list"
+                [innerHTML]="AmCSAStore.individualCSADetails?.description | safeHtml"></div>
+
+              <a *ngIf="AmCSAStore.individualCSADetails?.description.length > 150" (click)="viewMore('less')"
+                class="view-more-pestel-box pointer view-more-doted">...{{'view_less'|translate}}</a>
+            </div>
+            <h6>{{'department'|translate}}</h6>
+            <p>
+              {{AmCSAStore.individualCSADetails?.department?.title}}
+            </p>
+
+
+
+
+            <div class="thumb-view-left-side thumb-pics-fix-text clearfix" style="padding-top: 0"
+              *ngIf="AmCSAStore.individualCSADetails?.documents?.length>0">
+              <div class="thumb-view-left-side-box w-100"
+                *ngFor="let docs of AmCSAStore.individualCSADetails?.documents;let j = index">
+
+                <!-- System Files Starts Here -->
+                <div class="upload-pics upload-pics-small edit-option" *ngIf="!docs?.document_id && j<2"
+                  (click)="viewDocument('csa-answer-document',docs,docs)">
+                  <div class="browse-form-pic"
+                    [ngStyle]="{'background': 'url('+createImageUrl(docs?.token,'csa-answer-document')+') no-repeat'}">
+                  </div>
+                  <div class="browse-form-name clearfix">
+                    <div class="float-left">
+                      <p class="elips-1">
+                        {{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}
+                      </p>
+                      <span>{{docs.size/1048576 |
+                        number:'0.2-2'}}MB</span><span class="text-blue bold pl-2">System</span>
+                    </div>
+                    <div class="browse-logo">
+                      <img *ngIf="checkExtension(docs.ext,'image') != -1" class="folder-picher"
+                        src="/assets/images/jpg-icone.png">
+                      <img *ngIf="checkExtension(docs.ext,'doc') != -1" class="folder-picher"
+                        src="/assets/images/word-icone.png">
+                      <img *ngIf="checkExtension(docs.ext,'pdf') != -1" class="folder-picher"
+                        src="/assets/images/pdf-icone.png">
+                      <img *ngIf="checkExtension(docs.ext,'excel') != -1" class="folder-picher"
+                        src="/assets/images/excel-icone.png">
+                      <img *ngIf="checkExtension(docs.ext,'video') != -1" class="folder-picher"
+                        src="/assets/images/md-video.png">
+                      <img *ngIf="checkExtension(docs.ext,'audio') != -1" class="folder-picher"
+                        src="/assets/images/md-audio.png">
+                      <img *ngIf="checkExtension(docs.ext,'ppt') != -1" class="folder-picher"
+                        src="/assets/images/md-ppt.png">
+                    </div>
+                  </div>
+                  <div class="edit-option-show-inner" style="margin: 0 -8px 0 0;">
+                    <a><i class="fas fa-download"
+                        (click)="downloadDocumentFile('csa-answer-document',docs,docs)"></i></a>
+                  </div>
+                </div>
+
+                <!-- System Files Starts Here -->
+                <!-- KnowledgeHub Files Starts Here -->
+                <div class="upload-pics upload-pics-small edit-option" *ngIf="docs.document_id && j<2">
+
+                  <div *ngFor="let mainDoc of docs?.kh_document?.versions"
+                    (click)="viewDocument('document-version',docs,mainDoc)">
+                    <div *ngIf="mainDoc.is_latest">
+                      <div class="browse-form-pic"
+                        [ngStyle]="{'background': 'url('+createImageUrl(mainDoc?.token,'document-version')+') no-repeat'}">
+                      </div>
+                      <div class="browse-form-name clearfix">
+                        <div class="float-left">
+                          <h6>
+                            <div class="elips-1">{{mainDoc.title}}</div>
+                          </h6>
+                          <span>{{mainDoc.size/1048576 |
+                            number:'0.2-2'}}MB</span><span class="text-blue bold pl-2">Knowledge
+                            Hub</span>
+                        </div>
+                        <div class="browse-logo">
+                          <img *ngIf="checkExtension(mainDoc.ext,'image') != -1" class="folder-picher"
+                            src="/assets/images/jpg-icone.png">
+                          <img *ngIf="checkExtension(mainDoc.ext,'doc') != -1" class="folder-picher"
+                            src="/assets/images/word-icone.png">
+                          <img *ngIf="checkExtension(mainDoc.ext,'pdf') != -1" class="folder-picher"
+                            src="/assets/images/pdf-icone.png">
+                          <img *ngIf="checkExtension(mainDoc.ext,'excel') != -1" class="folder-picher"
+                            src="/assets/images/excel-icone.png">
+                          <img *ngIf="checkExtension(mainDoc.ext,'video') != -1" class="folder-picher"
+                            src="/assets/images/md-video.png">
+                          <img *ngIf="checkExtension(mainDoc.ext,'audio') != -1" class="folder-picher"
+                            src="/assets/images/md-audio.png">
+                          <img *ngIf="checkExtension(mainDoc.ext,'ppt') != -1" class="folder-picher"
+                            src="/assets/images/md-ppt.png">
+                        </div>
+                      </div>
+                      <div class="edit-option-show-inner" style="margin: 0 -8px 0 0;">
+                        <a><i class="fas fa-download"
+                            (click)="downloadDocumentFile('document-version',docs,mainDoc)"></i></a>
+                      </div>
+                    </div>
+                  </div>
+
+
+                </div>
+                <!-- KnowledgeHub Files Ends Here -->
+              </div>
+              <p (click)="openViewMore()" *ngIf="AmCSAStore.individualCSADetails?.documents?.length > 2"
+                class="view-more-pestel-box pointer view-more-doted" data-toggle="modal"
+                data-target="#outline-tag-more-popup" style="margin-left: 8px;">View more</p>
+
+            </div>
+
+            <div class="row">
+              <div class="col-xl-12">
+                <hr class="mb-2">
+                <app-user-popup-box [source]=" getCreatedByDetails(AmCSAStore.individualCSADetails?.created_by)">
+                </app-user-popup-box>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+        </div>
+      </div>
+      <div class="col-xl-9 col-lg-8 col-md-12 user-right-details user-right-fill work-flow-details-sec-right"
+        #userRightDetails>
+        <div class="bg-white widg-padding-cmn d-flex big-progress-bg mb-3 completed-questions-progress-main cmn-bdr">
+
+          <div class="d-flex align-items-center w-100">
+            <div class="big-progress completed-questions-progress pl-0 w-100">
+              <div class="progress radius-30">
+                <div class="progress-bar progress-bar-animation" role="progressbar" aria-valuenow="50" aria-valuemin="0"
+                  aria-valuemax="100"
+                  [style.max-width.%]="AmCSAStore.individualCSADetails.am_audit_control_self_assessment_updates?.length>0?(answered?.length/AmCSAStore.individualCSADetails.am_audit_control_self_assessment_updates?.length)*100:0">
+                </div>
+              </div>
+              <span class="completed-questions-progress-label">You Have Completed
+                {{answered?.length}}/{{AmCSAStore.individualCSADetails?.am_audit_control_self_assessment_updates?.length}}
+                Questions</span>
+
+            </div>
+
+          </div>
+          <div class="ml-5"
+            *ngIf="AmCSAStore.individualCSADetails?.am_audit_control_self_assessment_status?.type=='in-progress' && (AmCSAStore.individualCSADetails?.department?.head?.id==AuthStore.user?.id)  && AmCSAStore.individualCSADetails?.am_audit_control_self_assessment_updates?.length>0 && AmCSAStore.individualCSADetails?.am_audit_control_self_assessment_workflow_status?.type=='approved'">
+            <!-- <button type="button" class="btn float-right mt-0" style="margin-right: 0 !important;"
+              (click)="confirmSubmit()"
+              *ngIf="AmCSAStore.individualCSADetails?.am_audit_control_self_assessment_status?.type!='completed' && (AmCSAStore.individualCSADetails?.created_by?.id==AuthStore.user?.id) && AmCSAStore.individualCSADetails?.submitted_by==null && AmCSAStore.individualCSADetails?.am_audit_control_self_assessment_updates?.length>0 && AmCSAStore.individualCSADetails?.am_audit_control_self_assessment_workflow_status?.type=='approved'">{{submitClicked?
+              getButtonText('loading') : getButtonText('submit_to_hod')}}</button> -->
+            <button type="button" class="btn float-right mt-0" style="margin-right: 0 !important;"
+              (click)="answerSubmit()">{{submitClicked?
+              getButtonText('loading') : getButtonText('submit_answer')}}</button>
+          </div>
+
+
+        </div>
+        <p class="form-error pt-1" *ngIf="submitError">
+          {{submitError}}
+        </p>
+
+        <div class="user-details-page m-0 accordion-multiple mb-4">
+          <div class="user-settings access-settings">
+            <div id="accordion">
+
+              <div class="card access-main-card"
+                *ngFor="let doc of AmCSAStore.individualCSADetails.am_audit_control_self_assessment_updates;let num=index">
+                <div
+                  [ngClass]="currentAssessment!=null && currentAssessment==doc.id?'card-header card-hov-effect':'card-header card-hov-effect bottom-space-accordion'"
+                  (click)="getAssessmentData(doc)">
+                  <a [ngClass]="currentAssessment!=null && currentAssessment==doc.id?'card-link font-weight-bold full-line-click pl-0':'card-link font-weight-bold full-line-click pl-0 collapsed'"
+                    data-toggle="collapse" [attr.href]="'#collapseOne'+num+'_'+doc.id" area-expanded="true">
+                    {{num+1}}. {{doc.question}}
+                  </a>
+                </div>
+                <div *ngIf="currentAssessment!=null && currentAssessment==doc.id" class="collapse show">
+
+                  <!-- <div class="card-body pt-0 pb-2"> -->
+                  <div class="card-body bg-white pb-2">
+                    <h6>{{'answers'|translate}}<sup class="form-error pt-1">*</sup></h6>
+                    <div class="d-flex align-items-center bg-light mb-3 widg-padding-cmn-small">
+                      <div class="box-cnt-one w-100">
+                        <button type="button" class="pointer"
+                          [ngClass]="doc.am_audit_control_self_assessment_update_status_id == status.id?'btn btn-small btn-active':'btn btn-small'"
+                          *ngFor="let status of SelfAssessmentStatusMasterStore.allItems;let f=index"
+                          (click)="setStatus(status,num)">{{status.title}}</button>
+                        <p class="form-error pt-1"
+                          *ngIf="formErrors&&formErrors.am_audit_control_self_assessment_update_status_id">
+                          {{formErrors.am_audit_control_self_assessment_update_status_id}}
+                        </p>
+
+                      </div>
+
+                    </div>
+                    <div class="row">
+                      <div class="col-sm-12">
+
+                        <h6 class="mt-2">{{'support_files'|translate}}</h6>
+
+                        <div class="scroll-documents" #uploadArea>
+                          <div class="thumb-pics-bg thumb-pics-bg-5 clearfix thumb-pics-fix-text"
+                            style="padding-top: 0;">
+                            <div class="thumb-pics">
+                              <div class="question-circle-inp" style="margin-right: 7px;">
+                                <i class="far fa-question-circle"></i>
+                                <div class="message-password-inp">
+                                  <p class="mb-0">{{'allowed_file_types' | translate}}
+                                    {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div class="form-group form-group-upload">
+                                <div class="darag-dropifile-upload">
+                                  <div class="d-flex justify-content-center align-items-center text-center">
+                                    <div>
+                                      <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                                      <div class="drag-file-name"> Select or Upload Your File Here </div>
+                                      <div class="upload-btn-wrapper">
+                                        <button (click)="openFileUploadModal(doc)" type="button"
+                                          class="btn">{{'browse_files' |
+                                          translate}}</button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div class="thumb-pics"
+                              *ngFor="let docs of fileUploadPopupStore.displayFiles ;let i = index">
+                              <div class="upload-pics edit-option" data-toggle="modal">
+                                <div *ngIf="docs.id && !docs.preview" class="browse-form-pic pointer"
+                                  (click)="viewDocument('document-version',doc,docs)"
+                                  [ngStyle]="{'background': 'url('+createImageUrl(docs?.token,'document-version')+') no-repeat'}">
+                                </div>
+                                <div *ngIf="docs.preview" class="browse-form-pic pointer"
+                                  (click)="viewDocument('csa-answer-update-document',doc,docs)"
+                                  [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">
+                                </div>
+                                <div class="browse-form-name clearfix">
+                                  <div class="float-left">
+                                    <h6>
+                                      {{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}
+                                    </h6>
+                                    <span *ngIf="docs.is_kh_document" class="mr-2 cmn-clr"><i
+                                        class="fas fa-book"></i></span>
+                                    <span *ngIf="!docs.is_kh_document" class="mr-2 cmn-clr"><i
+                                        class="fas fa-laptop"></i></span>
+                                    <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                                  </div>
+                                  <div class="browse-logo">
+                                    <img *ngIf="checkExtension(docs.ext,'image') != -1" class="folder-picher"
+                                      src="/assets/images/jpg-icone.png">
+                                    <img *ngIf="checkExtension(docs.ext,'doc') != -1" class="folder-picher"
+                                      src="/assets/images/word-icone.png">
+                                    <img *ngIf="checkExtension(docs.ext,'pdf') != -1" class="folder-picher"
+                                      src="/assets/images/pdf-icone.png">
+                                    <img *ngIf="checkExtension(docs.ext,'excel') != -1" class="folder-picher"
+                                      src="/assets/images/excel-icone.png">
+                                    <img *ngIf="checkExtension(docs.ext,'video') != -1" class="folder-picher"
+                                      src="/assets/images/md-video.png">
+                                    <img *ngIf="checkExtension(docs.ext,'audio') != -1" class="folder-picher"
+                                      src="/assets/images/md-audio.png">
+                                    <img *ngIf="checkExtension(docs.ext,'ppt') != -1" class="folder-picher"
+                                      src="/assets/images/md-ppt.png">
+                                  </div>
+                                </div>
+                                <div class="edit-option-show">
+                                  <a (click)="removeDocument(docs,num)"
+                                    *ngIf="AmCSAStore.individualCSADetails?.submitted_by!=null && AmCSAStore.individualCSADetails?.department?.head?.id==AuthStore.user?.id && AmCSAStore.individualCSADetails?.am_audit_control_self_assessment_status?.type!='completed'"><i
+                                      class="fas fa-trash"></i></a>
+                                  <a><i class="fas fa-download" *ngIf="docs.document_id"
+                                      (click)="downloadDocumentFile('document-version',docs)"></i></a>
+                                  <a><i class="fas fa-download" *ngIf="!docs.document_id"
+                                      (click)="downloadDocumentFile('csa-answer-update-document',docs,doc)"></i></a>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <h6 class="mt-2">{{'comment'|translate}}</h6>
+                    <div class="row">
+                      <div class="col-sm-12">
+                        <div class="form-group">
+                          <textarea class="form-control" rows="2" id="comment" [(ngModel)]="doc.comment"
+                            [placeholder]="'comment'|translate"></textarea>
+                          <p class="form-error pt-1" *ngIf="formErrors&&formErrors.comment">
+                            {{formErrors.comment}}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+
+                    <div class="row" *ngIf="AmCSAStore.individualCSADetails?.submitted_by!=null && AmCSAStore.individualCSADetails?.department?.head?.id==AuthStore.user?.id && AmCSAStore.individualCSADetails?.am_audit_control_self_assessment_status?.type!='completed'">
+                      <div class="col-sm-12">
+                        <div class="d-block justify-content-left border-0 mt-3">
+                          <button type="button" class="btn mr-3 btn-active pointer"
+                            (click)="saveAnswer(doc,num)">{{AppStore.loading ? getButtonText('loading') : getButtonText('save') }}</button>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+
+
+                  <!-- </div> -->
+                </div>
+
+              </div>
+              <div>
+                <app-no-data [border]="false"
+                  *ngIf="AmCSAStore.individual_csa_loaded &&  AmCSAStore?.individualCSADetails.am_audit_control_self_assessment_updates?.length==0">
+                </app-no-data>
+              </div>
+
+            </div>
+
+
+          </div>
+        </div>
+
+        <!-- <button class="btn btn-active" </button> -->
+
+      </div>
+
+    </div>
+
+  </div>
+
+</main>
+
+<!-- !View More Popup Starts Here -->
+<div class="modal modal-style-1 popup-full-width fade" id="doc-view-more-popup" data-keyboard="false"
+  data-backdrop="static" #viewMoreDoc>
+  <button (click)="closeViewMore()" type="button" class="close" data-dismiss="modal"><i
+      class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content">
+      <!-- Modal Header -->
+      <!-- <div class="modal-header">
+            <h4 class="modal-title">{{'document_details' | translate}}</h4>
+         </div> -->
+      <!-- Modal body -->
+      <div class="modal-body form-body">
+        <div class="row">
+          <div>
+            <!-- Support Files -->
+
+            <h6 class="mt-3" *ngIf="AmCSAStore.individualCSADetails?.documents.length > 0">{{'support_files' |
+              translate}}</h6>
+            <div class="scroll-documents" #previewUploadArea>
+              <div class="thumb-pics-bg thumb-pics-col-4 thumb-pics-fix-text clearfix">
+                <div class="thumb-pics" *ngFor="let docs of AmCSAStore.individualCSADetails?.documents;let i = index">
+
+                  <!-- System Files Starts Here -->
+                  <div class="upload-pics upload-pics-small edit-option" *ngIf="!docs?.document_id"
+                    (click)="viewDocument('csa-answer-document',docs,docs)">
+                    <div class="browse-form-pic"
+                      [ngStyle]="{'background': 'url('+createImageUrl(docs?.token,'csa-answer-document')+') no-repeat'}">
+                    </div>
+                    <div class="browse-form-name clearfix">
+                      <div class="float-left">
+                        <p class="elips-1">
+                          {{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}
+                        </p>
+                        <span>{{docs.size/1048576 |
+                          number:'0.2-2'}}MB</span><span class="text-blue bold pl-2">System</span>
+                      </div>
+                      <div class="browse-logo">
+                        <img *ngIf="checkExtension(docs.ext,'image') != -1" class="folder-picher"
+                          src="/assets/images/jpg-icone.png">
+                        <img *ngIf="checkExtension(docs.ext,'doc') != -1" class="folder-picher"
+                          src="/assets/images/word-icone.png">
+                        <img *ngIf="checkExtension(docs.ext,'pdf') != -1" class="folder-picher"
+                          src="/assets/images/pdf-icone.png">
+                        <img *ngIf="checkExtension(docs.ext,'excel') != -1" class="folder-picher"
+                          src="/assets/images/excel-icone.png">
+                        <img *ngIf="checkExtension(docs.ext,'video') != -1" class="folder-picher"
+                          src="/assets/images/md-video.png">
+                        <img *ngIf="checkExtension(docs.ext,'audio') != -1" class="folder-picher"
+                          src="/assets/images/md-audio.png">
+                        <img *ngIf="checkExtension(docs.ext,'ppt') != -1" class="folder-picher"
+                          src="/assets/images/md-ppt.png">
+                      </div>
+                    </div>
+                    <div class="edit-option-show-inner" style="margin: 0 -8px 0 0;">
+                      <a><i class="fas fa-download"
+                          (click)="downloadDocumentFile('csa-answer-document',docs,docs)"></i></a>
+                    </div>
+                  </div>
+
+                  <!-- System Files Ends Here -->
+                  <!-- KnowledgeHub Files Starts Here -->
+                  <div class="upload-pics upload-pics-small edit-option" *ngIf="docs.document_id">
+
+                    <div *ngFor="let mainDoc of docs?.kh_document?.versions"
+                      (click)="viewDocument('document-version',docs,mainDoc)">
+                      <div *ngIf="mainDoc.is_latest">
+                        <div class="browse-form-pic"
+                          [ngStyle]="{'background': 'url('+createImageUrl(mainDoc?.token,'document-version')+') no-repeat'}">
+                        </div>
+                        <div class="browse-form-name clearfix">
+                          <div class="float-left">
+                            <h6>
+                              <div class="elips-1">{{mainDoc.title}}</div>
+                            </h6>
+                            <span>{{mainDoc.size/1048576 |
+                              number:'0.2-2'}}MB</span><span class="text-blue bold pl-2">Knowledge
+                              Hub</span>
+                          </div>
+                          <div class="browse-logo">
+                            <img *ngIf="checkExtension(mainDoc.ext,'image') != -1" class="folder-picher"
+                              src="/assets/images/jpg-icone.png">
+                            <img *ngIf="checkExtension(mainDoc.ext,'doc') != -1" class="folder-picher"
+                              src="/assets/images/word-icone.png">
+                            <img *ngIf="checkExtension(mainDoc.ext,'pdf') != -1" class="folder-picher"
+                              src="/assets/images/pdf-icone.png">
+                            <img *ngIf="checkExtension(mainDoc.ext,'excel') != -1" class="folder-picher"
+                              src="/assets/images/excel-icone.png">
+                            <img *ngIf="checkExtension(mainDoc.ext,'video') != -1" class="folder-picher"
+                              src="/assets/images/md-video.png">
+                            <img *ngIf="checkExtension(mainDoc.ext,'audio') != -1" class="folder-picher"
+                              src="/assets/images/md-audio.png">
+                            <img *ngIf="checkExtension(mainDoc.ext,'ppt') != -1" class="folder-picher"
+                              src="/assets/images/md-ppt.png">
+                          </div>
+                        </div>
+                        <div class="edit-option-show-inner" style="margin: 0 -8px 0 0;">
+                          <a><i class="fas fa-download"
+                              (click)="downloadDocumentFile('document-version',docs,mainDoc)"></i></a>
+                        </div>
+                      </div>
+                    </div>
+
+
+                  </div>
+                  <!-- KnowledgeHub Files Ends Here -->
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Modal footer -->
+      </div>
+    </div>
+  </div>
+</div>
+<!-- !View More Popup Ends Here -->
+
+<div [ngClass]="AuthStore.getActivityPermission(200,'USER_PROFILE_LIST')?'side-bar-round':''" (click)="unCollapseSide()"
+  #sideBarRound>
+  <figure class="w-100 d-block">
+    <img width="100"
+      [attr.src]="AmCSAStore.individual_csa_loaded ? createImageUrl(AuthStore.user.image_token) : getDefaultImage('general')"
+      class="d-block mx-auto img-fluid rounded-circle" onerror="this.src='/assets/images/user-demo2.png'">
+  </figure>
+</div>
+
+<!-- preview component for image preview -->
+<div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup" data-keyboard="false"
+  data-backdrop="static" #filePreviewModal *mobxAutorun>
+  <button type="button" class="close" data-dismiss="modal" (click)="closePreviewModal($event)"><i
+      class="lni-close"></i><span>esc</span></button>
+  <app-am-preview-modal *ngIf="previewObject" [source]="previewObject" (close)="closePreviewModal($event)">
+  </app-am-preview-modal>
+</div>
+<!-- preview modal end -->
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div [ngStyle]="{'display': deletePopupFlag ? 'block' : 'none' }"
+  [ngClass]="deletePopupFlag ? 'modal modal-style-1 fade show' : 'modal modal-style-1 fade'" id="delete-popup"
+  data-backdrop="static" data-keyboard="false" #deletePopup>
+  <app-delete-popup [source]="deleteObject"></app-delete-popup>
+</div>
+
+<!------------------- Delete Confirmation Modal End --------------------------->
+
+<!-- work-flow-popup Start -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal
+  *mobxAutorun>
+  <app-csa-question-modal *ngIf="assessmentObject.type" [source]="assessmentObject">
+
+  </app-csa-question-modal>
+</div>
+
+<!-- -------------------------------------------------------------- -->
+
+<!-- * Documetn Attach/Upload Common Component Starts Here -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #fileUploadModal>
+  <app-file-upload-popup *ngIf="fileUploadPopupStore.openPopup"></app-file-upload-popup>
+</div>
+
+<div [ngStyle]="{'display': workflowModalOpened ? 'block' : 'none' }"
+  [ngClass]="workflowModalOpened ? 'modal modal-style-1 popup-full-width fade show' : 'modal modal-style-1 popup-full-width fade'"
+  id="process-popup" data-keyboard="false" data-backdrop="static" #workflowModal *mobxAutorun>
+  <app-am-csa-workflow *ngIf="workflowModalOpened"></app-am-csa-workflow>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="process-popup2" data-keyboard="false" data-backdrop="static"
+  #workflowHistory *mobxAutorun>
+  <app-am-csa-workflow-history *ngIf="workflowHistoryOpened">
+  </app-am-csa-workflow-history>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="process-popup2" data-keyboard="false" data-backdrop="static"
+  #commentModal *mobxAutorun>
+  <app-am-csa-workflow-comment *ngIf="AmCSAWorkflowStore.commentForm"></app-am-csa-workflow-comment>
+</div>

@@ -1,0 +1,206 @@
+<button type="button" class="close" (click)="cancel()"><i class="lni-close"></i><span>esc</span></button>
+<div class="modal-dialog modal-xl modal-dialog-centered">
+
+    <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header" style="justify-content: left;">
+            <h4 class="modal-title">{{'auditable_items' | translate}}</h4>
+            <div class="" *ngIf="!showTotalAuditableItems">
+                <div class="">
+                    <div class="ml-2">
+                        <button type="button" data-toggle="modal" (click)="changeShowAuditableItems()" data-target="#signal-lost"
+                            class="btn btn-active">{{'add_more' | translate}}</button>
+                        <button type="button" data-toggle="modal" data-target="#error-message"
+                            class="btn" (click)="cancel()">{{'cancel' | translate}}</button>
+                    </div>
+                </div>
+            </div>
+            <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
+        </div>
+        <!-- Modal body -->
+        <div class="modal-body form-body mt-3">
+            
+            <div class="row" *ngIf="!showTotalAuditableItems">
+                <div class="col-sm-12">
+                    <div class="audit-form-table w-100">
+                        <table class="table table-bordered ordinary-table audit-page-table mb-4 table-scroll" *ngIf="AuditProgramMasterStore.riskRateLoaded">
+                            <thead>
+                                <tr>
+                                    <th class="border-top-0 text-center" width="6%">#</th>
+                                    <th class="border-top-0" width="8%">{{'ref_no' | translate}}</th>
+                                    <th class="border-top-0" width="46%">{{'title' | translate}}</th>
+                                    <th class="border-top-0" width="10%">{{'type' | translate}}</th>
+                                    <th class="border-top-0" width="10%">{{'category' | translate}}</th>
+                                    <th class="border-top-0" width="10%">{{'risk_rating' | translate}}</th>
+                                    <!-- <th class="border-top-0" width="10%">Status</th> -->
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let item of AuditProgramMasterStore.riskRateTypes;let num=index;" class="edit-and-delete-main">
+                                    <td class="text-center">{{num+1}}</td>
+                                    <td>#{{item?.reference_code}}</td>
+                                    <td>{{item?.title}}</td>
+                                    <td>{{item?.auditableItemType?.title}}</td>
+                                    <td>{{item?.auditableItemCategory?.title}}</td>
+                                    <td>
+                                        <div class="dot-div red-dot" *ngIf="item?.type == 'very_high'">{{'risk_very_high' | translate}}</div>
+                                        <div class="dot-div orange-dot" *ngIf="item?.type == 'high'">{{'risk_high' | translate}}</div>
+                                        <div class="dot-div green-dot" *ngIf="item?.type == 'medium'">{{'risk_medium' | translate}}</div>
+                                        <div class="dot-div yellow-dot" *ngIf="item?.type == 'low'">{{'risk_low' | translate}}</div>
+                                        <div class="edit-option-show" style="margin: 30px 5px 0 0;">
+                                            <a (click)="deleteAuditableItems(item?.id,item?.audit_program_auditor_id)" title="Delete"><i class="fas fa-trash"></i></a>
+                                          </div>
+                                    </td>
+                                    <!-- <td>
+                                        <div class="dot-div green-dot" *ngIf="item.is_active == 1">Active</div>
+                                        <div class="dot-div green-dot" *ngIf="item.is_active != 1">Inactive</div>
+                                        <div class="edit-option-show" style="margin: 30px 5px 0 0;">
+                                            <a (click)="deleteAuditableItems(item.id,item.audit_program_auditor_id)" title="Delete"><i class="fas fa-trash"></i></a>
+                                          </div>
+                                    </td> -->
+                                    
+                                </tr>
+                            </tbody>
+                        </table>
+                        <ng-container *mobxAutorun>
+                            <div *ngIf="!AuditProgramMasterStore.riskRateLoaded">
+                                <app-auditable-item-loader></app-auditable-item-loader>
+                            </div>
+    
+                           
+                            <app-no-data-list [source] = "auditableItemEmptyList"  *ngIf="AuditProgramMasterStore.riskRateTypes.length == 0 && AuditProgramMasterStore.riskRateLoaded == true"></app-no-data-list>
+                        </ng-container>
+
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="row" *ngIf="showTotalAuditableItems">
+                <div class="col-sm-12 full-width-table">
+                    <table class="table table-bordered ordinary-table audit-page-table mb-4 table-scroll"
+                        *ngIf="AuditableItemMasterStore?.loaded">
+                        <thead>
+                            <tr>
+                                <th class="border-top-0" width="6%">
+                                    <label class="container2 float-left"
+                                        style="margin-top: 2px; padding-left: 22px;">
+                                        <input type="checkbox" [checked]="allAuditableItems"
+                                            (change)="checkAll($event)">
+                                        <span class="checkmark"></span>
+                                    </label>
+                                    #
+                                </th>
+                                <th class="border-top-0" width="8%">{{'reference_code' | translate}}</th>
+                                <th class="border-top-0" width="46%">{{'title' | translate}}</th>
+                                <th class="border-top-0" width="10%">{{'auditable_item_types' | translate}}</th>
+                                <th class="border-top-0" width="10%">{{'auditable_item_categories' | translate}}
+                                </th>
+                                <th class="border-top-0" width="10%">{{'risk_rating' | translate}}</th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <ng-container *mobxAutorun>
+                                <tr
+                                    *ngFor="let item of AuditableItemMasterStore.allItems| paginate: {currentPage:AuditableItemMasterStore.currentPage, itemsPerPage:AuditableItemMasterStore.itemsPerPage,totalItems:AuditableItemMasterStore.totalItems};let num=index">
+                                    <td>
+                                        <label class="container2 float-left"
+                                            style="margin-top: 2px; padding-left: 22px;">
+                                            <input type="checkbox" [id]="item.id" [name]="item.name"
+                                                [checked]="item.is_enabled"
+                                                (change)="selectAuditableItemPresent($event,item, num)">
+                                            <span class="checkmark"></span>
+                                        </label>
+                                        {{(AuditableItemMasterStore.currentPage - 1) *
+                                        AuditableItemMasterStore.itemsPerPage + (num + 1)}}
+                                    </td>
+                                    <td>#{{item.reference_code}}</td>
+                                    <td>{{item.title}}</td>
+                                    <td>{{item.auditable_item_type ? item.auditable_item_type :
+                                        AppStore.noContentText}}</td>
+                                    <td> {{item.auditable_item_category ? item.auditable_item_category :
+                                        AppStore.noContentText}}
+                                    </td>
+
+                                    <ng-container *ngIf="item.risk_rating!=null">
+                                        <td>
+                                            <div *ngIf="item.risk_rating=='High'" class="dot-div orange-dot">
+                                                {{item.risk_rating}} </div>
+                                            <div *ngIf="item.risk_rating=='Medium'" class="dot-div yellow-dot">
+                                                {{item.risk_rating}} </div>
+                                            <div *ngIf="item.risk_rating=='Low'" class="dot-div green-dot">
+                                                {{item.risk_rating}} </div>
+                                            <div *ngIf="item.risk_rating=='Very High'" class="dot-div red-dot">
+                                                {{item.risk_rating}} </div>
+                                        </td>
+                                    </ng-container>
+                                    <td *ngIf="item.risk_rating==null">
+                                        {{ AppStore.noContentText}}
+                                    </td>
+
+
+                                </tr>
+                            </ng-container>
+
+                        </tbody>
+                    </table>
+
+                    <ng-container *mobxAutorun>
+                        <div *ngIf="!AuditableItemMasterStore.loaded">
+                            <app-auditable-item-loader></app-auditable-item-loader>
+                        </div>
+
+                       
+                        <app-no-data-list [source] = "auditableItemEmptyList"  *ngIf="AuditableItemMasterStore.totalItems == 0 && AuditableItemMasterStore.loaded == true"></app-no-data-list>
+                    </ng-container>
+
+
+
+                    <div *ngIf="AuditableItemMasterStore.totalItems>AuditableItemMasterStore.itemsPerPage"
+                        class="col-sm-12">
+                        <ul class="pagination justify-content-center mt-3">
+                            <div class="list">
+                                <pagination-controls (pageChange)="auditableItems($event)" class="my-pagination">
+                                </pagination-controls>
+                            </div>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- <div *ngIf="AuditProgramMasterStore?.individualAuditPrograms?.auditable_items.length > 15"
+                    class="col-sm-12">
+                    <ul class="pagination justify-content-center mt-3">
+                        <div class="list">
+                            <pagination-controls (pageChange)="pageChange($event)" class="my-pagination">
+                            </pagination-controls>
+                        </div>
+                    </ul>
+                </div> -->
+            </div>
+
+
+            <div class="row" *ngIf="showTotalAuditableItems">
+                <div class="col-sm-12">
+                    <div class="d-block justify-content-left border-0 mt-3" *ngIf="auditableItemArray.length!=0">
+                        <button type="button" data-toggle="modal" data-target="#signal-lost" class="btn btn-active"
+                            (click)="save()">{{ AppStore.loading
+                            ? getButtonText('loading') : getButtonText('add') }} </button>
+                        <button type="button" data-toggle="modal" (click)="save(true)"
+                            data-target="#signal-lost" class="btn">{{ AppStore.loading ? getButtonText('loading') :
+                            getButtonText('add_close') }}</button>
+                        <button type="button" data-toggle="modal" data-target="#error-message"
+                            class="btn" (click)="changeShowAuditableItems()">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Modal footer -->
+    </div>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>

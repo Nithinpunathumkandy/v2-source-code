@@ -1,0 +1,296 @@
+
+
+<div class="widget bg-white">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item pointer" [routerLink]="['/masters/human-capital']"><a>{{'human_capital' | translate}}</a></li>
+            <li class="breadcrumb-item active">{{'designation' | translate}}</li>
+        </ol>
+    </nav>
+
+    <!-- Nav tabs -->
+    <div class="audit-form-table w-100 not-fixed-table mb-0">
+    <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scrol" *ngIf="DesignationMasterStore?.loaded && DesignationMasterStore.designations.length > 0">
+
+        <tr>
+            <th style="width: 5%; text-align: center;">{{'sl' | translate}}</th>
+            <th (click)="sortTitle('designations.title')" class="border-top-0 issue-list-org-tab-three pointer" style="width: 37%;">
+                <span>{{'designation' | translate}}</span>
+                <img _ngcontent-twv-c17="" *ngIf="DesignationMasterStore.orderItem == 'designations.title'"
+                class="sort-down-pics pl-2" [attr.src]="DesignationMasterStore.orderBy=='desc' ? 
+                'assets/images/sort-up.png' : DesignationMasterStore.orderBy=='asc' ? 
+                'assets/images/sort-down.png' : 'assets/images/sort-empty.png'">
+            </th>
+            <th style="width: 23%">{{'code' | translate}}</th>
+            <th (click)="sortTitle('designations.order')" class="border-top-0 issue-list-org-tab-three pointer" style="width: 23%" class="pointer">
+                <span>{{'order' | translate}}</span>
+                <img _ngcontent-twv-c17="" *ngIf="DesignationMasterStore.orderItem == 'designations.order'" class="sort-down-pics pl-2" [attr.src]="DesignationMasterStore.orderBy=='desc' ? 
+                'assets/images/sort-up.png' : DesignationMasterStore.orderBy=='asc' ? 
+                'assets/images/sort-down.png' : 'assets/images/sort-empty.png'">
+            </th>
+            <th style="width: 12%; text-align:center;">{{'status' | translate}}</th>
+        </tr>
+        
+        <ng-container *mobxAutorun>
+
+            <tr class="edit-and-delete-main"
+                *ngFor="let row of DesignationMasterStore?.designations | paginate: {currentPage:DesignationMasterStore?.currentPage, itemsPerPage:DesignationMasterStore?.itemsPerPage,totalItems:DesignationMasterStore?.totalItems};let num = index">
+                <td style="text-align: center;" (click)="viewDesignation(row.id)">
+                    <a [ngStyle] = "{ 'pointer-events' : AuthStore.getActivityPermission(1100,'UPDATE_DESIGNATION') ? '' : 'none'}">{{(DesignationMasterStore?.currentPage - 1) * DesignationMasterStore?.itemsPerPage + (num + 1)}}</a>
+                </td>
+                <td (click)="viewDesignation(row.id)"><a [ngStyle] = "{ 'pointer-events' : AuthStore.getActivityPermission(1100,'UPDATE_DESIGNATION') ? '' : 'none'}">{{row.code}}</a></td>
+                <td (click)="viewDesignation(row.id)"><a [ngStyle] = "{ 'pointer-events' : AuthStore.getActivityPermission(1100,'UPDATE_DESIGNATION') ? '' : 'none'}">{{row.title}}</a></td>
+                <td (click)="viewDesignation(row.id)"><a [ngStyle] = "{ 'pointer-events' : AuthStore.getActivityPermission(1100,'UPDATE_DESIGNATION') ? '' : 'none'}">{{row.order}}</a></td>
+                <td class="text-center" style="padding:0.75rem;">
+                    <div [attr.class]="'dot-div '+row.status_label">{{row.status}}</div>
+                    <div class="edit-option-show">
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'UPDATE_DESIGNATION')" (click)=" getDesignation(row.id)" [attr.title]="'edit' | translate"><i class="fas fa-pen pointer"></i></a>
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'DELETE_DESIGNATION')" (click)="delete(row.id)" [attr.title]="'delete' | translate"><i class="fas fa-trash pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(1100,'ACTIVATE_DESIGNATION')" (click)="activate(row.id)" [attr.title]="'activate' | translate"><i class="fas fa-check pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.activeStatusId && AuthStore.getActivityPermission(1100,'DEACTIVATE_DESIGNATION')" (click)="deactivate(row.id)" [attr.title]="'deactivate' | translate"><i class="fas fa-ban pointer"></i></a>
+                    </div>
+                </td>
+            </tr>
+        </ng-container>
+    </table>
+    </div>
+
+    <p class="float-right" *ngIf="DesignationMasterStore?.loaded && DesignationMasterStore.totalItems > 0"><b>{{'total_Items' | translate}}:{{DesignationMasterStore?.totalItems}}</b></p>
+
+    <ng-container *mobxAutorun>
+        <div *ngIf="!DesignationMasterStore.loaded">
+            <app-table-loader></app-table-loader>
+        </div>
+        <app-no-data *ngIf="DesignationMasterStore.designations.length == 0 && DesignationMasterStore.loaded == true">
+        </app-no-data>
+
+    </ng-container>
+
+    <div class="col-sm-12" *ngIf="DesignationMasterStore.totalItems>DesignationMasterStore.itemsPerPage">
+        <ul class="pagination justify-content-center mt-3">
+            <div class="list">
+                <pagination-controls [previousLabel]="'previous' | translate"  [nextLabel]="'next' | translate" (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+            </div>
+        </ul>
+    </div>
+</div>
+
+
+<div class="modal modal-style-1 popup-full-width fade 127" data-keyboard="false" data-backdrop="static" #formModal>
+    <app-designation-modal *ngIf="designationObject.type" [source]="designationObject">
+
+    </app-designation-modal>
+</div>
+
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade 126" id="delete-popup" #confirmationPopUp data-backdrop="static"
+    data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade 128" id="detail" data-keyboard="false" data-backdrop="static"
+    #detailModal>
+    <app-designation-competency-modal *ngIf="designationCompetencyObject.type" [source]="designationCompetencyObject"></app-designation-competency-modal>
+</div>
+
+<!-- 
+<div class="modal modal-style-1 popup-full-width fade 128" id="detail" data-keyboard="false" data-backdrop="static"
+    #detailModal>
+    <button type="button" class="close" (click)="closeDetailModal()"><i class="lni-close"></i><span>esc</span></button>
+    <div class="modal-dialog modal-lg modal-dialog-centered" *mobxAutorun>
+        <div class="modal-content" *ngIf="DesignationMasterStore._competencyLoaded">
+            <div class="modal-header mb-3" style="padding: 0 !important;">
+                <h4 class="modal-title"><b>Competencies</b></h4>
+                <button class="btn btn-small mt-2 mr-0"
+                    (click)="addCompetency()">{{DesignationMasterStore.competencies.length>0?'Edit Competency':'Add Competency'}}</button>
+            </div>
+            <div class="audit-form-table w-100">
+                <table class="table table-bordered ordinary-table table-hover issue-list-table-org mb-4">
+                    <thead>
+                        <tr>
+                            <th class="border-top-0 issue-list-org-tab-one" width="5%">
+                                #
+                            </th>
+                            <th class="border-top-0 issue-list-org-tab-one" width="30%">
+                                Competency Group
+                            </th>
+                            <th class="border-top-0 issue-list-org-tab-one" width="50%">
+                                Competencies
+                            </th>
+                            <th class="border-top-0 issue-list-org-tab-one" width="15%">
+                                Required
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody *ngFor="let group of DesignationMasterStore.competencies;let g=index">
+                        <tr *ngFor="let competency of group.competencies;let num = index">
+                            <td>
+                                
+                                {{num + 1}}
+                            </td>
+                            <td>{{group.competency_group}}</td>
+                            <td>
+
+                                {{competency.title}}
+                            </td>
+                            <td style="text-align: center;">
+                                {{competency.required}}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <ng-container>
+                <app-no-data-list [source]="noCompetencyMessage"
+                    *ngIf="DesignationMasterStore.competencies.length == 0"></app-no-data-list>
+            </ng-container>
+            
+        </div>
+    </div>
+</div> -->
+
+<!-- <div *ngIf="addCompetencyFlag" class="modal modal-style-1 popup-full-width fade 125" id="competency-list"
+    data-keyboard="false" data-backdrop="static" #competencyModal>
+    <button type="button" class="close" (click)="closeCompetencyModal()"><i
+            class="lni-close"></i><span>esc</span></button>
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            
+            <div class="modal-header">
+            </div>
+            
+            <div class="modal-body form-body">
+                <form [formGroup]="competencyForm" *mobxAutorun>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label for="name">Competency Group<sup>*</sup></label>
+                                <div class="clearfix d-flex">
+                                    <div class="multiple-plain-ngselect w-100">
+                                        <ng-select placeholder="Competency Group" [multiple]="false" searchable="true"
+                                            formControlName="competency_group_id" (clear)="getCompetencyGroups()"
+                                            (search)="searchCompetencyGroups($event)" (open)="getCompetencyGroups()">
+                                            <ng-option [value]="type.id"
+                                                [attr.title]="type.title.length>50?type.title:''"
+                                                *ngFor="let type of CompetencyGroupMasterStore.competencyGroups">
+                                                {{type.title.length>80?type.title.substring(0,80)+' ...':type.title}}
+                                            </ng-option>
+                                        </ng-select>
+                                    </div>
+                                    <button style="width:38px;" class="btn multi-add-user ml-2"
+                                        (click)="openCompetencyGroupModal()"><i class="fas fa-plus"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="name">Competencies</label>
+                                <div class="clearfix d-flex">
+                                    <div class="multiple-plain-ngselect w-100">
+                                        <ng-select [items]="CompetencyMasterStore.competencies"
+                                            placeholder="Select Competency" [multiple]="false"
+                                            formControlName="competency_id" (clear)="getCompetencies()"
+                                            (search)="searchCompetencies($event)" (open)="getCompetencies()"
+                                            bindLabel="title">
+                                            <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                                {{item.title.length > 35 ? item.title.substring(0,35)+' ...' : item.title}}
+                                            </ng-template>
+                                            <ng-template ng-option-tmp let-item="item" let-index="index">
+                                                <div class="user-post-department-div">
+                                                    <b>{{item.title.length > 35 ? item.title.substring(0,35)+' ...' : item.title}}</b>
+                                                </div>
+                                            </ng-template>
+                                        </ng-select>
+                                    </div>
+                                    <button style="width:38px;" class="btn multi-add-user ml-2"
+                                        (click)="openAddCompetencyModal()"><i class="fas fa-plus"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>Required</label>
+                                <div class="d-flex">
+                                    <input type="text" formControlName="required" class="form-control w-100"
+                                        placeholder="Required" id="required">
+                                    <button type="button"
+                                        [disabled]="!competencyForm.value.competency_id||!competencyForm.value.required"
+                                        (click)="pushCompetency()" class="btn multi-add-user mr-0 ml-2"
+                                        style="width: 38px;"><i class="fas fa-plus"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <p style="color: red;" class="pt-1 ml-3" *ngIf="duplicate!=null">
+                            {{duplicate}}
+                        </p>
+                        <p style="color: red;" class="pt-1 ml-3" *ngIf="formErrors&&formErrors.competencies">
+                            {{formErrors.competencies}}
+                        </p>
+                    </div>
+                    <div class="audit-form-table w-100" *ngIf="displayArray.length>0">
+                        <table class="table table-bordered ordinary-table table-hover issue-list-table-org mb-4">
+                            <thead>
+                                <tr>
+                                    <th class="border-top-0 issue-list-org-tab-one" width="5%">
+                                        #
+                                    </th>
+                                    <th class="border-top-0 issue-list-org-tab-one" width="80%">
+                                        Competency
+                                    </th>
+
+                                    <th class="border-top-0 issue-list-org-tab-one" width="15%">
+                                        Required
+                                    </th>
+
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="edit-and-delete-main" *ngFor="let array of displayArray;let op=index">
+                                    <td>
+                                        {{op + 1}}
+
+                                    </td>
+                                    <td>
+                                        {{array.competency.title}}
+                                    </td>
+                                    <td style="text-align: center;">
+                                        <div class="edit-option-show" style="margin:6px 0 0 0">
+                                            <a [attr.title]="'delete'|translate" (click)="removeOption(op)"><i
+                                                    class="fas fa-trash"></i></a>
+                                        </div>
+                                        {{array.required}}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="d-block justify-content-left border-0 mt-3">
+                                <button type="submit" class="btn btn-active" (click)="saveCompetency()"
+                                    [disabled]="AppStore.loading">{{ AppStore.loading  ? 'Loading...' : 'Save' }}</button>
+                                <button type="button" data-toggle="modal" data-target="#signal-lost" class="btn"
+                                    (click)="saveCompetency(true)"
+                                    [disabled]="AppStore.loading">{{ AppStore.loading  ? 'Loading...' : 'Save & Close' }}</button>
+                                <button type="button" data-toggle="modal" data-target="#error-message" class="btn"
+                                    (click)="closeCompetencyModal()">{{ AppStore.loading  ? 'Loading...' : 'Cancel' }}</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+       
+        </div>
+    </div>
+</div> -->
+
+<div class="modal modal-style-1 email-popup-new fade" data-backdrop="static" data-keyboard="false"
+  id="email-notification-popup" #mailConfirmationPopup>
+  <app-mail-send-popup [source] = "mailConfirmationData"></app-mail-send-popup>
+</div>
+
+

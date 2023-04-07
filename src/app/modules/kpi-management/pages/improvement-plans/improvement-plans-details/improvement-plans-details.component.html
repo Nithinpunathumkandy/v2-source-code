@@ -1,0 +1,375 @@
+<nav class="edit-bar" data-toggle="affix" scrollPoint #navigationBar>
+    <app-breadcrumb-menu></app-breadcrumb-menu>
+    <app-sub-menu></app-sub-menu>
+</nav>
+
+<ng-container *mobxAutorun>
+    <div *ngIf="!ImprovementPlansStore.individualLoaded">
+        <app-improvement-plans-detials-loader></app-improvement-plans-detials-loader>
+    </div>
+</ng-container>
+
+<main class="audit-program-details-page mt-20 pl-0">
+    <div class="container-fluid">
+        <div class="widget"  *mobxAutorun>
+            <div class="row" *ngIf="ImprovementPlansStore.individualLoaded  && AuthStore.getActivityPermission(5356,'KM_KPI_IMPROVEMENT_PLAN_DETAILS') ">
+                <div class="col-lg-8 col-sm-12 padding-right-0">
+                    <div class="bg-white widg-padding-cmn">
+                        <div class="min-height-64 edit-and-delete-main">
+                            
+                            <div class="issue-top-sec">
+                                <div class="clearfix">
+                                    <h5 class="d-inline-block cmn-head-style label-tag-style"><span
+                                            class="issue-smoal-head-text">#{{ImprovementPlansStore.individualImprovementPlansDetails?.reference_code
+                                            ? ImprovementPlansStore.individualImprovementPlansDetails?.reference_code :
+                                            AppStore.noContentText}}</span> {{
+                                        ImprovementPlansStore.individualImprovementPlansDetails?.title ?
+                                        ImprovementPlansStore.individualImprovementPlansDetails?.title : AppStore.noContentText}}
+                                        <span class="draft-tag label-tag-style-tag label-left-arow-tag"
+                                            [ngClass]=" ImprovementPlansStore.individualImprovementPlansDetails?.improvement_plan_status.label ?ImprovementPlansStore.individualImprovementPlansDetails?.improvement_plan_status.label : ''"
+                                            style="line-height: 16px; vertical-align: middle; margin-top: -4px; display: inline-block;">
+                                            {{ImprovementPlansStore.individualImprovementPlansDetails?.improvement_plan_status.language[0]?.pivot.title }}</span>
+                                    </h5>
+                                
+                                </div>
+                                <div class="clearfix">
+                                    <p class="label-tag-style mb-2 "><i class="fas fa-calendar-alt date-pics-two"></i>
+                                        {{ ImprovementPlansStore.individualImprovementPlansDetails?.start_date | date: OrganizationGeneralSettingsStore?.organizationSettings?.date_format}} - 
+                                        {{ ImprovementPlansStore.individualImprovementPlansDetails?.target_date | date: OrganizationGeneralSettingsStore?.organizationSettings?.date_format}} 
+                                        <span class="blinking" *ngIf="remainingDate>1">( {{remainingDate}} {{'days_remaining' | translate}} )</span> 
+                                        <span class="blinking" *ngIf="remainingDate!=0 && remainingDate<2">{{'('}} {{remainingDate}} {{'day_remaining' | translate}} {{')'}}</span> 
+                                        <span class="blinking" *ngIf="daysDue>1">{{'('}} {{daysDue}} {{'days_due' | translate}} {{')'}}</span> 
+                                        <span class="blinking" *ngIf="daysDue!=0 && daysDue<2">{{'('}} {{daysDue}} {{'day_due' | translate}} {{')'}}</span> 
+                                        <span class="ml-2 mr-2 ng-star-inserted" *ngIf=" ImprovementPlansStore.individualImprovementPlansDetails?.improvement_plan_status?.type!='resolved' && ImprovementPlansStore.individualImprovementPlansDetails?.improvement_plan_status?.type!='closed'" >|</span>
+                                        <span class="small-text ng-star-inserted"
+                                        *ngIf=" ImprovementPlansStore.individualImprovementPlansDetails?.improvement_plan_status?.type!='resolved' && ImprovementPlansStore.individualImprovementPlansDetails?.improvement_plan_status?.type!='closed'">
+                                            {{ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi_improvement_plan_updates.slice(-1)[0]?.percentage? ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi_improvement_plan_updates.slice(-1)[0]?.percentage: 0}} % {{'completed' | translate}}
+                                        </span>
+                                    </p>
+                                </div>
+                        
+                                <p style="white-space: pre-wrap;"> {{
+                                    ImprovementPlansStore.individualImprovementPlansDetails?.description ?
+                                    ImprovementPlansStore.individualImprovementPlansDetails?.description : AppStore.noContentText}}
+                                </p>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="label-and-user-pic">
+                                    <h6>{{'responsible_user' | translate}}</h6>
+        
+                                    <div class="row" *ngIf="ImprovementPlansStore.individualImprovementPlansDetails?.responsible_user">
+                                        <div class="col-sm-12 animation-pulse">
+                                            <app-user-popup-box
+                                            [source]=" getEmployeePopupDetails(ImprovementPlansStore.individualImprovementPlansDetails?.responsible_user)">
+                                        </app-user-popup-box>
+                                        </div>
+                                    </div>
+                                    <div class="row" *ngIf="!ImprovementPlansStore.individualImprovementPlansDetails?.responsible_user">
+                                        <div class="col-sm-12">
+                                            <p>{{AppStore.noContentText}}</p>
+                                        </div>
+                                    </div>
+                                    </div>
+        
+                                </div>
+                            </div>
+
+                            <h6 class="mt-3">{{'support_files' | translate}}</h6>
+                            <div *ngIf = "ImprovementPlansStore.individualImprovementPlansDetails?.documents.length==0">
+                                <app-context-no-data [sourceData] = "getNoDataSource('left')"></app-context-no-data>
+                            </div>
+
+                            <div class="thumb-pics-bg thumb-pics-col-4 thumb-pics-fix-text clearfix" style="padding-top: 0">
+                                <div class="thumb-pics" *ngFor="let docs of ImprovementPlansStore.individualImprovementPlansDetails?.documents;let i = index">
+            
+                                    <!-- System Files Starts Here -->
+                                    <div class="upload-pics edit-option" *ngIf="!docs.document_id"  (click) =  "viewDocument('improvement-plans-document',docs,docs)">
+                                        <div class="browse-form-pic"  [ngStyle]="{'background': 'url('+createImageUrl('improvement-plans-document',docs?.token)+') no-repeat'}">
+                                        </div>
+                                        <div class="browse-form-name clearfix">
+                                        <div class="float-left">
+                                            <h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                            </h6>
+                                            <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span><span class="text-blue bold pl-2">System{{'system' | translate}}</span>
+                                        </div>
+                                        <div class="browse-logo">
+                                            <img *ngIf="checkExtension(docs.ext,'image') != -1"
+                                                class="folder-picher" src="/assets/images/jpg-icone.png">
+                                            <img *ngIf="checkExtension(docs.ext,'doc') != -1"
+                                                class="folder-picher" src="/assets/images/word-icone.png">
+                                            <img *ngIf="checkExtension(docs.ext,'pdf') != -1"
+                                                class="folder-picher" src="/assets/images/pdf-icone.png">
+                                            <img *ngIf="checkExtension(docs.ext,'excel') != -1"
+                                                class="folder-picher" src="/assets/images/excel-icone.png">
+                                            <img *ngIf="checkExtension(docs.ext,'video') != -1"
+                                                class="folder-picher" src="/assets/images/md-video.png">
+                                            <img *ngIf="checkExtension(docs.ext,'audio') != -1"
+                                                class="folder-picher" src="/assets/images/md-audio.png">
+                                            <img *ngIf="checkExtension(docs.ext,'ppt') != -1"
+                                                class="folder-picher" src="/assets/images/md-ppt.png">
+                                        </div>
+                                        </div>
+                                        <div class="edit-option-show-inner">
+                                            <a><i class="fas fa-download" (click) = "downloadDocumentFile('improvement-plans-document',docs)"></i></a>
+                                        </div>
+                                    </div> 
+            
+                <!-- System Files Starts Here -->
+                <!-- KnowledgeHub Files Starts Here -->
+                                    <div class="upload-pics edit-option" *ngIf="docs.document_id">
+                                        <div *ngFor="let mainDoc of docs?.kh_document?.versions" (click) =  "viewDocument('document-version',docs,mainDoc)">
+                                            <div *ngIf="mainDoc.is_latest">
+                                            <div  class="browse-form-pic"  [ngStyle]="{'background': 'url('+createImageUrl('document-version',mainDoc?.token)+') no-repeat'}">
+                                            </div>
+                                                <div class="browse-form-name clearfix">
+                                                <div class="float-left">
+                                                <h6>{{mainDoc.title}}.{{mainDoc.ext}}
+                                                </h6>
+                                                <span>{{mainDoc.size/1048576 | number:'0.2-2'}}MB</span><span class="text-blue bold pl-2">{{'knowledge_hub' | translate}}</span>
+                                                </div>
+                                                <div class="browse-logo">
+                                                <img *ngIf="checkExtension(mainDoc.ext,'image') != -1"
+                                                    class="folder-picher" src="/assets/images/jpg-icone.png">
+                                                <img *ngIf="checkExtension(mainDoc.ext,'doc') != -1"
+                                                    class="folder-picher" src="/assets/images/word-icone.png">
+                                                <img *ngIf="checkExtension(mainDoc.ext,'pdf') != -1"
+                                                    class="folder-picher" src="/assets/images/pdf-icone.png">
+                                                <img *ngIf="checkExtension(mainDoc.ext,'excel') != -1"
+                                                    class="folder-picher" src="/assets/images/excel-icone.png">
+                                                <img *ngIf="checkExtension(mainDoc.ext,'video') != -1"
+                                                    class="folder-picher" src="/assets/images/md-video.png">
+                                                <img *ngIf="checkExtension(mainDoc.ext,'audio') != -1"
+                                                    class="folder-picher" src="/assets/images/md-audio.png">
+                                                <img *ngIf="checkExtension(mainDoc.ext,'ppt') != -1"
+                                                    class="folder-picher" src="/assets/images/md-ppt.png">
+                                            </div>
+                                                </div>
+                                                <div class="edit-option-show-inner">
+                                                <a><i class="fas fa-download" (click) = "downloadDocumentFile('document-version',docs,mainDoc)"></i></a>
+                                            </div>
+                                            </div>
+                                        </div>
+            
+                                    
+                                    </div>
+                            <!-- KnowledgeHub Files Ends Here -->
+            
+                                    </div>
+                            </div>
+
+                            <div class="user-details-page mt-0 mb-2 mt-3">
+                                <div class="right-block p-0">
+                                    <h5 class="mt-0"> <span> {{'kpi_detais' | translate}} </span> </h5>
+                                </div>
+                                </div>
+    
+                                <div class="issue-top-sec">
+                                <div class="clearfix">
+                                    <h5 class="d-inline-block cmn-head-style label-tag-style">
+                                        <span class="issue-smoal-head-text">#{{ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi?.reference_code}}</span>
+                                            {{ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi?.kpi?.title}}
+                                            <span class="draft-tag label-tag-style-tag label-left-arow-tag ml-3" 
+                                            [ngClass]="ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi?.kpi_management_status?.label ? getColorKey('kpi') : ''"
+                                            style="line-height: 16px; vertical-align: middle; margin-top: -5px; display: inline-block;"> {{ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi?.kpi_management_status?.type | titlecase}}</span>
+                                    </h5>
+                                </div>
+                                <p style="white-space: pre-wrap;">{{ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi?.description}} </p>
+                                </div>
+    
+                                <div class="row">
+                                    <div class="col-xl-4 col-lg-6 col-sm-6">
+                                        <h6> {{'kpi_calculation_type' | translate}} </h6>
+                                        <p>{{ ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi?.calculation_type ? ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi?.calculation_type?.kpi_calculation_type_language[0]?.pivot?.title : AppStore.noContentText }}</p>
+                                    </div>
+                                    <div class="col-xl-4 col-lg-6 col-sm-6">
+                                        <h6> {{'time_frame_sla' | translate}} </h6>
+                                        <p *ngIf="ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi?.time_frame>1">{{ ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi?.time_frame? ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi?.time_frame :  AppStore.noContentText  }}  {{'days' | translate}}  </p>
+                                        <p *ngIf="ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi?.time_frame==1">{{ ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi?.time_frame? ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi?.time_frame :  AppStore.noContentText  }}  {{'day' | translate}}  </p>
+                                        <p *ngIf="!ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi?.time_frame">{{ AppStore.noContentText  }} </p>
+                                    </div>
+                                    <div class="col-xl-4 col-lg-6 col-sm-6">
+                                        <h6> {{'current_value' | translate}} </h6>
+                                        <p>{{ ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi?.current_value ? ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi?.current_value :  AppStore.noContentText  }}</p>
+                                    </div>
+                                </div>
+                
+                                <div class="row">
+                                    <div class="col-xl-4 col-lg-6 col-sm-6">
+                                        <h6> {{'formula' | translate}} </h6>
+                                        <p>{{ ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi?.formula ? ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi?.formula: AppStore.noContentText }}</p>
+                                    </div>
+                                    <div class="col-xl-4 col-lg-6 col-sm-6">
+                                        <h6> {{'target' | translate}} </h6>
+                                        <p>{{ ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi?.target? ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi?.target :  AppStore.noContentText  }}</p>
+                                    </div>
+                                    <div class="col-xl-4 col-lg-6 col-sm-6">
+                                        <h6> {{'unit' | translate}} </h6>
+                                        <p>{{ ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi?.unit? ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi?.unit?.title :  AppStore.noContentText  }}</p>
+                                    </div>
+                                </div>
+                
+                                <div class="row">
+                                    <div class="col-xl-4 col-lg-6 col-sm-6">
+                                        <h6> {{'kpi_review_frequency' | translate}} </h6>
+                                        <p>{{ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi?.kpi_review_frequency?.title? ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi?.kpi_review_frequency?.title: AppStore.noContentText}}</p>
+                                    </div>
+                                    <div class="col-xl-4 col-lg-6 col-sm-6"  [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_division ? 'none':'block'}">
+                                        <div>
+                                            <h6>{{'divisions' | translate}}</h6>
+                                            <div class="loop-cmn-p">
+                                                <p
+                                                    *ngFor=" let div of ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi?.divisions ; let isLast=last">
+                                                    {{div.title}}{{isLast ? '' : ',' }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-xl-4 col-lg-6 col-sm-6" [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_department ? 'none':'block'}">
+                                        <div>
+                                            <h6>{{'departments' | translate}}</h6>
+                                            <div class="loop-cmn-p">
+                                                <p
+                                                    *ngFor=" let dept of ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi?.departments ; let isLast=last">
+                                                    {{dept.title}}{{isLast ? '' : ',' }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                
+                                <div class="row">
+                                    <div class="col-xl-4 col-lg-6 col-sm-6" [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_section ? 'none':'block'}">
+                                        <div>
+                                            <h6>{{'sections' | translate}}</h6>
+                                            <div class="loop-cmn-p">
+                                                <p
+                                                    *ngFor=" let section of ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi?.sections ; let isLast=last">
+                                                    {{section.title}}{{isLast ? '' : ',' }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-xl-4 col-lg-6 col-sm-6"  [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_sub_section ? 'none':'block'}">
+                                        <div>
+                                            <h6>{{'sub_sections' | translate}}</h6>
+                                            <div class="loop-cmn-p">
+                                                <p
+                                                    *ngFor=" let sub_section of ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi?.sub_sections ; let isLast=last">
+                                                    {{sub_section.title}}{{isLast ? '' : ',' }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                        </div>
+
+                        
+                        <div class="row">
+                            <div class="col-xl-12">
+                                <hr class="mb-2">
+                                <div *ngIf="ImprovementPlansStore.individualImprovementPlansDetails?.created_by.first_name">
+                                    <app-user-popup-box
+                                        [source]=" getEmployeePopupDetails( ImprovementPlansStore.individualImprovementPlansDetails?.created_by, ImprovementPlansStore.individualImprovementPlansDetails?.created_at )">
+                                    </app-user-popup-box>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-sm-12">
+
+                    <div class="bg-white mb-3 widg-padding-cmn-small">
+                        <h6>{{ ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi_improvement_plan_updates.slice(-1)[0]?.percentage?
+                            ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi_improvement_plan_updates.slice(-1)[0]?.percentage: 0 }} % {{'completed' |
+                            translate}}</h6>
+                        <hr class="mt-0 mb-3">
+
+                        <div
+                            [ngClass]="ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi_improvement_plan_updates.slice(-1)[0]?.percentage>50?'progress-circle over50 p'+ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi_improvement_plan_updates.slice(-1)[0]?.percentage:'progress-circle p'+ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi_improvement_plan_updates.slice(-1)[0]?.percentage">
+                            <span>{{ ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi_improvement_plan_updates.slice(-1)[0]?.percentage?
+                                ImprovementPlansStore.individualImprovementPlansDetails?.kpi_management_kpi_improvement_plan_updates.slice(-1)[0]?.percentage: 0 }} %</span>
+                            <div class="left-half-clipper">
+                                <div class="first50-bar"></div>
+                                <div class="value-bar"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white mb-3 widg-padding-cmn-small" >
+                        <h6>{{'days_remaining' | translate}}</h6>
+                        <hr class="mt-0 mb-3">
+                        <div class="clearfix">
+                            <div class="mb-3">
+                                <p  *ngIf="remainingDateGraph>1" class="dot-div-new dot-green mb-0 span-dot-color font-normal d-block">
+                                    <span style="background: #028f14;"></span>
+                                    {{'remaining_days'|translate}}
+                                    ( {{ remainingDateGraph }} {{'days' | translate}} )
+                                </p>
+                                <p *ngIf="Totaldays>1" class="dot-div-new dot-red mb-0 span-dot-color font-normal d-block">
+                                    <span style="background: #ffe6e6;"></span>
+                                    {{'total_days'|translate}}
+                                    ( {{ Totaldays }} {{'days' | translate}} )
+                                </p>
+                                <p  *ngIf="remainingDateGraph<2" class="dot-div-new dot-green mb-0 span-dot-color font-normal d-block">
+                                    <span style="background: #028f14;"></span>
+                                    {{'remaining_days'|translate}}
+                                    ( {{ remainingDateGraph }} {{'day' | translate}} )
+                                </p>
+                                <p *ngIf="Totaldays<2" class="dot-div-new dot-red mb-0 span-dot-color font-normal d-block ">
+                                    <span style="background: #ffe6e6;"></span>
+                                    {{'total_days'|translate}}
+                                    ( {{ Totaldays }} {{'day' | translate}} )
+                                </p>
+
+                            </div>
+                        </div>
+                        <div class="vertical-progress-v2">
+                            <div class="progress-bg-sec">
+                                <div class="progress-inner-color"
+                                    [style.height.%]="(remainingDateGraph/Totaldays)*100">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</main>
+
+<!-- Form Modal -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+    <app-improvement-plans-add *ngIf = "improvementPlanObject.type" [source]="improvementPlanObject"></app-improvement-plans-add> 
+</div>
+
+<!-- File Preview -->
+<div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup" data-keyboard="false"
+    data-backdrop="static" #filePreviewModal *mobxAutorun>
+    <button type="button" class="close" data-dismiss="modal" (click)="closePreviewModal($event)"><i
+        class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+    <app-preview *ngIf="previewObject" [source]="previewObject" (close)="closePreviewModal($event)"></app-preview>
+</div>
+
+<!-- Delete Confirmation Modal Start -->
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+
+<!-- update model -->
+<div class="modal modal-style-1 popup-full-width fade" *mobxAutorun #UpdateModal>
+    <app-improvement-plans-update *ngIf="ImprovementPlansStore.update_modal_form"
+        [source]="ImprovementPlansStore.individualImprovementPlansDetails"></app-improvement-plans-update>
+</div>
+
+<!-- History model -->
+<div class="modal modal-style-1 popup-full-width fade" *mobxAutorun #HistoryModal>
+    <app-improvement-plans-history *ngIf="ImprovementPlansStore.history_modal_form"></app-improvement-plans-history>
+</div>
+
+<!--Activity Logs model -->
+<div class="modal modal-style-1 popup-full-width fade" *mobxAutorun #activityLogsModal>
+    <app-improvement-plan-activity-logs *ngIf="ImprovementPlansStore.activity_log_form_modal" ></app-improvement-plan-activity-logs>
+</div>
+

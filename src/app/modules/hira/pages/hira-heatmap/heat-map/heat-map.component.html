@@ -1,0 +1,162 @@
+<ng-container *mobxAutorun>
+    <div class="tab-pane active" id="info" id="risk-context" *ngIf="AuthStore.getActivityPermission(900,'RISK_HEAT_MAP_LIST') && HiraHeatMapStore.loaded && HiraHeatMapStore.HiraHeatMapDetails?.length>0">
+        <div class="widget">
+            <div class="bg-white mb-4">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="no-fixed-table relative ml-5 risk-heatmap-category likelihood-risk-table bg-white p-3 mb-1 table-scroll-small-device">
+                            <table *ngIf="HiraHeatMapStore.loaded">
+                                <tr>
+                                    <td [attr.rowspan]="LikelihoodStore.likelihoodDetails.length+1">
+                                        <h4 class="mb-0">
+                                            <div class="risk-dashboard-heatmap-label label-lef-center text-rotate-tbl heatmap-likelihood-title">{{ 'likelihood' | translate}}</div>
+                                        </h4>
+                                    </td>
+                                </tr>
+                                <tr *ngFor="let likelihood of LikelihoodStore.likelihoodDetails;let num=index">
+                                    <td class="number-heatmap-order-left">{{likelihood.score}}</td>
+                                    <td [ngClass]="'color-box-risk bg-'+map.color"
+                                        [style.width.%]="100/ImpactStore?.impactDetails.length"
+                                        *ngFor="let map of HiraHeatMapStore.HiraHeatMapDetails[num];let colm=index"><span
+                                            [ngClass]="activeRow == num && activeColumn==colm?'count-risk active':'count-risk'" *ngIf="map.likelihood_id == likelihood.id"
+                                            (click)="pageChange(1,'inherent_risk_score='+map.risk_score+'&is_inherent=true',num,colm,map.risk_score)">{{map.risk_count}}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td class="number-heatmap-order-btm" *ngFor="let impact of ImpactStore?.impactDetails">
+                                        {{impact.score}}</td>
+                                </tr>
+                                <tr>
+                                    <td class="pt-0" [attr.colspan]="ImpactStore?.impactDetails.length+2">
+                                        <h4 class="mb-0">{{ 'impact' | translate}}</h4>
+                                    </td>
+                                </tr>
+                            </table>
+                            <!-- <div *ngIf="HiraHeatMapStore.loaded && HiraHeatMapStore.HiraHeatMapDetails?.length==0">
+                                <app-no-data-list [source]="mapEmptyList" [border]=false>
+    
+                                </app-no-data-list>
+                            </div> -->
+                        </div>
+                    </div>
+                </div>
+                <!-- <div class=row>
+                    <div class="col-md-12">
+                        <div class="risk-score-box-heatmap p-4">
+                            <div class="risk-score-box">
+                                <h6 class="bold">RISK SCORE = (LIKELIHOOD * IMPACT)</h6>
+                                <h5><span class="risk-score-indication bg-green"></span>Low</h5>
+                                <h5><span class="risk-score-indication bg-yellow"></span>Medium</h5>
+                                <h5><span class="risk-score-indication bg-orange"></span>High</h5>
+                                <h5><span class="risk-score-indication bg-red"></span>Very High</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div> -->
+            </div>
+            <div *ngIf="RisksStore.loaded && RisksStore.riskDetails.length>0">
+                <div class="audit-program-box audit-page-table-main mt-3">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="full-width-table">
+                            <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                                <thead>
+                                    <tr>
+                                        <th class="border-top-0" width="2%">#</th>
+                                        <th class="border-top-0 pointer" width="6%" (click)="setRiskSort('reference_code')">
+                                            {{'ref_id' | translate}}
+                                            <img *ngIf="RisksStore.orderItem == 'reference_code'"
+                                                [attr.src]="RisksStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                                class="sort-down-pics">
+                                        </th>
+                                        <th class="border-top-0 pointer" width="32%" (click)="setRiskSort('risks.title')">
+                                            {{'risk' | translate}}
+                                            <img *ngIf="RisksStore.orderItem == 'risks.title'"
+                                                [attr.src]="RisksStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                                class="sort-down-pics">
+                                        </th>
+                                        <th class="border-top-0 pointer" width="14%"
+                                            (click)="setRiskSort('risks.departments')">{{'department' | translate}}
+                                            <img *ngIf="RisksStore.orderItem == 'risks.departments'"
+                                                [attr.src]="RisksStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                                class="sort-down-pics">
+                                        </th>
+                                        <th class="border-top-0 pointer" width="10%"
+                                            (click)="setRiskSort('risks.risk_category_title')">{{'risk_category' |
+                                            translate}}
+                                            <img *ngIf="RisksStore.orderItem == 'risks.risk_category_title'"
+                                                [attr.src]="RisksStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                                class="sort-down-pics">
+                                        </th>
+                                        <th class="border-top-0 pointer" width="8%"
+                                            (click)="setRiskSort('risks.risk_types')">{{'risk_types' | translate}}
+                                            <img *ngIf="RisksStore.orderItem == 'risks.risk_types'"
+                                                [attr.src]="RisksStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                                class="sort-down-pics">
+                                        </th>
+    
+                                        <th *ngIf="OrganizationModulesStore.checkOrganizationSubModulesPermission(900,41501)" class="border-top-0 pointer" width="15%"
+                                            >{{'corporate_functional' | translate}}
+                                           
+                                        </th>
+                                        <th class="border-top-0" width="13%"
+                                            (click)="setRiskSort('risks.risk_status_title')">{{'status' | translate}}
+                                            <img *ngIf="RisksStore.orderItem == 'risks.risk_status_title'"
+                                                [attr.src]="RisksStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                                class="sort-down-pics">
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="pointer edit-and-delete-main" (click)="gotoRisk(risk.id)"
+                                        *ngFor="let risk of RisksStore.riskDetails| paginate: {currentPage:RisksStore?.currentPage, itemsPerPage:RisksStore?.itemsPerPage,totalItems:RisksStore?.totalItems};let num = index">
+                                        <td>{{(RisksStore?.currentPage - 1) * RisksStore?.itemsPerPage + (num + 1)}}</td>
+                                        <td>#{{risk.reference_code}}</td>
+                                        <td>{{risk.title}}</td>
+                                        <td>{{risk.departments ? risk.departments : AppStore.noContentText}}</td>
+                                        <td>{{risk.risk_category_title ? risk.risk_category_title : AppStore.noContentText}}</td>
+                                        <td>
+                                            {{risk.risk_types ? risk.risk_types : AppStore.noContentText}}</td>
+                                            <td *ngIf="OrganizationModulesStore.checkOrganizationSubModulesPermission(900,41501)">
+                                                {{risk.is_corporate==1?'Corporate':'Functional'}}</td>
+                                        <td class="text-center">
+                                            <div
+                                                [ngClass]="risk.risk_status_id==AppStore.activeStatusId?'dot-div red-dot':'dot-div green-dot'">
+                                                {{risk.risk_status_title}}</div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        </div>
+                        <div class="col-sm-12" *ngIf="RisksStore?.totalItems>RisksStore?.itemsPerPage">
+                            <ul class="pagination justify-content-center mt-3">
+                                <pagination-controls  [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate" (pageChange)="pageChange($event)" class="my-pagination">
+                                </pagination-controls>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <ng-container *mobxAutorun>
+                <div *ngIf="!RisksStore.loaded">
+                  <app-risk-list></app-risk-list>
+                </div>
+              </ng-container>
+    
+        </div>
+    </div>
+    </ng-container>
+    <ng-container *mobxAutorun>
+        <div *ngIf="!HiraHeatMapStore.loaded">
+            <app-risk-heatmap-loader></app-risk-heatmap-loader>
+        </div>
+    </ng-container>
+    <ng-container *mobxAutorun>
+        <app-no-data-list [border]=false [source]="mapEmptyList" *ngIf="HiraHeatMapStore.loaded && HiraHeatMapStore.HiraHeatMapDetails?.length==0">
+    
+        </app-no-data-list>
+    
+    </ng-container>

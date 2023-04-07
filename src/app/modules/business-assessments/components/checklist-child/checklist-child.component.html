@@ -1,0 +1,378 @@
+<div *mobxAutorun>
+    <div class="collapse show" [attr.id]="'collapseOneinner'+d+'_'+docData.clause_number"
+        *ngFor="let docData of childData;let d=index">
+        <div class="card-body pt-0 pb-2">
+            <div [attr.id]="'accordion-inner'+docData.id+'_'+d" class="sub-accordion">
+                <div class="card relative mb-0">
+                    <div class="card-header bg-white">
+                        <a [ngClass]="innerIndex[docData.clause_number] == docData.clause_number?'card-link align-label-check-head full-line-click mgn-top-click bold':'card-link align-label-check-head full-line-click mgn-top-click bold collapsed'"
+                            style="padding-left: 0px !important;" data-toggle="collapse"
+                            [attr.href]="'#company-col'+d+'_'+docData.clause_number" (click)="getChecklist(docData)">
+                            {{docData.clause_number}} {{docData.title}} <span class="accordion-percentage-right"
+                                *ngIf="docData.is_checklist_applicable==1"><span *ngIf="docData.is_completed==1"
+                                    class="questions-attended-icon"><i
+                                        class="far fa-check-circle"></i></span>{{checklistArray[docData.clause_number]&&checklistArray[docData.clause_number].checklist?getScore(docData.clause_number,d):docData.score}}%</span>
+                            <span class="accordion-percentage-right" *ngIf="docData.is_checklist_applicable!=1"><span
+                                    class="questions-attended-icon"><i style="color:#808080"
+                                        class="fas fa-ban"></i></span>{{checklistArray[docData.clause_number]&&checklistArray[docData.clause_number].checklist?getScore(docData.clause_number,d):docData.score}}%</span>
+                        </a>
+                    </div>
+                    <div [attr.id]="'company-col'+d+'_'+docData.clause_number"
+                        [ngClass]="innerIndex[docData.clause_number] == docData.clause_number?'collapse show':'collapse'">
+                        <!-- <div class="card-body pt-0 pb-2"> 
+                           
+                          </div> -->
+                        <div class="card-body bg-white pb-2">
+                            <div class="inner-inner-accordion"
+                                *ngIf="checklistArray[docData.clause_number]?.checklist!=[]">
+                                <p class="text-editor-content bullet-point-list"
+                                    [innerHTML]="docData?.description| safeHtml"></p>
+                                <div
+                                    *ngFor="let checklistData of checklistArray[docData.clause_number]?.checklist;let c=index">
+
+                                    <div class="sub-accordion">
+                                        <div class="card relative mb-0">
+                                            <div class="card-header">
+                                                <a [ngClass]="checklistIndex[docData.clause_number]==checklistData.checklist.id?'card-link align-label-check-head full-line-click mgn-top-click':'card-link align-label-check-head full-line-click mgn-top-click collapsed'"
+                                                    style="padding-left: 0px !important;" data-toggle="collapse"
+                                                    [attr.href]="'#company-co'+checklistData.id+'c'"
+                                                    (click)="getCurrentCheckList(c,checklistData,docData.clause_number)">?
+                                                    {{c+1}}.{{checklistData.checklist.title}}
+                                                    <span class="accordion-percentage-right"
+                                                        *ngIf="checklistData.score!=null">{{checklistData.score}}%</span></a>
+                                            </div>
+                                            <div [attr.id]="'company-co'+checklistData.id+'c'"
+                                                [ngClass]="checklistIndex[docData.clause_number]==checklistData.checklist.id?'collapse show':'collapse'">
+                                                <div class="card-body">
+                                                    <h6>{{'answers'|translate}}<sup class="form-error pt-1">*</sup></h6>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="box-cnt-one w-100">
+                                                            <label class="pointer"
+                                                                [ngClass]="checklistData.business_assessment_framework_option?.id && checklistData.business_assessment_framework_option.id==framework.id?'outline-tag active':'outline-tag'"
+                                                                *ngFor="let framework of checklistData.business_assessment?.business_assessment_framework?.business_assessment_framework_options;let f=index"
+                                                                (click)="setFramework(framework,docData,c)">{{framework.title}}</label>
+                                                            <p class="form-error pt-1"
+                                                                *ngIf="formErrors&&formErrors.business_assessment_framework_option_id">
+                                                                {{formErrors.business_assessment_framework_option_id}}
+                                                            </p>
+
+                                                        </div>
+                                                        <!-- <div class="score-right-accodion"
+                                                            *ngIf="checklistData.score!=null">
+                                                            <h4>Score : {{checklistData.score}}</h4>
+                                                        </div> -->
+                                                        <div class="score-right-accodion"
+                                                            *ngIf="checklistData?.score!=null">
+                                                            <h4>{{'score'|translate}} :
+                                                                {{checklistData?.business_assessment_framework_option?.score!=null?checklistData?.business_assessment_framework_option?.score:checklistData.score}}
+                                                            </h4>
+                                                        </div>
+                                                        <div class="score-right-accodion"
+                                                            *ngIf="checklistData.score==null">
+                                                            <h4>{{'score'|translate}} :
+                                                                {{checklistData?.business_assessment_framework_option?.score!=null?checklistData?.business_assessment_framework_option?.score:0}}
+                                                            </h4>
+                                                        </div>
+                                                    </div>
+                                                    <h6 class="mt-2">{{'support_files'|translate}}</h6>
+                                                    <div class="scroll-documents" #uploadArea>
+                                                    <div class="thumb-pics-bg clearfix thump-pics-full" style="padding-top: 0;">
+                                                        <div class="thumb-pics accordion-inner-thump">
+                                                            <div class="question-circle-inp" style="margin-right: 7px;">
+                                                                <i class="far fa-question-circle"></i>
+                                                                <div class="message-password-inp">
+                                                                  <p class="mb-0">{{'allowed_file_types' | translate}}
+                                                                    {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                                                                  </p>
+                                                                </div>
+                                                              </div>
+                                              
+                                                            <!-- <div class="costmz-logo-new" style="padding: 0 !important;"> -->
+                                                                <div class="form-group form-group-upload">
+                                                                    <div class="darag-dropifile-upload">
+                                                                        <div
+                                                                            class="d-flex justify-content-center align-items-center text-center">
+                                                                            <div>
+                                                                                <img src="/assets/images/drag-pic.png"
+                                                                                    class="drag-pic-files">
+                                                                                <div class="drag-file-name">
+                                                                                    {{'drag_drop_file_here'|translate}}
+                                                                                </div>
+                                                                                <div class="upload-btn-wrapper">
+                                                                                    <!-- <input type="file" multiple name="myfile"
+                                                                                        (change)="openFileUploadModal(docData.clause_number,checklistData.checklist.id)"
+                                                                                        accept="application/msword, application/pdf, image/* " /> -->
+                                                                                    <button class="btn btn-small"
+                                                                                        type="button"
+                                                                                        (click)="openFileUploadModal(checklistData.id)">{{'browse_files'|translate}}</button>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            <!-- </div> -->
+                                                        </div>
+
+                                                        <div [ngClass]="files.success? 'thumb-pics hide_loader' : 'thumb-pics'"
+                                                            *ngFor="let files of fileUploadsArray">
+                                                            <div class="upload-pics edit-option file-upload-loader">
+                                                                <circle-progress class="browse-form-pic-small"
+                                                                    [percent]=fileUploadProgress
+                                                                    [title]=fileUploadProgress>
+                                                                </circle-progress>
+                                                            </div>
+                                                        </div>
+
+                                                        <div [ngClass]="doc.is_deleted ? 'thumb-pics image_deleted':doc.verificationId== checklistData.id?'thumb-pics':''"
+                                                            *ngFor="let doc of fileUploadPopupStore.displayFiles">
+                                                            <div
+                                                                *ngIf="doc.verificationId== checklistData.id">
+                                                                <div class="upload-pics upload-pics-small edit-option">
+                                                                    <div *ngIf="doc.id && !doc.preview"
+                                                                        class="browse-form-pic"
+                                                                        [ngStyle]="{'background': 'url('+createImageUrl(doc?.token,'document-version')+') no-repeat 0 0 / cover'}">
+                                                                    </div>
+                                                                    <div *ngIf="doc.preview" class="browse-form-pic"
+                                                                        [ngStyle]="{'background': 'url(' + doc?.preview + ') no-repeat 0 0 / cover'}">
+                                                                    </div>
+                                                                    <div class="browse-form-name clearfix">
+                                                                        <div class="float-left">
+                                                                            <h6>
+                                                                                {{doc.title?doc.title:doc.name?doc.name:doc.version_title?doc.version_title:"NA"}}.{{doc.ext}}
+
+                                                                            </h6>
+                                                                            <span *ngIf="doc.is_kh_document"
+                                                                                class="mr-2 cmn-clr"><i
+                                                                                    class="fas fa-book"></i></span>
+                                                                            <span *ngIf="!doc.is_kh_document"
+                                                                                class="mr-2 cmn-clr"><i
+                                                                                    class="fas fa-laptop"></i></span>
+                                                                            <span>{{doc.size/1048576 |
+                                                                                number:'0.2-2'}}MB</span>
+
+                                                                        </div>
+                                                                        <div class="browse-logo">
+                                                                            <img *ngIf="checkExtension('excel',doc.ext) != -1"
+                                                                                src="/assets/images/md-xl.png">
+                                                                            <img *ngIf="checkExtension('image',doc.ext) != -1"
+                                                                                src="/assets/images/md-jpg.png">
+                                                                            <img *ngIf="checkExtension('doc',doc.ext) != -1"
+                                                                                src="/assets/images/md-doc.png">
+                                                                            <img *ngIf="checkExtension('pdf',doc.ext) != -1"
+                                                                                src="/assets/images/md-pdf.png">
+                                                                            <img *ngIf="checkExtension('video',doc.ext) != -1"
+                                                                                src="/assets/images/md-video.png">
+                                                                            <img *ngIf="checkExtension('audio',doc.ext) != -1"
+                                                                                src="/assets/images/md-audio.png">
+                                                                            <img *ngIf="checkExtension('ppt',doc.ext) != -1"
+                                                                                src="/assets/images/md-ppt.png">
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="edit-option-show-inner">
+                                                                        <a (click)="removeDocument(doc)"><i
+                                                                                class="fas fa-trash"></i></a>
+                                                                        <!-- <a *ngIf="doc.id" class="pointer"
+                                                                            (click)="downloadFile(checklistData,doc)"><i
+                                                                                class="fas fa-download"></i></a> -->
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        </div>
+                                                    </div>
+                                                    <h6 class="mt-2">{{'comment'|translate}}</h6>
+                                                    <div class="form-group">
+                                                        <textarea class="form-control" rows="2" id="comment"
+                                                            [(ngModel)]="checklistData.comment"
+                                                            [placeholder]="'comment'|translate"></textarea>
+                                                        <p class="form-error pt-1"
+                                                            *ngIf="formErrors&&formErrors.comment">
+                                                            {{formErrors.comment}}
+                                                        </p>
+                                                    </div>
+
+                                                    <h6 class="mt-2">{{'external_comments'|translate}}</h6>
+                                                    <div class="form-group">
+                                                        <textarea class="form-control" rows="2" id="external_comment"
+                                                            [(ngModel)]="checklistData.external_comment"
+                                                            [placeholder]="'comment'|translate"></textarea>
+                                                        <p class="form-error pt-1"
+                                                            *ngIf="formErrors&&formErrors.external_comment">
+                                                            {{formErrors.external_comment}}
+                                                        </p>
+                                                    </div>
+                                                    <!-- Action Plan Add and Listing Starts -->
+                                                    <div class="row">
+
+                                                        <div class="col-lg-12">
+                                                            <div class="form-group">
+                                                                <h6 class="mt-2">Action Plan <button type="button"
+                                                                        data-toggle="modal"
+                                                                        (click)="openActionPlanForm()"
+                                                                        class="btn btn-small ml-2">Add</button></h6>
+
+
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="col-md-12">
+
+                                                            <div class="panel-group panel-drop-sections panel-drop-white"
+                                                                id="jd" role="tablist" aria-multiselectable="true">
+                                                                <div class="panel panel-default"
+                                                                    *ngFor="let action of checklistData.actions;let num=index">
+                                                                    <ng-container *ngIf="!action.is_deleted">
+                                                                        <div [ngClass]="action.accordionActive?'panel-heading active':'panel-heading'"
+                                                                            (click)="setActiveAction(num)" role="tab"
+                                                                            id="headingOne">
+                                                                            <div class="panel-title">
+                                                                                <a role="button" data-toggle="collapse"
+                                                                                    [attr.href]="'#action'+'_'+num"
+                                                                                    aria-expanded="false"
+                                                                                    aria-controls="collapseOne"
+                                                                                    class="collapsed">
+                                                                                    <h5 class="width96pc mt-0">
+                                                                                        {{action.title}} <span
+                                                                                            class="drop-down-icone"><i
+                                                                                                class="fas fa-chevron-down"></i></span>
+                                                                                    </h5>
+                                                                                </a>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div [attr.id]="'action'+'_'+num"
+                                                                            class="drop-detail-sec panel-collapse collapse"
+                                                                            role="tabpanel" aria-labelledby="headingOne"
+                                                                            style="">
+                                                                            <div
+                                                                                class="panel-body bg-white edit-and-delete-main">
+                                                                                <div class="edit-option-show"
+                                                                                    style="margin: -18px 24px 0 0;">
+                                                                                    <!-- edit-and-delete starts -->
+                                                                                    <a *ngIf="!action.is_new"
+                                                                                        (click)="editActionPlan(action)"><i
+                                                                                            class="fas fa-pen"></i></a>
+                                                                                    <a><i class="fas fa-trash"
+                                                                                            (click)="deleteActionPlan(num)"></i></a>
+                                                                                </div>
+                                                                                <div class="row">
+                                                                                    <div class="col-lg-4 col-sm-6">
+                                                                                        <div class="label-and-user-pic">
+                                                                                            <h6>Responsible User</h6>
+                                                                                            <!-- <div class="d-flex flex-row user-list-sm">
+                                                  <app-user-popup-box
+                                                      [source]=" getCreatedByPopupDetails(action.responsible_user)">
+                                                  </app-user-popup-box>
+                                              </div> -->
+                                                                                            <div class="d-flex flex-row user-list-sm"
+                                                                                                *ngIf="action.responsible_users?.length>0">
+                                                                                                <app-user-popup-box
+                                                                                                    [source]=" getCreatedByPopupDetails(action.responsible_users[0])">
+                                                                                                </app-user-popup-box>
+                                                                                            </div>
+                                                                                            <div class="d-flex flex-row user-list-sm"
+                                                                                                *ngIf="action.display_user">
+                                                                                                <app-user-popup-box
+                                                                                                    [source]=" getCreatedByPopupDetails(action.display_user)">
+                                                                                                </app-user-popup-box>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+
+                                                                                <div class="row">
+                                                                                    <div class="col-lg-4 col-sm-6">
+                                                                                        <h6>Start Date</h6>
+                                                                                        <p> {{action.start_date | date:
+                                                                                            OrganizationGeneralSettingsStore?.organizationSettings?.date_format}}
+                                                                                        </p>
+
+                                                                                    </div>
+
+                                                                                    <div class="col-lg-4 col-sm-6">
+                                                                                        <h6>Target Date</h6>
+                                                                                        <p> {{action.target_date | date:
+                                                                                            OrganizationGeneralSettingsStore?.organizationSettings?.date_format}}
+                                                                                        </p>
+
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </ng-container>
+                                                                </div>
+
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <!-- Action Plan Add and Listing Ends -->
+
+                                                    <div class="row">
+                                                        <div class="col-sm-12">
+                                                            <div class="d-block justify-content-left border-0 mt-3">
+                                                                <button type="button" class="btn mr-3 btn-active"
+                                                                    *ngIf="AssessmentsStore.individualAssessmentDetails.business_assessment_status.type!='published'&& AssessmentsStore.individualAssessmentDetails.business_assessment_status.type!='completed'"
+                                                                    (click)="saveChecklist(checklistData,docData,c,d)">{{AppStore.loading?'Loading..':'Save'}}</button>
+
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="inner-child" *ngIf="checklistArray[docData.clause_number]?.child">
+                                    <app-checklist-child [childData]="checklistArray[docData.clause_number]?.child"
+                                        *ngIf="AssessmentsStore.getCheckData(checklistArray[docData.clause_number]?.child[0]?.clause_number)">
+                                    </app-checklist-child>
+
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </div>
+    </div>
+    <div class="collapse show" *ngIf="!(childData.length>0)">
+        <div class="assessment-user-box text-center">
+
+            No items found!!
+
+        </div>
+    </div>
+
+</div>
+
+<!-- preview component for image preview -->
+<div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup" data-keyboard="false"
+    data-backdrop="static" #filePreviewModal *mobxAutorun>
+    <button type="button" class="close" data-dismiss="modal" (click)="closePreviewModal($event)"><i
+            class="lni-close"></i><span>esc</span></button>
+    <app-assessment-doc-preview *ngIf="previewObject" [source]="previewObject" (close)="closePreviewModal($event)">
+    </app-assessment-doc-preview>
+</div>
+<!-- preview modal end -->
+<!-- Action plan form starts here -->
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #actionPlanModal>
+    <app-assessment-action-plan-add [source]="actionPlanData" *ngIf="openActionPlanPopup">
+    </app-assessment-action-plan-add>
+</div>
+<!-- Action plan form ends here -->
+
+<!-- * Documetn Attach/Upload Common Component Starts Here -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #fileUploadModal>
+    <app-file-upload-popup *ngIf="fileUploadPopupStore.openPopup"></app-file-upload-popup>
+</div>
+
+<!-- Action plan form starts here -->

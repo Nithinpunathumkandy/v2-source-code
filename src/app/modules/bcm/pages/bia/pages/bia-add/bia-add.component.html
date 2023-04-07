@@ -1,0 +1,899 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navigationBar>
+
+    <app-breadcrumb-menu></app-breadcrumb-menu>
+    <app-sub-menu></app-sub-menu>
+
+</nav>
+<main class="mt-3 organization-page tab-btns-five">
+    <div class="container-fluid">
+        <div class="organization-form-page" *mobxAutorun>
+            <form id="regForm" [formGroup]="form" class="organization-multi-stup-form issue-multi-stup-form">
+                <!-- Circles which indicates the steps of the form: -->
+                <div id="header-sroll-form" class="form-indicates-sec clearfix" #formSteps>
+                    <span class="step pointer" (click)="changeStep(0)"><span
+                            class="multi-form-nbr">1</span>{{'process'|translate}}</span>
+                    <span class="step pointer" (click)="changeStep(1)"><span
+                            class="multi-form-nbr">2</span>{{'business_impact_analysis' | translate}}</span>
+                    <span class="step pointer" (click)="changeStep(2)"><span
+                        class="multi-form-nbr">3</span>{{'impact_result' | translate}}</span>
+                    <span class="step pointer" (click)="changeStep(3)"><span
+                            class="multi-form-nbr">4</span>{{'resource_requirement' | translate}}</span>
+                    <span class="step pointer" (click)="changeStep(4)"><span
+                        class="multi-form-nbr">5</span>{{'final_result' | translate}}</span>  
+                </div>
+                <!-- One "tab" for each step in the form: -->
+                <div class="tab">
+                    <div style="margin-bottom: 10px;">
+                        <button type="button" (click)="showFilters=!showFilters" class="btn btn-small btn-header-db">{{returnFilterName() | translate}}</button>
+                    </div>
+                    <div *ngIf="showFilters">
+                        <div class="row">
+                            <div class="col-lg-6 col-sm-12" *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_subsidiary">
+                                <div class="form-group">
+                                    <label for="name">{{'organization' | translate}}</label>
+                                    <div class="clearfix">
+                                        <div class="multiple-plain-ngselect">
+                                            <ng-select [placeholder]="'select_organization_filter' | translate" [multiple]="false"
+                                                searchable="true" formControlName="organization_id" (search)="searchSubsidiary($event)"
+                                                (clear)="getSubsidiary();" (change)="sortProcess()" (open)="getSubsidiary()">
+                                                <ng-option [value]="type" *ngFor="let type of SubsidiaryStore.subsidiaryList">
+                                                    {{type.title}}
+                                                </ng-option>
+                                            </ng-select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-sm-12" *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_division">
+                                <div class="form-group">
+                                    <label for="name">{{'division' | translate}}</label>
+                                    <div class="clearfix">
+                                        <div class="multiple-plain-ngselect">
+                                            <ng-select [placeholder]="'select_division_filter' | translate" [multiple]="false"
+                                                searchable="true" (search)="searchDivision($event)" formControlName="division_id"
+                                                (clear)="getDivision()" (change)="sortProcess()" (open)="getDivision()">
+                                                <ng-option [value]="type" *ngFor="let type of DivisionStore.allItems">
+                                                    {{type.title}}
+                                                </ng-option>
+                                            </ng-select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-sm-12" *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_department">
+                                <div class="form-group">
+                                    <label for="name">{{'department' | translate}}</label>
+                                    <div class="clearfix">
+                                        <div class="multiple-plain-ngselect">
+                                            <ng-select [placeholder]="'select_department_filter' | translate" [multiple]="false"
+                                                searchable="true" (search)="searchDepartment($event)" formControlName="department_id"
+                                                (change)="sortProcess()" (clear)="getDepartment()" (open)="getDepartment()">
+                                                <ng-option [value]="type" *ngFor="let type of DepartmentStore.allItems">
+                                                    {{type.title}}
+                                                </ng-option>
+                                            </ng-select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-sm-12" *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_section">
+                                <div class="form-group">
+                                    <label for="name">{{'section' | translate}}</label>
+                                    <div class="clearfix">
+                                        <div class="multiple-plain-ngselect">
+                                            <ng-select [placeholder]="'select_section_filter' | translate" [multiple]="false"
+                                                searchable="true" (search)="searchSection($event)" formControlName="section_id"
+                                                (change)="sortProcess()" (clear)="getSection()" (open)="getSection()">
+                                                <ng-option [value]="type" *ngFor="let type of SectionStore.allItems">
+                                                    {{type.title}}
+                                                </ng-option>
+                                            </ng-select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12 col-lg-12">
+                            <div class="form-group">
+                                <label for="name">{{'search' | translate}}</label>
+                                <form class="form-control issue-select-process-search bg-white search-popup-new">
+                                    <input type="text" [placeholder]="'search'|translate" name="search" class="search-process"
+                                        [(ngModel)]="searchTerm" (ngModelChange)="searchProcessWithActivities()"
+                                        [ngModelOptions]="{standalone: true}">
+                                    <a class="search-clear-btn" (click)="clearSearchBar()" *ngIf="searchTerm">X</a>
+                                    <button type="submit" style="width: 40px;"><i class="fa fa-search"></i></button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="audit-form-table w-100">
+                        <table class="table table-bordered ordinary-table audit-page-table mb-2 table-scroll"
+                            *ngIf="ProcessStore?.processes_loaded && ProcessStore.processList.length > 0 && AuthStore.getActivityPermission(100,'PROCESS_LIST')">
+                            <tr>
+                                <th class="border-top-0" width="10%">
+                                    #</th>
+                                <th class="border-top-0" width="10%">{{'ref_id' | translate}}</th>
+                                <th class="border-top-0" width="60%">{{'process' | translate}}</th>
+                                <th class="border-top-0" width="60%">{{'department' | translate}}</th>
+                                <th class="border-top-0" width="20%">{{'action' | translate}}</th>
+                            </tr>
+
+                            <ng-container *ngFor="
+                          let row of ProcessStore?.processList
+                            | paginate
+                              : {
+                                  currentPage: ProcessStore?.currentPage,
+                                  itemsPerPage: ProcessStore?.itemsPerPage,
+                                  totalItems: ProcessStore?.totalItems
+                                };
+                          let num = index
+                        ">
+                                <tr>
+                                    <td>{{
+                                        (ProcessStore?.currentPage - 1) *
+                                        ProcessStore?.itemsPerPage +
+                                        (num + 1)
+                                        }}</td>
+                                    <td style="padding:0.75rem">{{ row.reference_code }}</td>
+                                    <td>{{row.title}}</td>
+                                    <td>{{row.department}}</td>
+                                    <td class="text-center">
+                                        <button type="button" class="btn-table" (click)="getProcess(row)"
+                                            [disabled]="BiaStore.is_edit||processExisting(row.id)"
+                                            *ngIf="selectedProcess==false||BiaStore.selectedProcessId!=row.id">{{'select'
+                                            | translate}}</button>
+                                        <button type="button" class="btn-table btn-tic" (click)="changeProcess()"
+                                            [disabled]="BiaStore.is_edit||processExisting(row.id)"
+                                            *ngIf="selectedProcess==true && BiaStore.selectedProcessId == row.id"><i
+                                                class="fas fa-check"></i></button>
+                                    </td>
+                                </tr>
+                            </ng-container>
+                        </table>
+                        <div *ngIf="ProcessStore.totalItems > ProcessStore.itemsPerPage && ProcessStore?.processes_loaded"
+                            class="col-sm-12">
+                            <ul class="pagination justify-content-center mt-3">
+                                <div class="list">
+                                    <pagination-controls [previousLabel]="'previous' | translate"
+                                        [nextLabel]="'next' | translate" (pageChange)="getProcessList($event)"
+                                        class="my-pagination"></pagination-controls>
+                                </div>
+                            </ul>
+                        </div>
+                        <ng-container *ngIf="ProcessStore.processes_loaded && ProcessStore.processList.length == 0">
+                            <app-no-data-list [source]="processItemEmptyList">
+
+                            </app-no-data-list>
+                        </ng-container>
+                        <ng-container *ngIf="!ProcessStore.processes_loaded">
+                            <app-bia-form-table-loader>
+
+                            </app-bia-form-table-loader>
+                        </ng-container>
+                    </div>
+                </div>
+                <div class="tab">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <h5 class="cmn-head-style"><span class="font-normal">{{'process' | translate}} -</span>
+                                {{BiaStore?.Bia?.process?.title}}</h5>
+                            <div class="audit-form-table w-100 not-fixed-table">
+                                <div class="table-responsive" style="padding-bottom: 150px;">
+                                    <table
+                                        class="table table-bordered ordinary-table audit-page-table mb-0 table-scroll"
+                                        style="width: 1500px;"
+                                        *ngIf="BiaStore.BiaLoaded&&BiaStore.Bia&&BiaStore.Bia.data.length!=0">
+                                        <thead>
+                                            <tr>
+                                                <th class="border-top-0" style="min-width: 200px;">{{'impact_categotry' | translate}}
+                                                </th>
+                                                <th class="border-top-0"
+                                                    *ngIf="BiaSettingStore?.BiaSettingsItems?.is_impact_scenario"
+                                                   style="min-width: 200px;">{{'impact_scenario' | translate}}</th>
+                                                <th class="border-top-0"
+                                                    *ngIf="BiaSettingStore?.BiaSettingsItems?.is_impact_area"
+                                                   style="min-width: 200px;">{{'impact_area' | translate}}</th>
+                                                <th class="border-top-0"
+                                                    *ngFor="let bia of BiaStore.Bia.scales;let num=index;">
+                                                    {{bia.from}}{{-bia.to?'-'+bia.to:''}}&nbsp;
+                                                    {{bia.bia_scale_category.languages[0].pivot.title}}&nbsp;<span *ngIf="returnInHours(bia.from,bia.to)">{{'('+returnInHours(bia.from,bia.to)+' Hours)'}}</span></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <ng-container *ngFor="let bia of BiaStore.Bia.data;let $index = index">
+                                                <ng-container
+                                                    *ngFor="let scenario of bia.bia_impact_scenario;let $num = index">
+                                                    <ng-container
+                                                        *ngFor="let area of scenario.bia_impact_area;let $ind = index">
+                                                        <tr>
+                                                            <td *ngIf="$ind === 0&&$num==0"
+                                                                [attr.rowspan]="scenario.bia_impact_area.length>1?(bia.bia_impact_scenario.length+(scenario.bia_impact_area.length-1)):bia.bia_impact_scenario.length">
+                                                                <!-- {{bia.title}} -->
+                                                                {{bia.title}}
+                                                                <div class="question-circle-inp lg-tooltip" (click)="listItems(bia.id)">
+                                                                    <i class="fas fa-question-circle"></i>
+
+                                                                </div>
+                                                            </td>
+                                                            <td *ngIf="$ind === 0&&BiaSettingStore?.BiaSettingsItems?.is_impact_scenario"
+                                                                [attr.rowspan]="scenario.bia_impact_area.length">
+                                                                {{scenario.title}}
+                                                            </td>
+                                                            <td
+                                                                *ngIf="BiaSettingStore?.BiaSettingsItems?.is_impact_area">
+                                                                {{area.title}}</td>
+                                                            <ng-container
+                                                                *ngFor="let matrix of area.bia_matrix_values;let i=index;">
+                                                                <td>
+                                                                    <div class="d-flex align-items-center ng-select-small">
+                                                                        <span class="left-color-line"
+                                                                            [style.background]="matrix['color'+$ind+i]"></span>
+                                                                        <div
+                                                                            class="form-group mb-0 no-border-select w-100 ml-2">
+                                                                            <div class="multiple-plain-ngselect">
+                                                                                <ng-select
+                                                                                    [items]="BiaRatingStore.BiaRatingDetails"
+                                                                                    [placeholder]="'bia_rating_placeholder' | translate"
+                                                                                    [multiple]="false" bindValue="id"
+                                                                                    bindLabel="rating" searchable="true"
+                                                                                    [(ngModel)]="matrix['value'+$ind+i]"
+                                                                                    (open)="biaRating()"
+                                                                                    (clear)="removeBIA(matrix)"
+                                                                                    (change)="selctionChange(matrix,matrix['value'+$ind+i],area.bia_matrix_values)"
+                                                                                    [ngModelOptions]="{standalone: true}">
+                                                                                </ng-select>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
+                                                            </ng-container>
+                                                        </tr>
+                                                    </ng-container>
+                                                </ng-container>
+                                            </ng-container>
+                                        </tbody>
+                                    </table>
+                                    <ng-container *ngIf="!BiaStore.BiaLoaded">
+                                        <app-bia-form-table-loader>
+
+                                        </app-bia-form-table-loader>
+                                    </ng-container>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab">
+                    <!-- tab start -->
+                    <div class="bg-white" *ngIf="BiaStore.ImpactResultLoaded">
+                        <h5 class="cmn-head-style"><span class="font-normal">{{'process' | translate}} -</span>
+                            {{BiaStore?.Bia?.process?.title}}</h5>
+                        <div class="row sm-row">
+                            <div class="col-lg-4 col-sm-12 sm-col">
+                                <div class="bg-main widg-padding-cmn-small btm-space-10 db-md-screen-center"
+                                    style="min-height: 373px;">
+                                    <div class="row sm-row align-items-center bpm-bia-box-one">
+                                        <div class="col-lg-12 col-sm-6 sm-col">
+                                            <ng-container *ngIf="!BiaStore.ImpactResult.manual_rto">
+                                                <div class="rounde-box-proccess mx-auto"
+                                                   [ngStyle]="{'border-color':BiaStore.ImpactResult.recommended_rto?.bia_tire_color_code}">
+                                                   <h4>{{BiaStore.ImpactResult.recommended_rto?.bia_tire_title}}</h4>
+                                                </div>
+                                             </ng-container>
+                                             <ng-container *ngIf="BiaStore.ImpactResult.manual_rto">
+                                                <div class="rounde-box-proccess mx-auto"
+                                                   [ngStyle]="{'border-color':BiaStore.ImpactResult.manual_rto?.bia_tire_color_code}">
+                                                   <h4>{{BiaStore.ImpactResult.manual_rto?.bia_tire_title}}</h4>
+                                                </div>
+                                             </ng-container>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-8 col-sm-12 sm-col">
+                                <div class="row sm-row">
+                                    <div class="col-lg-6 col-sm-12 sm-col request-form-box">
+                                        <div class="db-light-light-color btm-space-10 small-box-bia">
+                                            <div class="small-box-bia-inner">
+                                                <div class="row ml-0 mr-0 w-100">
+                                                    <div class="col-md-6 d-flex align-items-center pl-0">
+                                                        <h5 class="text-color-one w-100">{{'recommended_rto' |
+                                                            translate}}</h5>
+                                                    </div>
+                                                    <div class="col-md-6 pr-0">
+                                                        <h5 class="text-color-two text-right cmn-head-style w-100"
+                                                            *ngIf="BiaStore.ImpactResult.recommended_rto">
+                                                            {{BiaStore.ImpactResult.recommended_rto?.from}}{{BiaStore.ImpactResult.recommended_rto?.to?'-'+BiaStore.ImpactResult.recommended_rto?.to:''}}&nbsp;
+                                                            {{BiaStore.ImpactResult.recommended_rto?.bia_scale_category.type}}
+                                                        </h5>
+                                                        <h5 class="text-color-two text-right cmn-head-style w-100"
+                                                            *ngIf="!BiaStore.ImpactResult.recommended_rto">
+                                                            {{AppStore.noContentText}}
+                                                        </h5>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6 col-sm-12 sm-col request-form-box">
+                                        <div class="db-light-light-color btm-space-10 small-box-bia pt-0 pb-0">
+                                            <div class="small-box-bia-inner">
+                                                <div class="row ml-0 mr-0 w-100">
+                                                    <div class="col-md-5 d-flex align-items-center pl-0">
+                                                        <h5 class="text-color-one w-100">{{'final' | translate}} RTO<span class="form-error">*</span></h5>
+                                                    </div>
+                                                    <div class="col-md-7 pr-0">
+                                                        <div
+                                                            class="multiple-plain-ngselect select-width-plus w-100 small-select-transparent">
+                                                            <ng-select [placeholder]="'select'| translate"
+                                                                [multiple]="false" bindLabel="title"
+                                                                formControlName="manual_rto"
+                                                                (search)="searchBiaScale($event)"
+                                                                (clear)="getBiaScaleList()" (open)="getBiaScaleList()"
+                                                                (change)="changeManual();returnManualRTOColorCode();">
+                                                                <ng-option [value]="row.id"
+                                                                    *ngFor="let row of BiaScaleStore.allItems">
+                                                                    {{row.from}}{{-row.to?'-'+row.to:''}}&nbsp;{{row.bia_scale_category}}
+                                                                </ng-option>
+                                                            </ng-select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6 col-sm-12 sm-col request-form-box">
+                                        <div class="db-light-light-color btm-space-10 small-box-bia">
+                                            <div class="small-box-bia-inner">
+                                                <div class="row ml-0 mr-0 w-100">
+                                                    <div class="col-md-6 d-flex align-items-center pl-0">
+                                                        <h5 class="text-color-one w-100">{{'recommended_mtpd' |
+                                                            translate}}</h5>
+                                                    </div>
+                                                    <div class="col-md-6 pr-0">
+                                                        <h5 class="text-color-two text-right cmn-head-style w-100"
+                                                            *ngIf="BiaStore.ImpactResult.recommended_mtpd">
+                                                            {{BiaStore.ImpactResult.recommended_mtpd?.from}}{{BiaStore.ImpactResult.recommended_mtpd?.to?'-'+BiaStore.ImpactResult.recommended_mtpd?.to:''}}&nbsp;
+                                                            {{BiaStore.ImpactResult.recommended_mtpd?.bia_scale_category.type}}
+                                                        </h5>
+                                                        <h5 class="text-color-two text-right cmn-head-style w-100"
+                                                            *ngIf="!BiaStore.ImpactResult.recommended_mtpd">
+                                                            {{AppStore.noContentText}}
+                                                        </h5>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6 col-sm-12 sm-col request-form-box">
+                                        <div class="db-light-light-color btm-space-10 small-box-bia pt-0 pb-0">
+                                            <div class="small-box-bia-inner">
+                                                <div class="row ml-0 mr-0 w-100">
+                                                    <div class="col-md-5 d-flex align-items-center pl-0">
+                                                        <h5 class="text-color-one w-100">{{'final' | translate}} MTPD<span class="form-error">*</span></h5>
+                                                    </div>
+                                                    <div class="col-md-7 pr-0">
+                                                        <div
+                                                            class="multiple-plain-ngselect select-width-plus w-100 small-select-transparent">
+                                                            <ng-select [placeholder]="'select'| translate"
+                                                                [multiple]="false" bindLabel="title"
+                                                                formControlName="manual_mtpd"
+                                                                (search)="searchBiaScale($event)"
+                                                                (clear)="getBiaScaleList()" (open)="getBiaScaleList()"
+                                                                (change)="changeManual()">
+                                                                <ng-option [value]="row.id"
+                                                                    *ngFor="let row of BiaScaleStore.allItems">
+                                                                    {{row.from}}{{-row.to?'-'+row.to:''}}&nbsp;{{row.bia_scale_category}}
+                                                                </ng-option>
+                                                            </ng-select>
+                                                        </div>
+                                                    </div>
+                                                    <p class="form-error pt-1" *ngIf="!mtpdValidation">Final MTPD must greater than Final RTO</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-12 col-sm-12 sm-col request-form-box">
+                                        <div class="db-light-light-color btm-space-10 small-box-bia pt-0 pb-0">
+                                            <div class="small-box-bia-inner">
+                                                <div class="row ml-0 mr-0 w-100">
+                                                    <div class="col-md-6 d-flex align-items-center pl-0">
+                                                        <h5 class="text-color-one w-100">{{'final' | translate}} RLO<span class="form-error">*</span></h5>
+                                                    </div>
+                                                    <div class="col-md-6 pr-0 small-select-transparent">
+                                                        <input type="number" class="form-control" min="0" (input)="changeHandler($event.target.value)" maxlength="3"
+                                                            formControlName="manual_rlo" placeholder="Enter Manual RLO" onkeyup="this.value=this.value.replace(/[^a-zA-Z0-9]/g, '')">
+                                                        <p class="form-error" *ngIf="formErrors">
+                                                            {{formErrors.manual_rlo}}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-12 col-sm-12 sm-col request-form-box">
+                                        <div class="db-light-light-color btm-space-10 small-box-bia pt-0 pb-0">
+                                            <div class="small-box-bia-inner">
+                                                <div class="row ml-0 mr-0 w-100">
+                                                    <div class="col-md-6 d-flex align-items-center pl-0">
+                                                        <h5 class="text-color-one w-100">{{'final' | translate}} RPO<span class="form-error">*</span></h5>
+                                                    </div>
+                                                    <div class="col-md-6 pr-0">
+                                                        <div
+                                                            class="multiple-plain-ngselect select-width-plus w-100 small-select-transparent">
+                                                            <ng-select [placeholder]="'select'| translate"
+                                                                [multiple]="false" bindLabel="title"
+                                                                formControlName="manual_rpo"
+                                                                (search)="searchBiaScale($event)"
+                                                                (clear)="getBiaScaleList()" (open)="getBiaScaleList()"
+                                                                (change)="changeManual()">
+                                                                <ng-option [value]="row.id"
+                                                                    *ngFor="let row of BiaScaleStore.allItems">
+                                                                    {{row.from}}{{-row.to?'-'+row.to:''}}&nbsp;{{row.bia_scale_category}}
+                                                                </ng-option>
+                                                            </ng-select>
+                                                        </div>
+                                                        <p class="form-error pt-1" *ngIf="!rpodValidation">Final RPO must less than Final RTO</p>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- ============================================================== -->
+                                    <div class="col-lg-12 col-sm-12">
+                                        <div class="bg-white widg-padding-cmn-small mb-3">
+                                           <div class="row bcm-days-sec">
+                                              <div class="col-md-6 col-6 cmn-bdr-right cmn-bdr-bottom">
+                                                 <div class="text-center pt-3 pb-3">
+                                                    <h5 class="cmn-head-style mb-1"
+                                                    *ngIf="!form.value.manual_rto">
+                                                    {{BiaStore.ImpactResult.recommended_rto?.from}}{{BiaStore.ImpactResult.recommended_rto?.to?'-'+BiaStore.ImpactResult.recommended_rto?.to:''}}&nbsp;
+                                                    {{BiaStore.ImpactResult.recommended_rto?.bia_scale_category.type}}</h5>
+                                                    <h5 class="cmn-head-style mb-1"
+                                                    *ngIf="form.value.manual_rto">
+                                                    {{manual_rto?manual_rto:AppStore.noContentText}}</h5>
+                                                    <p class="mb-0">{{'final' | translate}} RTO</p>
+                                                 </div>
+                                              </div>
+                                              <div class="col-md-6 col-6 cmn-bdr-bottom">
+                                                 <div class="text-center pt-3 pb-3">
+                                                    <h5 class="cmn-head-style mb-1"
+                                                    *ngIf="!form.value.manual_mtpd">
+                                                    {{BiaStore.ImpactResult.recommended_mtpd?.from}}{{BiaStore.ImpactResult.recommended_mtpd?.to?'-'+BiaStore.ImpactResult.recommended_mtpd?.to:''}}&nbsp;
+                                                    {{BiaStore.ImpactResult.recommended_mtpd?.bia_scale_category.type}}</h5>
+                                                    <h5 class="cmn-head-style mb-1"
+                                                    *ngIf="form.value.manual_mtpd">
+                                                    {{manual_mtpd?manual_mtpd:AppStore.noContentText}}</h5>
+                                                    <p class="mb-0">{{'final' | translate}} MTPD</p>
+                                                 </div>
+                                              </div>
+                                              <div class="col-md-6 col-6 cmn-bdr-right">
+                                                 <div class="text-center pt-3 pb-3">
+                                                    <h5 class="cmn-head-style mb-1">
+                                                        {{form.value.manual_rlo?form.value.manual_rlo+'%':AppStore.noContentText}}
+                                                    </h5>
+                                                    <p class="mb-0">{{'final' | translate}} RLO</p>
+                                                 </div>
+                                              </div>
+                                              <div class="col-md-6 col-6">
+                                                 <div class="text-center pt-3 pb-3">
+                                                    <h5 class="cmn-head-style mb-1">
+                                                        {{manual_rpo?manual_rpo:AppStore.noContentText}}</h5>
+                                                    <p class="mb-0">{{'final' | translate}} RPO</p>
+                                                 </div>
+                                              </div>
+                                           </div>
+                                        </div>
+                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="audit-form-table w-100 table-align-top not-fixed-table"
+                            *ngIf="BiaStore.ImpactResult.dependency_processes.length!=0">
+                            <table class="table table-bordered ordinary-table audit-page-table mb-3 table-scroll">
+                                <thead>
+                                    <tr>
+                                        <th class="border-top-0" width="20%">{{'dependency' | translate}}</th>
+                                        <th class="border-top-0" width="15%">{{'internal_dependencies' | translate}}</th>
+                                        <th class="border-top-0" width="15%">{{'external_dependencies' | translate}}</th>
+                                        <th class="border-top-0" width="10%">{{'bia_tire' | translate}}</th>
+                                        <th class="border-top-0" width="10%">RTO</th>
+                                        <th class="border-top-0" width="10%">MTPD</th>
+                                        <th class="border-top-0" width="10%">RLO</th>
+                                        <th class="border-top-0" width="10%">RPO</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let row of BiaStore.ImpactResult.dependency_processes">
+                                        <td>{{row.related_process_title}}</td>
+                                        <td>
+                                            <ul class="arrowlist pl-0 mt-2" *ngIf="row.related_process.dependancy_process_departments?.length > 0">
+                                                <li class="clearfix" *ngFor="let list of row.related_process?.dependancy_process_departments">
+                                                    {{list.title}}
+                                                </li>
+                                            </ul>
+                                            <p *ngIf="row.dependancy_process_departments?.length == 0">{{AppStore.noContentText}}</p>
+                                        </td>
+                                        <td>
+                                            <ul class="arrowlist pl-0 mt-2" *ngIf="row.related_process.dependancy_process_suppliers?.length > 0">
+                                                <li class="clearfix" *ngFor="let list of row.related_process?.dependancy_process_suppliers">
+                                                    {{list.title}}
+                                                </li>
+                                            </ul>
+                                            <p *ngIf="row.dependancy_process_suppliers?.length == 0">{{AppStore.noContentText}}</p>
+                                        </td>
+                                        <td >
+                                            <p [ngStyle]="{'color': row?.manual_rto?.bia_tire_color_code}">{{row.manual_rto?.bia_tire_title ? row.manual_rto?.bia_tire_title : AppStore.noContentText}}</p>
+                                        </td>
+                                        <td *ngIf="row.manual_rto">
+                                            {{row.manual_rto?row.manual_rto.from:AppStore.noContentText}}
+                                            {{-row.manual_rto.to?'-'+row.manual_rto.to:''}}&nbsp;
+                                            {{row.manual_rto.bia_scale_category.type}}
+                                            <span *ngIf="returnInHours(row.manual_rto.from,row.manual_rto.to)">&nbsp;{{'('+returnInHours(row.manual_rto.from,row.manual_rto.to)+' Hours)'}}</span>
+                                        </td>
+                                        <td *ngIf="!row.manual_rto">{{AppStore.noContentText}}</td>
+                                        <td *ngIf="row.manual_mtpd">
+                                            {{row.manual_mtpd?row.manual_mtpd.from:AppStore.noContentText}}
+                                            {{-row.manual_mtpd.to?'-'+row.manual_mtpd.to:''}}&nbsp;
+                                            {{row.manual_mtpd.bia_scale_category.type}}
+                                            <span *ngIf="returnInHours(row.manual_mtpd.from,row.manual_mtpd.to)">&nbsp;{{'('+returnInHours(row.manual_mtpd.from,row.manual_mtpd.to)+' Hours)'}}</span>
+                                        </td>
+                                        <td *ngIf="!row.manual_mtpd">{{AppStore.noContentText}}</td>
+                                        <td>{{row.manual_rlo?row.manual_rlo:AppStore.noContentText}}</td>
+                                        <td *ngIf="row.manual_rpo">
+                                            {{row.manual_rpo?row.manual_rpo.from:AppStore.noContentText}}
+                                            {{-row.manual_rpo.to?'-'+row.manual_rpo.to:''}}&nbsp;
+                                            {{row.manual_rpo.bia_scale_category.type}}
+                                            <span *ngIf="returnInHours(row.manual_rpo.from,row.manual_rpo.to)">&nbsp;{{'('+returnInHours(row.manual_rpo.from,row.manual_rpo.to)+' Hours)'}}</span>
+                                        </td>
+                                        <td *ngIf="!row.manual_rpo">{{AppStore.noContentText}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <ng-container *ngIf="!BiaStore?.ImpactResultLoaded">
+                        <app-bia-form-preview-loader>
+
+                        </app-bia-form-preview-loader>
+                    </ng-container>
+
+                </div><!-- tab end -->
+                <div class="tab">
+                    <div class="row">
+                        <div class="col-lg-6 col-sm-12">
+                            <div class="cmn-bdr mb-3 widg-padding-cmn-small text-center">
+                                <h5>{{'total_staffs' | translate}}</h5>
+                                <h5 class="big-text-one mb-0">
+                                    {{BiaStore.TopCounts?.total_number_of_staff?BiaStore.TopCounts?.total_number_of_staff:0}}
+                                </h5>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-sm-12">
+                            <div class="cmn-bdr mb-3 widg-padding-cmn-small text-center">
+                                <h5>{{'Total Assets' | translate}}</h5>
+                                <h5 class="big-text-one mb-0">
+                                    {{BiaStore.TopCounts?.asset_count ? BiaStore.TopCounts?.asset_count : 0}}</h5>
+                            </div>
+                        </div>
+                        <!-- <div class="col-lg-4 col-sm-12">
+                            <div class="cmn-bdr mb-3 widg-padding-cmn-small text-center">
+                                <h5>{{'total_hardwares' | translate}}</h5>
+                                <h5 class="big-text-one mb-0">
+                                    {{BiaStore.TopCounts?.hardware_count?BiaStore.TopCounts?.hardware_count:0}}</h5>
+                            </div>
+                        </div> -->
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <h5 class="cmn-head-style"><span class="font-normal">{{'process' | translate}} -</span>
+                                {{BiaStore?.Bia?.process?.title}}</h5>
+                            <div class="audit-form-table w-100 not-fixed-table">
+                                <table class="table table-bordered ordinary-table audit-page-table mb-3 table-scroll"
+                                    *ngIf="resourceLoaded">
+                                    <thead>
+                                        <tr>
+                                            <th class="border-top-0" width="15%">{{'timescale' | translate}}</th>
+                                            <th class="border-top-0" width="15%">{{'staffs' | translate}}</th>
+                                            <th class="border-top-0" width="35%">{{'Assets' | translate}}</th>
+                                            <!-- <th class="border-top-0" width="35%">{{'hardware' | translate}}</th> -->
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let bia of BiaStore?.Bia?.scales;let $index=index;">
+                                            <td>{{bia.from}}{{-bia.to?'-'+bia.to:''}}&nbsp;
+                                                {{bia.bia_scale_category.languages[0].pivot.title}}
+                                                &nbsp;<span *ngIf="returnInHours(bia.from,bia.to)">{{'('+returnInHours(bia.from,bia.to)+' Hours)'}}</span>
+                                            </td>
+                                            <td>
+                                                <div class="form-group mb-0 no-border-select">
+                                                    <div class="clearfix no-border-select">
+                                                        <div class="multiple-plain-ngselect">
+                                                            <ng-select [items]="countedArray"
+                                                                [placeholder]="'count' | translate" [multiple]="false"
+                                                                searchable="true" [clearable]="false"
+                                                                [(ngModel)]="bia['count'+$index]"
+                                                                (change)="changeCountSelection(bia.id,bia['count'+$index],$index)"
+                                                                [ngModelOptions]="{standalone: true}">
+                                                            </ng-select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="form-group mb-0">
+                                                    <div class="clearfix no-border-select">
+                                                        <div class="multiple-plain-ngselect">
+                                                            <ng-select [placeholder]="'Ṣelect Asset' | translate"
+                                                                [multiple]="true" searchable="true"
+                                                                [(ngModel)]="bia['assets'+$index]"
+                                                                [ngModelOptions]="{standalone: true}"
+                                                                (change)="changeAssetesSelection(bia.id,bia['assets'+$index],bia['count'+$index],$index)">
+                                                                <ng-option [value]="type.id"
+                                                                    *ngFor="let type of BiaStore.BiaAssets">
+                                                                    {{type.title}}
+                                                                </ng-option>
+                                                            </ng-select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <!-- <td>
+                                                <div class="form-group mb-0">
+                                                    <div class="clearfix no-border-select">
+                                                        <div class="multiple-plain-ngselect">
+                                                            <ng-select [placeholder]="'select_hardware' | translate"
+                                                                [multiple]="true" searchable="true"
+                                                                [(ngModel)]="bia['hardware'+$index]"
+                                                                [ngModelOptions]="{standalone: true}"
+                                                                (change)="changeHardwareSelection(bia.id,bia['hardware'+$index])">
+                                                                <ng-option [value]="type.id"
+                                                                    *ngFor="let type of BiaStore.hardwareList">
+                                                                    {{type.title}}
+                                                                </ng-option>
+                                                            </ng-select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td> -->
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <ng-container *ngIf="!resourceLoaded">
+                                    <app-bia-form-table-loader>
+
+                                    </app-bia-form-table-loader>
+                                </ng-container>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab">
+                    <!-- tab start -->
+                    <div class="bg-white" *ngIf="BiaStore.ImpactResultLoaded">
+                        <h5 class="cmn-head-style"><span class="font-normal">{{'process' | translate}} -</span>
+                            {{BiaStore?.Bia?.process?.title}}</h5>
+                        <div class="row sm-row">
+                            <div class="col-lg-4 col-sm-12 sm-col">
+                                <div class="bg-main widg-padding-cmn-small btm-space-10 db-md-screen-center"
+                                    style="min-height: 200px;">
+                                    <div class="row sm-row align-items-center bpm-bia-box-one">
+                                        <div class="col-lg-12 col-sm-6 sm-col">
+                                            <ng-container *ngIf="!BiaStore.ImpactResult.manual_rto">
+                                                <div class="rounde-box-proccess mx-auto"
+                                                   [ngStyle]="{'border-color':BiaStore.ImpactResult.recommended_rto?.bia_tire_color_code}">
+                                                   <h4>{{BiaStore.ImpactResult.recommended_rto?.bia_tire_title}}</h4>
+                                                </div>
+                                             </ng-container>
+                                             <ng-container *ngIf="BiaStore.ImpactResult.manual_rto">
+                                                <div class="rounde-box-proccess mx-auto"
+                                                   [ngStyle]="{'border-color':BiaStore.ImpactResult.manual_rto?.bia_tire_color_code}">
+                                                   <h4>{{BiaStore.ImpactResult.manual_rto?.bia_tire_title}}</h4>
+                                                </div>
+                                             </ng-container>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-8 col-sm-12 sm-col">
+                                <div class="row sm-row">
+                                    
+                                    <!-- ============================================================== -->
+                                    <div class="col-lg-12 col-sm-12">
+                                        <div class="bg-white widg-padding-cmn-small mb-3">
+                                           <div class="row bcm-days-sec">
+                                              <div class="col-md-6 col-6 cmn-bdr-right cmn-bdr-bottom">
+                                                 <div class="text-center pt-3 pb-3">
+                                                    <h5 class="cmn-head-style mb-1"
+                                                    *ngIf="!form.value.manual_rto">
+                                                    {{BiaStore.ImpactResult.recommended_rto?.from}}{{BiaStore.ImpactResult.recommended_rto?.to?'-'+BiaStore.ImpactResult.recommended_rto?.to:''}}&nbsp;
+                                                    {{BiaStore.ImpactResult.recommended_rto?.bia_scale_category.type}}</h5>
+                                                    <h5 class="cmn-head-style mb-1"
+                                                    *ngIf="form.value.manual_rto">
+                                                    {{manual_rto?manual_rto:AppStore.noContentText}}</h5>
+                                                    <p class="mb-0">{{'final' | translate}} RTO</p>
+                                                 </div>
+                                              </div>
+                                              <div class="col-md-6 col-6 cmn-bdr-bottom">
+                                                 <div class="text-center pt-3 pb-3">
+                                                    <h5 class="cmn-head-style mb-1"
+                                                    *ngIf="!form.value.manual_mtpd">
+                                                    {{BiaStore.ImpactResult.recommended_mtpd?.from}}{{BiaStore.ImpactResult.recommended_mtpd?.to?'-'+BiaStore.ImpactResult.recommended_mtpd?.to:''}}&nbsp;
+                                                    {{BiaStore.ImpactResult.recommended_mtpd?.bia_scale_category.type}}</h5>
+                                                    <h5 class="cmn-head-style mb-1"
+                                                    *ngIf="form.value.manual_mtpd">
+                                                    {{manual_mtpd?manual_mtpd:AppStore.noContentText}}</h5>
+                                                    <p class="mb-0">{{'final' | translate}} MTPD</p>
+                                                 </div>
+                                              </div>
+                                              <div class="col-md-6 col-6 cmn-bdr-right">
+                                                 <div class="text-center pt-3 pb-3">
+                                                    <h5 class="cmn-head-style mb-1">
+                                                        {{form.value.manual_rlo?form.value.manual_rlo+'%':AppStore.noContentText}}
+                                                    </h5>
+                                                    <p class="mb-0">{{'final' | translate}} RLO</p>
+                                                 </div>
+                                              </div>
+                                              <div class="col-md-6 col-6">
+                                                 <div class="text-center pt-3 pb-3">
+                                                    <h5 class="cmn-head-style mb-1">
+                                                        {{manual_rpo?manual_rpo:AppStore.noContentText}}</h5>
+                                                    <p class="mb-0">{{'final' | translate}} RPO</p>
+                                                 </div>
+                                              </div>
+                                           </div>
+                                        </div>
+                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="audit-form-table w-100 table-align-top not-fixed-table"
+                            *ngIf="BiaStore.ImpactResult.dependency_processes.length!=0">
+                            <table class="table table-bordered ordinary-table audit-page-table mb-3 table-scroll">
+                                <thead>
+                                    <tr>
+                                        <th class="border-top-0" width="40%">{{'dependency' | translate}}</th>
+                                        <th class="border-top-0" width="15%">RTO</th>
+                                        <th class="border-top-0" width="15%">MTPD</th>
+                                        <th class="border-top-0" width="15%">RLO</th>
+                                        <th class="border-top-0" width="15%">RPO</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let row of BiaStore.ImpactResult.dependency_processes">
+                                        <td>{{row.related_process_title}}</td>
+                                        <td *ngIf="row.manual_rto">
+                                            {{row.manual_rto?row.manual_rto.from:AppStore.noContentText}}
+                                            {{-row.manual_rto.to?'-'+row.manual_rto.to:''}}&nbsp;
+                                            {{row.manual_rto.bia_scale_category.type}}
+                                            <span *ngIf="returnInHours(row.manual_rto.from,row.manual_rto.to)">&nbsp;{{'('+returnInHours(row.manual_rto.from,row.manual_rto.to)+' Hours)'}}</span>
+                                        </td>
+                                        <td *ngIf="!row.manual_rto">{{AppStore.noContentText}}</td>
+                                        <td *ngIf="row.manual_mtpd">
+                                            {{row.manual_mtpd?row.manual_mtpd.from:AppStore.noContentText}}
+                                            {{-row.manual_mtpd.to?'-'+row.manual_mtpd.to:''}}&nbsp;
+                                            {{row.manual_mtpd.bia_scale_category.type}}
+                                            <span *ngIf="returnInHours(row.manual_mtpd.from,row.manual_mtpd.to)">&nbsp;{{'('+returnInHours(row.manual_mtpd.from,row.manual_mtpd.to)+' Hours)'}}</span>
+                                        </td>
+                                        <td *ngIf="!row.manual_mtpd">{{AppStore.noContentText}}</td>
+                                        <td>{{row.manual_rlo?row.manual_rlo:AppStore.noContentText}}</td>
+                                        <td *ngIf="row.manual_rpo">
+                                            {{row.manual_rpo?row.manual_rpo.from:AppStore.noContentText}}
+                                            {{-row.manual_rpo.to?'-'+row.manual_rpo.to:''}}&nbsp;
+                                            {{row.manual_rpo.bia_scale_category.type}}
+                                            <span *ngIf="returnInHours(row.manual_rpo.from,row.manual_rpo.to)">&nbsp;{{'('+returnInHours(row.manual_rpo.from,row.manual_rpo.to)+' Hours)'}}</span>
+                                        </td>
+                                        <td *ngIf="!row.manual_rpo">{{AppStore.noContentText}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="audit-form-table w-100 table-align-top not-fixed-table">
+                            <div class="table-responsive">
+                                <table class="table table-bordered ordinary-table audit-page-table mb-3 table-scroll">
+                                    <thead>
+                                        <tr>
+                                            <th class="border-top-0" width="22%">{{'total_staffs'|translate}}</th>
+                                            <th class="border-top-0"
+                                                [style.width.%]="78/BiaStore.ImpactResult.resource_requirements.length"
+                                                *ngFor="let row of BiaStore.ImpactResult.resource_requirements">
+                                                {{row.bia_scale.from}}{{-row.bia_scale.to?'-'+row.bia_scale.to:''}}&nbsp;{{row.bia_scale.bia_scale_category.type}}
+                                                <span *ngIf="returnInHours(row.bia_scale.from,row.bia_scale.to)">&nbsp;{{'('+returnInHours(row.bia_scale.from,row.bia_scale.to)+' Hours)'}}</span>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>{{BiaStore.ImpactResult.over_all_count.total_staff}}</td>
+                                            <td *ngFor="let row of BiaStore.ImpactResult.resource_requirements">
+                                                {{row.no_of_staff}}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="audit-form-table w-100 not-fixed-table mb-4">
+                            <div class="table-responsive">
+                               <table class="table table-bordered ordinary-table audit-page-table mb-0 table-scroll" *ngIf="BiaStore.ImpactResult.asset_requirements.length!=0">
+                                  <thead>
+                                     <tr>
+                                        <th class="border-top-0" width="22%">{{'timescale'|translate}}</th>
+                                        <th class="border-top-0"
+                                           [style.width.%]="78/BiaStore.ImpactResult.asset_requirements.length"
+                                           *ngFor="let row of BiaStore.ImpactResult.asset_requirements">
+                                           {{row.bia_scale?.from}}{{-row.bia_scale?.to?'-'+row.bia_scale?.to:''}}&nbsp;{{row.bia_scale?.bia_scale_category.type}}
+                                           <span *ngIf="returnInHours(row.bia_scale.from,row.bia_scale.to)">&nbsp;{{'('+returnInHours(row.bia_scale.from,row.bia_scale.to)+' Hours)'}}</span>
+                                        </th>
+                                     </tr>
+                                  </thead>
+                                  <tbody>
+                                     <tr>
+                                        <td>{{'assets'|translate}}</td>
+                                        <td *ngFor="let row of BiaStore.ImpactResult.asset_requirements">
+                                           <ng-container data-toggle="tooltip"
+                                               *ngFor="let label of row.titles;let isLast=last">
+                                               {{label}}{{isLast ? '':', ' }}</ng-container></td>
+                                     </tr>
+                                  </tbody>
+                               </table>
+                            </div>
+                         </div>
+                        <!-- <div class="audit-form-table w-100 table-align-top not-fixed-table">
+                            <div class="table-responsive">
+                                <table class="table table-bordered ordinary-table audit-page-table mb-0 table-scroll" *ngIf="BiaStore.ImpactResult && BiaStore.ImpactResult?.asset_requirements.length!=0">
+                                    <thead>
+                                       <tr>
+                                          <th width="1%">#</th>
+                                          <th class="border-top-0" width="11%">{{'Asstes'|translate}}</th>
+                                          
+                                       </tr>
+                                    </thead>
+                                    <tbody>
+                                        <ng-container *ngFor="let asset of BiaStore.ImpactResult?.asset_requirements[0].titles;let num = index">
+                                            <tr *ngIf="asset">
+                                                <td>{{num+1}}</td>
+                                                <td>{{asset}}</td>
+                                               
+                                             </tr>
+                                        </ng-container>
+                                       
+                                    </tbody>
+                                 </table>
+                            </div>
+                        </div> -->
+                    </div>
+                    <ng-container *ngIf="!BiaStore?.ImpactResultLoaded">
+                        <app-bia-form-preview-loader>
+
+                        </app-bia-form-preview-loader>
+                    </ng-container>
+
+                </div><!-- tab end -->
+                <div style="overflow:auto;">
+                    <div class="form-next-page-btns" style="float:left;">
+                        <button class="btn btn-active" type="button" id="nextBtn"
+                            [disabled]="AppStore.loading||!checkFormObject()||!assetMappingCondition"
+                            (click)="nextPrev(1,true)">{{getButtonText(nextButtonText)}}</button>
+                        <button class="btn" type="button" id="saveBtn" (click)="saveTabDetails()"
+                            [disabled]="AppStore.loading||!checkFormObject()||!assetMappingCondition">{{getButtonText('save')}}</button>
+                            <button class="btn" type="button" id="prevBtn" (click)="nextPrev(-1)"
+                            [disabled]="AppStore.loading">{{getButtonText(previousButtonText)}}</button>
+                        <button class="btn" type="button" (click)="confirmCancel()">{{getButtonText('cancel')}}</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+
+<div class="modal modal-style-1 fade" id="delete-popup" #cancelPopup data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="confirmationObject"></app-delete-popup>
+</div>
+<div class="modal modal-style-1 fade"  data-keyboard="false" data-backdrop="static" #listItem>
+ <app-bia-list-popup [source]="biaObject" *ngIf="biaObject.type">
+ </app-bia-list-popup>
+</div>

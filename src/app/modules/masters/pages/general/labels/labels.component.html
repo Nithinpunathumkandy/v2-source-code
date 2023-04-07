@@ -1,0 +1,94 @@
+<div class="widget bg-white">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item pointer" [routerLink]="['/masters/masters']"><a>{{'masters' | translate}}</a></li>
+            <li class="breadcrumb-item active">{{'labels' | translate}}</li>
+        </ol>
+    </nav>
+    <!-- Nav tabs -->
+    <table class="table-master table" *ngIf="LabelMasterStore?.loaded && LabelMasterStore.allItems.length > 0">
+        <tr>
+            <th class="border-top-0" width="2%">#</th>
+            <th class="border-top-0 pointer" width="19%" (click)="sortTitle('labels.label')">{{'keyword' | translate}}
+                <img _ngcontent-twv-c17="" class="sort-down-pics pl-2" 
+                [attr.src]="LabelMasterStore.orderBy=='desc' ? 
+                'assets/images/sort-up.png' : LabelMasterStore.orderBy=='asc' ? 
+                'assets/images/sort-down.png' : 'assets/images/sort-empty.png'">
+            </th>
+            <th class="border-top-0" width="19%" *ngFor = "let lang of LanguageSettingsStore.activeLanguages">{{lang.title}}</th>
+        </tr>
+        <ng-container *mobxAutorun>
+            <tr *ngFor="let row of LabelMasterStore?.allItems| paginate: {currentPage:LabelMasterStore.currentPage, itemsPerPage:LabelMasterStore.itemsPerPage,totalItems:LabelMasterStore.totalItems};let num=index">
+                <td valign="middle">{{(LabelMasterStore.currentPage - 1) * LabelMasterStore.itemsPerPage + (num + 1)}}</td>
+                <td valign="middle">{{row.key}}</td>
+                <td valign="middle" class="edit-option" *ngFor = "let items of row.languages;let itemLength = index">
+                    <div *ngIf = "row.languages.length - 1 == itemLength" class="edit-option-show-inner" style="margin-top: -6px;">
+                        <a  *ngIf="AuthStore.getActivityPermission(1100,'UPDATE_LABEL')" (click)="getLabel(row.id)" [attr.title]="'edit' | translate" ><i class="fas fa-pen pointer"></i></a>
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'DELETE_LABEL')" (click)="delete(row.id)" [attr.title]="'delete' | translate"><i class="fas fa-trash pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(1100,'LABEL_ACTIVATE')" (click)="activate(row.id)" [attr.title]="'activate' | translate" ><i
+                                class="fas fa-check pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.activeStatusId && AuthStore.getActivityPermission(1100,'LABEL_DEACTIVATE')" (click)="deactivate(row.id)" [attr.title]="'deactivate' | translate"><i
+                                class="fas fa-ban pointer"></i></a>
+                   </div>
+                 {{items.pivot.title}}</td>
+            </tr>
+        </ng-container>
+    </table>
+    <p class="float-right" *ngIf="LabelMasterStore?.loaded && LabelMasterStore.totalItems > 0"><b>{{'total_Items' | translate}}:{{LabelMasterStore?.totalItems}}</b></p>
+
+    <ng-container *mobxAutorun>
+        <div *ngIf="!LabelMasterStore.loaded">
+            <app-table-loader></app-table-loader>
+        </div>
+        <app-no-data *ngIf = "LabelMasterStore.totalItems == 0 && LabelMasterStore.loaded == true"></app-no-data>
+    </ng-container>
+
+    <!-- <div *ngIf="LabelMasterStore.totalItems>LabelMasterStore.itemsPerPage" class="col-sm-12">
+        <ul class="pagination justify-content-center mt-3">
+            <div class="list">
+                <pagination-controls 
+                    [previousLabel]="'previous' | translate" 
+                    [nextLabel]="'next' | translate"
+                    (pageChange)="pageChange($event)" 
+                    class="my-pagination"
+                    previousLabel="Previous"
+                    nextLabel="Next"></pagination-controls> 
+            </div>
+        </ul>
+    </div> -->
+    <div class="col-sm-12 text-center" *ngIf="LabelMasterStore.totalItems>LabelMasterStore.itemsPerPage">
+        <div class="clearfix mt-4 pagination-go-sec-main">
+        <div class="d-inline-block">
+            <ul class="pagination justify-content-center m-0">
+                <pagination-controls 
+                [previousLabel]="'previous' | translate" 
+                [nextLabel]="'next' | translate"
+                (pageChange)="pageChange($event)" 
+                class="my-pagination"
+                previousLabel="Previous"
+                nextLabel="Next"></pagination-controls>
+            </ul>
+        </div>
+        <div class="go-page-pagination form-group m-0">
+            <div class="d-flex">
+                <input type="number" min="1" class="form-control" [(ngModel)]="pageJumb">
+                <button (click)="pageChange(pageJumb)" [disabled]="!pageJumb ? true : false" type="button" class="btn multi-add-user text-center" style="min-width: 80px;">Go Page</button>
+            </div>
+        </div>
+    </div>
+    </div>
+</div>
+
+
+<!-- Modal part -->
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+    <app-label-modal *ngIf="labelObject.type" [source]="labelObject">
+    </app-label-modal>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>

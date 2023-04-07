@@ -1,0 +1,98 @@
+<div class="widget bg-white">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item pointer" [routerLink]="['/masters/mock-drill']"><a>{{'mock_drill' |
+                    translate}}</a></li>
+            <li class="breadcrumb-item active">{{'mock_drill_scenario' | translate}}</li>
+        </ol>
+    </nav>
+    <!-- Nav tabs -->
+    <table class="table-master table"
+        *ngIf="MockDrillScenarioMasterStore?.loaded && MockDrillScenarioMasterStore.allItems.length > 0">
+        <tr>
+            <th style="width: 8%; text-align: center;">{{'sl' | translate}}</th>
+            <th (click)="sortTitle('mock_drill_scenarios.title')"
+                class="border-top-0 issue-list-org-tab-three pointer" style="width: 82%;"><span>{{'title' |
+                    translate}}</span>
+                <img _ngcontent-twv-c17=""
+                    *ngIf="MockDrillScenarioMasterStore.orderItem=='mock_drill_scenarios.title'"
+                    class="sort-down-pics pl-2" [attr.src]="MockDrillScenarioMasterStore.orderBy=='desc' ? 
+                'assets/images/sort-up.png' : MockDrillScenarioMasterStore.orderBy=='asc' ? 
+                'assets/images/sort-down.png' : 'assets/images/sort-empty.png'">
+            </th>
+            <th style="width: 10%">{{'status' | translate}}</th>
+        </tr>
+        <ng-container *mobxAutorun>
+            <tr class="edit-and-delete-main"
+                *ngFor="let row of MockDrillScenarioMasterStore.allItems | paginate: {currentPage:MockDrillScenarioMasterStore?.currentPage, itemsPerPage:MockDrillScenarioMasterStore?.itemsPerPage,totalItems:MockDrillScenarioMasterStore?.totalItems}; let num = index">
+                <td style="text-align: center;">
+                    {{(MockDrillScenarioMasterStore?.currentPage - 1) *
+                    MockDrillScenarioMasterStore?.itemsPerPage + (num +
+                    1)}}
+                </td>
+                <td><a (click)="getMockDrill(row.id)"
+                        [ngStyle]="{ 'pointer-events' : AuthStore.getActivityPermission(1100,'UPDATE_MOCK_DRILL_SCENARIO') ? '' : 'none'}">{{row.mock_drill_scenario_title}}</a>
+                </td>
+                <td style="padding:0.75rem;">
+                    <div [attr.class]="'dot-div '+row.status_label">{{row.status}}</div>
+                    <div class="edit-option-show">
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'UPDATE_MOCK_DRILL_SCENARIO')"
+                            (click)=" getMockDrill(row.id)" [attr.title]="'edit' | translate"><i
+                                class="fas fa-pen pointer"></i></a>
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'DELETE_MOCK_DRILL_SCENARIO')"
+                            (click)="delete(row.id)" [attr.title]="'delete' | translate"><i
+                                class="fas fa-trash pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(1100,'ACTIVATE_MOCK_DRILL_SCENARIO')"
+                            (click)="activate(row.id)" [attr.title]="'activate' | translate"><i
+                                class="fas fa-check pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.activeStatusId && AuthStore.getActivityPermission(1100,'DEACTIVATE_MOCK_DRILL_SCENARIO')"
+                            (click)="deactivate(row.id)" [attr.title]="'deactivate' | translate"><i
+                                class="fas fa-ban pointer"></i></a>
+                    </div>
+                </td>
+            </tr>
+        </ng-container>
+    </table>
+    <p class="float-right"
+        *ngIf="MockDrillScenarioMasterStore?.loaded && MockDrillScenarioMasterStore.totalItems > 0">
+        <b>{{'total_Items' | translate}}:{{MockDrillScenarioMasterStore?.totalItems}}</b>
+    </p>
+
+    <ng-container *mobxAutorun>
+        <div *ngIf="!MockDrillScenarioMasterStore.loaded">
+            <app-table-loader></app-table-loader>
+        </div>
+        <app-no-data
+            *ngIf="MockDrillScenarioMasterStore.allItems.length == 0 && MockDrillScenarioMasterStore.loaded == true">
+        </app-no-data>
+    </ng-container>
+
+    <div class="col-sm-12"
+        *ngIf="MockDrillScenarioMasterStore.totalItems>MockDrillScenarioMasterStore.itemsPerPage">
+        <ul class="pagination justify-content-center mt-3">
+            <div class="list">
+                <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+                    (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+            </div>
+        </ul>
+    </div>
+</div>
+
+<!-- Create Or Update Mock Drill Scenario-->
+<div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup" data-keyboard="false"
+    data-backdrop="static" #formModal>
+    <app-mock-drill-scenario-model *ngIf="mockDrillObject.type" [source]="mockDrillObject">
+    </app-mock-drill-scenario-model>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+
+<!-- Share Mock Drill Scenario -->
+<div class="modal modal-style-1 email-popup-new fade" data-backdrop="static" data-keyboard="false"
+    id="email-notification-popup" #mailConfirmationPopup>
+    <app-mail-send-popup [source]="mailConfirmationData"></app-mail-send-popup>
+</div>

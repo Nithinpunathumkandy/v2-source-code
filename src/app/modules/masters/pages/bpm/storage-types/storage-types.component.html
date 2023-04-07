@@ -1,0 +1,97 @@
+<div class="widget bg-white">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item pointer" [routerLink]="['/masters/bpm']">
+                <a>{{'bpm' | translate}}</a>
+            </li>
+            <li class="breadcrumb-item active">{{'storage_type' | translate}}</li>
+        </ol>
+    </nav>
+
+    <div class="audit-form-table w-100 not-fixed-table mb-0">
+        <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll"
+        *ngIf="StorageTypesMasterStore?.loaded && StorageTypesMasterStore.StorageTypes.length > 0">
+        <tr>
+            <th style="width: 5%; text-align: center;">{{'sl' | translate}}</th>
+            <th (click)="sortTitle('storage_types.title')"
+                class="border-top-0 issue-list-org-tab-three pointer" style="width: 43%;">
+                <span>{{'storage_type' | translate}}</span>
+                <img _ngcontent-twv-c17="" *ngIf="StorageTypesMasterStore.orderItem=='storage_types.title'" class="sort-down-pics pl-2" [attr.src]="StorageTypesMasterStore.orderBy=='desc' ? 
+                'assets/images/sort-up.png' : StorageTypesMasterStore.orderBy=='asc' ? 
+                'assets/images/sort-down.png' : 'assets/images/sort-empty.png'">
+            </th>
+            <th style="width: 40%;">{{'type' | translate}}</th> 
+            <th style="width: 12%; text-align: center;">{{'status' | translate}}</th>
+        </tr>
+        <ng-container *mobxAutorun>
+            <tr class="edit-and-delete-main pointer"
+            (click)=" getStorageTypes(row.id)" [ngStyle] = "{ 'pointer-events' : AuthStore.getActivityPermission(2800,'UPDATE_STORAGE_TYPE') ? '' : 'none'}"
+                *ngFor="let row of StorageTypesMasterStore?.StorageTypes | paginate: {currentPage:StorageTypesMasterStore?.currentPage, itemsPerPage:StorageTypesMasterStore?.itemsPerPage,totalItems:StorageTypesMasterStore?.totalItems}; let num = index">
+                <td style="text-align: center;">{{(StorageTypesMasterStore?.currentPage - 1) *
+                    StorageTypesMasterStore?.itemsPerPage + (num + 1)}}</td>
+                <td>{{row.title}}</td>
+                <td>{{row.type=='hard'?'Hardware':'Software'}}</td>
+                <td style="padding:0.75rem; text-align: center;">
+                    <div [attr.class]="'dot-div '+row.status_label">{{row.status}}</div>
+
+                    <div class="edit-option-show">
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'UPDATE_STORAGE_TYPE')"
+                            (click)=" getStorageTypes(row.id)" title="Edit"><i
+                                class="fas fa-pen pointer"></i></a>
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'DELETE_STORAGE_TYPE')"
+                            (click)="delete(row.id)" title="Delete"><i class="fas fa-trash pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(1100,'ACTIVATE_STORAGE_TYPE')"
+                            (click)="activate(row.id)" title="Activate"><i class="fas fa-check pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.activeStatusId && AuthStore.getActivityPermission(1100,'DEACTIVATE_STORAGE_TYPE')"
+                            (click)="deactivate(row.id)" title="Deactivate"><i class="fas fa-ban pointer"></i></a>
+                    </div> 
+                </td> 
+            </tr>
+        </ng-container>
+    </table>
+
+    </div>
+    <p class="float-right" *ngIf="StorageTypesMasterStore?.loaded && StorageTypesMasterStore.totalItems > 0"><b>{{'total_Items' | translate}}:{{StorageTypesMasterStore?.totalItems}}</b></p>
+
+    <ng-container *mobxAutorun>
+        <div *ngIf="!StorageTypesMasterStore.loaded">
+            <app-table-loader></app-table-loader>
+        </div>
+        <app-no-data
+            *ngIf="StorageTypesMasterStore.StorageTypes.length == 0 && StorageTypesMasterStore.loaded == true">
+        </app-no-data>
+
+    </ng-container>
+
+    <div *ngIf="StorageTypesMasterStore.totalItems>StorageTypesMasterStore.itemsPerPage"
+        class="col-sm-12">
+        <ul class="pagination justify-content-center mt-3">
+            <div class="list">
+                <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+                    (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+            </div>
+        </ul>
+    </div>
+</div>
+
+ <!--Modal part-->
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+
+    <app-storage-types-modal *ngIf="storageTypesObject.type"
+        [source]="storageTypesObject">
+
+    </app-storage-types-modal>
+
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+ 
+<div class="modal modal-style-1 email-popup-new fade" data-backdrop="static" data-keyboard="false"
+    id="email-notification-popup" #mailConfirmationPopup>
+    <app-mail-send-popup [source]="mailConfirmationData"></app-mail-send-popup>
+</div> 

@@ -1,0 +1,112 @@
+<button type="button" class="close" (click)="closeAuditReportAgenda()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h4 class="modal-title" *ngIf="agendaData?.type=='edit'">{{'edit_agenda' | translate}}</h4>
+            <h4 class="modal-title" *ngIf="agendaData?.type=='add'">{{'add_agenda' | translate}}</h4>
+        </div>
+        <div class="modal-body form-body">
+            <form [formGroup]="agendaForm">
+                <div class="row">
+                      <div class="col-sm-12">
+                        <div class="form-group">
+                          <label for="title">{{'title' | translate}}<span class="form-error">*</span></label>
+                          <input type="text" formControlName="title" class="form-control"  [attr.placeholder]="'title_of_the_agenda' | translate"
+                            id="cctitle">
+                          <p class="form-error pt-1" *ngIf="agendaForm.value.title && agendaForm.value.title.length>500 && !agendaFormErrors">
+                            Maximum 500
+                            characters allowed</p>
+                          <p class="form-error pt-1" *ngIf="agendaFormErrors&&agendaFormErrors.title">
+                            {{agendaFormErrors.title}}</p>
+                        </div>
+                      </div>
+                    </div>
+           
+             <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label for="cntrl_type_id">{{'team' | translate}}<span class="form-error">*</span></label>
+                        <div class="clearfix d-flex">
+                          <div class="multiple-plain-ngselect select-new-width">
+                            <ng-select [placeholder]="'select_team' | translate" [multiple]="false" formControlName="team_id"
+                            (open)="getAuditTeams()"
+                            (clear)="getAuditTeams()"
+                            (search)="getAuditTeams($event)">         
+                              <ng-option [value]="teams.id" *ngFor="let teams of MsAuditTeamStore.allItems">
+                                  {{teams.title.length > 80 ? teams.title.substring(0,80)+' ...' : teams.title }}
+                               </ng-option>
+          
+                            </ng-select>
+                          </div>
+                        </div>
+                        <p class="form-error pt-1" *ngIf="agendaFormErrors"> {{agendaFormErrors.team_id}}</p>
+                      </div>
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="form-group">
+                        <label for="ms_type_id">{{'ms_type' | translate}}<span class="form-error">*</span></label>
+                        <div class="clearfix d-flex">
+                           <div class="multiple-plain-ngselect w-100">
+                              <ng-select
+                                 [readonly]="MsTypeStore.hideSubMenu"
+                                 id="ms_type_id"
+                                 [placeholder]="'select_ms_type' | translate"
+                                 [multiple]="false"
+                                 formControlName="ms_type_id"
+                                 (search) = "searchAvailableMsType($event)"
+                                 (clear) = "getAvailableMsTypes()"
+                                 (open) = "getAvailableMsTypes()"
+                                >
+                                 <ng-option [disabled] = "MsTypeStore.addOrEditFlag" [value]="mtype.id" *ngFor="let mtype of MsTypeMasterStore.msTypes">
+                                    {{mtype.title.length > 80 ? mtype.title.substring(0,80)+' ...' : mtype.title }}
+                                 </ng-option>
+                              </ng-select>
+                           </div>
+                        </div>
+                        <p class="form-error pt-1" *ngIf="agendaFormErrors"> {{agendaFormErrors.ms_type_id}}</p>
+                        <!-- <p class="form-error pt-1" *ngIf = "!agendaFormErrors && MsTypeMasterStore.msTypes.length > 0 && form.get('ms_type_id').invalid && (form.controls.ms_type_id.dirty || form.controls.ms_type_id.touched)">Ms Type Required</p> -->
+                     </div> 
+                  </div>
+             </div>
+
+             <div class="row">
+                <div class="col-sm-12 col-lg-5">
+                    <div class="form-group">
+                        <label for="name">{{'start_date/time' | translate}}<span
+                                class="form-error">*</span></label>
+                        <div class="input-group date-picker cal-time">
+                            <div class="input-group date-picker">
+                                <input class="form-control" formControlName="start_time" [owlDateTime]="dt1"
+                                [min]="agendaForm.value.start_time ? agendaForm.value.start_time : todayDate" [owlDateTimeTrigger]="dt1" [placeholder]="'start_date/time' | translate">
+                                <owl-date-time [hour12Timer]="true" #dt1></owl-date-time>
+                                <div class="input-group-append">
+                                    <button [owlDateTimeTrigger]="dt1"
+                                        class="btn btn-outline-secondary calendar" type="button"><i
+                                            class="fas fa-calendar-alt"></i></button>
+                                </div>
+                            </div>
+                            <p class="pt-1" style="color: red;" *ngIf="agendaFormErrors && agendaFormErrors.start_time">
+                                {{agendaFormErrors.start_time}}</p>
+                        </div>
+                    </div>
+                </div>
+             </div>
+
+                <div class="row">
+
+                    <div class="col-sm-12">
+                        <div class="d-block justify-content-left border-0 mt-3">                            
+                                <button type="button" data-toggle="modal" data-target="#signal-lost"
+                                class="btn" (click)="save(true)"
+                                [disabled]="agendaForm.invalid || AppStore.loading">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save_close') }}</button>
+                            <button type="button" data-toggle="modal" data-target="#error-message"
+                                class="btn"
+                                (click)="closeAuditReportAgenda()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('cancel') }}</button>
+                        </div>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

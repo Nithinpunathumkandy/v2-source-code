@@ -1,0 +1,477 @@
+<div class="tab-pane" id="top-tab-left-1" *mobxAutorun>
+    <div class="audit-program-box audit-page-table-main bg-white widg-padding-cmn pl-3 pr-3 pb-4 relative" *ngIf="AmAuditableItemStore.loaded && AmAuditableItemStore.auditableItems?.length>0">
+        <div class="status-tag-new-two bg-blue">
+            {{AmAuditPlanStore.individualAuditPlanDetails?.am_annual_plan_auditable_item_status?.language[0]?.pivot?.title}}
+        </div>
+
+        <div class="row" *ngIf="AmAuditableItemStore.loaded && AmAuditableItemStore.auditableItems?.length>0">
+            <div class="col-sm-12">
+                <div class="full-width-table mb-3">
+                    <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                        <thead>
+                            <tr>
+                                <th class="border-top-0 text-center" width="5%">#</th>
+                                <th class="border-top-0" width="">{{'am_item'|translate}}</th>
+                                <th class="border-top-0" width="">{{'am_type'|translate}}</th>
+                                <th class="border-top-0 text-center" width="80px"
+                                    *ngFor="let freq of AmAuditableItemStore.auditableItems[0]?.am_annual_plan_frequency_item">
+                                    {{freq.language[0]?.pivot?.title}}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr
+                                *ngFor="let item of AmAuditableItemStore.auditableItems | paginate: {id:'item',currentPage:AmAuditableItemStore?.currentPage, itemsPerPage:AmAuditableItemStore?.itemsPerPage,totalItems:AmAuditableItemStore?.totalItems}; let num = index">
+                                <td class="text-center">{{(AmAuditableItemStore?.currentPage -1)
+                                    * AmAuditableItemStore?.itemsPerPage + (num +
+                                    1)}}</td>
+                                <td>{{item.title}}</td>
+                                <td>{{item.type}}</td>
+                                <td class="text-center pointer"
+                                    *ngFor="let frequency of item.am_annual_plan_frequency_item"
+                                    (click)="checkFrequency(frequency.pivot.is_selected,item.id,frequency.id)">
+                                    <i
+                                        [ngClass]="frequency.pivot.is_selected?'fas fa-check text-success':'fas fa-times text-danger'"></i>
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+                <div *ngIf="AmAuditableItemStore.totalItems>AmAuditableItemStore.itemsPerPage" class="col-sm-12">
+                    <ul class="pagination justify-content-center mt-3 mb-0">
+                        <div class="list">
+                            <pagination-controls id="item" [previousLabel]="'previous' | translate"
+                                [nextLabel]="'next' | translate" (pageChange)="getAuditableItems($event)"
+                                class="my-pagination">
+                            </pagination-controls>
+                        </div>
+                    </ul>
+                </div>
+
+
+            </div>
+
+        </div>
+        <p class="float-right bold mb-0" *ngIf="AmAuditableItemStore?.loaded && AmAuditableItemStore.totalItems > 0">
+            {{'total_Items' | translate}}:{{AmAuditableItemStore?.totalItems}}</p>
+    </div>
+
+
+    <ng-container *mobxAutorun>
+        <app-no-data [border]="false"
+            *ngIf="AmAuditableItemStore.loaded && AmAuditableItemStore.auditableItems?.length==0">
+        </app-no-data>
+    </ng-container>
+
+    <ng-container *mobxAutorun>
+        <div *ngIf="!AmAuditableItemStore.loaded">
+            <app-am-audit-plan-loader></app-am-audit-plan-loader>
+        </div>
+    </ng-container>
+</div>
+
+<div class="modal modal-style-1 share-popup new-issue-process-popup popup-full-width" id="add-new-audi-items"
+    data-keyboard="false" data-backdrop="static" #formModal *mobxAutorun>
+    <button type="button" class="close" (click)="closeAuditableItemModal()"><i
+            class="lni-close"></i><span>esc</span></button>
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title">{{'am_choose_auditable_item'|translate}}</h4>
+            </div>
+            <!-- Modal body -->
+            <div class="modal-body form-body add-profie-org-pup">
+                <p class="head-details">{{'am_auditable_item_description'|translate}}</p>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="common-tab-md clearfix mb-3 tab-same-height">
+                            <div class="tab-common-left-md">
+                                <div class="issues-tab">
+                                    <!-- tab menu start -->
+                                    <ul class="nav nav-tabs nav-tabs--vertical nav-tabs--left vertical-tab multi-btns"
+                                        role="navigation">
+                                        <li class="nav-item"><a [ngClass]="currentTab=='process'?'nav-link active':'nav-link'"
+                                                data-toggle="tab" role="tab" aria-controls="lorem" aria-selected="false"
+                                                (click)="getProcesses(1)">{{'processes'|translate}}</a></li>
+                                        <li class="nav-item"><a [ngClass]="currentTab=='risk'?'nav-link active':'nav-link'"
+                                                data-toggle="tab" role="tab" aria-controls="ipsum" aria-selected="false"
+                                                (click)="getRisks(1)">{{'risks'|translate}}</a></li>
+                                        <li class="nav-item"><a [ngClass]="currentTab=='objective'?'nav-link active':'nav-link'"
+                                                data-toggle="tab" role="tab" aria-controls="ipsum" aria-selected="true"
+                                                (click)="getStrategicObjectives(1)">{{'strategic_objectives'|translate}}
+                                            </a></li>
+                                        <li class="nav-item"><a [ngClass]="currentTab=='department'?'nav-link active':'nav-link'"
+                                                data-toggle="tab" role="tab" aria-controls="ipsum" aria-selected="true"
+                                                (click)="getDepartments(1)">{{'departments'|translate}}
+                                            </a></li>
+                                    </ul>
+                                </div>
+                                <!-- tab menu end -->
+                            </div>
+
+                            <div class="tab-common-left-content-m">
+                                <div class="tab-content cmn-bdr  widg-padding-cmn-small" style="min-height: 300px;">
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <div class="form-group">
+                                                <!-- <form class="form-control issue-select-process-search bg-white search-popup-new"
+                                                (submit)="searchLocation($event)">
+                                                <input type="text" [(ngModel)]="searchText" [placeholder]="'search' | translate"
+                                                    name="search" (keyup)="searchLocation($event)" class="search-process"
+                                                    autocomplete="off">
+                                                <a class="search-clear-btn" (click)="clear()" *ngIf="searchText">X</a>
+                                                <button type="submit" (click)="searchLocation($event)" style="width: 40px;"><i
+                                                        class="fa fa-search"></i></button>
+                                            </form> -->
+                                                <form
+                                                    class="form-control issue-select-process-search bg-white search-popup-new">
+                                                    <input type="text" [(ngModel)]="searchText"
+                                                        [placeholder]="'search' | translate" name="search"
+                                                        (keyup)="searchItem($event)" class="search-process"
+                                                        autocomplete="off">
+                                                    <a class="search-clear-btn" (click)="clear()"
+                                                        *ngIf="searchText">X</a>
+                                                    <button type="submit" (click)="searchItem($event)"
+                                                        style="width: 40px;"><i class="fa fa-search"></i></button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane fade active show" id="policies-tab-one" role="tabpanel" *ngIf="currentTab=='process'">
+                                        <div class="widget-body-light tab-content-body border-none">
+                                            <div class="audit-form-table w-100 mb-3">
+                                                <div *ngIf="!AmAuditableItemStore.process_loaded">
+                                                    <app-am-audit-plan-loader></app-am-audit-plan-loader>
+                                                </div>
+                                                <ng-container *ngIf="AmAuditableItemStore.process_loaded && AmAuditableItemStore.processes?.length==0">
+                                                    <app-no-data-list [source]="'common_no_data_title'|translate" [border]="false"></app-no-data-list>
+                                                </ng-container>
+                                                <table
+                                                    class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll" *ngIf="AmAuditableItemStore.process_loaded && AmAuditableItemStore.processes?.length>0">
+                                                    <thead>
+                                                        <tr>
+                                                            <th class="border-top-0" width="8%">
+                                                                <label class="container2 float-left"
+                                                                    style="margin-top: 2px; padding-left: 22px;">
+                                                                    <input type="checkbox"
+                                                                        (change)="addAllProcessToList($event)">
+                                                                    <span class="checkmark"></span>
+                                                                </label>#
+                                                            </th>
+                                                            <th class="border-top-0" width="17%">
+                                                                {{'ref_id'|translate}}</th>
+                                                            <th class="border-top-0" width="50%">{{'process'|translate}}
+                                                            </th>
+                                                            <th class="border-top-0" width="25%">
+                                                                {{'department'|translate}}</th>
+
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr
+                                                            *ngFor="let process of AmAuditableItemStore.processes | paginate: {id:'process',currentPage:AmAuditableItemStore?.processCurrentPage, itemsPerPage:AmAuditableItemStore?.processItemsPerPage,totalItems:AmAuditableItemStore?.processTotalItems}; let num = index">
+                                                            <td class="border-top-0" width="7%">
+                                                                <label class="container2 float-left"
+                                                                    style="margin-top: 2px; padding-left: 22px;">
+                                                                    <input type="checkbox"
+                                                                        [checked]="isProcessSelected(process.id)"
+                                                                        (change)="addToProcessList(process.id,num)">
+                                                                    <span class="checkmark"></span>
+                                                                </label>{{(AmAuditableItemStore?.processCurrentPage -1)
+                                                                * AmAuditableItemStore?.processItemsPerPage + (num +
+                                                                1)}}
+                                                            </td>
+                                                            <td>
+                                                                #{{process.reference_code}}</td>
+
+                                                            <td>
+                                                                {{process.title}}</td>
+                                                            <td>
+                                                                {{process.department?process.department:AppStore.noContentText}}
+                                                            </td>
+                                                        </tr>
+
+
+                                                    </tbody>
+                                                </table>
+                                                <div *ngIf="AmAuditableItemStore.processTotalItems>AmAuditableItemStore.processItemsPerPage"
+                                                    class="col-sm-12">
+                                                    <ul class="pagination justify-content-center mt-3 mb-0">
+                                                        <div class="list">
+                                                            <pagination-controls id="process"
+                                                                [previousLabel]="'previous' | translate"
+                                                                [nextLabel]="'next' | translate"
+                                                                (pageChange)="getProcesses($event)"
+                                                                class="my-pagination">
+                                                            </pagination-controls>
+                                                        </div>
+                                                    </ul>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane fade active show" id="policies-tab-two" role="tabpanel" *ngIf="currentTab=='risk'">
+                                        <div class="widget-body-light tab-content-body border-none">
+                                            <div class="audit-form-table w-100 mb-3">
+                                                <div *ngIf="!AmAuditableItemStore.risk_loaded">
+                                                    <app-am-audit-plan-loader></app-am-audit-plan-loader>
+                                                </div>
+                                                <ng-container *ngIf="AmAuditableItemStore.risk_loaded && AmAuditableItemStore.risks?.length==0">
+                                                    <app-no-data-list [source]="'common_no_data_title'|translate" [border]="false"></app-no-data-list>
+                                                </ng-container>
+                                                <table
+                                                    class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll" *ngIf="AmAuditableItemStore.risk_loaded && AmAuditableItemStore.risks?.length>0">
+                                                    <thead>
+                                                        <tr>
+                                                            <th class="border-top-0" width="8%">
+                                                                <label class="container2 float-left"
+                                                                    style="margin-top: 2px; padding-left: 22px;">
+                                                                    <input type="checkbox"
+                                                                        (change)="addAllRiskToList($event)">
+                                                                    <span class="checkmark"></span>
+                                                                </label>#
+                                                            </th>
+                                                            <th class="border-top-0" width="17%">
+                                                                {{'ref_id'|translate}}</th>
+                                                            <th class="border-top-0" width="50%">{{'risk'|translate}}
+                                                            </th>
+                                                            <th class="border-top-0" width="25%">
+                                                                {{'departments'|translate}}</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr
+                                                            *ngFor="let risk of AmAuditableItemStore.risks | paginate: {id:'risk',currentPage:AmAuditableItemStore?.riskCurrentPage, itemsPerPage:AmAuditableItemStore?.riskItemsPerPage,totalItems:AmAuditableItemStore?.riskTotalItems}; let num = index">
+                                                            <td class="border-top-0" width="7%">
+                                                                <label class="container2 float-left"
+                                                                    style="margin-top: 2px; padding-left: 22px;">
+                                                                    <input type="checkbox"
+                                                                        [checked]="isRiskSelected(risk.id)"
+                                                                        (change)="addToRiskList(risk.id,num)">
+                                                                    <span class="checkmark"></span>
+                                                                </label>{{(AmAuditableItemStore?.riskCurrentPage -1) *
+                                                                AmAuditableItemStore?.riskItemsPerPage + (num + 1)}}
+                                                            </td>
+                                                            <td>
+                                                                #{{risk.reference_code}}</td>
+                                                            <td>
+                                                                {{risk.title}}</td>
+                                                            <td>
+                                                                {{risk.departments?risk.departments:AppStore.noContentText}}
+                                                            </td>
+                                                        </tr>
+
+
+
+
+                                                    </tbody>
+                                                </table>
+                                                <div *ngIf="AmAuditableItemStore.riskTotalItems>AmAuditableItemStore.riskItemsPerPage"
+                                                    class="col-sm-12">
+                                                    <ul class="pagination justify-content-center mt-3 mb-0">
+                                                        <div class="list">
+
+                                                            <pagination-controls id="risk"
+                                                                [previousLabel]="'previous' | translate"
+                                                                [nextLabel]="'next' | translate"
+                                                                (pageChange)="getRisks($event)" class="my-pagination">
+                                                            </pagination-controls>
+                                                        </div>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane fade active show" id="policies-tab-three" role="tabpanel" *ngIf="currentTab=='objective'">
+                                        <div class="widget-body-light tab-content-body border-none">
+                                            <div class="audit-form-table w-100 mb-3">
+                                                <div *ngIf="!AmAuditableItemStore.objective_loaded">
+                                                    <app-am-audit-plan-loader></app-am-audit-plan-loader>
+                                                </div>
+                                                <ng-container *ngIf="AmAuditableItemStore.objective_loaded && AmAuditableItemStore.objectives?.length==0">
+                                                    <app-no-data-list [source]="'common_no_data_title'|translate" [border]="false"></app-no-data-list>
+                                                </ng-container>
+                                                <table
+                                                    class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll" *ngIf="AmAuditableItemStore.objective_loaded && AmAuditableItemStore.objectives?.length>0">
+                                                    <thead>
+                                                        <tr>
+                                                            <th class="border-top-0" width="7%">
+                                                                <label class="container2 float-left"
+                                                                    style="margin-top: 2px; padding-left: 22px;">
+                                                                    <input type="checkbox"
+                                                                        (change)="addAllObjectiveToList($event)">
+                                                                    <span class="checkmark"></span>
+                                                                </label>#
+                                                            </th>
+                                                            <th class="border-top-0" width="72%">
+                                                                {{'objective'|translate}}</th>
+                                                            <!-- <th class="border-top-0" width="32%">
+                                                                {{'departments'|translate}}</th> -->
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr
+                                                            *ngFor="let obj of AmAuditableItemStore.objectives | paginate: {id:'objective',currentPage:AmAuditableItemStore?.objectiveCurrentPage, itemsPerPage:AmAuditableItemStore?.objectiveItemsPerPage,totalItems:AmAuditableItemStore?.objectiveTotalItems}; let num = index">
+                                                            <td class="border-top-0" width="7%">
+                                                                <label class="container2 float-left"
+                                                                    style="margin-top: 2px; padding-left: 22px;">
+                                                                    <input type="checkbox"
+                                                                        [checked]="isObjectiveSelected(obj.id)"
+                                                                        (change)="addToObjectiveList(obj.id,num)">
+                                                                    <span class="checkmark"></span>
+                                                                </label>{{(AmAuditableItemStore?.objectiveCurrentPage
+                                                                -1) * AmAuditableItemStore?.objectiveItemsPerPage + (num
+                                                                + 1)}}
+                                                            </td>
+
+                                                            <td>{{obj.title}}</td>
+                                                            <!-- <td>{{obj.departments?obj.departments:AppStore.noContentText}}
+                                                            </td> -->
+                                                        </tr>
+
+
+                                                    </tbody>
+                                                </table>
+
+
+                                            </div>
+                                        </div>
+                                        <div *ngIf="AmAuditableItemStore.objectiveTotalItems>AmAuditableItemStore.objectiveItemsPerPage"
+                                            class="col-sm-12">
+                                            <ul class="pagination justify-content-center mt-3 mb-0">
+                                                <div class="list">
+                                                    <pagination-controls id="objective"
+                                                        [previousLabel]="'previous' | translate"
+                                                        [nextLabel]="'next' | translate"
+                                                        (pageChange)="getStrategicObjectives($event)"
+                                                        class="my-pagination">
+                                                    </pagination-controls>
+                                                </div>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <div class="tab-pane fade active show" id="policies-tab-four" role="tabpanel" *ngIf="currentTab=='department'">
+                                        <div class="widget-body-light tab-content-body border-none">
+                                            <div class="audit-form-table w-100 mb-3">
+                                                <div *ngIf="!AmAuditableItemStore.department_loaded">
+                                                    <app-am-audit-plan-loader></app-am-audit-plan-loader>
+                                                </div>
+                                                <ng-container *ngIf="AmAuditableItemStore.department_loaded && AmAuditableItemStore.departments?.length==0">
+                                                    <app-no-data-list [source]="'common_no_data_title'|translate" [border]="false"></app-no-data-list>
+                                                </ng-container>
+                                                <table
+                                                    class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll" *ngIf="AmAuditableItemStore.department_loaded && AmAuditableItemStore.departments?.length>0">
+                                                    <thead>
+                                                        <tr>
+                                                            <th class="border-top-0" width="10%">
+                                                                <label class="container2 float-left"
+                                                                    style="margin-top: 2px; padding-left: 22px;">
+                                                                    <input type="checkbox"
+                                                                        (change)="addAllDepartmentToList($event)">
+                                                                    <span class="checkmark"></span>
+                                                                </label>#
+                                                            </th>
+                                                            <th class="border-top-0" width="10%">
+                                                                {{'code'|translate}}</th>
+                                                            <th class="border-top-0" width="80%">
+                                                                {{'department'|translate}}
+                                                            </th>
+                                                            <!-- <th class="border-top-0" width="30%">
+                                                                {{'departments'|translate}}</th> -->
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr
+                                                            *ngFor="let department of AmAuditableItemStore.departments | paginate: {id:'department',currentPage:AmAuditableItemStore?.departmentCurrentPage, itemsPerPage:AmAuditableItemStore?.departmentItemsPerPage,totalItems:AmAuditableItemStore?.departmentTotalItems}; let num = index">
+                                                            <td class="border-top-0" width="7%">
+                                                                <label class="container2 float-left"
+                                                                    style="margin-top: 2px; padding-left: 22px;">
+                                                                    <input type="checkbox"
+                                                                        [checked]="isDepartmentSelected(department.id)"
+                                                                        (change)="addToDepartmentList(department.id,num)">
+                                                                    <span class="checkmark"></span>
+                                                                </label>{{(AmAuditableItemStore?.departmentCurrentPage
+                                                                -1) *
+                                                                AmAuditableItemStore?.departmentItemsPerPage + (num +
+                                                                1)}}
+                                                            </td>
+                                                            <td>
+                                                                {{department.code}}</td>
+                                                            <td>
+                                                                {{department.title}}</td>
+                                                            <!-- <td>
+                                                                {{risk.departments?risk.departments:AppStore.noContentText}}</td> -->
+                                                        </tr>
+
+
+
+
+                                                    </tbody>
+                                                </table>
+                                                <div *ngIf="AmAuditableItemStore.departmentTotalItems>AmAuditableItemStore.departmentItemsPerPage"
+                                                    class="col-sm-12">
+                                                    <ul class="pagination justify-content-center mt-3 mb-0">
+                                                        <div class="list">
+
+                                                            <pagination-controls id="department"
+                                                                [previousLabel]="'previous' | translate"
+                                                                [nextLabel]="'next' | translate"
+                                                                (pageChange)="getDepartments($event)"
+                                                                class="my-pagination">
+                                                            </pagination-controls>
+                                                        </div>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-block justify-content-left border-0 mt-5">
+                    <button type="button" data-toggle="modal" (click)="save()"
+                        class="btn btn-active">{{AppStore.loading?getButtonText('loading'):getButtonText('add')}}</button>
+                    <button type="button" data-toggle="modal" (click)="save(true)"
+                        class="btn">{{AppStore.loading?getButtonText('loading'):getButtonText('add_close')}}</button>
+                    <button type="button" data-toggle="modal" (click)="closeAuditableItemModal()"
+                        class="btn">{{AppStore.loading?getButtonText('loading'):getButtonText('cancel')}}</button>
+                </div>
+
+            </div>
+            <!-- Modal footer -->
+        </div>
+    </div>
+</div>
+<!--------------add new auditable items ends--------->
+
+<div class="modal modal-style-1 popup-full-width fade" id="process-popup" data-keyboard="false" data-backdrop="static"
+    #workflowModal *mobxAutorun>
+    <app-audit-plan-workflow *ngIf="workflowModalOpened == true"></app-audit-plan-workflow>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="process-popup" data-keyboard="false" data-backdrop="static"
+    #workflowHistory *mobxAutorun>
+    <app-audit-plan-workflow-history *ngIf="workflowHistoryOpened == true"></app-audit-plan-workflow-history>
+</div>
+
+
+<ng-container>
+    <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #commentModal>
+        <app-audit-plan-workflow-comment *ngIf="AmAuditPlanWorkflowStore.commentForm"></app-audit-plan-workflow-comment>
+    </div>
+</ng-container>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" data-backdrop="static" data-keyboard="false" #deletePopup>
+    <app-delete-popup [source]="deleteObject"></app-delete-popup>
+</div>
+
+<!------------------- Delete Confirmation Modal End --------------------------->

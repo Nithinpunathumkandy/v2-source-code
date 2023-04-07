@@ -1,0 +1,320 @@
+<div *ngIf = "!BusinessProductsStore.loaded">
+   <app-products-loader *ngIf = "!BusinessProductsStore.loaded"></app-products-loader>
+</div>
+<ng-container  *mobxAutorun>
+   <div class="tab-pane" *ngIf = "BusinessProductsStore.loaded && BusinessProductsStore.productDetails.length > 0 && AuthStore.getActivityPermission(1900,'PRODUCT_LIST')">
+      <div class="row">
+         <div class="col-sm-12">
+            <div class="widget-body-light profile-widg-padding widget">
+               <div class="row">
+                  <div class="col-sm-12" *ngIf = "BusinessProductsStore.loaded && BusinessProductsStore.productDetails.length > 0">
+                     <!-- Product List -->
+                     <div [ngClass]="(num == BusinessProductsStore.productDetails.length - 1) ? 'product-listing edit-and-delete-main border-none mb-0 pb-0' : 'product-listing edit-and-delete-main'" *ngFor = "let prod of BusinessProductsStore.productDetails | paginate: {currentPage:BusinessProductsStore?.currentPage, itemsPerPage:BusinessProductsStore?.itemsPerPage,totalItems:BusinessProductsStore?.totalItems};let num = index">
+                       <div class="edit-option-show"  style="margin: 15px -15px 0 0;"><!-- edit-and-delete starts -->
+                          <a *ngIf = "AuthStore.getActivityPermission(100,'UPDATE_PRODUCT')" (click) = "editProduct(prod.id)" [attr.title]="'edit' | translate"><i class="fas fa-pen pointer"></i></a>
+                          <a *ngIf = "AuthStore.getActivityPermission(100,'DELETE_PRODUCT')" (click) = "deleteProduct(prod.id)" [attr.title]="'delete' | translate"><i class="fas fa-trash pointer"></i></a>
+                       </div>
+                       <div class="row align-items-center">
+                          <div class="col-sm-3 mb-3"> 
+                             <div *ngIf="prod.image_token">
+                             <img
+                                [attr.src]="prod.image_token ? createImageUrl('product-image',prod.image_token,254,315) : getDefaultImage('general')" 
+                                onerror="this.src='/assets/images/placeholder.png'"
+                                class="d-block mx-auto img-fluid cmn-bdr">
+                           </div>
+                           <div *ngIf="!prod.image_token">
+                              <app-no-image-data [border]="false" ></app-no-image-data>
+                             </div>
+                          </div>
+                          
+                          <div class="col-sm-9">
+                             <h2>{{prod.title}}
+                                <label class="fill-tag fill-tag-middle">{{prod.product_category_title}}</label>
+                             </h2>
+                             <h3>{{prod.sub_title}}
+                             </h3>
+                             <p *ngIf = "prod.description && !prod.view_more" style="white-space: pre-wrap;">{{prod.description.length > 650 ? getDescriptionContent(prod) : prod.description}}
+                                <a *ngIf = "prod.description.length > 650" (click) = "viewDescription('more',prod)" class="view-more-pestel-box pointer view-more-doted">... {{'view_more'|translate}}</a>
+                             </p>
+                             <p *ngIf = "prod.description && prod.view_more" style="white-space: pre-wrap;">{{prod.description}}
+                                <a *ngIf = "prod.description.length > 650" (click) = "viewDescription('less',prod)" class="view-more-pestel-box pointer view-more-doted">{{'view_less'|translate}}</a>
+                             </p>
+                             <!-- <br> -->
+  
+                             <h6 class="mt-3" *ngIf = "prod.catelogues?.length > 0">{{'catalogues' | translate}}</h6>
+                             <div *ngIf = "prod.catelogues?.length > 0" class="thumb-pics-bg thumb-pics-bg-4 thumb-pics-fix-text clearfix edit-and-delete-main">
+                                <div class="edit-option-show" style="margin: -10px -10px;" *ngIf = "prod.catelogues?.length > 1">
+                                   <a *ngIf = "AuthStore.getActivityPermission(100,'DOWNLOAD_PRODUCT_CATALOGUE')"><i class="fas fa-download pointer" [attr.title]="'download_catalogues' | translate" (click) = "downloadAllCatelogues(prod.id,prod.title)"></i></a>
+                                </div>
+                                <div class="thumb-pics" *ngFor = "let br of prod.catelogues">
+                                   <div [ngClass]="AuthStore.getActivityPermission(100,'PREVIEW_PRODUCT_CATALOGUE_FILE') ? 'upload-pics upload-pics-small edit-option pointer' : 'upload-pics upload-pics-small edit-option'" (click) =  "AuthStore.getActivityPermission(100,'PREVIEW_PRODUCT_CATALOGUE_FILE') ? viewCatalogue(prod,br) : ''">
+                                      <div class="browse-form-pic" [ngStyle]="{'background': 'url(' + createImageUrl('product-catelogue',br.token) + '), url(' + getDefaultImage('no-preview') + ') no-repeat 0 0 / cover '}">
+                                      </div>
+                                      <div class="browse-form-name clearfix">
+                                         <div class="float-left">
+                                            <h6 [attr.title] = "br.title">{{br.title.length > 13 ? br.title.substring(0,13)+' ...': br.title}}</h6>
+                                            <span>{{br.size/1048576 | number:'0.2-2'}}MB</span>
+                                         </div>
+                                         <div class="browse-logo">
+                                            <img *ngIf = "checkExtension(br.ext,'image') != -1" src="/assets/images/md-jpg.png">
+                                            <img *ngIf = "checkExtension(br.ext,'doc') != -1" src="/assets/images/word-icone.png">
+                                            <img *ngIf = "checkExtension(br.ext,'pdf') != -1" src="/assets/images/pdf-icone.png">
+                                            <img *ngIf = "checkExtension(br.ext,'excel') != -1" src="/assets/images/excel-icone.png">
+                                            <img *ngIf = "checkExtension(br.ext,'video') != -1" src="/assets/images/md-video.png">
+                                            <img *ngIf = "checkExtension(br.ext,'audio') != -1" src="/assets/images/md-audio.png">
+                                            <img *ngIf = "checkExtension(br.ext,'ppt') != -1" src="/assets/images/md-ppt.png">
+                                         </div>
+                                      </div>
+                                      <div class="edit-option-show-inner">
+                                         <a *ngIf = "AuthStore.getActivityPermission(100,'DOWNLOAD_PRODUCT_CATALOGUE_FILE')"><i class="fas fa-download" [attr.title]="'download_catelogue' | translate" (click) = "downloadCatalogue(prod.id,br)"></i></a>
+                                      </div>
+                                   </div>
+                                </div>
+                             </div>
+  
+                          </div>
+                        </div>
+                     </div>
+                  </div>
+                 <div class="col-sm-12" *ngIf = "BusinessProductsStore?.totalItems > BusinessProductsStore?.itemsPerPage">
+                    <ul class="pagination justify-content-center mt-3">
+                       <div class="list">
+                          <pagination-controls [previousLabel]="'previous' | translate"  [nextLabel]="'next' | translate" (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+                       </div>
+                    </ul>
+                 </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+</ng-container>
+<ng-container *mobxAutorun>
+   <app-no-data *ngIf = "BusinessProductsStore.loaded && BusinessProductsStore.productDetails.length == 0"></app-no-data>
+</ng-container>
+
+ <!-- add-user-btn-popup Start -->
+ <div class="modal modal-style-1 popup-full-width fade" id="add-saven-popup" data-keyboard="false"
+ data-backdrop="static" #formModal>
+ <button type="button" class="close" data-dismiss="modal"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+ <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+       <!-- Modal Header -->
+       <div class="modal-header" *mobxAutorun>
+          <h4 class="modal-title" *ngIf = "BusinessProductsStore.addOrEditFlag">{{'edit_product' | translate}}</h4>
+          <h4 class="modal-title" *ngIf = "!BusinessProductsStore.addOrEditFlag">{{'add_product' | translate}}</h4>
+       </div>
+       <!-- Modal body -->
+       <div class="modal-body form-body" *mobxAutorun>
+         <form [formGroup]="form">
+          <p class="head-details">{{'product_form_message' | translate}}
+          </p>
+
+          <label class="label-style mb-0">{{'product_image' | translate}}</label>
+          <div class="row m-0 upload-section" style="padding-top: 0">
+            <div class="col-sm-4 costmz-logo-new mt-2">
+               <div class="question-circle-inp" *ngIf = "OrganizationGeneralSettingsStore.organizationSettings?.logo_allowed_types.length > 0" style="margin-right: 7px;">
+                  <i class="far fa-question-circle"></i>
+                  <div class="message-password-inp">
+                      <p class="mb-0">{{'allowed_file_types' | translate}} {{OrganizationGeneralSettingsStore.organizationSettings?.logo_allowed_types.toString()}}</p>
+                  </div>
+               </div>
+               <div class="form-group form-group-upload">
+                  <div class="darag-dropifile-upload">
+                     <div class="d-flex justify-content-center align-items-center text-center">
+                        <div>
+                           <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                           <div class="drag-file-name">{{'select_upload_your_file_here' | translate}}</div>
+                           <div class="upload-btn-wrapper">
+                              <input type="file" [disabled] = "checkLogoIsUploading()" id="file" (change)="onFileChange($event,'logo')" [accept]="checkAcceptFileTypes('logo')"/>
+                              <button class="btn">{{'browse_files' | translate}}</button>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+            <div [ngClass] = "files.success || files.file_type != 'logo' ? 'col-sm-4 up-pic-cf mt-2 hide_loader' : 'col-sm-4 up-pic-cf mt-2'" *ngFor = "let files of fileUploadsArray">
+               <div class="upload-pics edit-option file-upload-loader">
+                  <circle-progress  class="browse-form-pic"
+                     [percent] = files.uploadProgress
+                     [title] = files.uploadProgress
+                  ></circle-progress>
+               </div>
+            </div> 
+             <div [ngClass]="BusinessProductsStore.getFileDetailsByType('logo')?.is_deleted ? 'col-sm-4 up-pic-cf mt-2 image_deleted':'col-sm-4 up-pic-cf mt-2'" *ngIf = "BusinessProductsStore.getFileDetailsByType('logo')">
+               <div class="upload-pics edit-option">
+                  <div class="browse-form-pic" [ngStyle]="{'background': 'url(' + BusinessProductsStore.getFileDetailsByType('logo')?.preview + ') no-repeat 0 0 / cover'}">
+                  </div>
+                   <div class="browse-form-name clearfix">
+                    <div class="float-left">
+                     <h6 [attr.title] = "BusinessProductsStore.getFileDetailsByType('logo')?.name">{{BusinessProductsStore.getFileDetailsByType('logo')?.name.length > 20 ? BusinessProductsStore.getFileDetailsByType('logo')?.name.substring(0,20)+' ...' : BusinessProductsStore.getFileDetailsByType('logo')?.name}}</h6>
+                     <span>{{BusinessProductsStore.getFileDetailsByType('logo')?.size/1048576 | number:'0.2-2'}}MB</span>
+                    </div>
+                    <div class="browse-logo">
+                      <img *ngIf = "checkExtension(BusinessProductsStore.getFileDetailsByType('logo')?.ext,'excel') != -1" src="/assets/images/md-xl.png">
+                      <img *ngIf = "checkExtension(BusinessProductsStore.getFileDetailsByType('logo')?.ext,'image') != -1" src="/assets/images/md-jpg.png">
+                      <img *ngIf = "checkExtension(BusinessProductsStore.getFileDetailsByType('logo')?.ext,'doc') != -1" src="/assets/images/md-doc.png">
+                      <img *ngIf = "checkExtension(BusinessProductsStore.getFileDetailsByType('logo')?.ext,'pdf') != -1" src="/assets/images/md-pdf.png">
+                    </div>
+                   </div>
+                   <div class="edit-option-show">
+                    <a (click) = "BusinessProductsStore.unsetFileDetails('logo')"><i class="fas fa-trash"></i></a>
+                  </div>
+               </div>
+              
+             </div>
+          </div>
+
+          <div class="row">
+            <div class="col-sm-12">
+               <div class="form-group">
+                  <label for="title">{{'title' | translate}}<sup>*</sup></label>
+                  <input type="text" id="title" class="form-control" formControlName = "title" [attr.placeholder]="'title_of_the_product' | translate">
+                  <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.title}}</p>
+                  <p class="form-error pt-1" *ngIf = "!formErrors && form.get('title').invalid && (form.controls.title.dirty || form.controls.title.touched)">{{ form.hasError('required', ['title']) ? 'Title required' : 'Maximum 500 characters allowed' }}</p>
+               </div>
+            </div>
+
+            <div class="col-sm-12">
+               <div class="form-group">
+                  <label for="sub_title">{{'sub_title' | translate}}</label>
+                  <input type="text" id="sub_title" class="form-control" formControlName = "sub_title" [attr.placeholder]="'sub_title_of_the_product' | translate">
+                  <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.sub_title}}</p>
+                  <p class="form-error pt-1" *ngIf = "!formErrors && form.get('sub_title').invalid && (form.controls.sub_title.dirty || form.controls.sub_title.touched)">Maximum 500 characters allowed</p>
+               </div>
+            </div>
+
+            <div class="col-sm-12">
+               <div class="form-group">
+                  <label for="product_category_id">{{'product_category' | translate}}<sup>*</sup></label>
+                  <div class="clearfix">
+                     <!-- <div [ngClass]="AuthStore.getActivityPermission(100,'CREATE_PRODUCT_CATEGORY') ? 'multiple-plain-ngselect select-new-width' : 'multiple-plain-ngselect'"> -->
+                     <div [ngClass]="AuthStore.getActivityPermission(100,'CREATE_PRODUCT_CATEGORY') ? 'multiple-plain-ngselect select-new-width' : 'multiple-plain-ngselect'">
+                        <ng-select
+                           id="product_category_id"
+                           [placeholder]="'select_product_category' | translate"
+                           [searchable] = "true"
+                           [multiple]="false"
+                           formControlName = "product_category_id"
+                           (search) = "searchProductCategory($event)"
+                           (clear) = "getProductCategories()"
+                           (open) = "getProductCategories()">
+                           <ng-option [value]="item.id" *ngFor="let item of ProductCategoryMasterStore?.allItems">
+                              {{item.title.length > 80 ? item.title.substring(0,80)+' ...' : item.title }}
+                           </ng-option>
+                        </ng-select>
+                     </div>
+                     <!-- *ngIf = "AuthStore.getActivityPermission(100,'CREATE_PRODUCT_CATEGORY')" -->
+                     <button class="btn multi-add-user" *ngIf = "AuthStore.getActivityPermission(100,'CREATE_PRODUCT_CATEGORY')" (click)="addProductCategory()"><i class="fas fa-plus"></i></button>
+                  </div>
+                  <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.product_category_id}}</p>
+                  <p class="form-error pt-1" *ngIf = "!formErrors && form.get('product_category_id').invalid && (form.controls.product_category_id.dirty || form.controls.product_category_id.touched)">Product category required</p>
+               </div>
+            </div>
+             <div class="col-sm-12">
+                <div class="form-group add-kpi-textarea">
+                  <span style="float: right;" class="text-grey">{{form?.value.description != null ? form?.value.description?.length : 0}} {{'characters' | translate}}</span>
+                   <label for="description">{{'description' | translate}}</label>
+                   <textarea class="form-control" rows="11" formControlName = "description" id="description" [attr.placeholder]="'write_a_short_description_of_the_product' | translate"></textarea>
+                </div>
+             </div>
+          </div>
+          <label class="label-style mb-0">{{'catalogues' | translate}}</label>
+          <div class="scroll-documents" #uploadArea>
+            <div class="row m-0 upload-section" style="padding-top: 0">
+               <div class="col-sm-4 costmz-logo-new mt-2">
+                  <div class="question-circle-inp" *ngIf = "OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.length > 0" style="margin-right: 7px;">
+                     <i class="far fa-question-circle"></i>
+                     <div class="message-password-inp">
+                         <p class="mb-0">{{'allowed_file_types' | translate}} {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}</p>
+                     </div>
+                  </div>
+                  <div class="form-group form-group-upload">
+                     <div class="darag-dropifile-upload">
+                        <div class="d-flex justify-content-center align-items-center text-center">
+                           <div>
+                              <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                              <div class="drag-file-name">{{'select_upload_your_file_here' | translate}}</div>
+                              <div class="upload-btn-wrapper">
+                                 <input type="file" id="myfile" (change)="onFileChange($event,'brochure')" [accept]="checkAcceptFileTypes('brochure')" multiple/>
+                                 <button class="btn">{{'browse_files' | translate}}</button>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+               <div [ngClass] = "files.success || files.file_type != 'brochure' ? 'col-sm-4 up-pic-cf mt-2 hide_loader' : 'col-sm-4 up-pic-cf mt-2'" *ngFor = "let files of fileUploadsArray">
+                  <div class="upload-pics edit-option file-upload-loader">
+                     <circle-progress  class="browse-form-pic"
+                        [percent] = files.uploadProgress
+                        [title] = files.uploadProgress
+                     ></circle-progress>
+                  </div>
+               </div> 
+               <div [ngClass]="b.is_deleted ? 'col-sm-4 up-pic-cf mt-2 image_deleted':'col-sm-4 up-pic-cf mt-2'" *ngFor = "let b of BusinessProductsStore.getBrochureDetails">
+                  <div class="upload-pics edit-option">
+                     <div class="browse-form-pic" [ngStyle]="{'background': 'url(' + b.preview + ') no-repeat 0 0 / cover'}">
+                     </div>
+                     <div class="browse-form-name clearfix">
+                     <div class="float-left">
+                        <h6 [attr.title] = "b.name">{{b.name.length > 20 ? b.name.substring(0,20)+' ...' : b.name}}</h6>
+                        <span>{{b.size/1048576 | number:'0.2-2'}}MB</span>
+                     </div>
+                     <div class="browse-logo">
+                        <img *ngIf = "checkExtension(b.ext,'excel') != -1" src="/assets/images/md-xl.png">
+                        <img *ngIf = "checkExtension(b.ext,'image') != -1" src="/assets/images/md-jpg.png">
+                        <img *ngIf = "checkExtension(b.ext,'doc') != -1" src="/assets/images/md-doc.png">
+                        <img *ngIf = "checkExtension(b.ext,'pdf') != -1" src="/assets/images/md-pdf.png">
+                        <img *ngIf = "checkExtension(b.ext,'video') != -1" src="/assets/images/md-video.png">
+                        <img *ngIf = "checkExtension(b.ext,'audio') != -1" src="/assets/images/md-audio.png">
+                        <img *ngIf = "checkExtension(b.ext,'ppt') != -1" src="/assets/images/md-ppt.png">
+                     </div>
+                     </div>
+                     <div class="edit-option-show">
+                     <a (click) = "removeBrochure(b.token)"><i class="fas fa-trash"></i></a>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+          <div class="row">
+             <div class="col-sm-12">
+                <div class="d-block justify-content-left border-0 mt-3">
+                   <button type="button" data-toggle="modal" data-target="#signal-lost"
+                      class="btn  btn-active" (click)="save()"
+                      [disabled]="form.invalid || AppStore.loading || checkFileIsUploading()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save') }}</button>
+                   <button type="button" data-toggle="modal" data-target="#signal-lost"
+                      class="btn " (click)="save(true)"
+                      [disabled]="form.invalid || AppStore.loading || checkFileIsUploading()">
+                      {{ AppStore.loading  ? getButtonText('loading') : getButtonText('save_close') }}</button>
+                   <button type="button" data-toggle="modal" data-target="#error-message"
+                      class="btn " (click)="cancel()">
+                      {{ AppStore.loading  ? getButtonText('loading') : getButtonText('cancel') }}</button>
+                </div>
+             </div>
+          </div>
+         </form>
+       </div>
+       <!-- Modal footer -->
+    </div>
+ </div>
+</div>
+<!-- add-user-btn-popup End -->
+
+<div class="modal modal-style-1 popup-full-width fade" id="add-saven-popup" data-keyboard="false" data-backdrop="static" #categoryFormModal *mobxAutorun>
+   <app-product-category-modal *ngIf="productCategoryObject.type" [source]="productCategoryObject"></app-product-category-modal>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup" data-keyboard="false" data-backdrop="static" #filePreviewModal *mobxAutorun>
+   <button type="button" class="close" data-dismiss="modal" (click) = "closePreviewModal($event)"><i class="lni-close"></i><span>esc</span></button>
+   <app-previewcomponent *ngIf = "previewObject" [source] = "previewObject" (close) = "closePreviewModal($event)"></app-previewcomponent>
+</div>
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #deletePopup  data-backdrop="static" data-keyboard="false">
+   <app-delete-popup [source] = "deleteObject"></app-delete-popup>
+</div>
+
+<!------------------- Delete Confirmation Modal End --------------------------->

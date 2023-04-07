@@ -1,0 +1,163 @@
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+import { InternalAuditRoutingModule } from './internal-audit-routing.module';
+import { AuditUniverseComponent } from './pages/audit-universe/audit-universe.component';
+import { AuditProgramComponent } from './pages/audit-program/pages/audit-program.component';
+import { AuditPlanComponent } from './pages/audit-plan/audit-plan.component';
+import { AuditScheduleComponent } from './pages/audit-schedule/pages/audit-schedule.component';
+import { AuditComponent } from './pages/audit/pages/audit.component';
+import { AuditFindingsComponent } from './pages/audit-findings/pages/audit-findings.component';
+import { AuditDashboardComponent } from './pages/dashboard/audit-dashboard.component';
+import { AuditReportsComponent } from './pages/reports/pages/audit-reports.component';
+import { AuditableItemComponent } from './pages/auditable-item/pages/auditable-item.component';
+import { SharedModule } from 'src/app/shared/shared.module';
+import { NgxPaginationModule } from 'ngx-pagination';
+import { AuditableItemListComponent } from './pages/auditable-item/pages/auditable-item-list/auditable-item-list.component';
+import { AddAuditableItemComponent } from './pages/auditable-item/pages/add-auditable-item/add-auditable-item.component';
+import { ControlsAddModalComponent } from './pages/auditable-item/components/controls-add-modal/controls-add-modal.component';
+import { AuditableItemDetailsComponent } from './pages/auditable-item/pages/auditable-item-details/auditable-item-details.component';
+import { EditAuditableItemComponent } from './pages/auditable-item/pages/edit-auditable-item/edit-auditable-item.component';
+import { ImportRiskModalComponent } from './pages/auditable-item/components/import-risk-modal/import-risk-modal.component';
+import { ImportProcessModalComponent } from './pages/auditable-item/components/import-process-modal/import-process-modal.component';
+import { AuditableItemPreviewComponent } from './pages/auditable-item/components/auditable-item-preview/auditable-item-preview.component';
+import { AuditProgramListComponent } from './pages/audit-program/pages/audit-program-list/audit-program-list.component';
+import { AuditProgramAddModalComponent } from './pages/audit-program/components/audit-program-add-modal/audit-program-add-modal.component';
+import { ChecklistAddModalComponent } from './pages/auditable-item/components/checklist-add-modal/checklist-add-modal.component';
+import { AuditProgramDetailsComponent } from './pages/audit-program/pages/audit-program-details/audit-program-details.component';
+import { InfoComponent } from './pages/audit-program/pages/audit-program-details/info/info.component';
+import { AuditableItemsComponent } from './pages/audit-program/pages/audit-program-details/auditable-items/auditable-items.component';
+import { AuditableItemAddModalComponent } from './pages/audit-program/components/auditable-item-add-modal/auditable-item-add-modal.component';
+import { AuditPlansComponent } from './pages/audit-program/pages/audit-program-details/audit-plans/audit-plans.component';
+import { AddAuditPlanComponent } from './pages/audit-plan/pages/add-audit-plan/add-audit-plan.component';
+import { AuditPlanListComponent } from './pages/audit-plan/pages/audit-plan-list/audit-plan-list.component';
+import { AddObjectiveModalComponent } from './pages/audit-plan/components/add-objective-modal/add-objective-modal.component';
+import { AddCriteriaModalComponent } from './pages/audit-plan/components/add-criteria-modal/add-criteria-modal.component';
+import { AuditorsComponent } from './pages/audit-program/pages/audit-program-details/auditors/auditors.component';
+import { EditAuditPlanComponent } from './pages/audit-plan/pages/edit-audit-plan/edit-audit-plan.component';
+import { AuditPlanDetailsComponent } from './pages/audit-plan/pages/audit-plan-details/audit-plan-details.component';
+import { AuditPlanInfoComponent } from './pages/audit-plan/pages/audit-plan-details/audit-plan-info/audit-plan-info.component';
+import { AuditPlanPreviewModalComponent } from './pages/audit-plan/components/audit-plan-preview-modal/audit-plan-preview-modal.component';
+import { SchedulesComponent } from './pages/audit-plan/pages/audit-plan-details/schedules/schedules.component';
+import { AddNewAuditPlanScheduleComponent } from './pages/audit-plan/pages/audit-plan-details/schedules/add-new-audit-plan-schedule/add-new-audit-plan-schedule.component';
+import { AuditPlanScheduleComponent } from './pages/audit-plan-schedule/pages/audit-plan-schedule.component';
+import { AuditPlanScheduleListComponent } from './pages/audit-plan-schedule/pages/audit-plan-schedule-list/audit-plan-schedule-list.component';
+import { AuditPlanScheduleDetailsComponent } from './pages/audit-plan-schedule/pages/audit-plan-schedule-details/audit-plan-schedule-details.component';
+import { AuditListComponent } from './pages/audit/pages/audit-list/audit-list.component';
+import { AddPlannedAuditComponent } from './pages/audit/pages/add/planned-audit/add-planned-audit/add-planned-audit.component';
+import { EditPlannedAuditComponent } from './pages/audit/pages/add/planned-audit/edit-planned-audit/edit-planned-audit.component';
+import { AuditDetailsComponent } from './pages/audit/pages/audit-details/audit-details.component';
+import { AuditInfoComponent } from './pages/audit/pages/audit-details/audit-info/audit-info.component';
+import { FindingsComponent } from './pages/audit/pages/audit-details/findings/findings.component';
+import { AuditSchedulesComponent } from './pages/audit/pages/audit-details/audit-schedules/audit-schedules.component';
+import { AuditorAuditeeAddModalComponent } from './pages/audit/components/auditor-auditee-add-modal/auditor-auditee-add-modal.component';
+import { AddAuditPlanScheduleComponent } from './pages/audit-plan-schedule/pages/add-audit-plan-schedule/add-audit-plan-schedule.component';
+import { EditAuditPlanScheduleComponent } from './pages/audit-plan-schedule/pages/edit-audit-plan-schedule/edit-audit-plan-schedule.component';
+import { ExecuteChecklistComponent } from './pages/audit/pages/audit-details/audit-schedules/execute-checklist/execute-checklist.component';
+import { AuditSchedulesListComponent } from './pages/audit-schedule/pages/audit-schedules-list/audit-schedules-list.component';
+import { AuditScheduleDetailsComponent } from './pages/audit-schedule/pages/audit-schedule-details/audit-schedule-details.component';
+import { ScheduleExecuteChecklistComponent } from './pages/audit-schedule/pages/audit-schedule-details/schedule-execute-checklist/schedule-execute-checklist.component';
+import { AuditFindingsListComponent } from './pages/audit-findings/pages/audit-findings-list/audit-findings-list.component';
+import { FindingsAddComponent } from './pages/audit-findings/pages/findings-add/findings-add.component';
+import { AuditFindingsDetailsComponent } from './pages/audit-findings/pages/audit-findings-details/audit-findings-details.component';
+import { FindingInfoComponent } from './pages/audit-findings/pages/audit-findings-details/finding-info/finding-info.component';
+import { FindingsEditComponent } from './pages/audit-findings/pages/findings-edit/findings-edit.component';
+import { RootCauseAnalysisComponent } from './pages/audit-findings/pages/audit-findings-details/root-cause-analysis/root-cause-analysis.component';
+import { RcaAddModalComponent } from './pages/audit-findings/components/rca-add-modal/rca-add-modal.component';
+import { ImpactAnalysisComponent } from './pages/audit-findings/pages/audit-findings-details/impact-analysis/impact-analysis.component';
+import { ImpactAnalysisDetailsComponent } from './pages/audit-findings/pages/audit-findings-details/impact-analysis/impact-analysis-details/impact-analysis-details.component';
+import { CorrectiveActionComponent } from './pages/audit-findings/pages/audit-findings-details/corrective-action/corrective-action.component';
+import { CaAddModalComponent } from './pages/audit-findings/components/ca-add-modal/ca-add-modal.component';
+import { ChecklistAnswerModalComponent } from './pages/audit-findings/components/checklist-answer-modal/checklist-answer-modal.component';
+import { ScheduleDateUpdateModalComponent } from './pages/audit-schedule/components/schedule-date-update-modal/schedule-date-update-modal.component';
+import { AddNewPlanComponent } from './pages/audit-program/pages/audit-program-details/audit-plans/add-new-plan/add-new-plan.component';
+import { EditPlanComponent } from './pages/audit-program/pages/audit-program-details/audit-plans/edit-plan/edit-plan.component';
+import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime';
+import { NewFindingsComponent } from './pages/audit/pages/audit-details/findings/new-findings/new-findings.component';
+import { EditFindingsComponent } from './pages/audit/pages/audit-details/findings/edit-findings/edit-findings.component';
+import { ActionPlanComponent } from './pages/action-plan/pages/action-plan.component';
+import { ActionPlanListComponent } from './pages/action-plan/pages/action-plan-list/action-plan-list.component';
+import { ActionPlanDetailsComponent } from './pages/action-plan/pages/action-plan-details/action-plan-details.component';
+import { ActionPlanAddModalComponent } from './pages/action-plan/components/action-plan-add-modal/action-plan-add-modal.component';
+import { AnnualPlanComponent } from './pages/annual-plan/pages/annual-plan.component';
+import { AnnualPlanMainTabComponent } from './pages/annual-plan/pages/annual-plan-main-tab/annual-plan-main-tab.component';
+import { ByAuditorComponent } from './pages/annual-plan/pages/annual-plan-main-tab/by-auditor/by-auditor.component';
+import { ByAuditorDetailsComponent } from './pages/annual-plan/pages/annual-plan-main-tab/by-auditor/by-auditor-details/by-auditor-details.component';
+import { ByDepartmentComponent } from './pages/annual-plan/pages/annual-plan-main-tab/by-department/by-department.component';
+import { ByYearComponent } from './pages/annual-plan/pages/annual-plan-main-tab/by-year/by-year.component';
+import { MainReportComponent } from './pages/reports/pages/main-report/main-report.component';
+import { AuditTemplateComponent } from './pages/audit-template/pages/audit-template.component';
+import { AuditTemplateListComponent } from './pages/audit-template/pages/audit-template-list/audit-template-list.component';
+import { AuditTemplateAddModalComponent } from './pages/audit-template/components/audit-template-add-modal/audit-template-add-modal.component';
+import { AuditTemplateDetailsComponent } from './pages/audit-template/pages/audit-template-details/audit-template-details.component';
+import { AuditorUserBoxComponent } from './pages/audit-plan/components/auditor-user-box/auditor-user-box.component';
+import { EditNewPlanScheduleComponent } from './pages/audit-plan/pages/audit-plan-details/schedules/edit-new-plan-schedule/edit-new-plan-schedule.component';
+import { AuditsComponent } from './pages/audit-program/pages/audit-program-details/audits/audits.component';
+import { FindingsFromProgramComponent } from './pages/audit-program/pages/audit-program-details/findings/findings.component';
+import { AuditWorkflowComponent } from './pages/audit-workflow/pages/audit-workflow.component';
+import { AuditWorkflowListComponent } from './pages/audit-workflow/pages/audit-workflow-list/audit-workflow-list.component';
+import { AuditWorkflowDetailsComponent } from './pages/audit-workflow/pages/audit-workflow-details/audit-workflow-details.component';
+import { AuditWorkflowAddModalComponent } from './pages/audit-workflow/components/audit-workflow-add-modal/audit-workflow-add-modal.component';
+import { AuditWorkflowUserAddModalComponent } from './pages/audit-workflow/components/audit-workflow-user-add-modal/audit-workflow-user-add-modal.component';
+import { AuditWorkflowDesignationAddModalComponent } from './pages/audit-workflow/components/audit-workflow-designation-add-modal/audit-workflow-designation-add-modal.component';
+import { AuditWorkflowHeadUnitAddModalComponent } from './pages/audit-workflow/components/audit-workflow-head-unit-add-modal/audit-workflow-head-unit-add-modal.component';
+import { AuditWorkflowTeamAddModalComponent } from './pages/audit-workflow/components/audit-workflow-team-add-modal/audit-workflow-team-add-modal.component';
+import { AuditorChooseModalComponent } from './pages/audit-program/components/auditor-choose-modal/auditor-choose-modal.component';
+import { RiskRatingsListModalComponent } from './pages/audit-program/components/risk-ratings-list-modal/risk-ratings-list-modal.component';
+import { AuditWorkflowRoleAddModalComponent } from './pages/audit-workflow/components/audit-workflow-role-add-modal/audit-workflow-role-add-modal.component';
+import { ChecklistAnswersModalComponent } from './pages/audit/components/checklist-answers-modal/checklist-answers-modal.component';
+import { ChecklistSingleViewModalComponent } from './pages/audit/components/checklist-single-view-modal/checklist-single-view-modal.component';
+import { GenerateReportModalComponent } from './pages/reports/components/generate-report-modal/generate-report-modal.component';
+import { AuditReportsListComponent } from './pages/reports/pages/audit-reports-list/audit-reports-list.component';
+import { AuditWorkflowCommonPopupComponent } from './pages/audit-workflow/components/audit-workflow-common-popup/audit-workflow-common-popup.component';
+import { AuditableItemForFindingsComponent } from './pages/audit-findings/components/auditable-item-for-findings/auditable-item-for-findings.component';
+import { AuidtableItemsForPlanScheduleComponent } from './pages/audit-plan-schedule/components/auidtable-items-for-plan-schedule/auidtable-items-for-plan-schedule.component';
+import { AuditReportComponent } from './pages/audit/pages/audit-details/audit-report/audit-report.component';
+import { AnnualPlanByAuditorComponent } from './loaders/annual-plan-by-auditor/annual-plan-by-auditor.component';
+import { AnnualPlanByDepartmentAndYearLoaderComponent } from './loaders/annual-plan-by-department-and-year-loader/annual-plan-by-department-and-year-loader.component';
+import { AuditableItemLoaderComponent } from './loaders/auditable-item-loader/auditable-item-loader.component';
+import { AuditableItemDetailsLoaderComponent } from './loaders/auditable-item-details-loader/auditable-item-details-loader.component';
+import { AuditProgramInfoLoaderComponent } from './loaders/audit-program-info-loader/audit-program-info-loader.component';
+import { PlanScheduleLoaderComponent } from './loaders/plan-schedule-loader/plan-schedule-loader.component';
+import { AuditProgramAuditableItemLoaderComponent } from './loaders/audit-program-auditable-item-loader/audit-program-auditable-item-loader.component';
+import { AuditProgramPlansLoaderComponent } from './loaders/audit-program-plans-loader/audit-program-plans-loader.component';
+import { AuditPlanInfoLoaderComponent } from './loaders/audit-plan-info-loader/audit-plan-info-loader.component';
+import { ReportsAuditComponent } from './pages/reports-audit/reports-audit.component';
+import { AuditCountTypeComponent } from './pages/reports-audit/audit-count-type/audit-count-type.component';
+import { AuditCountListComponent } from './pages/reports-audit/audit-count-list/audit-count-list.component';
+import { AuditReportTemplateLoaderComponent } from './loaders/audit-report-template-loader/audit-report-template-loader.component';
+import { AuditInfoLoaderComponent } from './loaders/audit-info-loader/audit-info-loader.component';
+import { AuditReportLoaderComponent } from './loaders/audit-report-loader/audit-report-loader.component';
+import { AuditScheduleDetailsLoaderComponent } from './loaders/audit-schedule-details-loader/audit-schedule-details-loader.component';
+import { AuditChecklistViewmoreComponent } from './loaders/audit-checklist-viewmore/audit-checklist-viewmore.component';
+import { AuditFindingsDetailsInfoComponent } from './loaders/audit-findings-details-info/audit-findings-details-info.component';
+import { AuditFindingsDetailsIAComponent } from './loaders/audit-findings-details-ia/audit-findings-details-ia.component';
+import { AuditFindingsDetailsCAComponent } from './loaders/audit-findings-details-ca/audit-findings-details-ca.component';
+import { AuditFindingsDetailsRCAComponent } from './loaders/audit-findings-details-rca/audit-findings-details-rca.component';
+import { ReportDetailsIntroLoaderComponent } from './loaders/report-details-intro-loader/report-details-intro-loader.component';
+import { WorkflowFormPopupComponent } from './pages/reports/components/workflow-form-popup/workflow-form-popup.component';
+import { WorkflowSubFormPopupComponent } from './pages/reports/components/workflow-sub-form-popup/workflow-sub-form-popup.component';
+import { WorkflowPopupComponent } from './pages/reports/components/workflow-popup/workflow-popup.component';
+import { WorkflowHistoryPopupComponent } from './pages/reports/components/workflow-history-popup/workflow-history-popup.component';
+import { AuditWorkflowEngineLoaderComponent } from './pages/audit-workflow/components/audit-workflow-engine-loader/audit-workflow-engine-loader.component';
+import { CarouselModule } from 'ngx-owl-carousel-o';
+import { FindingDetailsDashboardComponent } from './pages/finding-details-dashboard/finding-details-dashboard.component';
+import { CorrectiveActionUpdateModalComponent } from './pages/audit-findings/components/corrective-action-update-modal/corrective-action-update-modal.component';
+import { CorrectiveActionHistoryModalComponent } from './pages/audit-findings/components/corrective-action-history-modal/corrective-action-history-modal.component';
+import { MstypeChecklistModalComponent } from './pages/audit-plan/components/mstype-checklist-modal/mstype-checklist-modal.component';
+import { MstypeChecklistRecursiveModalComponent } from './pages/audit-plan/components/mstype-checklist-recursive-modal/mstype-checklist-recursive-modal.component';
+import { AuditOverviewComponent } from './pages/audit-overview/audit-overview.component';
+@NgModule({
+  declarations: [AuditUniverseComponent, AuditProgramComponent, AuditPlanComponent, AuditScheduleComponent, AuditComponent, AuditFindingsComponent, AuditDashboardComponent, AuditReportsComponent, AuditableItemComponent, AuditableItemListComponent, AddAuditableItemComponent, ControlsAddModalComponent, AuditableItemDetailsComponent, EditAuditableItemComponent, ImportRiskModalComponent, ImportProcessModalComponent, AuditableItemLoaderComponent, AuditableItemDetailsLoaderComponent, AuditableItemPreviewComponent, AuditProgramListComponent, AuditProgramAddModalComponent, ChecklistAddModalComponent, AuditProgramDetailsComponent, InfoComponent, AuditableItemsComponent, AuditableItemAddModalComponent, AuditPlansComponent, AddAuditPlanComponent, AuditPlanListComponent, AddObjectiveModalComponent, AddCriteriaModalComponent, AuditorsComponent, EditAuditPlanComponent, AuditPlanDetailsComponent, AuditPlanInfoComponent, AuditPlanPreviewModalComponent, SchedulesComponent, AddNewAuditPlanScheduleComponent, AuditPlanScheduleComponent, AuditPlanScheduleListComponent, AuditPlanScheduleDetailsComponent, EditAuditPlanScheduleComponent, AuditListComponent, AddPlannedAuditComponent, EditPlannedAuditComponent, AuditDetailsComponent, AuditInfoComponent, FindingsComponent, AuditSchedulesComponent, AuditorAuditeeAddModalComponent, AddAuditPlanScheduleComponent, ExecuteChecklistComponent, AuditSchedulesListComponent, AuditScheduleDetailsComponent, ScheduleExecuteChecklistComponent, AuditFindingsListComponent, FindingsAddComponent, AuditFindingsDetailsComponent, FindingInfoComponent, FindingsEditComponent, RootCauseAnalysisComponent, RcaAddModalComponent, ImpactAnalysisComponent, ImpactAnalysisDetailsComponent, CorrectiveActionComponent, CaAddModalComponent, ChecklistAnswerModalComponent, ScheduleDateUpdateModalComponent, AddNewPlanComponent, EditPlanComponent, NewFindingsComponent, EditFindingsComponent, ActionPlanComponent, ActionPlanListComponent, ActionPlanDetailsComponent, ActionPlanAddModalComponent, AnnualPlanComponent, AnnualPlanMainTabComponent, ByAuditorComponent, ByAuditorDetailsComponent, ByDepartmentComponent, ByYearComponent, MainReportComponent, AuditTemplateComponent, AuditTemplateListComponent, AuditTemplateAddModalComponent, AuditTemplateDetailsComponent, AuditorUserBoxComponent, EditNewPlanScheduleComponent, AuditsComponent,FindingsFromProgramComponent, AuditWorkflowComponent, AuditWorkflowListComponent, AuditWorkflowDetailsComponent, AuditWorkflowAddModalComponent, AuditWorkflowUserAddModalComponent, AuditWorkflowDesignationAddModalComponent, AuditWorkflowHeadUnitAddModalComponent, AuditWorkflowTeamAddModalComponent, AuditorChooseModalComponent, RiskRatingsListModalComponent, AuditWorkflowRoleAddModalComponent, ChecklistAnswersModalComponent, ChecklistSingleViewModalComponent, GenerateReportModalComponent, AuditReportsListComponent, AuditWorkflowCommonPopupComponent, AuditableItemForFindingsComponent, AuidtableItemsForPlanScheduleComponent, AuditReportComponent, AnnualPlanByAuditorComponent, AnnualPlanByDepartmentAndYearLoaderComponent, AuditProgramInfoLoaderComponent, PlanScheduleLoaderComponent, AuditProgramAuditableItemLoaderComponent, AuditProgramPlansLoaderComponent, AuditPlanInfoLoaderComponent, ReportsAuditComponent, AuditCountTypeComponent, AuditCountListComponent, AuditReportTemplateLoaderComponent, AuditInfoLoaderComponent, AuditReportLoaderComponent, AuditScheduleDetailsLoaderComponent, AuditChecklistViewmoreComponent, AuditFindingsDetailsInfoComponent, AuditFindingsDetailsIAComponent, AuditFindingsDetailsCAComponent, AuditFindingsDetailsRCAComponent, ReportDetailsIntroLoaderComponent, WorkflowFormPopupComponent, WorkflowSubFormPopupComponent, WorkflowPopupComponent, WorkflowHistoryPopupComponent, AuditWorkflowEngineLoaderComponent, FindingDetailsDashboardComponent, CorrectiveActionUpdateModalComponent, CorrectiveActionHistoryModalComponent, MstypeChecklistModalComponent, MstypeChecklistRecursiveModalComponent, AuditOverviewComponent],
+
+  imports: [
+    CommonModule,
+    InternalAuditRoutingModule,
+    SharedModule,
+    NgxPaginationModule,
+    OwlDateTimeModule,
+    OwlNativeDateTimeModule,
+    CarouselModule
+  ]
+})
+export class InternalAuditModule { }

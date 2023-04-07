@@ -1,0 +1,756 @@
+<!-- <div style="height:45px;"></div> -->
+<nav class="edit-bar" data-toggle="affix" #editBar>
+   <app-breadcrumb-menu></app-breadcrumb-menu>
+   <app-sub-menu></app-sub-menu>
+</nav>
+<main class="mt-3 organization-page">
+   <div class="container-fluid">
+      <div class="organization-form-page" *mobxAutorun>
+         <div [ngStyle]="{'display':!showForm ? 'none' : 'block'}">
+            <form id="regForm" [formGroup]="regForm" class="organization-multi-stup-form multi-stup-form-common">
+               <!-- Circles which indicates the steps of the form: -->
+               <div id="header-sroll-form" class="form-indicates-sec clearfix" #formSteps>
+                  <span class="step pointer" (click)="changeStep(0)"><span class="multi-form-nbr">1</span>{{'info' |
+                     translate}}</span>
+                  <span class="step pointer" (click)="changeStep(1)"><span class="multi-form-nbr">2</span>VMV</span>
+                  <span class="step pointer" (click)="changeStep(2)"><span
+                        class="multi-form-nbr">3</span>{{'ceo_message' | translate}}</span>
+                  <span class="step pointer" (click)="changeStep(3)"><span
+                        class="multi-form-nbr">4</span>{{'preview_save' | translate}}</span>
+               </div>
+               <!-- One "tab" for each step in the form: -->
+               <div class="tab">
+                  <!-- tab start -->
+                  <label for="name" class="label-style mb-0">{{'organization_logo_url' | translate}}</label>
+                  <div class="row m-0 upload-section" style="padding-top: 0">
+                     <div class="col-sm-4 col-lg-3 costmz-logo-new mt-2">
+                        <div class="question-circle-inp"
+                           *ngIf="OrganizationGeneralSettingsStore.organizationSettings?.logo_allowed_types.length > 0"
+                           style="margin-right: 7px;">
+                           <i class="far fa-question-circle"></i>
+                           <div class="message-password-inp">
+                              <p class="mb-0">{{'allowed_file_types' | translate}}
+                                 {{OrganizationGeneralSettingsStore.organizationSettings?.logo_allowed_types.toString()}}
+                              </p>
+                           </div>
+                        </div>
+                        <div class="form-group form-group-upload">
+                           <div class="darag-dropifile-upload">
+                              <div class="d-flex justify-content-center align-items-center text-center">
+                                 <div class="drag-file-sec">
+                                    <img src="/assets/images/drag-pic.png" class="drag-pic-files">
+                                    <div class="drag-file-name">{{'select_upload_your_file_here' | translate}}</div>
+                                    <div class="upload-btn-wrapper">
+                                       <input [disabled]="checkLogoIsUploading()" id="file" type="file"
+                                          (change)="onFileChange($event,'logo')"
+                                          [accept]="checkAcceptFileTypes('logo')" />
+                                       <button class="btn">{{'browse_files' | translate}}</button>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                     <div
+                        [ngClass]="files.success || files.file_type != 'logo' ? 'col-sm-4 col-lg-3 up-pic-cf mt-2 hide_loader' : 'col-sm-4 col-lg-3 up-pic-cf mt-2'"
+                        *ngFor="let files of fileUploadsArray">
+                        <div class="upload-pics edit-option file-upload-loader">
+                           <circle-progress class="browse-form-pic" [percent]=files.uploadProgress
+                              [title]=files.uploadProgress></circle-progress>
+                        </div>
+                     </div>
+                     <div
+                        [ngClass]="ProfileStore.getFileDetailsByType('logo')?.is_deleted ? 'col-sm-4 col-lg-3 up-pic-cf mt-2 image_deleted':'col-sm-4 col-lg-3 up-pic-cf mt-2'"
+                        *ngIf="ProfileStore.getFileDetailsByType('logo')">
+                        <div class="upload-pics edit-option">
+                           <div class="browse-form-pic"
+                              [ngStyle]="{'background': 'url(' + ProfileStore.getFileDetailsByType('logo')?.preview + ') no-repeat 0 0 / cover'}">
+                           </div>
+                           <div class="browse-form-name clearfix">
+                              <div class="float-left">
+                                 <h6 [attr.title]="ProfileStore.getFileDetailsByType('logo')?.name">
+                                    {{ProfileStore.getFileDetailsByType('logo')?.name.length > 20 ?
+                                    ProfileStore.getFileDetailsByType('logo')?.name.substring(0,20)+' ...' :
+                                    ProfileStore.getFileDetailsByType('logo')?.name}}</h6>
+                                 <span>{{ProfileStore.getFileDetailsByType('logo')?.size/1048576 |
+                                    number:'0.2-2'}}MB</span>
+                              </div>
+                              <div class="browse-logo">
+                                 <img
+                                    *ngIf="checkExtension(ProfileStore.getFileDetailsByType('logo')?.ext,'excel') != -1"
+                                    src="/assets/images/md-xl.png">
+                                 <img
+                                    *ngIf="checkExtension(ProfileStore.getFileDetailsByType('logo')?.ext,'image') != -1"
+                                    src="/assets/images/md-jpg.png">
+                                 <img *ngIf="checkExtension(ProfileStore.getFileDetailsByType('logo')?.ext,'doc') != -1"
+                                    src="/assets/images/md-doc.png">
+                                 <img *ngIf="checkExtension(ProfileStore.getFileDetailsByType('logo')?.ext,'pdf') != -1"
+                                    src="/assets/images/md-pdf.png">
+                              </div>
+                           </div>
+                           <div class="edit-option-show">
+                              <a (click)="ProfileStore.unsetFileDetails('logo')"><i class="fas fa-trash"></i></a>
+                           </div>
+                        </div>
+                     </div>
+
+                  </div>
+                  <div class="row">
+
+                     <div class="col-sm-6">
+                        <div class="form-group">
+                           <label for="title">{{'organization_name' | translate}}<sup>*</sup></label>
+                           <input type="text" id="title" class="form-control" formControlName="title"
+                              [attr.placeholder]="'organization_name_placeholder' | translate">
+                           <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.title}}</p>
+                           <p class="form-error pt-1"
+                              *ngIf=" !formErrors && regForm.get('title').invalid && (regForm.controls.title.dirty || regForm.controls.title.touched)">
+                              {{ regForm.hasError('required', ['title']) ? getButtonText('organization_title_required')
+                              : getButtonText('maximum_500_characters') }}</p>
+                        </div>
+                     </div>
+                     <div class="col-sm-6">
+                        <div class="form-group">
+                           <label for="email">{{'organization_email_id' | translate}}</label>
+                           <input type="text" id="email" class="form-control" formControlName="email"
+                              [attr.placeholder]="'organization_email_placeholder' | translate">
+                           <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.email}}</p>
+                           <p class="form-error pt-1"
+                              *ngIf=" !formErrors && regForm.get('email').invalid && (regForm.controls.email.dirty || regForm.controls.email.touched)">
+                              {{'enter_valid_email' | translate}}</p>
+                        </div>
+                     </div>
+
+                     <div class="col-sm-6">
+                        <div class="form-group">
+                           <label for="phone">{{'organization_phone' | translate}}</label>
+                           <input type="text" id="phone" class="form-control" formControlName="phone"
+                              [attr.placeholder]="'organization_phone_placeholder' | translate">
+                           <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.phone}}</p>
+                           <p class="form-error pt-1"
+                              *ngIf=" !formErrors && regForm.get('phone').invalid && (regForm.controls.phone.dirty || regForm.controls.phone.touched)">
+                              {{'enter_valid_phone' | translate}}</p>
+                        </div>
+
+                     </div>
+                     <div class="col-sm-6">
+                        <div class="form-group">
+                           <label for="establish_date">{{'organization_establish_date' | translate}}</label>
+                           <div class="input-group">
+                              <input [readonly]="true" class="form-control bg-white" id="establish_date" placeholder="yyyy-mm-dd"
+                                 [minDate]="minDate" (click)="d.toggle()" name="dp" formControlName="establish_date" ngbDatepicker
+                                 #d="ngbDatepicker">
+                              <div class="input-group-append">
+                                 <button class="btn btn-outline-secondary calendar" (click)="d.toggle()"
+                                    type="button"><i class="fas fa-calendar-alt"></i></button>
+                              </div>
+
+                              <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.establish_date}}</p>
+                           </div>
+                           <p class="form-error pt-1" *ngIf="regForm.controls.establish_date.errors?.ngbDate">Please
+                              choose a valid date</p>
+                        </div>
+                     </div>
+
+
+
+                  </div>
+                  <div class="row">
+                     <div class="col-sm-12">
+                        <div class="form-group add-kpi-textarea">
+                           <span style="float: right;" class="text-grey">{{regForm?.value.description != null ?
+                              regForm?.value.description?.length : 0}} {{'characters' | translate}}</span>
+                           <label for="description">{{'about_us' | translate}}</label>
+                           <textarea class="form-control" rows="11" id="description" formControlName="description"
+                              [attr.placeholder]="'organization_description_placeholder' | translate"></textarea>
+                           <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.description}}</p>
+                        </div>
+                     </div>
+                  </div>
+                  <div class="row">
+                     <div class="col-sm-6">
+                        <div class="form-group">
+                           <label for="employee_count">{{'employee_count' | translate}}</label>
+                           <input type="number" id="employee_count" class="form-control input-number noscroll" onwheel="this.blur()" onkeyup="this.value=this.value.replace(/[^a-zA-Z0-9]/g, '')" 
+                              formControlName="employee_count"
+                              [attr.placeholder]="'organization_employee_count_placeholder' | translate">
+                           <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.employee_count}}</p>
+                        </div>
+                     </div>
+                     <div class="col-sm-6" *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_branch">
+                        <div class="form-group">
+                           <label for="branch_count">{{'branch_count' | translate}}</label>
+                           <input type="number" class="form-control input-number noscroll" onwheel="this.blur()" onkeyup="this.value=this.value.replace(/[^a-zA-Z0-9]/g, '')"
+                            id="branch_count" formControlName="branch_count"
+                              [attr.placeholder]="'organization_branch_count_placeholder' | translate">
+                           <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.branch_count}}</p>
+                        </div>
+                     </div>
+                  </div>
+                  <div class="row">
+                     <div class="col-sm-12">
+                        <div class="form-group">
+                           <label for="website">{{'website' | translate}}</label>
+                           <input type="text" class="form-control" id="website" formControlName="website"
+                              [attr.placeholder]="'organization_website_placeholder' | translate">
+                           <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.website}}</p>
+                           <p class="form-error pt-1"
+                              *ngIf=" !formErrors && regForm.get('website').invalid && (regForm.controls.website.dirty || regForm.controls.website.touched)">
+                              {{'valid_url_message' | translate}}</p>
+                        </div>
+                     </div>
+                  </div>
+                  <div class="row">
+                     <div class="col-sm-12">
+                        <div class="form-group add-kpi-textarea">
+                           <span style="float: right;" class="text-grey">{{regForm?.value.address != null ?
+                              regForm?.value.address?.length : 0}} {{'characters' | translate}}</span>
+                           <label for="address">{{'address' | translate}}</label>
+                           <textarea class="form-control" rows="11" id="address" formControlName="address"
+                              [attr.placeholder]="'organization_address_placeholder' | translate"></textarea>
+                           <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.address}}</p>
+                        </div>
+                     </div>
+                  </div>
+                  <div class="row">
+                     <div class="col-sm-6">
+                        <div class="form-group">
+                           <label for="facebook">{{'facebook' | translate}}</label>
+                           <input type="text" id="facebook" class="form-control" formControlName="facebook"
+                              [attr.placeholder]="'facebook_page_placeholder' | translate">
+                           <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.facebook}}</p>
+                           <p class="form-error pt-1"
+                              *ngIf=" !formErrors && regForm.get('facebook').invalid && (regForm.controls.facebook.dirty || regForm.controls.facebook.touched)">
+                              {{'valid_url_message' | translate}}</p>
+                        </div>
+                     </div>
+                     <div class="col-sm-6">
+                        <div class="form-group">
+                           <label for="instagram">{{'instagram' | translate}}</label>
+                           <input type="text" id="instagram" class="form-control" formControlName="instagram"
+                              [attr.placeholder]="'instagram_id_placeholder' | translate">
+                           <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.instagram}}</p>
+                           <p class="form-error pt-1"
+                              *ngIf=" !formErrors && regForm.get('instagram').invalid && (regForm.controls.instagram.dirty || regForm.controls.instagram.touched)">
+                              {{'valid_url_message' | translate}}</p>
+                        </div>
+                     </div>
+                  </div>
+                  <div class="row">
+                     <div class="col-sm-6">
+                        <div class="form-group">
+                           <label for="twitter">{{'twitter' | translate}}</label>
+                           <input type="text" id="twitter" class="form-control" formControlName="twitter"
+                              [attr.placeholder]="'twitter_account_placeholder' | translate">
+                           <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.twitter}}</p>
+                           <p class="form-error pt-1"
+                              *ngIf=" !formErrors && regForm.get('twitter').invalid && (regForm.controls.twitter.dirty || regForm.controls.twitter.touched)">
+                              {{'valid_url_message' | translate}}</p>
+                        </div>
+                     </div>
+                     <div class="col-sm-6">
+                        <div class="form-group">
+                           <label for="skype">{{'skype' | translate}}</label>
+                           <input type="text" id="skype" class="form-control" formControlName="skype"
+                              [attr.placeholder]="'skype_id_placeholder' | translate">
+                           <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.skype}}</p>
+                        </div>
+                     </div>
+                  </div>
+                  <div class="row">
+                     <div class="col-sm-6">
+                        <div class="form-group">
+                           <label for="youtube">{{'youtube' | translate}}</label>
+                           <input type="text" id="youtube" class="form-control" formControlName="youtube"
+                              [attr.placeholder]="'youtube_placeholder' | translate">
+                           <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.youtube}}</p>
+                           <p class="form-error pt-1"
+                              *ngIf=" !formErrors && regForm.get('youtube').invalid && (regForm.controls.youtube.dirty || regForm.controls.youtube.touched)">
+                              {{'valid_url_message' | translate}}</p>
+                        </div>
+                     </div>
+                     <div class="col-sm-6">
+                        <div class="form-group">
+                           <label for="linkedin">{{'linkedIn' | translate}}</label>
+                           <input type="text" id="linkedin" class="form-control" formControlName="linkedin"
+                              [attr.placeholder]="'linkedin_profile_placeholder' | translate">
+                           <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.linkedin}}</p>
+                           <p class="form-error pt-1"
+                              *ngIf=" !formErrors && regForm.get('linkedin').invalid && (regForm.controls.linkedin.dirty || regForm.controls.linkedin.touched)">
+                              {{'valid_url_message' | translate}}</p>
+                        </div>
+                     </div>
+                  </div>
+                  <label for="name" class="label-style mb-0">{{'organization_brochures' | translate}}</label>
+                  <div class="scroll-documents" #uploadArea>
+                     <div class="row m-0 upload-section">
+                        <div class="col-sm-4 col-lg-3 costmz-logo-new mt-2">
+                           <div class="question-circle-inp"
+                              *ngIf="OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.length > 0"
+                              style="margin-right: 7px;">
+                              <i class="far fa-question-circle"></i>
+                              <div class="message-password-inp">
+                                 <p class="mb-0">{{'allowed_file_types' | translate}}
+                                    {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                                 </p>
+                              </div>
+                           </div>
+                           <div class="form-group form-group-upload">
+                              <div class="darag-dropifile-upload">
+                                 <div class="d-flex justify-content-center align-items-center text-center">
+                                    <div>
+                                       <img src="/assets/images/drag-pic.png" class="drag-pic-files">
+                                       <div class="drag-file-name">{{'select_upload_your_file_here' | translate}}</div>
+                                       <div class="upload-btn-wrapper">
+                                          <input type="file" name="myfile" id="myfile"
+                                             (change)="onFileChange($event,'brochure')"
+                                             [accept]="checkAcceptFileTypes('brochure')" multiple />
+                                          <button class="btn">{{'browse_files' | translate}}</button>
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                        <div
+                           [ngClass]="files.success || files.file_type != 'brochure' ? 'col-sm-4 col-lg-3 up-pic-cf mt-2 hide_loader' : 'col-sm-4 col-lg-3 up-pic-cf mt-2'"
+                           *ngFor="let files of fileUploadsArray">
+                           <div class="upload-pics edit-option file-upload-loader">
+                              <circle-progress class="browse-form-pic" [percent]=files.uploadProgress
+                                 [title]=files.uploadProgress></circle-progress>
+                           </div>
+                        </div>
+                        <div
+                           [ngClass]="b.is_deleted ? 'col-sm-4 col-lg-3 up-pic-cf image_deleted mt-2':'col-sm-4 col-lg-3 up-pic-cf mt-2'"
+                           class="col-sm-4 up-pic-cf mt-2" *ngFor="let b of ProfileStore.getBrochureDetails">
+                           <div class="upload-pics edit-option">
+                              <div class="browse-form-pic"
+                                 [ngStyle]="{'background': 'url(' + b.preview + ') no-repeat 0 0 / cover'}">
+                              </div>
+                              <div class="browse-form-name clearfix">
+                                 <div class="float-left">
+                                    <h6 [attr.title]="b.name">{{b.name.length > 20 ? b.name.substring(0,20) : b.name}}
+                                    </h6>
+                                    <span>{{b.size/1048576 | number:'0.2-2'}}MB</span>
+                                 </div>
+                                 <div class="browse-logo">
+                                    <!-- New design -->
+                                    <!-- <img [attr.src]="getPath(b.ext)"> -->
+                                    <img *ngIf="checkExtension(b.ext,'excel') != -1" src="/assets/images/md-xl.png">
+                                    <img *ngIf="checkExtension(b.ext,'image') != -1" src="/assets/images/md-jpg.png">
+                                    <img *ngIf="checkExtension(b.ext,'doc') != -1" src="/assets/images/md-doc.png">
+                                    <img *ngIf="checkExtension(b.ext,'pdf') != -1" src="/assets/images/md-pdf.png">
+                                    <img *ngIf="checkExtension(b.ext,'video') != -1" src="/assets/images/md-video.png">
+                                    <img *ngIf="checkExtension(b.ext,'audio') != -1" src="/assets/images/md-audio.png">
+                                    <img *ngIf="checkExtension(b.ext,'ppt') != -1" src="/assets/images/md-ppt.png">
+                                 </div>
+                              </div>
+                              <div class="edit-option-show">
+                                 <a (click)="removeBrochure(b.token)"><i class="fas fa-trash"></i></a>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div><!-- tab end -->
+               <div class="tab">
+                  <!-- tab start -->
+                  <div class="row">
+                     <div class="col-sm-6">
+                        <div class="form-group add-kpi-textarea">
+                           <span style="float: right;" class="text-grey">{{regForm?.value.vision != null ?
+                              regForm?.value.vision?.length : 0}} {{'characters' | translate}}</span>
+                           <label for="vision">{{'organization_vision' | translate}}</label>
+                           <textarea class="form-control" rows="11" id="vision" formControlName="vision"
+                              [attr.placeholder]="'organization_vision_placeholder' | translate"></textarea>
+                           <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.vision}}</p>
+                        </div>
+                     </div>
+                     <div class="col-sm-6">
+                        <div class="form-group add-kpi-textarea">
+                           <span style="float: right;" class="text-grey">{{regForm?.value.mision != null ?
+                              regForm?.value.mision?.length : 0}} {{'characters' | translate}}</span>
+                           <label for="mission">{{'organization_mision' | translate}}</label>
+                           <textarea class="form-control" rows="11" id="mission" formControlName="mision"
+                              [attr.placeholder]="'organization_mision_placeholder' | translate"></textarea>
+                           <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.mision}}</p>
+                        </div>
+                     </div>
+                  </div>
+                  <div class="row">
+                     <div class="col-sm-12">
+                        <div class="form-group add-kpi-textarea">
+                           <span style="float: right;" class="text-grey">{{regForm?.value.values != null ?
+                              regForm?.value.values?.length : 0}} {{'characters' | translate}}</span>
+                           <label for="values">{{'organization_values' | translate}}</label>
+                           <ckeditor id="values" (change)="cdkEditorValueChange($event)" [editor]="Editor"
+                              formControlName="values"></ckeditor>
+                           <!-- </ckeditor> -->
+                           <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.values}}</p>
+                        </div>
+                     </div>
+                  </div>
+
+               </div><!-- tab end -->
+               <div class="tab">
+                  <!-- tab start -->
+                  <div class="row">
+                     <div class="col-sm-6">
+                        <div class="form-group">
+                           <label for="ceo_user_id">{{'ceo' | translate}}</label>
+                           <div class="clearfix">
+                              <div class="multiple-plain-ngselect">
+                                 <ng-select id="ceo_user_id" [items]="UsersStore.usersList" bindLabel="email"
+                                    bindValue="id" [placeholder]="'select_ceo' | translate" [multiple]="false"
+                                    [searchable]="false" formControlName="ceo_user_id" >
+                                    <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                       <img *ngIf="item.image_token" height="15" width="15"
+                                          class="ng-select-user-display"
+                                          [attr.src]="createPreviewUrl('user-profile-picture',item.image_token)"
+                                          onerror="this.src='/assets/images/user-demo2.png'" />
+                                       <img *ngIf="!item.image_token" height="15" width="15"
+                                          class="ng-select-user-display" [attr.src]="getDefaultImage('user-logo')"
+                                          onerror="this.src='/assets/images/user-demo2.png'" />
+                                       <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,'
+                                          ') | titlecase}}</b><span (click)="clear(item)" aria-hidden="true"
+                                          style="border:none;" class="ng-value-icon left">×</span>
+                                    </ng-template>
+                                    <ng-template ng-option-tmp let-item="item" let-index="index">
+                                       <div class="user-post-department-pic">
+                                          <img *ngIf="item.image_token" class="ng-select-user-display" height="25"
+                                             width="25"
+                                             [attr.src]="createPreviewUrl('user-profile-picture',item.image_token)"
+                                             onerror="this.src='/assets/images/user-demo2.png'" />
+                                          <img *ngIf="!item.image_token" class="ng-select-user-display" height="25"
+                                             width="25" [attr.src]="getDefaultImage('user-logo')"
+                                             onerror="this.src='/assets/images/user-demo2.png'" />
+                                       </div>
+                                       <div class="user-post-department-div">
+                                          <b>{{getStringsFormatted([item.first_name,item.last_name],50,' ') |
+                                             titlecase}}</b>
+                                          <p class="user-post-department-multiple">
+                                             {{getStringsFormatted([item.designation_title,'
+                                             '+item.department],50,',')}}</p>
+                                       </div>
+                                    </ng-template>
+                                 </ng-select>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                     <div class="col-sm-12">
+                        <div class="form-group add-kpi-textarea">
+                           <span style="float: right;" class="text-grey">{{regForm?.value.ceo_message != null ?
+                              regForm?.value.ceo_message?.length : 0}} {{'characters' | translate}}</span>
+                           <label for="ceo_message">{{'ceo_message' | translate}}
+                              <!-- <span *ngIf="regForm.value.ceo_user_id"
+                                 class="form-error">*</span> -->
+                              </label>
+                           <textarea class="form-control" rows="11" id="ceo_message" formControlName="ceo_message"
+                              [attr.placeholder]="'ceo_message_placeholder' | translate"></textarea>
+                           <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.ceo_message}}</p>
+                        </div>
+                     </div>
+                  </div>
+               </div><!-- tab end -->
+               <div class="tab">
+                  <!-- tab start -->
+                  <div class="row">
+                     <div class="col-xl-3 col-lg-4 col-md-12 user-side-bar">
+                        <div class="organization-profile-sidebar p-0">
+                           <div class="profile-img align-items-center d-flex relative" style="height: auto;">
+                              <figure class="w-100 d-block"><img
+                                    [attr.src]="ProfileStore.preview_url ? ProfileStore.preview_url : getDefaultImage('general')"
+                                    class="cmn-bdr d-block mx-auto img-fluid"
+                                    onerror="this.src='/assets/images/user-demo2.png'"></figure>
+
+                           </div>
+                           <div class="colored-scial-media">
+                              <ul>
+                                 <li [attr.title]="previewProfile?.email" *ngIf="previewProfile?.email"><a><img
+                                          src="/assets/images/social-icon-email.svg" class="img-fluid"></a></li>
+                                 <li [attr.title]="previewProfile?.youtube" *ngIf="previewProfile?.youtube"><a><img
+                                          src="/assets/images/social-icon-youtube.svg" class="img-fluid"></a></li>
+                                 <li [attr.title]="previewProfile?.twitter" *ngIf="previewProfile?.twitter"><a><img
+                                          src="/assets/images/social-icon-twitter.svg" class="img-fluid"></a></li>
+                                 <li [attr.title]="previewProfile?.instagram" *ngIf="previewProfile?.instagram"><a><img
+                                          src="/assets/images/social-icon-instagram.svg" class="img-fluid"></a></li>
+                                 <li [attr.title]="previewProfile?.skype" *ngIf="previewProfile?.skype"><a><img
+                                          src="/assets/images/social-icon-skype.svg" class="img-fluid"></a></li>
+                                 <li [attr.title]="previewProfile?.facebook" *ngIf="previewProfile?.facebook"><a><img
+                                          src="/assets/images/social-icon-facebook.svg" class="img-fluid"></a></li>
+                                 <li [attr.title]="previewProfile?.linkedin" *ngIf="previewProfile?.linkedin"><a><img
+                                          src="/assets/images/social-icon-linkedin.svg" class="img-fluid"></a></li>
+                                 <li [attr.title]="previewProfile?.website" *ngIf="previewProfile?.website"><a><img
+                                          src="/assets/images/social-icon-website.svg" class="img-fluid"></a></li>
+                              </ul>
+                           </div>
+                           <div class="clearfix"></div>
+                           <div class="row">                           
+                              <!-- <div class="col-sm-6">
+                                 <h6>{{'company' | translate}}</h6>
+                                 <p>{{previewProfile?.title ? previewProfile?.title : AppStore.noContentText}}</p>
+                              </div> -->
+                              <div class="col-sm-6">
+                                 <h6>{{'organization_establish_date' | translate}}</h6>
+                                 <p *ngIf="previewProfile?.establish_date">{{previewProfile?.establish_date | date :
+                                    OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</p>
+                                 <p *ngIf="!previewProfile?.establish_date">{{AppStore.noContentText}}</p>
+                              </div>
+                              <div class="col-sm-12">
+                                 <h6>{{'address' | translate}}</h6>
+                                 <p style="white-space: pre-line;">{{previewProfile?.address ? previewProfile?.address :
+                                    AppStore.noContentText}}
+                                 </p>
+                              </div>
+                              <div class="col-sm-12">
+                                 <h6>{{'organization_phone' | translate}}</h6>
+                                 <p>{{previewProfile?.phone ? previewProfile?.phone : AppStore.noContentText}}</p>
+                              </div>
+                              <div class="col-sm-6">
+                                 <h6>{{'branch_count' | translate}}</h6>
+                                 <p>{{previewProfile?.branch_count ? previewProfile?.branch_count :
+                                    AppStore.noContentText}}</p>
+                              </div>
+                              <div class="col-sm-6">
+                                 <h6>{{'employee_count' | translate}}</h6>
+                                 <p>{{previewProfile?.employee_count ? previewProfile?.employee_count :
+                                    AppStore.noContentText}}</p>
+                              </div>                             
+                              <!-- <div class="col-sm-12">
+                                 <h6>{{'organization_email_id' | translate}}</h6>
+                                 <p>{{previewProfile?.email ? previewProfile?.email : AppStore.noContentText}}</p>
+                              </div> -->
+                              <!-- <div class="clearfix"></div>
+                              <div class="col-sm-12">
+                                 <hr>
+                                 <p>{{previewProfile?.website}}</p>
+                              </div> -->
+                              <div class="col-sm-12" *ngIf="ProfileStore.getBrochureDetails.length > 0">
+                                 <h6 class="mt-3">{{'brochures' | translate}}</h6>
+                                 <div class="thumb-view-left-side thumb-pics-fix-text clearfix">
+                                    <div class="thumb-view-left-side-box w-100"
+                                       *ngFor="let br of ProfileStore.getBrochureDetails">
+                                       <div class="upload-pics upload-pics-small edit-option">
+                                          <div class="browse-form-pic"
+                                             [ngStyle]="{'background': 'url(' + br.preview + ') no-repeat 0 0 / cover'}">
+                                          </div>
+                                          <div class="browse-form-name clearfix">
+                                             <div class="float-left">
+                                                <h6 [attr.title]="br.name">{{br.name.length > 6 ?
+                                                   br.name.substring(0,6)+' ...': br.name}}</h6>
+                                                <span>{{br.size/1048576 | number:'0.2-2'}}MB</span>
+                                             </div>
+                                             <div class="browse-logo">
+                                                <img *ngIf="checkExtension(br.ext,'image') != -1"
+                                                   src="/assets/images/md-jpg.png">
+                                                <img *ngIf="checkExtension(br.ext,'doc') != -1"
+                                                   src="/assets/images/md-doc.png">
+                                                <img *ngIf="checkExtension(br.ext,'pdf') != -1"
+                                                   src="/assets/images/md-pdf.png">
+                                                <img *ngIf="checkExtension(br.ext,'excel') != -1"
+                                                   src="/assets/images/md-xl.png">
+                                                <img *ngIf="checkExtension(br.ext,'video') != -1"
+                                                   src="/assets/images/md-video.png">
+                                                <img *ngIf="checkExtension(br.ext,'audio') != -1"
+                                                   src="/assets/images/md-audio.png">
+                                                <img *ngIf="checkExtension(br.ext,'ppt') != -1"
+                                                   src="/assets/images/md-ppt.png">
+                                             </div>
+                                          </div>
+                                       </div>
+                                    </div>
+
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                     <div class="col-xl-9 col-lg-8 col-md-12 user-right-details">
+                        <div class="row">
+                           <div class="col-sm-12">
+                              <div class="widget bg-white mb-3">
+                                 <!-- Nav tabs -->
+                                 <!-- Tab panes -->
+                                 <div class="widget-body-light profile-widg-padding p-0">
+                                    <h5 *ngIf="previewProfile?.title">{{previewProfile?.title ? previewProfile?.title :
+                                       AppStore.noContentText}}</h5>
+                                    <div *ngIf="previewProfile?.description && !ProfileStore.description_more"
+                                       style="white-space: pre-line;">{{ previewProfile?.description.length > 1000 ?
+                                       getDescriptionContent(previewProfile): previewProfile?.description }}
+                                       <a *ngIf="previewProfile?.description.length > 1000"
+                                          (click)="viewDescription('more')"
+                                          class="view-more-pestel-box pointer view-more-doted">... {{'view_more' |
+                                          translate}}</a>
+                                    </div>
+                                    <div *ngIf="previewProfile?.description && ProfileStore.description_more"
+                                       style="white-space: pre-line;">{{ previewProfile?.description }}
+                                       <a *ngIf="previewProfile?.description.length > 1000"
+                                          (click)="viewDescription('less')"
+                                          class="view-more-pestel-box pointer view-more-doted">{{'view_less' |
+                                          translate}}</a>
+                                    </div>
+                                    <p *ngIf="!previewProfile?.description">
+                                       {{AppStore.noContentText}}
+                                    </p>
+                                 </div>
+                              </div>
+                           </div>
+                           <div class="col-xl-6">
+                              <div class="widget bg-white vm-box mb-0">
+                                 <!-- Nav tabs -->
+                                 <!-- Tab panes -->
+                                 <div class="vm-icon-bx">
+                                    <img src="/assets/images/ico-vision.png" class="d-block mx-auto img-fluid"
+                                       alt="logo" />
+                                 </div>
+                                 <div class="widget-body-light profile-widg-padding">
+                                    <div class="vm-content-bx">
+                                       <h5>{{'vision' | translate}}</h5>
+                                       <div *ngIf="previewProfile?.vision && !ProfileStore.vision_more"
+                                          style="white-space: pre-line;">
+                                          {{ previewProfile?.vision.length > 100 ? getVisionContent(previewProfile):
+                                          previewProfile?.vision }}
+                                          <a *ngIf="previewProfile?.vision.length > 100" (click)="viewVision('more')"
+                                             class="view-more-pestel-box pointer view-more-doted">... {{'view_more' |
+                                             translate}}</a>
+                                       </div>
+                                       <div *ngIf="previewProfile?.vision && ProfileStore.vision_more"
+                                          style="white-space: pre-line;">
+                                          {{ previewProfile?.vision }}
+                                          <a *ngIf="previewProfile?.vision.length > 100" (click)="viewVision('less')"
+                                             class="view-more-pestel-box pointer view-more-doted">{{'view_less' |
+                                             translate}}</a>
+                                       </div>
+                                       <p *ngIf="!previewProfile?.vision">
+                                          {{AppStore.noContentText}}
+                                       </p>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                           <div class="col-xl-6">
+                              <div class="widget bg-white vm-box mb-0">
+                                 <!-- Nav tabs -->
+                                 <!-- Tab panes -->
+                                 <div class="vm-icon-bx">
+                                    <img src="/assets/images/ico-mission.png" alt="logo"
+                                       class="d-block mx-auto img-fluid" />
+                                 </div>
+                                 <div class="widget-body-light profile-widg-padding">
+                                    <div class="vm-content-bx">
+                                       <h5>{{'mision' | translate}}</h5>
+                                       <div *ngIf="previewProfile?.mision && !ProfileStore.mision_more"
+                                          style="white-space: pre-line;">
+                                          {{ previewProfile?.mision.length > 100 ? getMisionContent(previewProfile):
+                                          previewProfile?.mision }}
+                                          <a *ngIf="previewProfile?.mision.length > 100" (click)="viewMision('more')"
+                                             class="view-more-pestel-box pointer view-more-doted">... {{'view_more' |
+                                             translate}}</a>
+                                       </div>
+                                       <div *ngIf="previewProfile?.mision && ProfileStore.mision_more"
+                                          style="white-space: pre-line;">
+                                          {{ previewProfile?.mision }}
+                                          <a *ngIf="previewProfile?.mision.length > 100" (click)="viewMision('less')"
+                                             class="view-more-pestel-box pointer view-more-doted">{{'view_less' |
+                                             translate}}</a>
+                                       </div>
+                                       <p *ngIf="!previewProfile?.mision">
+                                          {{AppStore.noContentText}}
+                                       </p>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                           <div class="col-sm-12">
+                              <div class="widget bg-white">
+                                 <!-- Nav tabs -->
+                                 <!-- Tab panes -->
+                                 <div class="widget-body-light profile-widg-padding p-0">
+                                    <h5>{{'values' | translate}}</h5>
+                                    <div *ngIf="previewProfile?.values" class="text-editor-content bullet-point-list"
+                                       [innerHTML]="previewProfile?.values | safeHtml">
+                                    </div>
+                                    <p *ngIf="!previewProfile?.values">{{AppStore.noContentText}}</p>
+                                 </div>
+                              </div>
+                           </div>
+                           <div class="col-sm-12">
+                              <div class="widget bg-white">
+                                 <!-- Nav tabs -->
+                                 <!-- Tab panes -->
+                                 <div *ngIf="previewProfile?.ceo_message"
+                                    class="widget-body-light profile-widg-padding md-quote-container p-0">
+                                    <h5 *ngIf="!previewProfile?.ceo_message">{{'ceo_message' | translate}}</h5>
+                                    <p *ngIf="!previewProfile?.ceo_message">{{AppStore.noContentText}}</p>
+                                    <div class="row">
+                                       <div class="col-sm-2" *ngIf="previewProfile?.ceo_message">
+                                          <img *ngIf="UsersStore.getUserById(previewProfile?.ceo_user_id)?.image_token"
+                                             [attr.src]="createPreviewUrl('user-profile-picture',UsersStore.getUserById(previewProfile?.ceo_user_id)?.image_token)"
+                                             width="100%" class="d-block mx-auto img-fluid"
+                                             onerror="this.src='/assets/images/user-demo2.png'" />
+                                          <img *ngIf="!UsersStore.getUserById(previewProfile?.ceo_user_id)?.image_token"
+                                             [attr.src]="getDefaultImage('user-logo')" width="100%"
+                                             class="d-block mx-auto img-fluid"
+                                             onerror="this.src='/assets/images/user-demo2.png'" />
+                                       </div>
+                                       <div class="col-sm-10">
+                                          <div class="md-quote" *ngIf="previewProfile?.ceo_message"></div>
+                                          <div style="min-height: 115px;" class="relative"
+                                             *ngIf="previewProfile?.ceo_message">
+                                             <p *ngIf="previewProfile?.ceo_message && !ProfileStore.ceo_message_more"
+                                                style="white-space: pre-line;">
+                                                {{ previewProfile?.ceo_message.length > 1000 ?
+                                                getCeoMessageContent(previewProfile): previewProfile?.ceo_message }}
+                                                <a *ngIf="previewProfile?.ceo_message.length > 1000"
+                                                   (click)="viewCeoMessage('more')"
+                                                   class="view-more-pestel-box pointer view-more-doted">...
+                                                   {{'view_more' | translate}}</a>
+                                             </p>
+                                             <p *ngIf="previewProfile?.ceo_message && ProfileStore.ceo_message_more"
+                                                style="white-space: pre-line;">
+                                                {{ previewProfile?.ceo_message }}
+                                                <a *ngIf="previewProfile?.ceo_message.length > 1000"
+                                                   (click)="viewCeoMessage('less')"
+                                                   class="view-more-pestel-box pointer view-more-doted">{{'view_less' |
+                                                   translate}}</a>
+                                             </p>
+                                             <span class="md-bottom-quote" *ngIf="previewProfile?.ceo_message"></span>
+                                          </div>
+                                          <hr class="mb-0" *ngIf="previewProfile?.ceo_message">
+                                          <span
+                                             class="md-name mt-2">{{UsersStore.getUserById(previewProfile?.ceo_user_id)?.first_name}}
+                                             {{UsersStore.getUserById(previewProfile?.ceo_user_id)?.last_name}}</span>
+                                          <p class="mb-0">
+                                             {{UsersStore.getUserById(previewProfile?.ceo_user_id)?.designation_title}}
+                                          </p>
+
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div><!-- tab end -->
+               <div style="overflow:auto;">
+                  <div class="form-next-page-btns" style="float:left;">
+                     <button class="btn btn-active" type="button" id="nextBtn" (click)="nextPrev(1)"
+                        [disabled]="AppStore.loading || ( checkFileIsUploading() && saveFlag) || !checkFormObject()">{{getButtonText(nextButtonText)}}</button>
+                     <button class="btn" type="button" id="prevBtn" (click)="nextPrev(-1)"
+                        [disabled]="AppStore.loading">{{getButtonText(previousButtonText)}}</button>
+                     <button class="btn" type="button" (click)="cancelEdit()">{{getButtonText('cancel')}}</button>
+                  </div>
+               </div>
+            </form>
+         </div>
+         <div [ngStyle]="{'display':!showForm ? 'block' : 'none'}">
+            <app-table-loader></app-table-loader>
+         </div>
+      </div>
+   </div>
+</main>
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopup data-backdrop="static" data-keyboard="false">
+   <app-delete-popup [source]="confirmationObject"></app-delete-popup>
+</div>

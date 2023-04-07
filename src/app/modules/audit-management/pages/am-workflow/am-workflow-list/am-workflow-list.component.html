@@ -1,0 +1,98 @@
+<div #plainDev></div>
+<div class="widget">
+    <nav class="edit-bar" data-toggle="affix" #navBar>
+        <app-sub-menu>-</app-sub-menu>
+        <!-- <ul class="nav nav-pills float-left d-none d-lg-block" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link nav-link-show" [routerLink]="['/am-management/workflow']" routerLinkActive="active"
+                    [routerLinkActiveOptions]="{exact: true}">{{'workflow_engine' | translate}}</a>
+        </ul> -->
+        <div class="module-name-block module-name-block-space float-left">
+            <a class="dropdown module-title">{{'workflow_engine'|translate}}</a>
+          </div>
+    </nav>
+    <main class="mt-3 acl-page">
+        <div class="container-fluid" *ngIf="AmWorkflowStore.loaded && AmWorkflowStore.allItems.length != 0">
+            <div class="audit-program-box audit-page-table-main" *mobxAutorun>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="full-width-table mb-3">
+                        <table *ngIf="AmWorkflowStore?.allItems"
+                            class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                            <thead>
+                                <tr>
+                                    <th class="border-top-0 text-center" width="4%">#</th>
+                                    <!-- <th class="border-top-0" width="8%">Ref. No</th> -->
+                                    <th class="border-top-0" width="22%">{{'title' | translate}}</th>
+                                    <th class="border-top-0" width="22%">{{'module' | translate}}</th>
+                                    <th class="border-top-0" width="42%">{{'description' | translate}}</th>
+                                    <th class="border-top-0 text-center" width="10%">{{'status' | translate}}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <ng-container *mobxAutorun>
+                                    <tr [ngClass]="AuthStore.getActivityPermission(3900,'AUDIT_MANAGEMENT_WORKFLOW_DETAILS') ? 'cursor-pointer edit-and-delete-main' : 'edit-and-delete-main'"
+                                        (click)="AuthStore.getActivityPermission(3900,'AUDIT_MANAGEMENT_WORKFLOW_DETAILS') ? gotToAmWorkflowDetails(row.id): ''"
+                                        *ngFor="let row of AmWorkflowStore.allItems| paginate: {currentPage:AmWorkflowStore.currentPage, itemsPerPage:AmWorkflowStore.itemsPerPage,totalItems:AmWorkflowStore.totalItems};let num=index ">
+                                        <td class="text-center">{{ (AmWorkflowStore?.currentPage - 1) * AmWorkflowStore?.itemsPerPage +
+                                            (num + 1)}}</td>
+                                        <!-- <td style="padding:0.75rem">12345</td> -->
+                                        <td style="padding:0.75rem">{{ row.title}}</td>
+                                        <td style="padding:0.75rem">{{ row.module_title}}</td>
+                                        <td style="padding:0.75rem"><p style="white-space:pre-line;">{{ row.description ? row.description : AppStore.noContentText}}</p></td>
+                                        <td class="text-center" style="padding:0.75rem">
+                                            <div [attr.class]="'dot-div '+row.status_label">{{row.status}}</div>
+                                            <div class="edit-option-show">
+                                                <a [attr.title]="'edit' | translate" (click)="edit(row.id)"
+                                                *ngIf="AuthStore.getActivityPermission(3900,'UPDATE_AUDIT_MANAGEMENT_WORKFLOW')"><i
+                                                       class="fas fa-pen pointer"></i></a>
+                                                <a [attr.title]="'delete' | translate" (click)="deleteConfirm(row.id,row.status)"
+                                                    *ngIf="AuthStore.getActivityPermission(3900,'DELETE_AUDIT_MANAGEMENT_WORKFLOW')"><i
+                                                        class="fas fa-trash pointer"></i></a>
+                                                <a [attr.title]="'activate' | translate"
+                                                    *ngIf="row.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(3900,'ACTIVATE_AUDIT_MANAGEMENT_WORKFLOW')"
+                                                    (click)="activateConfirm(row.id)"><i
+                                                        class="fas fa-check pointer"></i></a>
+                                                <a [attr.title]="'deactivate' | translate"
+                                                    *ngIf="row.status_id == AppStore.activeStatusId && AuthStore.getActivityPermission(3900,'DEACTIVATE_AUDIT_MANAGEMENT_WORKFLOW')"
+                                                    (click)="deactivateConfirm(row.id)"><i
+                                                        class="fas fa-ban pointer"></i></a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </ng-container>
+                            </tbody>
+                        </table>
+                        <p class="float-right bold mb-0">{{'total_Items' | translate}}:{{AmWorkflowStore.totalItems}}</p>
+                    </div>
+                    
+                    </div>
+                    <div *ngIf="AmWorkflowStore.totalItems > AmWorkflowStore.itemsPerPage && AmWorkflowStore?.loaded"
+                        class="col-sm-12">
+                        <ul class="pagination justify-content-center mt-3">
+                            <div class="list">
+                                <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate" (pageChange)="pageChange($event)" class="my-pagination">
+                                </pagination-controls>
+                            </div>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <ng-container *mobxAutorun>
+            <app-risk-workflow-loader *ngIf="!AmWorkflowStore.loaded"></app-risk-workflow-loader>
+        </ng-container>
+        <ng-container *mobxAutorun>
+            <app-no-data *ngIf="AmWorkflowStore.loaded && AmWorkflowStore.allItems.length == 0"></app-no-data>
+        </ng-container>
+    </main>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+    <app-am-workflow-add-modal *ngIf="workFlowObject.type" [source]="workFlowObject">
+    </app-am-workflow-add-modal>
+</div>
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp>
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>

@@ -1,0 +1,116 @@
+<nav class="edit-bar" data-toggle="affix" #navBar>
+    <app-sub-menu>-</app-sub-menu>
+    <ul class="nav nav-pills float-left d-none d-lg-block" role="tablist">
+       <li class="nav-item">
+          <a class="nav-link nav-link-show" [routerLink]="['/strategy-management/KPIS']"
+          routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">{{'kpi' | translate}}</a>
+       </li>
+    </ul>
+ </nav>
+<main class="mt-3 acl-page">
+    <div class="container-fluid">
+        <div class="audit-program-box audit-page-table-main">
+            <app-filter-menu></app-filter-menu>
+            <div class="row">
+                <div class="col-sm-12 full-width-table">
+                    <table *ngIf="KpiStore.loaded && KpiStore.allItems.length > 0" class="table table-bordered ordinary-table audit-page-table mb-4 table-scroll">
+                        <thead>
+                            <tr>
+                                <th class="border-top-0 text-center" width="5%">#</th>
+
+                                <th class="border-top-0" width="25%">KPI</th>
+                                <th class="border-top-0" width="26%">{{'objective' | translate}}</th>
+                                <th class="border-top-0" width="6%">{{'minimum_value' | translate}}</th>
+                                <th class="border-top-0" width="6%">{{'maximum_value' | translate}}</th>
+                                <th class="border-top-0" width="15%">{{'achieved' | translate}} / {{'target' | translate}}</th>
+                                <!-- <th class="border-top-0" width="16%">Start Date & End Date</th> -->
+                                <th class="border-top-0" width="11%">{{'responsible_users' | translate}}</th>
+                                <!-- <th class="border-top-0" width="8%">Status</th> -->
+                               
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr  (click)="gotoDetails(data)" *ngFor="let data of KpiStore.allItems| paginate: {currentPage:KpiStore.currentPage, itemsPerPage:KpiStore.itemsPerPage,totalItems:KpiStore.totalItems};let num = index" class="edit-option">
+                                <td class="text-center">{{(KpiStore.currentPage - 1) * KpiStore.itemsPerPage + (num + 1)}}</td>
+
+                                <td>{{data.kpi_title}}</td>
+                                <td>
+
+                                    <div class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+
+
+                                        <!-- user-dtl-popup end -->
+                                        <div class="pointer" >
+                                            <h6>{{data.objective_title}}</h6>
+                                            <span>{{data.strategy_profile_title}} | {{data.focus_area_title}}</span>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td>{{data.minimum}}</td>
+
+                                <td>{{data.maximum}}</td>
+                                <td [ngClass]="(data.score  <= 30 ||  data.score == null) ? 'blinking' : (data.score <= 90)? 'text-yellow' : 'text-green'">{{data.score ? data.score : '0'}} {{data.target_unit_title ? data.target_unit_title : ''}} / {{data.target ? data.target : "0"}} {{data.target_unit_title ? data.target_unit_title : ''}}</td>
+                               
+                                    <!--<div class="edit-option-show-inner">
+                                        <a data-toggle="modal" data-target="#kpi-measures-edit-popup"><i class="fas fa-pen"></i></a>
+                                        <a data-toggle="modal" data-target="#kpi-measures-history-popup"><i class="fas fa-history"></i></a>
+                                    </div>-->
+                        
+                                <!-- <td>{{data?.start_date | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}} - {{data?.end_date | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</td> -->
+                                <td>
+                                    <div *ngIf="data?.responsible_users.length == 1" class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                                        <app-user-popup-box [source]="getPopupDetails(data?.responsible_users[0])" [showName] = "true" [activateButtons] = "true"></app-user-popup-box>
+
+                                    </div>
+                                    <div *ngIf="data?.responsible_users.length > 1"  class="user-multiple">
+                                        <ul class="arci-user-tab-dtl workflow-lst-pics-loop clearfix">
+                                           <li class="rounde-hov-bg" *ngFor="let user of responsibleOthers(data?.responsible_users)">
+                                               <a>
+                                                 <app-user-popup-box [source]="getPopupDetails(user)" [showName] = "false" [activateButtons] = "false"></app-user-popup-box>
+                                              </a> 
+                                           </li>
+                                       
+                                           <li class="rounde-hov-bg" *ngIf="data?.responsible_users.length > 3">
+                                               <a><span class="more-users" data-toggle="modal" (click)="openResponsibleUsersModal(data?.responsible_users)">..{{data?.responsible_users.length - 3}}</span></a>
+                                           </li>
+                                        </ul>
+                                     </div>
+                                  </td>
+                                <!-- <td >
+                                    <div class="dot-div green-dot">New</div>
+                                </td> -->
+                            </tr>
+
+
+                        </tbody>
+                    </table>
+                    <ng-container *mobxAutorun>
+                        <div *ngIf="!KpiStore.loaded">
+                           <app-profile-list-loader></app-profile-list-loader>
+                       </div>
+                        <app-no-data *ngIf = "KpiStore.allItems.length == 0 && KpiStore.loaded == true"></app-no-data>
+                      </ng-container>
+                </div>
+                <div *ngIf="KpiStore.totalItems>KpiStore.itemsPerPage"
+                    class="col-sm-12">
+                    <ul class="pagination justify-content-center mt-3">
+                        <div class="list">
+                            <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"  class="my-pagination" (pageChange)="pageChange($event)">
+                            </pagination-controls>
+                        </div>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+
+
+    </div>
+</main>
+
+   <!-- responsible user popup -->
+   <div class="modal modal-style-1 popup-full-width fade" id="add-milestone-popup" data-keyboard="false"
+   data-backdrop="static" #otherResponsibleUsers>
+  <app-other-responsible-users-modal [source] = "otherResponsibleUsersObject" *ngIf = "otherResponsibleUsersObject.type"></app-other-responsible-users-modal>
+</div>

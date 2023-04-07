@@ -1,0 +1,107 @@
+<div #plainDev></div>
+<div class="widget">
+    <nav class="edit-bar" data-toggle="affix" #navBar>
+        <app-sub-menu>-</app-sub-menu>
+        <div class="module-name-block module-name-block-space float-left">
+            <a class="dropdown module-title">{{'workflow_engine'|translate}}</a>
+        </div>
+        <!-- <ul class="nav nav-pills float-left d-none d-lg-block" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link nav-link-show" [routerLink]="['/bcm/bcp-workflows']" routerLinkActive="active"
+                    [routerLinkActiveOptions]="{exact: true}">{{'workflow_engine' | translate}}</a>
+        </ul> -->
+    </nav>
+    <main class="mt-3 acl-page">
+        <div class="container-fluid" *ngIf="BcpWorkflowStore.loaded && BcpWorkflowStore.allItems.length != 0">
+            <div class="audit-program-box audit-page-table-main" *mobxAutorun>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="full-width-table mb-3">
+                            <table *ngIf="BcpWorkflowStore?.allItems"
+                                class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                                <thead>
+                                    <tr>
+                                        <th class="border-top-0 text-center" width="3%">#</th>
+                                        <th class="border-top-0" width="29%">{{'title' | translate}}</th>
+                                        <th class="border-top-0" width="22%">{{'module' | translate}}</th>
+                                        <th class="border-top-0" width="37%">{{'description' | translate}}</th>
+                                        <th class="border-top-0 text-center" width="11%">{{'status' | translate}}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ng-container *mobxAutorun>
+                                        <tr [ngClass]="AuthStore.getActivityPermission(1600,'BUSINESS_CONTINUITY_PLAN_WORKFLOW_DETAILS') ? 'cursor-pointer edit-and-delete-main' : 'edit-and-delete-main'"
+                                            (click)="AuthStore.getActivityPermission(1600,'BUSINESS_CONTINUITY_PLAN_WORKFLOW_DETAILS') ? gotToRiskWorkflowDetails(row.id) : ''"
+                                            *ngFor="let row of BcpWorkflowStore.allItems| paginate: {currentPage:BcpWorkflowStore.currentPage, itemsPerPage:BcpWorkflowStore.itemsPerPage,totalItems:BcpWorkflowStore.totalItems};let num=index ">
+                                            <td class="text-center">{{ (BcpWorkflowStore?.currentPage - 1) *
+                                                BcpWorkflowStore?.itemsPerPage
+                                                +
+                                                (num + 1)}}</td>
+                                            <td style="padding:0.75rem">{{ row.title}}</td>
+                                            <td style="padding:0.75rem">{{ row.module_title}}</td>
+                                            <td style="padding:0.75rem">{{ row.description ? row.description :
+                                                AppStore.noContentText}}</td>
+                                            <td style="padding:0.75rem" class="text-center">
+                                                <div [attr.class]="'dot-div '+row.status_label">{{row.status}}</div>
+                                                <div class="edit-option-show">
+                                                    <a [attr.title]="'edit' | translate" (click)="edit(row.id)"
+                                                        *ngIf="AuthStore.getActivityPermission(2800,'UPDATE_BUSINESS_CONTINUITY_PLAN_WORKFLOW')"><i
+                                                            class="fas fa-pen pointer"></i></a>
+                                                    <a [attr.title]="'delete' | translate"
+                                                        (click)="deleteConfirm(row.id,row.status)"
+                                                        *ngIf="AuthStore.getActivityPermission(2800,'DELETE_BUSINESS_CONTINUITY_PLAN_WORKFLOW')"><i
+                                                            class="fas fa-trash pointer"></i></a>
+                                                    <a [attr.title]="'activate' | translate"
+                                                        *ngIf="row.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(600,'ACTIVATE_BUSINESS_CONTINUITY_PLAN_WORKFLOW')"
+                                                        (click)="activateConfirm(row.id)"><i
+                                                            class="fas fa-check pointer"></i></a>
+                                                    <a [attr.title]="'deactivate' | translate"
+                                                        *ngIf="row.status_id == AppStore.activeStatusId && AuthStore.getActivityPermission(600,'DEACTIVATE_BUSINESS_CONTINUITY_PLAN_WORKFLOW')"
+                                                        (click)="deactivateConfirm(row.id)"><i
+                                                            class="fas fa-ban pointer"></i></a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </ng-container>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <p class="float-right bold mb-0" *ngIf="BcpWorkflowStore.loaded && BcpWorkflowStore.totalItems > 0">
+                        {{'total_Items' | translate}}:{{BcpWorkflowStore?.totalItems}}</p>
+                    <div *ngIf="BcpWorkflowStore.totalItems > BcpWorkflowStore.itemsPerPage && BcpWorkflowStore?.loaded"
+                        class="col-sm-12">
+                        <ul class="pagination justify-content-center mt-3">
+                            <div class="list">
+                                <pagination-controls [previousLabel]="'previous' | translate"
+                                    [nextLabel]="'next' | translate" (pageChange)="pageChange($event)"
+                                    class="my-pagination">
+                                </pagination-controls>
+                            </div>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <ng-container *mobxAutorun>
+            <app-bcp-workflow-loader *ngIf="!BcpWorkflowStore.loaded"></app-bcp-workflow-loader>
+        </ng-container>
+        <ng-container *mobxAutorun>
+            <app-no-data *ngIf="BcpWorkflowStore.loaded && BcpWorkflowStore.allItems.length == 0"></app-no-data>
+        </ng-container>
+    </main>
+</div>
+
+<!------------------- Add WorkFlow Modal Start --------------------------->
+<div class="modal modal-style-1 popup-full-width fade" id="new-bcp" data-keyboard="false" data-backdrop="static"
+    #formModal>
+    <app-add-bcp-workflow *ngIf="workFlowObject.type" [source]="workFlowObject">
+    </app-add-bcp-workflow>
+</div>
+<!------------------- Add WorkFlow Modal End --------------------------->
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp>
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+<!------------------- Delete Confirmation Modal End --------------------------->

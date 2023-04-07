@@ -1,0 +1,258 @@
+<button type="button" class="close" (click)="closeFormModal()">
+  <i class="lni-close"></i><span>{{ "esc" | translate }}</span>
+</button>
+<div class="modal-dialog modal-lg modal-dialog-centered">
+  <div class="modal-content">
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <h4 class="modal-title">
+        {{ 'add _observations' | translate }}
+      </h4>
+    </div>
+    <!-- Modal body -->
+    <div class="modal-body form-body">
+      <p class="head-details">
+        {{ 'add _observations_content_message' | translate }}
+      </p>
+      <form [formGroup]="quickRiskObservationForm" *mobxAutorun>
+        <div class="row">
+          <div class="col-lg-12 col-sm-12">
+            <div class="form-group add-kpi-textarea">
+              <span style="float: right" class="text-grey"
+                >{{
+                  quickRiskObservationForm?.value.observation != null
+                    ? getDescriptionLength()
+                    : 0
+                }}
+                Characters</span
+              >
+
+              <label for="name">{{ "observation" | translate }}
+                <span class="form-error">*</span>
+              </label>
+              <ckeditor id="description" (change)="descriptionValueChange($event)" [editor]="Editor" formControlName="description"></ckeditor>
+            </div>
+          </div>
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group mt-2">
+              <label>{{'impacts'|translate}}</label>
+              <div class="d-flex popup-select-two"> <input type="text" class="form-control w-100"
+                      [placeholder]=" 'impact' | translate" formControlName="risk_impacts">
+                  <button class="btn multi-add-user ml-2" [disabled]="!quickRiskObservationForm.value.risk_impacts"
+                      (click)="addImpact()"><i class="fas fa-plus"></i></button>
+              </div>
+
+              <ul class="arrowlist pl-0 mt-2" *ngIf="RisksStore.impactList?.length>0">
+                  <li class="clearfix" *ngFor="let impact of RisksStore.impactList;let i=index">{{impact.title}}
+                      <Button type="button" (click) = "removeImpact(i)" class="btn btn-small float-right btn-small-delete" style="border: none;"><i class="fas fa-trash"></i></Button>
+                  </li>
+              </ul>
+              <p class="form-error pt-1" *ngIf="quickRiskObservationFormError && quickRiskObservationFormError.risk_impacts">{{quickRiskObservationFormError.risk_impacts}}
+              </p>
+          </div>
+          </div>
+          <div class="col-lg-6 col-sm-12">
+              <div class="form-group add-kpi-textarea mt-2">
+                  <label for="name">{{ 'risk_cause' | translate }}</label>
+                  <div class="d-flex popup-select-two"> <input type="text" class="form-control w-100"
+                          [placeholder]=" 'risk_cause' | translate" formControlName="risk_causes">
+                      <button class="btn multi-add-user ml-2" (click)="addRiskCause()"
+                          [disabled]="!quickRiskObservationForm.value.risk_causes"><i class="fas fa-plus"></i></button>
+                  </div>
+
+                  <ul class="arrowlist pl-0 mt-2" *ngIf="RisksStore.riskCauseList?.length>0">
+
+                      <li class="clearfix" *ngFor="let cause of RisksStore.riskCauseList;let j=index">{{cause.title}}
+                          <Button type="button" (click) = "removeRiskCause(j)" class="btn btn-small float-right btn-small-delete" style="border: none;"><i class="fas fa-trash"></i></Button>
+                      </li>
+
+                  </ul>
+                  <p class="form-error pt-1" *ngIf="quickRiskObservationFormError && quickRiskObservationFormError.risk_causes">
+                      {{quickRiskObservationFormError.risk_causes}}
+                  </p>
+              </div>
+          </div>
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'likelihood' | translate}}<span class="form-error">*</span></label>
+              <div class="clearfix">
+                  <div class="multiple-plain-ngselect">
+                      <ng-select [placeholder]="'likelihood' | translate"
+                          [multiple]="false"
+                           bindLabel="risk_matrix_likelihood_title"
+                           searchable="true" 
+                          formControlName="risk_matrix_likelihood_id"
+                          (search)="searchRiskLikelihood($event)" 
+                          (clear)="getRiskLikelihood()"
+                          (open)="getRiskLikelihood()" 
+                          autocomplete="new-password">
+                          <ng-option
+                          [value]="type.id"
+                          *ngFor="let type of LikelihoodStore.likelihoodDetails"
+                        >
+                          {{ type?.risk_matrix_likelihood_title }}
+                        </ng-option>
+                      </ng-select>
+                  </div>
+              </div>
+              <p class="form-error pt-1" *ngIf="quickRiskObservationFormError && quickRiskObservationFormError.risk_matrix_likelihood_id">
+                  {{quickRiskObservationFormError.risk_matrix_likelihood_id}}</p>
+          </div>
+          </div>
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'risk_zone' | translate}}<span class="form-error">*</span></label>
+              <div class="clearfix">
+                  <div class="multiple-plain-ngselect">
+                      <ng-select
+                          [placeholder]="'risk_zone' | translate" [multiple]="false" searchable="true"
+                          formControlName="risk_rating_id"
+                          (search)="searchRiskRating($event)" (clear)="getRiskRating()"
+                          (open)="getRiskRating()" autocomplete="new-password"
+                          bindLabel="id">
+                          <ng-option
+                          [value]="type.id"
+                          *ngFor="let type of RiskRatingMasterStore.allItems"
+                        >
+                          {{ type.title }}
+                        </ng-option>
+                      </ng-select>
+                  </div>
+              </div>
+              <p class="form-error pt-1" *ngIf="quickRiskObservationFormError && quickRiskObservationFormError.risk_rating_id">
+                  {{quickRiskObservationFormError.risk_rating_id}}</p>
+          </div>
+          </div>
+
+          <!-- <div class="col-lg-6 col-sm-12">
+            <div class="form-group">
+              <label for="title"
+                >{{ "score" | translate
+                }}<span class="form-error">*</span></label
+              >
+              <input
+                type="number"
+                formControlName="risk_score"
+                class="form-control"
+                [attr.placeholder]="'score' | translate"
+                id="cctitle"
+              />
+              <p class="form-error" *ngIf="quickRiskObservationFormError">
+                {{ quickRiskObservationFormError.risk_score }}
+              </p>
+            </div>
+          </div> -->
+
+    <div class="col-lg-6 col-sm-12">
+      <div class="form-group">
+        <label for="name">{{'risk_areas' | translate}}<span class="form-error">*</span></label>
+        <div class="clearfix">
+            <div class="multiple-plain-ngselect">
+                <ng-select [placeholder]="'risk_area' | translate"
+                    [multiple]="true" 
+                    searchable="true" 
+                    bindLabel="title"
+                    formControlName="risk_area_ids" 
+                    (search)="searchRiskArea($event)"
+                    (clear)="getRiskArea()" 
+                    (open)="getRiskArea()" 
+                    autocomplete="new-password">
+                    <ng-option
+                    [value]="type"
+                    *ngFor="let type of RiskAreaStore.allItems"
+                  >
+                    {{ type.title }}
+                  </ng-option>
+
+                </ng-select>
+            </div>
+        </div>
+        <p class="form-error pt-1" *ngIf="quickRiskObservationFormError && quickRiskObservationFormError.risk_area_ids">
+            {{quickRiskObservationFormError.risk_area_ids}}</p>
+    </div>
+    </div>
+
+       <div class="col-lg-6 col-sm-12">
+        <div class="form-group">
+          <label for="name">{{'risk_matrix_impact' | translate}}<span class="form-error">*</span></label>
+          <div class="clearfix">
+            <div
+              class="multiple-plain-ngselect">
+              <ng-select
+                [placeholder]="'risk_matrix_impact' | translate"
+                [multiple]="false"
+                searchable="true"
+                (search)="searchRiskMatrixImpact($event)"
+                formControlName="risk_matrix_impact_id"
+                (change)="getRiskMatrixImpact()"
+                (clear)="getRiskMatrixImpact()"
+                (open)="getRiskMatrixImpact()"
+                bindLabel="risk_matrix_impact_title"
+              >
+                <ng-option
+                  [value]="type.id"
+                  *ngFor="let type of ImpactStore?.impactDetails"
+                >
+                  {{ type.risk_matrix_impact_title }}
+                </ng-option>
+              </ng-select>
+     
+            </div>
+          </div>
+          <p class="form-error pt-1" *ngIf="quickRiskObservationFormError && quickRiskObservationFormError.risk_matrix_impact_id">
+            {{quickRiskObservationFormError.risk_matrix_impact_id}}</p>
+        </div>
+       </div>
+
+          </div>
+      </form>
+
+      <div class="row">
+        <div class="col-sm-12">
+          <div class="d-block justify-content-left border-0 mt-3">
+            <button
+              type="submit"
+              class="btn btn-active"
+              (click)="saveObervation()"
+              [disabled] = "!quickRiskObservationForm.valid"
+            >
+              {{
+                AppStore.loading
+                  ? getButtonText("loading")
+                  : getButtonText("save")
+              }}
+            </button>
+            <button
+              type="button"
+              data-toggle="modal"
+              data-target="#signal-lost"
+              class="btn"
+              [disabled] = "!quickRiskObservationForm.valid"
+              (click)="saveObervation(true)"
+            >
+              {{
+                AppStore.loading
+                  ? getButtonText("loading")
+                  : getButtonText("save_close")
+              }}
+            </button>
+            <button
+              type="button"
+              data-toggle="modal"
+              data-target="#error-message"
+              class="btn"
+              (click)="closeFormModal()"
+            >
+              {{
+                AppStore.loading
+                  ? getButtonText("loading")
+                  : getButtonText("cancel")
+              }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Modal footer -->
+  </div>
+</div>

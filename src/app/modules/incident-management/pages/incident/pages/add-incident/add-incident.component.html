@@ -1,0 +1,1027 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navigationBar>
+
+  <app-breadcrumb-menu></app-breadcrumb-menu>
+  <app-sub-menu></app-sub-menu>
+
+</nav>
+<main class="mt-3 organization-page tab-btns-five">
+  <div class="container-fluid">
+    <div class="organization-form-page" *mobxAutorun>
+
+      <form id="regForm" [formGroup]="form" [ngClass]="{'issue-multi-stup-form': IncidentStore.tabHides == false}"
+        class="organization-multi-stup-form step-form-header-height-normal">
+        <!-- Circles which indicates the steps of the form: -->
+        <div id="header-sroll-form" class="form-indicates-sec clearfix" #formSteps>
+          <span (click)="changeStep(0)" [ngStyle]="IncidentStore.tabHides == true && {'width': '33.33%'}"
+            class="step pointer"><span class="multi-form-nbr">1</span>{{'info' | translate}}</span>
+          <span (click)="changeStep(1)" class="step pointer"
+            [hidden]="IncidentStore.tabHides == true ? true : false"><span
+              class="multi-form-nbr">2</span>{{'person_involved' | translate}}</span>
+          <span (click)="changeStep(2)" class="step pointer"
+            [hidden]="IncidentStore.tabHides == true ? true : false"><span class="multi-form-nbr">3</span>{{'witness' |
+            translate}}</span>
+          <span (click)="changeStep(3)" [ngStyle]="IncidentStore.tabHides == true && {'width': '33.33%'}"
+            class="step pointer"><span class="multi-form-nbr">{{IncidentStore.tabHides ==
+              true?'2':'4'}}</span>{{'evidence' | translate}}</span>
+          <span (click)="changeStep(4)" [ngStyle]="IncidentStore.tabHides == true && {'width': '33.33%'}"
+            class="step pointer"><span class="multi-form-nbr">{{IncidentStore.tabHides ==
+              true?'3':'5'}}</span>{{'preview_save' | translate}}</span>
+        </div>
+        <!-- One "tab" for each step in the form: -->
+        <div class="tab">
+          <!-- tab start -->
+
+          <div class="row">
+            <div class="col-sm-12 col-lg-6">
+              <div class="form-group">
+                <label for="name">{{'incident_form_title' | translate}}<span class="form-error">*</span></label>
+                <div class="plain-select input-add-report">
+                  <input formControlName="title" type="text" class="form-control"
+                    [placeholder]="'incident_form_title_placeholder'| translate">
+                </div>
+                <p class="form-error pt-1" *ngIf="formErrors && formErrors.title">{{formErrors.title}}</p>
+              </div>
+            </div>
+            <div class="col-sm-12 col-lg-6">
+              <div class="form-group">
+                <label for="name">{{'incident_form_type_of_damage' | translate}}<span
+                    class="form-error">*</span></label>
+                <div class="clearfix d-flex">
+                  <div class="multiple-plain-ngselect w-100">
+                    <ng-select [items]="IncidentDamageTypeMasterStore.allItems"
+                      [placeholder]="'incident_form_incident_damage_type_placeholder'| translate" [multiple]="false"
+                      formControlName="incident_damage_type_id" bindLabel="title" (search)="searchIncidentType($event)"
+                      (open)="getIncidentType()" (clear)="getIncidentType()">
+
+                      <ng-template ng-option-tmp let-item="item" let-index="index">
+                        <!-- <div class="user-post-department-div"> -->
+                        {{item.title.length > 80 ? item.title.substring(0,80)+'...' : item.title}}
+                        <!-- <p class="user-post-department-multiple">
+                              {{item.designation_title}}<span
+                                  *ngIf="item.department">,{{item.department}}</span></p> -->
+                        <!-- </div> -->
+                      </ng-template>
+
+                    </ng-select>
+                  </div>
+                  <button class="btn multi-add-user ml-2" style="width: 42px;" (click)="addTypeDamage()"
+                    *ngIf="AuthStore.getActivityPermission(1900,'CREATE_INCIDENT_DAMAGE_TYPE')"><i
+                      class="fas fa-plus"></i></button>
+                </div>
+                <p class="form-error pt-1" *ngIf="formErrors && formErrors.incident_damage_type_id">
+                  {{formErrors.incident_damage_type_id}}</p>
+
+              </div>
+            </div>
+            <div class="col-sm-12">
+              <div class="form-group">
+                <label for="name">{{'incident_form_description' | translate}}</label>
+                <textarea class="form-control" rows="2" formControlName="description" id="comment"
+                  [placeholder]="'incident_form_description_placeholder'| translate"></textarea>
+              </div>
+            </div>
+            <div class="col-sm-12 col-lg-6">
+              <div class="form-group">
+                <label for="name">{{'incident_form_date_time' | translate}}<span class="form-error">*</span></label>
+                <div class="input-group date-picker cal-time">
+                  <div class="input-group date-picker">
+                    <input class="form-control" formControlName="incident_at" [owlDateTime]="dt1"
+                      [owlDateTimeTrigger]="dt1" [max]="incidentMaxDate()" (ngModelChange)="changeDate()"
+                      [placeholder]="'incident_form_date_time_placeholder'| translate">
+                    <owl-date-time [hour12Timer]="true" #dt1></owl-date-time>
+                    <div class="input-group-append">
+                      <button [owlDateTimeTrigger]="dt1" class="btn btn-outline-secondary calendar" type="button"><i
+                          class="fas fa-calendar-alt"></i></button>
+                    </div>
+                  </div>
+                  <p class="form-error pt-1" *ngIf="formErrors && formErrors.incident_at">{{formErrors.incident_at}}</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-12 col-lg-6">
+              <div class="form-group">
+                <label for="name">{{'incident_form_reported_date_time' | translate}}</label>
+                <div class="input-group date-picker cal-time">
+                  <div class="input-group date-picker">
+                    <input class="form-control" formControlName="reported_at" [owlDateTime]="dt2"
+                      [owlDateTimeTrigger]="dt2" [min]="form.value.incident_at"
+                      [placeholder]="'incident_form_reported_date_time_placeholder'| translate">
+                    <owl-date-time [hour12Timer]="true" #dt2></owl-date-time>
+                    <div class="input-group-append">
+                      <button [owlDateTimeTrigger]="dt2" class="btn btn-outline-secondary calendar" type="button"><i
+                          class="fas fa-calendar-alt"></i></button>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-12 col-lg-6">
+              <div class="form-group">
+                <label for="name">{{'incident_form_category' | translate}}</label>
+                <div class="clearfix d-flex">
+                  <div class="multiple-plain-ngselect w-100">
+                    <ng-select [items]="IncidentCategoriesMasterStore.allItems"
+                      [placeholder]="'incident_form_category_placeholder'| translate" [multiple]="false"
+                      formControlName="incident_category_ids" bindLabel="title"
+                      (search)="searchIncidentCategory($event)" (open)="getIncidentCategory()"
+                      (clear)="getIncidentCategory()" (change)="incidentCategoryChange($event)">
+                      <!-- <ng-option [value]="damage"
+                        *ngFor="let damage of IncidentCategoriesMasterStore.allItems">
+                        {{damage.title.length > 80 ? damage.title.substring(0,80)+' ...' :
+                        damage.title}}
+                    </ng-option> -->
+                      <ng-template ng-option-tmp let-item="item" let-index="index">
+                        <!-- <div class="user-post-department-div"> -->
+                        {{item.title.length > 80 ? item.title.substring(0,80)+'...' : item.title}}
+                        <!-- <p class="user-post-department-multiple">
+                              {{item.designation_title}}<span
+                                  *ngIf="item.department">,{{item.department}}</span></p> -->
+                        <!-- </div> -->
+                      </ng-template>
+                    </ng-select>
+                  </div>
+                  <button class="btn multi-add-user ml-2" style="width: 42px;" (click)="addCategory()"
+                    *ngIf="AuthStore.getActivityPermission(1900,'CREATE_INCIDENT_CATEGORY')"><i
+                      class="fas fa-plus"></i></button>
+
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-12 col-lg-6">
+              <div class="form-group">
+                <label for="name">{{'incident_form_sub_category' | translate}}</label>
+                <div class="clearfix d-flex">
+                  <div class="multiple-plain-ngselect w-100">
+                    <ng-select [items]="IncidentSubCategoryMasterStore.allItems"
+                      [placeholder]="'incident_form_sub_category_placeholder'| translate" [multiple]="false"
+                      formControlName="incident_sub_category_ids" bindLabel="title"
+                      (search)="searchIncidentSubCategory($event)" (open)="getIncidentSubCategory()"
+                      (clear)="getIncidentSubCategory()">
+
+                      <ng-template ng-option-tmp let-item="item" let-index="index">
+                        <!-- <div class="user-post-department-div"> -->
+                        {{item.title.length > 80 ? item.title.substring(0,80)+'...' : item.title}}
+                        <!-- <p class="user-post-department-multiple">
+                              {{item.designation_title}}<span
+                                  *ngIf="item.department">,{{item.department}}</span></p> -->
+                        <!-- </div> -->
+                      </ng-template>
+                    </ng-select>
+                  </div>
+                  <button class="btn multi-add-user ml-2" [disabled]="!form.value.incident_category_ids"
+                    style="width: 42px;" (click)="addSubCategory()"
+                    *ngIf="AuthStore.getActivityPermission(1900,'CREATE_INCIDENT_SUB_CATEGORY')"><i
+                      class="fas fa-plus"></i></button>
+
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-12 col-lg-6">
+              <div class="form-group">
+                <label>{{'incident_form_reported_by' | translate}}</label>
+                <div class="clearfix d-flex">
+                  <div class="multiple-plain-ngselect w-100">
+                    <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                      [placeholder]="'incident_form_reported_by_placeholder' | translate" [multiple]="false"
+                      formControlName="reported_by" (search)="searchReportedBy($event)" (open)="getUsers()"
+                      (clear)="getUsers()" [searchFn]="customSearchFn">
+                      <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                        <img *ngIf="item.image_token" height="15" width="15"
+                          [attr.src]="createImagePreview('user-profile-picture',item.image_token)"
+                          onerror="this.src='/assets/images/user-demo2.png'" />
+                        <img *ngIf="!item.image_token" height="15" width="15"
+                          [attr.src]="getDefaultImage('user-logo')" />
+                        <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,' ') |
+                          titlecase}}</b><span aria-hidden="true" (click)="clear(item)" style="border:none;"
+                          class="ng-value-icon left">×</span>
+                      </ng-template>
+                      <ng-template ng-option-tmp let-item="item" let-index="index">
+                        <div class="user-post-department-pic">
+                          <img *ngIf="item.image_token" height="25" width="25"
+                            [attr.src]="createImagePreview('user-profile-picture',item.image_token)"
+                            onerror="this.src='/assets/images/user-demo2.png'" />
+                          <img *ngIf="!item.image_token" height="25" width="25"
+                            [attr.src]="getDefaultImage('user-logo')" />
+                        </div>
+                        <div class="user-post-department-div">
+                          <b>{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b>
+                          <p class="user-post-department-multiple">{{getStringsFormatted([item?.designation_title,'
+                            '+item?.department],50,',')}}</p>
+                        </div>
+                      </ng-template>
+                    </ng-select>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-12 col-lg-6">
+              <div class="form-group">
+                <label for="name">{{'incident_form_invoved_party' | translate}}</label>
+                <div class="clearfix d-flex">
+                  <div class="multiple-plain-ngselect w-100">
+                    <ng-select [items]="StakeholderMasterStore.stakeholders" bindLabel="title"
+                      [placeholder]="'incident_form_invoved_party_placeholder' | translate" [multiple]="false"
+                      (search)="searchInvolved($event)" formControlName="incident_stakeholder_ids"
+                      (open)="getInvolvedUsers()" (clear)="getInvolvedUsers()">
+                      <ng-template ng-option-tmp let-item="item" let-index="index">
+                        <!-- <div class="user-post-department-div"> -->
+                        {{item.title.length > 80 ? item.title.substring(0,80)+'...' : item.title}}
+                        <!-- </div> -->
+                      </ng-template>
+                    </ng-select>
+                  </div>
+                  <button class="btn multi-add-user ml-2" style="width: 42px;" (click)="addStakeholder()"
+                    *ngIf="AuthStore.getActivityPermission(1900,'CREATE_INCIDENT_INVOLVED_USER')"><i
+                      class="fas fa-plus"></i></button>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-sm-12 col-lg-6">
+              <div class="form-group">
+                <label for="name">{{'incident_form_location' | translate}}</label>
+                <div class="clearfix d-flex">
+                  <div class="multiple-plain-ngselect w-100">
+                    <input formControlName="location" type="text" class="form-control w-100"
+                      [placeholder]="'incident_form_location_placeholder'| translate">
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-12 col-lg-6">
+              <div class="form-group">
+                <label for="name">{{'incident_form_action_taken' | translate}}</label>
+                <div class="clearfix d-flex">
+                  <div class="multiple-plain-ngselect w-100">
+                    <input formControlName="action" type="text" class="form-control w-100"
+                      [placeholder]="'incident_form_action_taken_placeholder'| translate">
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-12 col-sm-12">
+              <div class="form-group">
+                <a class="text-light-blue" data-toggle="modal" (click)="organisationChanges()"
+                  style="border-bottom: 1px solid;">{{'change_organization_unit' | translate}}</a>
+              </div>
+            </div>
+          </div>
+
+
+
+
+        </div><!-- tab end -->
+        <div class="tab">
+          <!-- tab start -->
+
+          <!-- <div class="mb-3 box-cnt-one tab-type-btn-small"> 
+                <label class="outline-tag"><i class="fas fa-users"></i>Employees</label><label class="outline-tag active"><i class="fas fa-user-plus"></i>Others</label>
+              </div> -->
+
+          <div [ngStyle]="IncidentStore.tabHides == true && {'display': 'none'}" class="icon-with-text-small-tab">
+            <ul class="nav nav-tabs">
+              <li class="nav-item">
+                <a class="nav-link active" data-toggle="tab" href="#small-tab-one"><i
+                    class="fas fa-users"></i>{{'employee' | translate}}</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#small-tab-two"><i class="fas fa-user-plus"></i>{{'others' |
+                  translate}}</a>
+              </li>
+            </ul>
+
+            <div class="tab-content">
+              <div id="small-tab-one" class="tab-pane active">
+                <div class="row">
+                  <div class="col-sm-12">
+                    <div class="form-group">
+                      <label>{{'person_involved' | translate}}</label>
+                      <div class="clearfix">
+                        <div class="multiple-plain-ngselect">
+                          <div class="multiple-plain-ngselect">
+                            <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                              [placeholder]="'select_person_involved' | translate" [multiple]="true"
+                              formControlName="incident_involved_user_ids" (search)="searchPersonInvolved($event)"
+                              (open)="getPersonInvolved()" [searchFn]="customSearchFn">
+                              <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                <img *ngIf="item.image_token" height="15" width="15"
+                                  [attr.src]="createImagePreview('user-profile-picture',item.image_token)"
+                                  onerror="this.src='/assets/images/user-demo2.png'" />
+                                <img *ngIf="!item.image_token" height="15" width="15"
+                                  [attr.src]="getDefaultImage('user-logo')" />
+                                <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,'
+                                  ') | titlecase}}</b><span aria-hidden="true" (click)="clear(item)"
+                                  style="border:none;" class="ng-value-icon left">×</span>
+                              </ng-template>
+                              <ng-template ng-option-tmp let-item="item" let-index="index">
+                                <div class="user-post-department-pic">
+                                  <img *ngIf="item.image_token" height="25" width="25"
+                                    [attr.src]="createImagePreview('user-profile-picture',item.image_token)"
+                                    onerror="this.src='/assets/images/user-demo2.png'" />
+                                  <img *ngIf="!item.image_token" height="25" width="25"
+                                    [attr.src]="getDefaultImage('user-logo')" />
+                                </div>
+                                <div class="user-post-department-div">
+                                  <b>{{getStringsFormatted([item?.first_name,item?.last_name],50,' ') | titlecase}}</b>
+                                  <p class="user-post-department-multiple">
+                                    {{getStringsFormatted([item?.designation_title,' '+item?.department],50,',')}}</p>
+                                </div>
+                              </ng-template>
+                            </ng-select>
+                            <!-- <p class="pt-1" style="color: red;"
+                                    *ngIf="formErrors && formErrors.incident_involved_user_ids">
+                                    {{formErrors.incident_involved_user_ids}}</p> -->
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div id="small-tab-two" class="tab-pane fade">
+                <div class="row">
+                  <div class="col-sm-12">
+                    <div class="form-group">
+                      <label>{{'person_involved' | translate}}</label>
+                      <button type="button" class="btn btn-active btn-small ml-3" data-toggle="modal"
+                        data-target="#person-involved-popup">{{'add_person' | translate}}</button>
+                    </div>
+
+                    <div class="audit-form-table w-100 mb-4">
+                      <table *ngIf="IncidentStore.otherInvolvedUserDetails.length != 0"
+                        class="table table-bordered ordinary-table cmn-table-style mb-1">
+                        <tr>
+                          <th class="border-top-0 text-center" width="5%">#</th>
+                          <th class="border-top-0" width="15%">{{'name' | translate}}</th>
+                          <th class="border-top-0" width="13%">{{'designation' | translate}}</th>
+                          <th class="border-top-0" width="15%">{{'company_name' | translate}}</th>
+                          <th class="border-top-0" width="5%">{{'age' | translate}}</th>
+                          <th class="border-top-0" width="6%">{{'gender' | translate}}</th>
+                          <th class="border-top-0" width="15%">{{'email' | translate}}</th>
+                          <th class="border-top-0" width="13%">{{'mobile' | translate}}</th>
+                          <th class="border-top-0" width="13%">{{'remarks' | translate}}</th>
+                        </tr>
+                        <tr *ngFor="let user of IncidentStore.involvedOtherUserDetails;let num=index "
+                          class="edit-and-delete-main">
+                          <td class="text-center">{{num+1}}</td>
+                          <td>{{user.name? user.name : AppStore.noContentText}}</td>
+                          <td>{{user.designation ? user.designation : AppStore.noContentText}}</td>
+                          <td>{{user.company ? user.company : AppStore.noContentText}}</td>
+                          <td>{{user.age ? user.age : AppStore.noContentText}}</td>
+                          <td>{{user.gender ? user.gender : AppStore.noContentText}}</td>
+                          <td>{{user.email ? user.email :AppStore.noContentText}}</td>
+                          <td>{{user.mobile ? user.mobile : AppStore.noContentText}}</td>
+                          <td>
+                            <div style="white-space: pre-line;"> {{user.remarks ? user.remarks :
+                              AppStore.noContentText}}</div>
+                            <div class="edit-option-show" style="margin: 30px 0 0 0; ">
+                              <!-- edit-and-delete starts -->
+                              <a (click)="editInvolvedOthers(user,num)" data-toggle="modal"
+                                data-target="#person-involved-popup"><i class="fas fa-pen"></i></a>
+                              <a (click)="deleteOtherInvovedPerson(user.name)"><i class="fas fa-trash"></i></a>
+                            </div><!-- edit-and-delete end -->
+                          </td>
+                        </tr>
+                      </table>
+
+                      <ng-container *mobxAutorun>
+                        <!-- <div *ngIf="!AuditableItemMasterStore.loaded">
+                              <app-auditable-item-loader></app-auditable-item-loader>
+                          </div> -->
+                        <app-no-data-list [source]="criteriaEmptyList"
+                          *ngIf="IncidentStore.otherInvolvedUserDetails.length == 0"></app-no-data-list>
+                      </ng-container>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+
+
+
+
+
+        </div><!-- tab end -->
+        <div class="tab">
+          <!-- tab start -->
+          <div [ngStyle]="IncidentStore.tabHides == true && {'display': 'none'}" class="icon-with-text-small-tab">
+            <ul class="nav nav-tabs">
+              <li class="nav-item">
+                <a class="nav-link active" data-toggle="tab" href="#small-tab-101"><i
+                    class="fas fa-users"></i>{{'employee' | translate}}</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#small-tab-102"><i class="fas fa-user-plus"></i>{{'others' |
+                  translate}}</a>
+              </li>
+            </ul>
+
+            <div class="tab-content">
+              <div id="small-tab-101" class="tab-pane active">
+                <div class="row">
+                  <div class="col-sm-12">
+                    <div class="form-group">
+                      <label>{{'witness' | translate}}</label>
+                      <div class="clearfix">
+                        <div class="multiple-plain-ngselect">
+                          <div class="multiple-plain-ngselect">
+                            <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                              [placeholder]="'select_witness'| translate" [multiple]="true"
+                              formControlName="incident_witness_user_ids" (search)="searchPersonInvolved($event)"
+                              (open)="getPersonInvolved()" [searchFn]="customSearchFn">
+                              <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                <img *ngIf="item.image_token" height="15" width="15"
+                                  [attr.src]="createImagePreview('user-profile-picture',item.image_token)"
+                                  onerror="this.src='/assets/images/user-demo2.png'" />
+                                <img *ngIf="!item.image_token" height="15" width="15"
+                                  [attr.src]="getDefaultImage('user-logo')" />
+                                <b style="padding-left: 3px;">{{getStringsFormatted([item?.first_name,item?.last_name],50,'
+                                  ') | titlecase}}</b><span aria-hidden="true" (click)="clear(item)"
+                                  style="border:none;" class="ng-value-icon left">×</span>
+                              </ng-template>
+                              <ng-template ng-option-tmp let-item="item" let-index="index">
+                                <div class="user-post-department-pic">
+                                  <img *ngIf="item.image_token" height="25" width="25"
+                                    [attr.src]="createImagePreview('user-profile-picture',item.image_token)"
+                                    onerror="this.src='/assets/images/user-demo2.png'" />
+                                  <img *ngIf="!item.image_token" height="25" width="25"
+                                    [attr.src]="getDefaultImage('user-logo')" />
+                                </div>
+                                <div class="user-post-department-div">
+                                  <b>{{getStringsFormatted([item?.first_name,item?.last_name],50,' ') | titlecase}}</b>
+                                  <p class="user-post-department-multiple">
+                                    {{getStringsFormatted([item?.designation_title,' '+item?.department],50,',')}}</p>
+                                </div>
+                              </ng-template>
+                            </ng-select>
+                            <!-- <p class="pt-1" style="color: red;"
+                                    *ngIf="formErrors && formErrors.incident_involved_user_ids">
+                                    {{formErrors.incident_involved_user_ids}}</p> -->
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div id="small-tab-102" class="tab-pane fade">
+                <div class="row">
+                  <div class="col-sm-12">
+                    <div class="form-group">
+                      <label>{{'witness' | translate}}</label>
+                      <button type="button" class="btn btn-active btn-small ml-3" data-toggle="modal"
+                        data-target="#other-involved-popup">{{'add_person' | translate}}</button>
+                    </div>
+
+                    <div class="audit-form-table w-100 mb-4">
+                      <table *ngIf="IncidentStore.involvedWitnessUserDetails.length != 0"
+                        class="table table-bordered ordinary-table cmn-table-style mb-1">
+                        <tr>
+                          <th class="border-top-0 text-center" width="5%">#</th>
+                          <th class="border-top-0" width="17%">{{'name' | translate}}</th>
+                          <th class="border-top-0" width="18%">{{'designation' | translate}}</th>
+                          <th class="border-top-0" width="18%">{{'company_name' | translate}}</th>
+                          <th class="border-top-0" width="18%">{{'email' | translate}}</th>
+                          <th class="border-top-0" width="15%">{{'mobile' | translate}}</th>
+                        </tr>
+                        <tr *ngFor="let user of IncidentStore.involvedWitnessUserDetails;let num=index"
+                          class="edit-and-delete-main">
+                          <td class="text-center">{{num+1}}</td>
+                          <td>{{user.name? user.name : AppStore.noContentText}}</td>
+                          <td>{{user.designation ? user.designation : AppStore.noContentText}}</td>
+                          <td>{{user.company ? user.company : AppStore.noContentText }}</td>
+                          <td>{{user.email ? user.email : AppStore.noContentText}}</td>
+                          <td>
+                            <div> {{user.mobile? user.mobile : AppStore.noContentText}}</div>
+                            <div class="edit-option-show" style="margin: 30px 0 0 0; ">
+                              <!-- edit-and-delete starts -->
+                              <a (click)="editWitnessOthers(user,num)" data-toggle="modal"
+                                data-target="#other-involved-popup"><i class="fas fa-pen"></i></a>
+                              <a (click)="deleteOtherWitnessPerson(user.name)"><i class="fas fa-trash"></i></a>
+                            </div>
+                          </td>
+                        </tr>
+                      </table>
+
+                      <ng-container *mobxAutorun>
+                        <!-- <div *ngIf="!AuditableItemMasterStore.loaded">
+                              <app-auditable-item-loader></app-auditable-item-loader>
+                          </div> -->
+                        <app-no-data-list [source]="criteriaEmptyList"
+                          *ngIf="IncidentStore.involvedWitnessUserDetails.length == 0"></app-no-data-list>
+                      </ng-container>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+
+        </div><!-- tab end -->
+        <div class="tab">
+          <!-- tab start -->
+          <label class="label-style">{{'evidences_upload' | translate}}</label>
+          <!-- Common File Upload Starts Here -->
+          <div #uploadArea>
+            <div class="thumb-pics-bg thumb-pics-col-4 clearfix thumb-pics-fix-text" style="padding-top: 0;">
+              <div class="thumb-pics">
+                <div class="question-circle-inp" style="margin-right: 7px;">
+                  <i class="far fa-question-circle"></i>
+                  <div class="message-password-inp">
+                    <p class="mb-0">{{'allowed_file_types' | translate}}
+                      {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                    </p>
+                  </div>
+                </div>
+
+                <div class="form-group form-group-upload">
+                  <div class="darag-dropifile-upload">
+                    <div class="d-flex justify-content-center align-items-center text-center">
+                      <div>
+                        <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                        <div class="drag-file-name"> Select or Upload Your File Here </div>
+                        <div class="upload-btn-wrapper">
+                          <button (click)="openFileUploadModal()" type="button" class="btn">{{'browse_files' |
+                            translate}}</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="thumb-pics" *ngFor="let docs of fileUploadPopupStore.displayFiles ;let i = index">
+                <div class="upload-pics edit-option" data-toggle="modal">
+                  <div *ngIf="docs.id && !docs.preview" class="browse-form-pic"
+                    [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                  </div>
+                  <div *ngIf="docs.preview" class="browse-form-pic"
+                    [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">
+                  </div>
+                  <div class="browse-form-name clearfix">
+                    <div class="float-left">
+                      <h6>
+                        {{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                      </h6>
+                      <span *ngIf="docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-book"></i></span>
+                      <span *ngIf="!docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-laptop"></i></span>
+                      <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                    </div>
+                    <div class="browse-logo">
+                      <img *ngIf="checkExtension(docs.ext,'image') != -1" class="folder-picher"
+                        src="/assets/images/jpg-icone.png">
+                      <img *ngIf="checkExtension(docs.ext,'doc') != -1" class="folder-picher"
+                        src="/assets/images/word-icone.png">
+                      <img *ngIf="checkExtension(docs.ext,'pdf') != -1" class="folder-picher"
+                        src="/assets/images/pdf-icone.png">
+                      <img *ngIf="checkExtension(docs.ext,'excel') != -1" class="folder-picher"
+                        src="/assets/images/excel-icone.png">
+                      <img *ngIf="checkExtension(docs.ext,'video') != -1" class="folder-picher"
+                        src="/assets/images/md-video.png">
+                      <img *ngIf="checkExtension(docs.ext,'audio') != -1" class="folder-picher"
+                        src="/assets/images/md-audio.png">
+                      <img *ngIf="checkExtension(docs.ext,'ppt') != -1" class="folder-picher"
+                        src="/assets/images/md-ppt.png">
+                    </div>
+                  </div>
+                  <div class="edit-option-show">
+                    <a (click)="removeDocument(docs)"><i class="fas fa-trash"></i></a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Common File Upload Ends Here -->
+        </div><!-- tab end -->
+        <div class="tab">
+          <!-- tab start -->
+
+          <div class="row">
+            <div class="col-sm-12 col-lg-8 padding-right-0">
+              <div class="bg-white">
+
+                <div class="issue-top-sec">
+                  <div class="clearfix">
+                    <h5 class="d-inline-block cmn-head-style label-tag-style"><span
+                        class="issue-smoal-head-text">#{{IncidentStore?.IncidentItemDetails?.reference_code ? IncidentStore?.IncidentItemDetails?.reference_code : 'xxxxx'}}</span>
+                      {{form.value.title?form.value.title:AppStore.noContentText}} <span
+                        class="draft-tag label-tag-style-tag label-left-arow-tag"
+                        style="line-height: 16px; vertical-align: middle; margin-top: -4px; display: inline-block;">
+                        New</span></h5>
+                  </div>
+                  <div class="clearfix">
+                    <p class="label-tag-style mb-2"><i class="fas fa-calendar-alt date-pics-two"></i>
+                      {{form.value.incident_at?(form.value.incident_at | date :
+                      OrganizationGeneralSettingsStore.organizationSettings?.date_time_format ):AppStore.noContentText}}
+                    </p>
+                  </div>
+                  <p *ngIf="form.value.description" style="white-space: pre-line;">
+                    {{form.value.description?form.value.description:AppStore.noContentText}} </p>
+                </div>
+
+                <div class="row">
+                  <div class="col-lg-4 col-sm-6">
+                    <h6>{{'reported_date_time' | translate}}</h6>
+                    <p *ngIf="form.value.reported_at">{{form.value.reported_at ?
+                      (getTimezoneFormatted(form.value.reported_at) | date :
+                      OrganizationGeneralSettingsStore.organizationSettings?.date_time_format) : AppStore.noContentText
+                      }} </p>
+                  </div>
+                  <div class="col-lg-4 col-sm-6">
+                    <h6>{{'reported_by' | translate}}</h6>
+                    <p>{{form.value.reported_by?form.value.reported_by.first_name:AppStore.noContentText}}
+                      {{form.value.reported_by?form.value.reported_by.last_name:AppStore.noContentText}}</p>
+                  </div>
+                  <div class="col-lg-4 col-sm-6">
+                    <h6>{{'invoved_party' | translate}}</h6>
+                    <p>{{form.value.incident_stakeholder_ids ? form.value.incident_stakeholder_ids.title :
+                      AppStore.noContentText}}</p>
+                  </div>
+                  <div class="col-lg-4 col-sm-6">
+                    <h6>{{'category' | translate}}</h6>
+                    <p>
+                      {{form.value.incident_category_ids?form.value.incident_category_ids.title:AppStore.noContentText}}
+                    </p>
+                  </div>
+                  <div class="col-lg-4 col-sm-6">
+                    <h6>{{'incident_sub_category' | translate}}</h6>
+                    <p>
+                      {{form.value.incident_sub_category_ids?form.value.incident_sub_category_ids.id:AppStore.noContentText}}
+                    </p>
+                  </div>
+                  <div class="col-lg-4 col-sm-6"
+                    *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_subsidiary">
+                    <h6>{{'organization' | translate}}</h6>
+                    <p>{{form.value.organization_ids?form.value.organization_ids.title:AppStore.noContentText}}</p>
+                  </div>
+                  <div class="col-lg-4 col-sm-6"
+                    *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_branch">
+                    <h6>{{'branch' | translate}}</h6>
+                    <p>{{form.value.branch_ids?form.value.branch_ids.title:AppStore.noContentText}}</p>
+                  </div>
+                  <div class="col-lg-4 col-sm-6"
+                    *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_division">
+                    <h6>{{'division' | translate}}</h6>
+                    <p>{{form.value.division_ids?form.value.division_ids.title:AppStore.noContentText}}</p>
+                  </div>
+                  <div class="col-lg-4 col-sm-6"
+                    *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_department">
+                    <h6>{{'department' | translate}}</h6>
+                    <p>{{form.value.department_ids?form.value.department_ids.title:AppStore.noContentText}}</p>
+                  </div>
+                  <div class="col-lg-4 col-sm-6"
+                    *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_section">
+                    <h6>{{'section' | translate}}</h6>
+                    <p>{{form.value.section_ids?form.value.section_ids.title:AppStore.noContentText}}</p>
+                  </div>
+                  <div class="col-lg-4 col-sm-6"
+                    *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_sub_section">
+                    <h6>{{'sub_section' | translate}}</h6>
+                    <p>{{form.value.sub_section_ids?form.value.sub_section_ids.title:AppStore.noContentText}}</p>
+                  </div>
+                  <div class="col-lg-4 col-sm-6">
+                    <h6>{{'action_taken' | translate}}</h6>
+                    <p>{{form.value.action?form.value.action:AppStore.noContentText}} </p>
+                  </div>
+                  <div class="col-lg-4 col-sm-6">
+                    <h6>{{'location' | translate}}</h6>
+                    <p>{{form.value.location?form.value.location:AppStore.noContentText}} </p>
+                  </div>
+                  <div class="col-lg-4 col-sm-6">
+                    <h6>{{'type_of_damage' | translate}}</h6>
+                    <p>
+                      {{form.value.incident_damage_type_id?form.value.incident_damage_type_id.title:AppStore.noContentText}}
+                    </p>
+                  </div>
+                </div>
+
+                <!-- <h6>{{'evidences' | translate}}</h6>
+                <p *ngIf="IncidentStore.docDetails.length==0">
+                  {{AppStore.noContentText}}</p>
+                <div class="thumb-pics-bg thumb-pics-col-3 clearfix" *ngIf="IncidentStore.docDetails.length > 0">
+                  <div class="thumb-pics" *ngFor="let b of IncidentStore.docDetails">
+                    <div class="upload-pics upload-pics-small edit-option">
+                      <div class="browse-form-pic"
+                        [ngStyle]="{'background': 'url(' + b?.preview + ') no-repeat 0 0 / cover'}">
+                      </div>
+                      <div class="browse-form-name clearfix">
+                        <div class="float-left">
+                          <h6 [attr.title]="b?.name">
+                            {{b?.name.length > 20 ? b.name?.substring(0,20)+' ...' :
+                            b?.name}}</h6>
+                          <span>{{b?.size/1048576 | number:'0.2-2'}}MB</span>
+                        </div>
+                        <div class="browse-logo">
+                          <img *ngIf="checkExtension(b?.ext,'excel') != -1" src="/assets/images/md-xl.png">
+                          <img *ngIf="checkExtension(b?.ext,'image') != -1" src="/assets/images/md-jpg.png">
+                          <img *ngIf="checkExtension(b?.ext,'doc') != -1" src="/assets/images/md-doc.png">
+                          <img *ngIf="checkExtension(b?.ext,'pdf') != -1" src="/assets/images/md-pdf.png">
+                          <img *ngIf="checkExtension(b?.ext,'video') != -1" src="/assets/images/md-video.png">
+                          <img *ngIf="checkExtension(b?.ext,'audio') != -1" src="/assets/images/md-audio.png">
+                          <img *ngIf="checkExtension(b?.ext,'ppt') != -1" src="/assets/images/md-ppt.png">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div> -->
+
+                <!-- <div class="row">
+                  <div class="col-md-12"> -->
+                      <h6>{{'evidences' | translate}}</h6>
+                      <p *ngIf="fileUploadPopupStore.displayFiles.length==0">
+                          {{AppStore.noContentText}}</p>
+                      <div class="scroll-documents" #previewUploadArea>
+                          <div class="thumb-pics-bg thumb-pics-col-3 clearfix thumb-pics-fix-text"
+                              *ngIf="fileUploadPopupStore.displayFiles.length > 0">
+                              <div class="thumb-pics"
+                                  *ngFor="let docs of fileUploadPopupStore.displayFiles ;let i = index">
+                                  <div class="upload-pics edit-option" data-toggle="modal">
+                                      <div *ngIf="docs.id && !docs.preview"
+                                          class="browse-form-pic"
+                                          [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                                      </div>
+                                      <div *ngIf="docs.preview" class="browse-form-pic"
+                                          [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">
+                                      </div>
+                                      <div class="browse-form-name clearfix">
+                                          <div class="float-left">
+                                              <h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}
+                                              </h6>
+                                              <span *ngIf="docs.is_kh_document"
+                                                  class="mr-2 cmn-clr"><i
+                                                      class="fas fa-book"></i></span>
+                                              <span *ngIf="!docs.is_kh_document"
+                                                  class="mr-2 cmn-clr"><i
+                                                      class="fas fa-laptop"></i></span>
+                                              <span>{{docs.size/1048576 |
+                                                  number:'0.2-2'}}MB</span>
+                                          </div>
+                                          <div class="browse-logo">
+                                              <img *ngIf="checkExtension(docs.ext,'image') != -1"
+                                                  class="folder-picher"
+                                                  src="/assets/images/jpg-icone.png">
+                                              <img *ngIf="checkExtension(docs.ext,'doc') != -1"
+                                                  class="folder-picher"
+                                                  src="/assets/images/word-icone.png">
+                                              <img *ngIf="checkExtension(docs.ext,'pdf') != -1"
+                                                  class="folder-picher"
+                                                  src="/assets/images/pdf-icone.png">
+                                              <img *ngIf="checkExtension(docs.ext,'excel') != -1"
+                                                  class="folder-picher"
+                                                  src="/assets/images/excel-icone.png">
+                                              <img *ngIf="checkExtension(docs.ext,'video') != -1"
+                                                  class="folder-picher"
+                                                  src="/assets/images/md-video.png">
+                                              <img *ngIf="checkExtension(docs.ext,'audio') != -1"
+                                                  class="folder-picher"
+                                                  src="/assets/images/md-audio.png">
+                                              <img *ngIf="checkExtension(docs.ext,'ppt') != -1"
+                                                  class="folder-picher"
+                                                  src="/assets/images/md-ppt.png">
+                                          </div>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  <!-- </div>
+              </div> -->
+
+
+
+              </div>
+            </div>
+            <div class="col-sm-12 col-lg-4">
+              <h5 class="cmn-head-style">{{'person_involved' | translate}}</h5>
+              <div class="risk-rating-box bg-white p-3 mb-3">
+                <h6 class="text-left">{{'employee' | translate}}</h6>
+                <hr class="mt-0 mb-2">
+                <ul *ngIf="form.value.incident_involved_user_ids"
+                  class="arci-user-tab-dtl workflow-lst-pics-loop mb-2 clearfix user-pic-mr-remove">
+                  <li class="rounde-hov-bg"
+                    *ngFor="let involved of form.value.incident_involved_user_ids; let isLast=last">
+                    <app-user-popup-box [source]="assignUserValues(involved)" [showName]="false"></app-user-popup-box>
+                  </li>
+
+                </ul>
+                <p class="text-left" *ngIf="!form.value.incident_involved_user_ids">{{AppStore.noContentText}}</p>
+
+                <h6 class="text-left">{{'others' | translate}}</h6>
+                <hr class="mt-0 mb-2">
+
+                <div *ngFor="let data of involvedOthers()"
+                  class="name-and-position name-and-position-bdr cmn-bdr text-left">
+                  <div class="row">
+
+                    <div class="col-sm-12">
+                      <h6>{{data.name ? data.name : AppStore.noContentText }} </h6>
+                      <span> {{data.mobile ? data.mobile : AppStore.noContentText}}</span>
+                    </div>
+                    <div class="col-sm-6 col-lg-6">
+                      <h6 class="mt-3">Gender</h6>
+                      <span>{{data.gender ? data.gender : AppStore.noContentText}}</span>
+                    </div>
+                    <div class="col-sm-6 col-lg-6">
+                      <h6 class="mt-3">Age</h6>
+                      <span>{{data.age ? data.age : AppStore.noContentText }}</span>
+                    </div>
+                    <div class="col-sm-12 col-lg-6">
+                      <h6 class="mt-3">Designation</h6>
+                      <span>{{data.designation ? data.designation: AppStore.noContentText}}</span>
+                    </div>
+                    <div class="col-sm-12">
+                      <h6 class="mt-3">Email</h6>
+                      <span>{{data.email ? data.email : AppStore.noContentText}}</span>
+                    </div>
+                    <div class="col-sm-12">
+                      <h6 class="mt-3">Company Name</h6>
+                      <span>{{data.company? data.company: AppStore.noContentText }}</span>
+                    </div>
+                    <div class="col-sm-12">
+                      <!-- <h6 >Description</h6> -->
+                      <p *ngIf="data.remarks">{{data.remarks}} </p>
+                    </div>
+                  </div>
+                </div>
+                <p class="text-left" *ngIf="IncidentStore.involvedOtherUserDetails.length == 0">{{AppStore.noContentText}}</p>
+                <a class="view-more-pestel-box text-center" *ngIf="IncidentStore.involvedOtherUserDetails.length > 2"
+                  (click)="openOtherInvolvedPerson()" data-toggle="modal" data-target="#others-popup">{{'view_more' |
+                  translate}}</a>
+
+              </div>
+
+              <h5 class="cmn-head-style mt-3">{{'witness' | translate}}</h5>
+              <div class="risk-rating-box bg-white p-3 mb-3">
+                <h6 class="text-left">{{'employee' | translate}}</h6>
+                <hr class="2">
+                <ul *ngIf="form.value.incident_witness_user_ids"
+                  class="arci-user-tab-dtl workflow-lst-pics-loop mb-2 clearfix user-pic-mr-remove">
+                  <li class="rounde-hov-bg"
+                    *ngFor="let witness of form.value.incident_witness_user_ids; let isLast=last">
+                    <app-user-popup-box [source]="assignUserValues(witness)" [showName]="false"></app-user-popup-box>
+                  </li>
+                </ul>
+                <p class="text-left" *ngIf="!form.value.incident_witness_user_ids">{{AppStore.noContentText}}</p>
+
+                <h6 class="text-left">{{'others' | translate}}</h6>
+                <hr class="mt-0 mb-3">
+                <div *ngFor="let data of othersWitness()"
+                  class="name-and-position name-and-position-bdr cmn-bdr text-left">
+                  <div class="row">
+                    <div class="col-sm-12">
+                      <h6>{{data.name ? data.name : AppStore.noContentText }} </h6>
+                      <span> {{data.mobile ? data.mobile : AppStore.noContentText}}</span>
+                    </div>
+
+                    <div class="col-sm-12 col-lg-6">
+                      <h6 class="mt-3">Designation</h6>
+                      <span>{{data.designation ? data.designation: AppStore.noContentText}}</span>
+                    </div>
+                    <div class="col-sm-12">
+                      <h6 class="mt-3">Email</h6>
+                      <span>{{data.email ? data.email : AppStore.noContentText}}</span>
+                    </div>
+                    <div class="col-sm-12">
+                      <h6 class="mt-3">Company Name</h6>
+                      <span>{{data.company? data.company: AppStore.noContentText }}</span>
+                    </div>
+                    <div class="col-sm-12">
+                      <!-- <h6 >Description</h6> -->
+                      <p *ngIf="data.remarks">{{data.remarks}} </p>
+                    </div>
+                  </div>
+                </div>
+                <p class="text-left" *ngIf="IncidentStore.involvedWitnessUserDetails.length == 0">{{AppStore.noContentText}}</p>
+
+
+                <a class="view-more-pestel-box text-center" *ngIf="IncidentStore.involvedWitnessUserDetails.length > 2"
+                  (click)="openOthersWitnessModel()" data-toggle="modal" data-target="#others-popup">{{'view_more' |
+                  translate}}</a>
+
+              </div>
+
+
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-xl-12">
+              <hr>
+              <div *ngIf="AuthStore.user" class="d-flex flex-row user-list-sm">
+                <app-user-popup-box [source]="getPopupDetails(AuthStore.user,true)" [showName]="true"
+                  [activateButtons]="false"></app-user-popup-box>
+                <!-- <img [attr.src]="AuthStore.user?.image_token ? createImageUrl(AuthStore.user?.image_token) : getDefaultImage('user-logo')"
+                      width="30px" height="30px" class="rounded-circle">                     -->
+              </div>
+            </div>
+          </div>
+
+        </div><!-- tab end -->
+        <div style="overflow:auto;">
+          <div class="form-next-page-btns" style="float:left;">
+            <button class="btn btn-active" type="button" id="nextBtn" [disabled]="form.invalid"
+              (click)="nextPrev(1)">{{getButtonText(nextButtonText)}}</button>
+            <button class="btn" type="button" id="prevBtn"
+              (click)="nextPrev(-1)">{{getButtonText(previousButtonText)}}</button>
+            <button class="btn" type="button" (click)="cancelClicked()">{{'cancel' | translate}}</button>
+          </div>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</main>
+
+
+<!-- calling add person involved modal -->
+
+<!-- <div  #controlPopup> -->
+<!-- <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" *ngIf="!controlObject.type == null" data-backdrop="static"
+    #controlPopup> -->
+<app-add-person-involved-modal>
+
+</app-add-person-involved-modal>
+
+
+
+<!-- </div> -->
+
+<!-- calling add person involved modal -->
+
+<!-- <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #WitnessPopup> -->
+<app-add-witness-modal>
+
+</app-add-witness-modal>
+
+<!-- </div> -->
+
+<!-- calling add type of category modal -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static"
+  #categoryTypeAddPopup>
+  <app-incident-categories-model>
+
+  </app-incident-categories-model>
+
+</div>
+
+<!-- calling add type of damage modal -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #damageTypeAddPopup>
+  <app-incident-damage-type-modal>
+
+  </app-incident-damage-type-modal>
+
+</div>
+<!-- calling add type of sub-category modal -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static"
+  #subCategoryTypeAddPopup>
+  <app-incident-sub-category-model *ngIf="form.value.incident_category_ids"
+    [source]="form.value.incident_category_ids.id">
+
+  </app-incident-sub-category-model>
+
+</div>
+
+<!-- calling add stakeholder modal -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static"
+  #stakeholderAddPopup>
+  <app-stakeholder-modal>
+
+  </app-stakeholder-modal>
+
+</div>
+
+<!-- calling others modal -->
+<!-- <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static"
+    #othersPopup> -->
+<app-others-details-modal [source]="IncidentStore.othersData">
+
+</app-others-details-modal>
+
+<!-- </div> -->
+<!-- </div> -->
+
+<!-- cancel popup -->
+<div class="modal modal-style-1 fade" id="delete-popup" #cancelPopup data-backdrop="static" data-keyboard="false">
+  <app-delete-popup [source]="confirmationObject"></app-delete-popup>
+</div>
+<!-- cancel popup -->
+
+<!-----------------------Form Modal Start--------------------------->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static"
+  #organisationChangeFormModal *mobxAutorun>
+  <app-organisation-change-modal *ngIf="openModelPopup" [source]="form.value"
+    (organizationChangeEvent)="closeOrganisationChangesModal($event)"></app-organisation-change-modal>
+</div>
+<!-----------------------Form Modal End--------------------------->
+
+<!-- * Documetn Attach/Upload Common Component Starts Here -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #fileUploadModal>
+  <app-file-upload-popup *ngIf="fileUploadPopupStore.openPopup"></app-file-upload-popup>
+</div>

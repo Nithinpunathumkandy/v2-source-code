@@ -1,0 +1,120 @@
+<button type="button" class="close" (click)="cancel()"><i class="lni-close"></i><span>{{'esc' |
+    translate}}</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered" #formModal>
+<div class="modal-content">
+    <div class="modal-header">
+        <h4 class="modal-title"> {{'meeting_agendas' | translate}}</h4>
+    </div>
+
+    <div class="modal-body form-body">
+        <div class="row">
+            <div class="col-sm-12 col-lg-6">
+                <div class="form-group d-flex">
+
+                    <form class="form-control issue-select-process-search bg-white search-popup-new">
+                        <input type="text" [(ngModel)]="searchText" [placeholder]="'search_here' | translate"
+                            name="search" class="search-process" (keyup)="searchInCriteriaList($event)">
+                        <button type="submit" style="width: 40px;"><i class="fa fa-search"></i></button>
+                    </form>
+                    <button class="btn multi-add-user ml-2" (click)="openAddMeetingAgendaModal();"
+                        style="width: 38px;"><i class="fas fa-plus"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <div class=" audit-page-table-main">
+            <div class="row">
+                <div class="col-sm-12 full-width-table">
+                    <table class="table table-bordered ordinary-table audit-page-table mb-4 table-scroll">
+                        <thead>
+                            <tr>
+                                <th class="border-top-0" width="10%">
+                                    <label class="container2 float-left"
+                                        style="margin-top: 2px; padding-left: 22px;">
+                                        <input type="checkbox" (change)="checkAll($event)" [(ngModel)]="selectAll">
+                                        <span class="checkmark"></span>
+                                    </label>#
+                                </th>
+                                <th class="border-top-0 pointer" (click)="sortTitle('meeting_criteria')"
+                                    width="75%"> {{'title' | translate}}
+                                    <img _ngcontent-twv-c17="" class="sort-down-pics pl-2" [attr.src]="MeetingAgendaMasterStore.orderBy=='desc' ? 
+                                        'assets/images/sort-up.png' : MeetingAgendaMasterStore.orderBy=='asc' ? 
+                                        'assets/images/sort-down.png' : 'assets/images/sort-empty.png'">
+                                </th>
+                                <th class="border-top-0" width="15%"> {{'status' | translate}}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <ng-container *mobxAutorun>
+                                <tr *ngFor="
+                                    let row of MeetingAgendaMasterStore?.allItems
+                                        | paginate
+                                        : {id: 'criteria',
+                                            currentPage: MeetingAgendaMasterStore?.currentPage,
+                                            itemsPerPage: MeetingAgendaMasterStore?.itemsPerPage,
+                                            totalItems: MeetingAgendaMasterStore?.totalItems
+                                            };
+                                    let num = index
+                                    ">
+                                    <td class="pointer">
+                                        <label class="container2 float-left"
+                                            style="margin-top: 2px; padding-left: 22px;">
+                                            <input type="checkbox" [id]="row.id" [name]="row.name"
+                                                [checked]="checkCriteriaPresent(row)"
+                                                (change)="selectCriteria(row)">
+                                            <span class="checkmark"></span>
+                                        </label>
+                                        {{(MeetingAgendaMasterStore?.currentPage - 1) *
+                                        MeetingAgendaMasterStore?.itemsPerPage +
+                                        (num + 1)}}
+                                    </td>
+                                    <td class="pointer">{{ row.title }}</td>
+                                    <td>
+                                        <div [attr.class]="'dot-div '+row.status_label">{{row.status}}</div>
+                                    </td>
+                                </tr>
+                            </ng-container>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="MeetingAgendaMasterStore.totalItems > MeetingAgendaMasterStore.itemsPerPage && MeetingAgendaMasterStore?.loaded"
+            class="col-sm-12">
+            <ul class="pagination justify-content-center mt-3">
+                <div class="list">
+                    <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+                        (pageChange)="pageChange($event)" class="my-pagination" id="criteria">
+                    </pagination-controls>
+                </div>
+            </ul>
+        </div>
+
+        <app-no-data-list
+            *ngIf="MeetingAgendaMasterStore.totalItems == 0 && MeetingAgendaMasterStore.loaded == true"
+            [source]="'No Meeting Criteria Has Been Reported'"></app-no-data-list>
+        
+        <div class="row mt-4">
+            <div class="col-sm-12">
+                <div class="d-block justify-content-left border-0 mt-3">
+                    <button type="button" data-toggle="modal" (click)="save()" data-target="#signal-lost"
+                        class="btn ordinary-btn mr-3 btn-active"> {{'add' | translate}}</button>
+                    <button type="button" data-toggle="modal" data-target="#signal-lost" (click)="save(true)"
+                        class="btn ordinary-btn mr-3">{{'add' | translate}} &amp; {{'close' | translate}}</button>
+                    <button type="button" data-toggle="modal" data-target="#error-message" (click)="cancel()"
+                        class="btn ordinary-btn mr-2"> {{'cancel' | translate}}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- Meeting Criteria Modal -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static"
+    #controlMeetingAgendaFormModal *mobxAutorun>
+    <button type="button" class="close" data-dismiss="modal" (click)="closeAddMeetingAgendaModal()"><i
+        class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+    <app-meeting-agenda-modal *ngIf="MeetingAgendaMasterStore.addMeetingAgendaModal"></app-meeting-agenda-modal>
+</div>

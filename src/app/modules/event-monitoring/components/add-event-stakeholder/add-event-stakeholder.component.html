@@ -1,0 +1,308 @@
+<button type="button" class="close" (click)="cancel()" data-dismiss="modal"><i
+        class="lni-close"></i><span>esc</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content" *mobxAutorun>
+        <!-- Modal Header -->
+        <div class="modal-header">
+            <h4 *ngIf="source?.type=='Add'" class="modal-title">{{'add_stakeholder' | translate}}</h4>
+            <h4 *ngIf="source?.type=='Edit'" class="modal-title">{{'edit_stakeholder' | translate}}</h4>            
+        </div>
+        <!-- Modal body -->
+        <form [formGroup]="form" class="modal-body form-body">
+            <p class="head-details">A stakeholder is defined as an individual or group that has an interest in any decision or activity of an organization</p>
+            
+
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="form-group">
+                        <label for="name">{{'stakeholder_name' | translate}}<sup>*</sup></label>
+                        <div class="clearfix d-flex">
+                            <div class="multiple-plain-ngselect w-100" style="z-index: 2;position: relative;">
+                                <ng-select 
+                                    [placeholder]="'stakeholder_name_placeholder' | translate" 
+                                    [multiple]="false"
+                                    formControlName="stakeholder_id"
+                                    (open)="getStakeholder()" 
+                                    (clear)="getStakeholder()"
+                                    (search)="searchStakeholder($event)" 
+                                    bindLabel="title">
+                                    <ng-option [value]="type.id"
+                                            *ngFor="let type of StakeholdersStore?.stakeholders">
+                                            {{type.title.length > 50 ? type.title.substring(0,50)+'...' : type.title}}
+                                    </ng-option>
+                                    <!-- [items]="StakeholdersStore.stakeholders"  -->
+                                    <!-- <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                        {{item?.title?.length > 60 ? (item.title | slice:0:60)+' ...' : item.title}}
+                                    </ng-template>
+                                    <ng-template ng-option-tmp let-item="item" let-index="index">
+                                        {{item?.title?.length > 80 ? (item.title | slice:0:80)+' ...' : item.title}}
+                                    </ng-template> -->
+                                </ng-select>
+                                </div>
+                                <button class="btn multi-add-user ml-2" data-toggle="modal" (click) = "addStakeHolderMaster()" style="width: 42px;"><i class="fas fa-plus"></i></button>
+                                </div>
+                                <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.stakeholder_id">{{formErrors.stakeholder_id}}</p>
+                    </div>
+                </div>
+                <div class="col-sm-12">
+                    <div class="form-group add-kpi-textarea">
+                        <span style="float: right;" class="text-grey">{{form?.value.description != null ? getDescriptionLength() : 0}} {{'characters' | translate}}</span>
+                        <label for="description">{{'role_and_description' | translate}}</label>
+                        <ckeditor id="description" (change)="descriptionValueChange($event)" [editor]="Editor" formControlName="description"></ckeditor>
+                        <p class="form-error pt-1" *ngIf="formErrors">{{formErrors.description}}</p>
+                    </div>
+
+                </div>
+                <div class="col-sm-12 mt-3">
+                    <div class="form-group">
+                        <label for="name">{{'need_and_expectations' | translate}}<sup>*</sup></label>
+                        <div class="clearfix">
+                            <div class="multiple-plain-ngselect">
+                                <ng-select 
+                                    [placeholder]="'need_and_expectations_placeholder' | translate" 
+                                    [multiple]="true"
+                                    [items]="NeedsExpectationsStore.needsAndExpecations"
+                                    formControlName="event_stakeholder_need_and_expectation_ids"
+                                    (open)="getNeedsExpectation()" 
+                                    (clear)="getNeedsExpectation()"
+                                    (search)="searchNeedsExpectation($event)" 
+                                    bindLabel="title">
+                                    <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                        {{item?.title?.length > 60 ? (item.title | slice:0:60)+' ...' : item.title}}
+                                        <span aria-hidden="true" (click)="clear(item)" style="border:none;" class="ng-value-icon left">×</span>
+                                    </ng-template>
+                                    <ng-template ng-option-tmp let-item="item" let-index="index">
+                                        {{item?.title?.length > 80 ? (item.title | slice:0:80)+' ...' : item.title}}
+                                    </ng-template>
+                                </ng-select>
+                                <p class="pt-1" style="color: red;"
+                                    *ngIf="formErrors && formErrors.event_stakeholder_need_and_expectation_ids">
+                                    {{formErrors.event_stakeholder_need_and_expectation_ids}}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6 col-sm-12">
+                    <div class="form-group">
+                        <label for="name">{{'contract_for_this_event' | translate}}</label>
+                        <div class="custom-control pt-2 custom-radio">
+                            <input type="radio" (change)="changeStatus('yes')" class="custom-control-input" id="customRadio1" name="example1" value="customEx" [checked]="furtherAction=='yes'">
+                            <label class="custom-control-label" for="customRadio1" style="padding-top: 2px;">Yes</label>
+                            <span class="pl-5"><input type="radio" (change)="changeStatus('no')" class="custom-control-input" id="customRadio2" name="example1" value="customEx" [checked]="furtherAction=='no'">
+                                <label class="custom-control-label" for="customRadio2" style="padding-top: 2px;">No</label></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-sm-12" *ngIf="contractFlag">
+                    <div class="form-group">
+                        <label for="name">{{'contract_type' | translate}}</label>
+                        <div class="clearfix d-flex">
+                            <div class="multiple-plain-ngselect select-width-plus w-100">
+                                <ng-select 
+                                    [placeholder]="'contract_type_placeholder' | translate" 
+                                    [multiple]="false"
+                                    searchable="true"
+                                    formControlName="contract_type_id" 
+                                    (open)="getContractType()"
+                                    (clear)="getContractType()" 
+                                    (search)="searchContractType($event)"
+                                    bindLabel="project_contract_type_title">
+                                    <ng-option [value]="type.id"
+                                    *ngFor="let type of ProjectContractTypeMasterStore?.projectContractType">
+                                    {{type.project_contract_type_title.length > 50 ? type.project_contract_type_title.substring(0,50)+'...' : type.project_contract_type_title}}
+                                    </ng-option>
+                                    <!-- <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                        {{item?.project_contract_type_title?.length > 60 ? (item.project_contract_type_title | slice:0:60)+' ...' : item.project_contract_type_title}}
+                                    </ng-template>
+                                    <ng-template ng-option-tmp let-item="item" let-index="index">
+                                        {{item?.project_contract_type_title?.length > 80 ? (item.project_contract_type_title | slice:0:80)+' ...' : item.project_contract_type_title}}
+                                    </ng-template> -->
+                                </ng-select>
+                                </div>
+                                <button class="btn multi-add-user ml-2" data-toggle="modal" (click) = "addNewContractType()" style="width: 42px;"><i class="fas fa-plus"></i></button>
+                                </div>
+                                <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.contract_type_id">{{formErrors.contract_type_id}}</p>
+                    </div>
+                </div>
+
+                <div class="col-sm-12">
+                    <div class="form-group">
+                        <label for="name">{{'engagement_strategy' | translate}}<sup>*</sup></label>
+                        <div class="clearfix d-flex">
+                            <div class="multiple-plain-ngselect w-100">
+                                <ng-select 
+                                    [placeholder]="'engagement_strategy_placeholder' | translate"
+                                    [multiple]="false"
+                                    formControlName="engagement_strategy_id" 
+                                    (open)="getEngagement()"
+                                    (clear)="getEngagement()" 
+                                    (search)="searchEngagement($event)"
+                                    bindLabel="event_engagement_strategy_title">
+                                    <ng-option [value]="row.id"
+                                    *ngFor="let row of EventEngagementStrategyMasterStore?.eventEngagementStrategy">
+                                    {{row.event_engagement_strategy_title.length > 50 ? row.event_engagement_strategy_title.substring(0,50)+'...' : row.event_engagement_strategy_title}}
+                                    </ng-option>
+                                    <!-- <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                        {{item?.event_engagement_strategy_title?.length > 60 ? (item.event_engagement_strategy_title | slice:0:60)+' ...' : item.event_engagement_strategy_title}}
+                                    </ng-template>
+                                    <ng-template ng-option-tmp let-item="item" let-index="index">
+                                        {{item?.event_engagement_strategy_title?.length > 80 ? (item.event_engagement_strategy_title | slice:0:80)+' ...' : item.event_engagement_strategy_title}}
+                                    </ng-template> -->
+                                </ng-select>
+                                </div>
+                                <button class="btn multi-add-user ml-2" data-toggle="modal" (click) = "addNewEngagement()" style="width: 42px;"><i class="fas fa-plus"></i></button>
+                                </div>
+                                <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.engagement_strategy_id">{{formErrors.engagement_strategy_id}}</p>
+                    </div>
+                </div>
+                <div class="col-sm-12">
+                    <div class="form-group">
+                        <label>{{'communication_channel' | translate}}<sup>*</sup></label>
+                        <div class="clearfix d-flex">
+                            <div class="multiple-plain-ngselect w-100">
+                                <ng-select 
+                                    [placeholder]="'communication_channel_placeholder' | translate" 
+                                    [multiple]="true"
+                                    formControlName="communication_channel_ids" 
+                                    (open)="getCommunication()"
+                                    (clear)="getCommunication()" 
+                                    (search)="searchCommunication($event)"
+                                    bindLabel="event_communication_channel_title">
+                                    <ng-option [value]="row.id"
+                                    *ngFor="let row of CommunicationMasterStore?.communication">
+                                    {{row.event_communication_channel_title.length > 50 ? row.event_communication_channel_title.substring(0,50)+'...' : row.event_communication_channel_title}}
+                                    </ng-option>
+                                    <!-- <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                        {{item?.event_communication_channel_title?.length > 60 ? (item.event_communication_channel_title | slice:0:60)+' ...' : item.event_communication_channel_title}}
+                                        <span aria-hidden="true" (click)="clear(item)" style="border:none;" class="ng-value-icon left">×</span>
+                                    </ng-template>
+                                    <ng-template ng-option-tmp let-item="item" let-index="index">
+                                        {{item?.event_communication_channel_title?.length > 80 ? (item.event_communication_channel_title | slice:0:80)+' ...' : item.event_communication_channel_title}}
+                                    </ng-template> -->
+                                </ng-select>
+                                </div>
+                                <button class="btn multi-add-user ml-2" data-toggle="modal" (click) = "addNewCommunication()" style="width: 42px;"><i class="fas fa-plus"></i></button>
+                                </div>
+                                <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.communication_channel_ids">{{formErrors.communication_channel_ids}}</p>
+                        </div>
+                </div>
+                <div class="col-sm-12">
+                    <div class="form-group">
+                        <label for="name">{{'what_needs_completed' | translate}}</label>
+                        <div class="d-flex">
+                            <input type="text" formControlName="event_stakeholder_communications" class="form-control w-100" [placeholder]="'what_needs_completed_placeholder' | translate">
+                            <button class="btn multi-add-user ml-2" style="width: 42px;" [disabled]="!form.value.event_stakeholder_communications" (click)="addCommunication()"><i class="fas fa-plus"></i></button>
+                        </div>
+                        <p class="pt-1" style="color: red;" *ngIf="alreayCommunication">This item is already added</p>
+                        <div class="delete-bullet-point">
+                            <ul class="arrowlist ml-0 pl-0 mt-2 mb-0">
+                                <li *ngFor="let root of EventStakeholderStore._communications;index as i">{{root.title}}
+                                    <button (click)="deleteCommunication(i);" type="button" class="btn btn-small float-right btn-small-delete" style="border: none;"><i class="fas fa-trash"></i></button>
+                                </li>                                
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="user-details-page mt-2">
+                <div class="right-block p-0">
+                    <h5 class="mt-0" style="z-index: 1;"> <span> {{'anticipated_involvement' | translate}}/ {{'impact' | translate}} </span> </h5>
+                </div>
+            </div>            
+
+            <div class="row">
+                <div class="col-lg-6 col-sm-12">
+                    <div class="form-group">
+                        <label for="name">{{'influence' | translate}}<sup>*</sup></label>
+                        <div class="clearfix">
+                            <div class="multiple-plain-ngselect">
+                                <ng-select 
+                                    [placeholder]="'influence_placeholder' | translate" 
+                                    [multiple]="false"
+                                    [items]="EventInfluenceMasterStore?.EventInfluence"
+                                    formControlName="event_influence_id" 
+                                    (open)="getInfluence()"
+                                    (clear)="getInfluence()" 
+                                    (search)="searchInfluence($event)" 
+                                    bindLabel="title">
+                                    <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                        {{item?.title?.length > 60 ? (item.title | slice:0:60)+' ...' : item.title}}
+                                    </ng-template>
+                                    <ng-template ng-option-tmp let-item="item" let-index="index">
+                                        {{item?.title?.length > 80 ? (item.title | slice:0:80)+' ...' : item.title}}
+                                    </ng-template>
+                                </ng-select>
+                                <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.event_influence_id">{{formErrors.event_influence_id}}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6 col-sm-12">
+                    <div class="form-group">
+                        <label for="name">{{'supportive' | translate}}<sup>*</sup></label>
+                        <div class="clearfix">
+                            <div class="multiple-plain-ngselect">
+                                <ng-select 
+                                    [placeholder]="'supportive_placeholder' | translate" 
+                                    [multiple]="false"
+                                    [items]="SupportivesMasterStore?.Supportives" 
+                                    formControlName="event_supportive_id"
+                                    (open)="getSupportive()" 
+                                    (clear)="getSupportive()"
+                                    (search)="searchSupportive($event)" 
+                                    bindLabel="title">
+                                    <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                        {{item?.title?.length > 60 ? (item.title | slice:0:60)+' ...' : item.title}}
+                                    </ng-template>
+                                    <ng-template ng-option-tmp let-item="item" let-index="index">
+                                        {{item?.title?.length > 80 ? (item.title | slice:0:80)+' ...' : item.title}}
+                                    </ng-template>
+                                </ng-select>
+                                <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.event_supportive_id">{{formErrors.event_supportive_id}}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-12">
+                    <div class="form-group">
+                        <label for="name">{{'feedback' | translate}}</label>
+                        <textarea formControlName="feedback" class="form-control" rows="3" id="comment"
+                            [placeholder]="'feedback_placeholder' | translate"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="d-block justify-content-left border-0 mt-3">
+                        <button type="button" data-toggle="modal" (click)="save()" data-target="#signal-lost" [disabled]="form.invalid || AppStore.loading" class="btn ordinary-btn mr-3 btn-active">{{'save' | translate}}</button>
+                        <button type="button" data-toggle="modal" data-target="#signal-lost" (click)="save(true)" [disabled]="form.invalid || AppStore.loading" class="btn ordinary-btn mr-3">{{'save' | translate}} &amp; {{'close' | translate}}</button>
+                        <button type="button" data-toggle="modal" data-target="#error-message" (click)="cancel()" class="btn ordinary-btn mr-2"> {{'cancel' | translate}}</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <!-- Modal footer -->
+    </div>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+    <app-stakeholder-modal *ngIf="stakeholderObject.type" [source]="stakeholderObject"></app-stakeholder-modal>
+</div>
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #contractTypeformModal>
+    <button type="button" class="close"  (click) ="closeContractTypeMasteModal()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+    <app-project-contract-type-modal *ngIf = "projectContractTypeObject.type" [source] = "projectContractTypeObject"></app-project-contract-type-modal>
+</div>
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #engagementFormModal>
+    <button type="button" class="close"  (click) ="closeEngagementModal()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+    <app-event-engagement-strategy-modal *ngIf="eventEngagementStrategyObject.type" [source]="eventEngagementStrategyObject"></app-event-engagement-strategy-modal>
+</div>
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #communicationFormModal>
+    <button type="button" class="close" (click) ="closeCommunicationModal()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+    <app-communication-modal *ngIf = "communicationObject.type" [source] = "communicationObject"></app-communication-modal>
+</div>

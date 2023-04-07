@@ -1,0 +1,113 @@
+<!-- <div class="modal modal-style-1 fade popup-full-width" id="change-request-popup" data-keyboard="false"
+        data-backdrop="static"> -->
+        <button type="button" class="close"><i class="lni-close" (click) = "closeModal()"></i><span>esc</span></button>
+        <div class="modal-dialog modal-lg modal-dialog-centered" *mobxAutorun>
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <h4 class="modal-title">{{'create_change_request' | translate}}</h4>
+                    <!-- <button type="button" class="close" data-dismiss="modal">&times;</button> -->
+
+                </div>
+                <!-- Modal body -->
+                <div *ngIf = "!showData" class="modal-body form-body">
+                    <form [formGroup]="form" (ngSubmit)="save()">
+
+                        <div class="row mt-2">
+                            <div class="col-lg-6 col-sm-12">
+                                <div class="form-group clearfix">
+                                    <label for="name">{{'change_request_type' | translate}}<span class="form-error">*</span></label>
+                                    <div class="box-cnt-one tab-type-btn-small">
+                                        <label (click) = "setChangeRequestType(items.id)" *ngFor = "let items of BCPChangeRequestTypeMasterStore.allItems"
+                                         [ngClass]="checkChangeRequestType(items.id) ? 'outline-tag active' : 'outline-tag'"><i class="fas fa-edit"></i>{{items.title}}</label>
+                                        <!-- <label
+                                            class="outline-tag active"><i class="fas fa-ban"></i>Cancel</label> -->
+                                            <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.business_continuity_plan_change_request_type_id}}</p>
+                                    </div>
+                                </div>
+                            </div>
+                
+                            <div class="col-lg-6 col-sm-12">
+                                <div class="form-group clearfix">
+                                    <label for="name" >{{'change_request_version_type' | translate}}<span class="form-error">*</span></label>
+                                    <div class="box-cnt-one tab-type-btn-small">
+                                        <label (click) = "setMajorOrMinor('major')" [ngClass]="checkMajorOrMinor('major') ? 'outline-tag active' : 'outline-tag'">{{'major' | translate}}</label>
+                                        <label (click) = "setMajorOrMinor('minor')" [ngClass]="checkMajorOrMinor('minor') ? 'outline-tag active' : 'outline-tag'">{{'minor' | translate}}</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div class="form-group">
+                                    <label for="name">{{'change_request_form_title' | translate}}<span class="form-error">*</span></label>
+                                    <div class="plain-select input-add-report">
+                                        <input type="text" formControlName = "title" class="form-control" [attr.placeholder]="'change_request_form_title_placeholder' | translate">
+                                        <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.title}}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+
+
+                            <div class="col-sm-12">
+                                <div class="form-group">
+                                    <label for="name">{{'change_request_reason' | translate}}</label>
+                                    <textarea class="form-control" rows="2" id="comment"
+                                        [attr.placeholder]="'change_request_reason_placeholder' | translate" formControlName = "reason"></textarea>
+                                </div>
+                            </div>
+
+
+
+                        </div>
+
+                        <div class="d-block justify-content-left border-0 mt-4">
+                            <button type="button"  [disabled]="form.invalid || AppStore.loading" class="btn btn-active" (click) = "save()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save_next') }}</button>
+                                   <!-- <button type="button"  [disabled]="form.invalid || AppStore.loading" class="btn" (click) = "save(true)">{{  AppStore.loading  ? getButtonText('loading') : getButtonText('save_close')}}</button> -->
+                            <button type="button"
+                                class="btn ordinary-btn mr-2" (click) = "closeModal()">{{'cancel' | translate}}</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div *ngIf = "showData" class="modal-body form-body">
+                    <ng-container *ngFor = "let items of bcpChangeRequestData">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div class="form-group">
+                                    <label for="name">{{'bcp_clause_form_title' | translate}}</label>
+                                    <div class="plain-select input-add-report">
+                                        <input type="text" [(ngModel)] = "items.title" class="form-control" [attr.placeholder]="'bcp_clause_form_title_placeholder' | translate">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+    
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div class="form-group">
+                                    <label for="name">{{'bcp_clause_form_description' | translate}}</label>
+                                    <ckeditor [config]="config" [attr.id]="'description'+items.id" (ready)="onReady($event)" [data] = "items.description" (change)="descriptionValueChange($event,items)" [editor]="Editor"></ckeditor>
+                                </div>
+                            </div>
+                        </div>
+                        <app-bcp-change-request-subcomponent *ngIf = "items.children.length > 0" [source] = "items.children"></app-bcp-change-request-subcomponent>
+                    </ng-container>
+                    <ng-container *mobxAutorun>
+                        <app-no-data-list *ngIf="bcpChangeRequestData.length == 0" [source] = "emptyMessage"></app-no-data-list>
+                    </ng-container>
+                    <div class="d-block justify-content-left border-0 mt-4">
+                        <!-- <button type="button"  [disabled]="AppStore.loading" class="btn btn-active" (click) = "save()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save_next') }}</button> -->
+                        <button type="button"  [disabled]="AppStore.loading" class="btn" (click) = "saveChangeRequest(true)">{{  AppStore.loading  ? getButtonText('loading') : getButtonText('save_close')}}</button>
+                        <button type="button"
+                            class="btn ordinary-btn mr-2" (click) = "closeModal()">{{'cancel' | translate}}</button>
+                    </div>
+                </div>
+                <!-- Modal footer -->
+            </div>
+        </div>
+    <!-- </div> -->

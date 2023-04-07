@@ -1,0 +1,421 @@
+<div class="row">
+   <div class="col-sm-12">
+      <div class="bg-white top-left-tab-new oc-tab-menu-bg clearfix">
+         <ul class="nav oc-tab-menu clearfix">
+            <li> <a class="active show" data-toggle="pill" (click)="setOcView('view-1','user-wise')">{{'role_wise' |
+                  translate}}</a> </li>
+            <li> <a data-toggle="pill" (click)="setOcView('menu1','department-wise')">{{'department_wise' |
+                  translate}}</a> </li>
+            <li> <a data-toggle="pill" (click)="setOcView('menu3','image')">{{'organization_chart_image' |
+                  translate}}</a> </li>
+            <!-- <li> <a data-toggle="pill" href="#menu4" (click)="setType('oc-tab')">{{'organization_chart_view' |
+                  translate}}</a> </li> -->
+         </ul>
+         <ul *ngIf="chartType == 'user-wise' || chartType == 'oc-tab'" class="nav oc-tab-menu oc-tab-menu-right clearfix">
+            <li> <a class="active show" data-toggle="pill" (click)="setOcView('view-1','user-wise')">View 1</a> </li>
+            <li> <a data-toggle="pill" (click)="setOcView('view-2','user-wise')">View 2</a> </li>
+         </ul>
+      </div>
+   </div>
+</div>
+<div class="row">
+   <div class="col-sm-12">
+      <div class="widget-body-light profile-widg-padding oc-tab-content pt-0">
+         <div class="btns-oc-tab" *ngIf="chartType != 'image'">
+            <button id="left-button" class="oc-btns-arow oc-btns-arow-left pointer"><i class="fas fa-chevron-left"
+                  (click)="moveTo('left')"></i></button>
+            <button id="top-button" class="oc-btns-arow oc-btns-arow-top pointer"><i class="fas fa-chevron-up"
+                  (click)="moveTo('top')"></i></button>
+            <button id="right-button" class="oc-btns-arow oc-btns-arow-right pointer"><i class="fas fa-chevron-right"
+                  (click)="moveTo('right')"></i></button>
+            <button id="bottom-button" class="oc-btns-arow oc-btns-arow-bottom pointer"><i class="fas fa-chevron-down"
+                  (click)="moveTo('bottom')"></i></button>
+         </div>
+         <div class="row">
+            <div class="col-sm-12">
+
+               <div class="clearfix"></div>
+               <div id="content-oc" class="tree-wrapper" #contentArea>
+                  <!-- Tab panes -->
+                  <div class="tab-content">
+                     <div class="tab-pane active container"  
+                           *ngIf="(chartType == 'user-wise' || chartType == 'oc-tab') && AuthStore.getActivityPermission(400,'OC_USER_WISE_LIST')">
+
+                        <div class="tab-content">
+
+                           <div *ngIf="ocView=='view-1'" class="tab-pane active" id="view-1">
+
+                              <ng-container *mobxAutorun>
+                                 <app-organization-chart-loader *ngIf="!OrganizationChartStore.userWiseChartLoaded">
+                                 </app-organization-chart-loader>
+                              </ng-container>
+
+                              <ng-container *mobxAutorun>
+                                 <div *ngIf="OrganizationChartStore.userWiseChartLoaded && OrganizationChartStore.userWiseChart.length > 0" id="capture-user"
+                                    class="tree clearfix mt-5" [style.width]="getChartWidth()">
+                                    <ul class="clearfix">
+                                       <li *ngFor="let userWise of OrganizationChartStore.userWiseChart">
+                                          <a class="oc-user-box bottom-bordered-blue pointer"
+                                             [attr.title]="'View '+userWise.first_name+' '+userWise.last_name"
+                                             [ngStyle]="{'opacity': userWise.status_id == AppStore.inActiveStatusId ? 0.5 : 1}"
+                                             (click)="gotoUserDetails(userWise.id)">
+                                             <!-- <div class="oc-edit pointer"> <i class="fas fa-pencil-alt" [attr.title]="'Edit '+userWise.first_name+' '+userWise.last_name" (click) = "editUser(userWise.id)"></i> </div> -->
+                                             <img
+                                                [attr.src]="userWise.image_token ? createImageUrl(userWise.image_token,'user-profile-picture') : getDefaultImage('user-logo')"
+                                                width="55" height="60" 
+                                                class="img-fluid rounded-circle" alt="images"
+                                                onerror="this.src='/assets/images/user-demo2.png'" />
+                                             <!-- <div class="status"> <i class="fas fa-trophy"></i> </div> -->
+                                             <h4 class="mt-3">{{userWise.first_name}} {{userWise.last_name}}</h4>
+                                             <h5> {{userWise.designation?.title}}</h5>
+                                          </a>
+                                          <app-organization-chart-div *ngIf="userWise.children.length > 0"
+                                             [details]="userWise.children"></app-organization-chart-div>
+                                       </li>
+                                    </ul>
+                                 </div>
+                              </ng-container>
+                              <app-no-data
+                                 *ngIf="OrganizationChartStore.userWiseChartLoaded && OrganizationChartStore.userWiseChart.length == 0">
+                              </app-no-data>
+                           </div>
+
+                           <div *ngIf="ocView=='view-2'" class="tab-pane active" id="view-2">
+
+                              <div class="oc-chart-small">
+                                 <ng-container>
+                                    <div class="tree auto-width-tree clearfix mt-4" style="width: auto;" id="capture-user" 
+                                    *ngIf="OrganizationChartStore.userWiseChartLoaded && OrganizationChartStore.userWiseChart.length > 0">
+                                              <ul class="clearfix left-and-right-space-tree">
+                                                 <li *ngFor="let userWise of OrganizationChartStore.userWiseChart">
+                                                      <a class="oc-user-box pointer" 
+                                                      [attr.title]="'View '+userWise.first_name+' '+userWise.last_name"
+                                                      [ngStyle]="{'opacity': userWise.status_id == AppStore.inActiveStatusId ? 0.5 : 1}">
+                                                       <div class="clearfix">
+                                                           <div class="oc-user-pic">
+                                                               <img [attr.src]="userWise.image_token ? createImageUrl(userWise.image_token,'user-profile-picture') : getDefaultImage('user-logo')"
+                                                               width="55" height="60" 
+                                                               class="img-fluid rounded-circle" alt="images"
+                                                               onerror="this.src='/assets/images/user-demo2.png'" 
+                                                               (click)="gotoUserDetails(userWise.id)"/>
+                                                               <div *ngIf="userWise.children.length > 0" id="{{'oc-plus-minus-icon-'+userWise.id}}"
+                                                                  class="oc-box-option-icon hide-and-show-oc-box-btn-1 oc-plus-minus-icon" 
+                                                                  (click)="show(userWise.id)"> <i class="fal fa-minus"></i> 
+                                                               </div>
+                                                           </div>
+                                                           <div class="oc-user-name">
+                                                               <div class="oc-edit"> 
+                                                                   <span class="oc-box-option-icon"><i class="fas fa-pencil-alt"></i></span>
+                                                               </div>
+                                                               <div class="name-sec-oc-user">
+                                                                   <h4>{{userWise.first_name}} {{userWise.last_name}}</h4>
+                                                                   <h5>{{userWise.designation?.title}}</h5>
+                                                               </div>
+                                                           </div>
+                                                       </div>
+                                                    </a>
+   
+                                                    <app-organization-chart-view *ngIf="userWise.children.length > 0"[details]="userWise.children" [id]="userWise.id">
+                                                    </app-organization-chart-view>
+                                                 </li>
+                                              </ul>
+                                    </div>
+                                 </ng-container>
+                              </div>
+   
+
+                           </div>
+
+                        </div>
+ 
+                     </div>
+
+
+                     <div *ngIf="ocView=='menu1' && AuthStore.getActivityPermission(400,'OC_DEPARTMENT_WISE_LIST')" class="tab-pane active container" id="menu1">
+                        <app-no-data
+                           *ngIf="OrganizationChartStore.departmentWiseChartLoaded && OrganizationChartStore.departmentWiseChart.length == 0">
+                        </app-no-data>
+                        <ng-container *mobxAutorun>
+                           <app-oc-department-loader *ngIf="!OrganizationChartStore.departmentWiseChartLoaded">
+                           </app-oc-department-loader>
+                        </ng-container>
+                        <ng-container *mobxAutorun>
+                           <div id="capture-dept" *ngIf="OrganizationChartStore.departmentWiseChartLoaded"
+                              class="tree clearfix department-tree" [style.width]="getDepartmentChartWidth()">
+                              <ul *ngFor="let dWise of OrganizationChartStore.departmentWiseChart; let d = index">
+                                 <li [ngStyle]="{'padding-top' : d > 0 ? '75px' : '0px'}">
+                                    <a class="oc-user-box bottom-bordered-blue oc-box-text-and-logo">
+                                       <div class="logo-pic-tree" *ngIf="dWise.image_token">
+                                          <img *ngIf="dWise.image_token" 
+                                          height="22px" width="114"
+                                             [attr.src]="createImageUrl(dWise.image_token,'business-profile-logo')"
+                                             alt="images" class="img-fluid" 
+                                             onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                       </div>
+                                       <h4 class="mt-3">{{dWise.organization_title}}</h4>
+                                       <div class="dpt-title-bx"> <span>{{'subsidiaries' | translate}}/{{'divisions' |
+                                             translate}}</span>
+                                       </div>
+                                    </a>
+
+                                    <ul *ngIf="dWise.children && dWise.children.length > 0">
+                                       <li *ngFor="let subWise of dWise.children[0]">
+                                          <a class="oc-user-box oc-box-text-and-logo">
+                                             <div class="logo-pic-tree" *ngIf="subWise.image_token">
+                                                <img *ngIf="subWise.image_token" 
+                                                height="22px" width="114"
+                                                [attr.src]="createImageUrl(subWise.image_token,'organization-logo')"
+                                                alt="images" class="img-fluid" 
+                                                onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                             </div>
+                                             <h4 class="mt-3">{{subWise.organization_title}}</h4>
+                                             <div *ngIf="subWise.divisions.length > 0" class="dpt-title-bx">
+                                                <span>{{'divisions' |
+                                                   translate}}</span>
+                                             </div>
+                                          </a>
+                                          <ul *ngIf="subWise.divisions.length > 0">
+                                             <li *ngFor="let divWise of subWise.divisions">
+                                                <a class="oc-user-box">
+                                                   <h4>{{divWise.division_title}}</h4>
+                                                   <div *ngIf="divWise.departments.length > 0" class="dpt-title-bx">
+                                                      <span>{{'departments' |
+                                                         translate}}</span>
+                                                   </div>
+                                                </a>
+                                                <ul *ngIf="divWise.departments.length > 0">
+                                                   <li *ngFor="let depWise of divWise.departments">
+                                                      <a class="oc-user-box">
+                                                         <h4>{{depWise.department_title}}</h4>
+                                                         <div *ngIf="depWise.sections.length > 0" class="dpt-title-bx">
+                                                            <span>{{'sections' |
+                                                               translate}}</span>
+                                                         </div>
+                                                      </a>
+                                                      <ul *ngIf="depWise.sections.length > 0">
+                                                         <li *ngFor="let secWise of depWise.sections">
+
+                                                            <a class="oc-user-box">
+
+                                                               <h4>{{secWise.section_title}}</h4>
+                                                               <div *ngIf="secWise.sub_sections.length > 0"
+                                                                  class="dpt-title-bx">
+                                                                  <span>{{'sub_sections' | translate}}</span>
+                                                               </div>
+                                                            </a>
+                                                            <ul *ngIf="secWise.sub_sections.length > 0">
+                                                               <li *ngFor="let subSecWise of secWise.sub_sections">
+
+                                                                  <a class="oc-user-box">
+
+                                                                     <h4>{{subSecWise.sub_section_title}}</h4>
+                                                                     <!-- <div class="dpt-title-bx"> <span> Sub Section</span>
+                                                                           </div> -->
+                                                                  </a>
+                                                               </li>
+                                                            </ul>
+                                                         </li>
+                                                      </ul>
+                                                   </li>
+                                                </ul>
+                                             </li>
+                                          </ul>
+                                       </li>
+                                       <li *ngFor="let pdivWise of dWise.divisions">
+                                          <a class="oc-user-box">
+                                             <h4>{{pdivWise.division_title}}</h4>
+                                             <div *ngIf="pdivWise.departments.length > 0" class="dpt-title-bx">
+                                                <span>{{'departments' |
+                                                   translate}}</span>
+                                             </div>
+                                          </a>
+                                          <ul *ngIf="pdivWise.departments.length > 0">
+                                             <li *ngFor="let pdepWise of pdivWise.departments">
+                                                <a class="oc-user-box">
+                                                   <h4>{{pdepWise.department_title}}</h4>
+                                                   <div *ngIf="pdepWise.sections.length > 0" class="dpt-title-bx">
+                                                      <span>{{'sections' |
+                                                         translate}}</span>
+                                                   </div>
+                                                </a>
+                                                <ul *ngIf="pdepWise.sections.length > 0">
+                                                   <li *ngFor="let psecWise of pdepWise.sections">
+                                                      <a class="oc-user-box">
+                                                         <h4>{{psecWise.section_title}}</h4>
+                                                         <div *ngIf="psecWise.sub_sections.length > 0"
+                                                            class="dpt-title-bx">
+                                                            <span>{{'sub_sections' | translate}}</span>
+                                                         </div>
+                                                      </a>
+                                                      <ul *ngIf="psecWise.sub_sections.length > 0">
+                                                         <li *ngFor="let psubSecWise of psecWise.sub_sections">
+                                                            <a class="oc-user-box">
+                                                               <h4>{{psubSecWise.sub_section_title}}</h4>
+                                                               <!-- <div class="dpt-title-bx"> <span> Sub Section</span>
+                                                                           </div> -->
+                                                            </a>
+                                                         </li>
+                                                      </ul>
+                                                   </li>
+                                                </ul>
+                                             </li>
+                                          </ul>
+                                       </li>
+                                    </ul>
+                                 </li>
+                              </ul>
+                           </div>
+                        </ng-container>
+                     </div>
+                     <div class="tab-pane active" *ngIf="ocView=='menu3'" id="menu3">
+                        <div class="pt-3">
+
+                           <div class="row align-items-center">
+                              <div class="col-sm-12">
+                                 <div class="image-oc-tab cmn-bdr text-center mt-3 p-3"
+                                    *ngIf="!OrganizationChartStore.organizationChartImage || editFlag">
+                                    <div class="image-oc-tab">
+                                       <div class="oc-upload-image-show">
+                                          <div class="oc-upload-image-show-pic relative">
+                                             <div class="question-circle-inp"
+                                                *ngIf="!OrganizationChartStore.temporaryChartImage && fileUploadProgress == 0">
+                                                <i class="fas fa-question-circle"></i>
+                                                <div class="message-password-inp bottom-show">
+                                                   <p class="mb-0">{{'allowed_file_types' | translate}}
+                                                      {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                                                   </p>
+                                                </div>
+                                             </div>
+                                             <div
+                                                *ngIf="OrganizationChartStore.temporaryChartImage && !OrganizationChartStore.logo_preview_available">
+                                                <img [attr.src]="OrganizationChartStore.temporaryChartImage.preview_url"
+                                                   alt="No Preview Available" class="img-fluid"
+                                                   onerror = "this.src='/assets/images/user-demo2.png'">
+                                             </div>
+                                             <div class="pt-4 pb-4"
+                                                *ngIf="!OrganizationChartStore.temporaryChartImage && fileUploadProgress == 0">
+
+                                                <img src="assets/images/no-user.png" alt="image" class="drag-pic-files">
+                                                <p class="drag-file-name mb-0"> {{'select_upload_your_file_here'|translate}} </p>
+                                             </div>
+                                             <div class="pt-4 pb-4"
+                                                *ngIf="OrganizationChartStore.logo_preview_available">
+                                                <circle-progress class="browse-form-pic" [percent]="fileUploadProgress"
+                                                   [title]=fileUploadProgress></circle-progress>
+                                             </div>
+                                          </div>
+                                          <div class="upload-btn-wrapper drag-inp-height ">
+                                             <input type="file" id="file"
+                                                [disabled]="OrganizationChartStore.logo_preview_available"
+                                                (change)="onFileChange($event,'support-file')"
+                                                [accept]="checkAcceptFileTypes('support-file')">
+                                             <button class="btn">{{'browse_files' | translate}}</button>
+                                          </div>
+                                          <div class="mt-3">
+                                             <button type="button" class="btn btn-active" (click)="updateImage()"
+                                                [disabled]="(fileUploadProgress != 0 && fileUploadProgress != 100)">{{
+                                                AppStore.loading ? getButtonText('loading') : getButtonText('save')
+                                                }}</button>
+                                             <button type="button" class="btn mr-0" (click)="cancel()">{{ 'cancel' |
+                                                translate }}</button>
+                                          </div>
+                                       </div>
+
+                                    </div>
+                                 </div>
+
+                                 <div class="image-oc-tab cmn-bdr text-center mt-3 p-3 edit-and-delete-main"
+                                    *ngIf="OrganizationChartStore.organizationChartImage && !editFlag">
+                                    <div class="edit-option-show" style="margin: 40px 0 0 0;">
+                                       <!-- edit-and-delete starts -->
+                                       <a (click)="editImage()"><i class="fas fa-pen"></i></a>
+                                       <a (click)="deleteConfirmation()"><i class="fas fa-trash"></i></a>
+                                    </div>
+                                    <!-- <div class="image-edit-icom-oc pointer">
+                                       <i class="fas fa-edit" (click) = "editImage()"></i>
+                                    </div> -->
+                                    <div class="image-oc-tab pointer">
+                                       <img [attr.src]="OrganizationChartStore.organizationChartImage.preview_url"
+                                          onerror="this.src='assets/images/no-user.png'" class="img-fluid"
+                                          (click)="viewOrganizationChartPreview()">
+                                    </div>
+                                 </div>
+
+                              </div>
+                           </div>
+
+                        </div>
+                     </div>
+                     <!-- <div class="tab-pane tab-edit-class smoal-left-tab-page" id="menu4" >
+                            <div class="oc-tab-content oc-chart-small">
+                              <ng-container>
+                                 <div class="tree auto-width-tree" id="capture-user" 
+                                 *ngIf="OrganizationChartStore.userWiseChartLoaded && OrganizationChartStore.userWiseChart.length > 0">
+                                           <ul class="clearfix left-and-right-space-tree">
+                                              <li *ngFor="let userWise of OrganizationChartStore.userWiseChart">
+                                                   <a class="oc-user-box pointer" 
+                                                   [attr.title]="'View '+userWise.first_name+' '+userWise.last_name"
+                                                   [ngStyle]="{'opacity': userWise.status_id == AppStore.inActiveStatusId ? 0.5 : 1}">
+                                                    <div class="clearfix">
+                                                        <div class="oc-user-pic">
+                                                            <img [attr.src]="userWise.image_token ? createImageUrl(userWise.image_token,'user-profile-picture') : getDefaultImage('user-logo')"
+                                                            width="55" height="60" class="img-fluid rounded-circle" alt="images"
+                                                            onerror="this.src='/assets/images/user-demo2.png'" (click)="gotoUserDetails(userWise.id)"/>
+                                                            <div *ngIf="userWise.children.length > 0" id="{{'oc-plus-minus-icon-'+userWise.id}}"
+                                                               class="oc-box-option-icon hide-and-show-oc-box-btn-1 oc-plus-minus-icon" 
+                                                               (click)="show(userWise.id)"> <i class="fal fa-minus"></i> 
+                                                            </div>
+                                                        </div>
+                                                        <div class="oc-user-name">
+                                                            <div class="oc-edit"> 
+                                                                <span class="oc-box-option-icon"><i class="fas fa-pencil-alt"></i></span>
+                                                            </div>
+                                                            <div class="name-sec-oc-user">
+                                                                <h4>{{userWise.first_name}} {{userWise.last_name}}</h4>
+                                                                <h5>{{userWise.designation?.title}}</h5>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                 </a>
+
+                                                 <app-organization-chart-view *ngIf="userWise.children.length > 0"[details]="userWise.children" [id]="userWise.id">
+                                                 </app-organization-chart-view>
+                                              </li>
+                                           </ul>
+                                 </div>
+                              </ng-container>
+                            </div>
+
+                     </div> -->
+
+
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+   <div class="modal modal-style-1 fade" id="delete-popup" #deletePopup data-backdrop="static" data-keyboard="false">
+      <app-delete-popup [source]="deleteObject"></app-delete-popup>
+   </div>
+   <!-- tabindex="-1" role="dialog" -->
+   <div class="modal modal-style-1 image-download-popup-new fade" id="loadMe" aria-labelledby="loadMeLabel"
+      tabindex="-1" role="dialog" #loaderPopUp>
+      <app-loader [source]="downloadMessage"></app-loader>
+   </div>
+   <div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup" data-keyboard="false"
+      data-backdrop="static" #filePreviewModal *mobxAutorun>
+      <button type="button" class="close" data-dismiss="modal" (click)="closePreviewModal($event)"><i
+            class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+      <app-previewcomponent *ngIf="previewObject" [source]="previewObject" (close)="closePreviewModal($event)">
+      </app-previewcomponent>
+   </div>
+
+   <!-- Modal part -->
+
+   <div
+      class="modal modal-style-1 share-popup new-issue-process-popup popup-full-width fade xtra-large-modal oc-new-cls"
+      id="oc-popup" data-keyboard="false" data-backdrop="static" #fileView>
+      <app-organisation-chart-fullview *ngIf="fileViewObject.type" [source]="fileViewObject">
+      </app-organisation-chart-fullview>
+   </div>

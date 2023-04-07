@@ -1,0 +1,324 @@
+<!-- service-level-agreement-and-contract-form Start -->
+<!-- <div class="modal modal-style-1 popup-full-width fade" id="service-level-agreement-and-contract-form" data-keyboard="false"  data-backdrop="static"> -->
+<button type="button" class="close" (click)="closeFormModal()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header">
+            <h4 *ngIf="formObject.type == 'Add'" class="modal-title">{{'sla_form_new_contract_document' | translate}}</h4>
+            <h4 *ngIf="formObject.type == 'Edit'" class="modal-title">{{'sla_form_edit_contract_document' | translate}}</h4>
+            <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
+        </div>
+        <form [formGroup]="slaContractForm" *mobxAutorun>
+            <!-- Modal body -->
+            <div class="modal-body form-body">
+                <p class="head-details">{{'sla_form_main_description' | translate}}</p>
+                <label for="name" class="label-style mb-0"> {{'sla_form_select_document' | translate}}</label>
+
+                <div class="row m-0 upload-section" style="padding-top: 0">
+                    <div class="col-sm-4 costmz-logo-new mt-2">
+                        <div class="question-circle-inp" style="margin-right: 7px;">
+                            <i class="far fa-question-circle"></i>
+                            <div class="message-password-inp">
+                                <p class="mb-0">{{'allowed_file_types' | translate}}
+                                    {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="form-group form-group-upload">
+                            <div class="darag-dropifile-upload">
+                                <div class="d-flex justify-content-center align-items-center text-center">
+                                    <div class="drag-file-sec">
+                                        <img src="assets/images/drag-pic.png" class="drag-pic-files">
+                                        <div class="drag-file-name">{{'drag_drop_file_here'|translate}}</div>
+                                        <div class="upload-btn-wrapper">
+                                            <input type="file" id="file" name="myfile"
+                                                (change)="onFileChange($event,'support-file')" [accept]="checkAcceptFileTypes('support-file')"/>
+                                            <button class="btn">{{'browse_files'|translate}}</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="col-sm-4 up-pic-cf mt-2" *ngIf="SLAContractStore.sla_preview_available">
+
+                        <div class="upload-pics edit-option">
+                            <circle-progress class="browse-form-pic" [percent]=fileUploadProgress
+                                [title]=fileUploadProgress></circle-progress>
+                        </div>
+                    </div>
+
+
+                    <div [ngClass]="SLAContractStore.documentImage?.is_deleted ? 'col-sm-4 up-pic-cf mt-2 image_deleted':'col-sm-4 up-pic-cf mt-2'"
+                        *ngIf="SLAContractStore.documentImage">
+                        <div class="upload-pics edit-option">
+                            <div class="browse-form-pic"
+                                [ngStyle]="{'background': 'url(' + SLAContractStore.preview_url + '),url(' + getDefaultImage('no-preview') + ') no-repeat 0 0 / cover'}">
+                            </div>
+                            <div class="browse-form-name clearfix">
+                                <div class="float-left">
+                                    <h6>{{SLAContractStore?.documentImage?.name?.length > 15 ? SLAContractStore?.documentImage?.name.substring(0,15)+' ...': SLAContractStore?.documentImage?.name}}
+                                    </h6>
+                                    <span>{{SLAContractStore?.documentImage?.size/1000}}KB</span>
+                                </div>
+                                <div class="browse-logo">
+                                    <img *ngIf="checkExtension(SLAContractStore?.documentImage?.ext,'excel') != -1"
+                                        src="/assets/images/md-xl.png">
+                                    <img *ngIf="checkExtension(SLAContractStore?.documentImage?.ext,'image') != -1"
+                                        src="/assets/images/md-jpg.png">
+                                    <img *ngIf="checkExtension(SLAContractStore?.documentImage?.ext,'doc') != -1"
+                                        src="/assets/images/md-doc.png">
+                                    <img *ngIf="checkExtension(SLAContractStore?.documentImage?.ext,'pdf') != -1"
+                                        src="/assets/images/md-pdf.png">
+                                    <img *ngIf="checkExtension(SLAContractStore?.documentImage?.ext,'video') != -1"
+                                        src="/assets/images/md-video.png">
+                                    <img *ngIf="checkExtension(SLAContractStore?.documentImage?.ext,'audio') != -1"
+                                        src="/assets/images/md-audio.png">
+                                    <img *ngIf="checkExtension(SLAContractStore?.documentImage?.ext,'ppt') != -1"
+                                        src="/assets/images/md-ppt.png">
+
+                                </div>
+                            </div>
+                            <div class="edit-option-show">
+                                <a [attr.title]="'delete'|translate"
+                                    (click)="removeDocument()"><i
+                                        class="fas fa-trash"></i></a>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="row">
+
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'sla_form_title' | translate}}<span class="form-error">*</span></label>
+                            <input type="text" class="form-control" formControlName="title"
+                            [placeholder]="'sla_c_form_title_placeholder'| translate">
+                            <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.title">
+                                {{formErrors.title[0]}}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'sla_form_category' | translate}}<span class="form-error">*</span></label>
+                            <div class="clearfix d-flex">
+                                <div class="multiple-plain-ngselect w-100">
+                                    <ng-select [placeholder]="'select_category'| translate" [multiple]="false" 
+                                        formControlName="sla_category_id"
+                                        bindLabel="title" (search)="searchSLACategory($event)" 
+                                        (clear)="getSLACategoryList()" (open)="getSLACategoryList()">
+                                        <ng-option [value]="row.id"
+                                            *ngFor="let row of SlaCategoryMasterStore.allItems">
+                                            {{row.title.length > 25 ? row.title.substring(0,25)+'...' : row.title}}
+                                        </ng-option>
+                                    </ng-select>
+                                    <p class="pt-1" style="color: red;"
+                                        *ngIf="formErrors && formErrors.sla_category_id">
+                                        {{formErrors.sla_category_id[0]}}
+                                    </p>
+                                </div>
+                                <button class="btn multi-add-user ml-2" style="width: 42px;" (click)="addCategory()"
+                                *ngIf="AuthStore.getActivityPermission(1100,'CREATE_SLA_CATEGORY')"><i
+                                    class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'title' | translate}}<span class="form-error">*</span></label>
+                            <input type="text" class="form-control" formControlName="title"
+                            [placeholder]="'title'| translate">
+                            <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.title">
+                                {{formErrors.title[0]}}
+                            </p>
+                        </div>
+                    </div> -->
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'sla_form_client' | translate}}</label>
+                            <input type="text" class="form-control" formControlName="client"
+                            [placeholder]="'enter_client'| translate">
+                            <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.client">
+                                {{formErrors.client[0]}}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'sla_form_product' | translate}}</label>
+                            <div class="clearfix d-flex">
+                                <div class="multiple-plain-ngselect w-100">
+                                    <ng-select [placeholder]="'select_product'| translate" [multiple]="false" 
+                                        formControlName="product_id"
+                                        bindLabel="title" (search)="searchProduct($event)" 
+                                        (clear)="getProducts()" (open)="getProducts()">
+                                        <ng-option [value]="row.id"
+                                            *ngFor="let row of BusinessProductsStore.productDetails">
+                                            {{row.title.length > 25 ? row.title.substring(0,25)+'...' : row.title}}
+                                        </ng-option>
+                                    </ng-select>
+                                    <p class="pt-1" style="color: red;"
+                                        *ngIf="formErrors && formErrors.product_id">
+                                        {{formErrors.product_id[0]}}
+                                    </p>
+                                </div>      
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'sla_form_description' | translate}}</label>
+                            <textarea class="form-control" rows="3" id="comment" formControlName="description"
+                            [placeholder]="'sla_form_description_placeholder'| translate"></textarea>
+                            <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.description">
+                                {{formErrors.description[0]}}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'sla_form_issue_date' | translate}}<span class="form-error">*</span></label>
+
+                            <div class="input-group date-picker">
+                                <input class="form-control cal4" formControlName="issue_date" placeholder="yyyy-mm-dd"
+                                    (click)="startDateInput.toggle()" id="start" ngbDatepicker
+                                    #startDateInput="ngbDatepicker">
+
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary calendar" (click)="startDateInput.toggle()"
+                                        type="button"><i class="fas fa-calendar-alt"></i></button>
+                                </div>
+                            </div>
+                            <p class="pt-1" style="color: red;" *n gIf="formErrors && formErrors.issue_date">
+                                {{formErrors.issue_date}}</p>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'sla_form_expiry_date' | translate}}<span class="form-error">*</span></label>
+
+                            <div class="input-group date-picker">
+                                <input class="form-control cal4" formControlName="expiry_date" placeholder="yyyy-mm-dd"
+                                    (click)="targetDateInput.toggle()"
+                                    [minDate]="slaContractForm.value.issue_date ? {year: this.slaContractForm.value.issue_date.year, month: this.slaContractForm.value.issue_date.month, day: this.slaContractForm.value.issue_date.day} : '' "
+                                     id="target" ngbDatepicker
+                                    #targetDateInput="ngbDatepicker">
+
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary calendar"
+                                        (click)="targetDateInput.toggle()" type="button"><i
+                                            class="fas fa-calendar-alt"></i></button>
+                                </div>
+                            </div>
+                            <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.expiry_date">
+                                {{formErrors.expiry_date}}</p>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6 col-sm-12">
+                        <div class="form-group">
+                            <a class="text-light-blue" data-toggle="modal" (click)="organisationChanges()" style="border-bottom: 1px solid;">{{'change_organization_unit' | translate}}</a>
+                         </div>
+                    </div>
+
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'sla_form_contract_value' | translate}}<span class="form-error">*</span></label>
+                            <input type="text" class="form-control" formControlName="contract_value"
+                            [placeholder]="'enter_sla_contract_value'| translate">
+                            <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.contract_value">
+                                {{formErrors.contract_value[0]}}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label>{{'sla_form_responsible_users' | translate}} <span class="form-error">*</span></label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect">
+                                    <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                                        [placeholder]="'select_responsible_users'| translate" multiple="true"
+                                        formControlName="compliance_responsible_user_ids" (search)="searchUsers($event)"
+                                        (open)="getResponsibleUsers()" [searchFn]="customSearchFn">
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            <img *ngIf="item.image_token" height="15" width="15"
+                                                [attr.src]="createImagePreview('user-profile-picture',item.image_token)" />
+                                            <img *ngIf="!item.image_token" height="15" width="15" [attr.src]="getDefaultImage()" />
+                                            <b style="padding-left: 3px;">{{getStringsFormatted([item?.first_name,item?.last_name],25,' ') | titlecase}}</b><span aria-hidden="true" (click)="clear(item)"
+                                                style="border:none;" class="ng-value-icon left">×</span>
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            <div class="user-post-department-pic">
+                                                <img *ngIf="item.image_token" height="25" width="25"
+                                                    [attr.src]="createImagePreview('user-profile-picture',item.image_token)" />
+                                                <img *ngIf="!item.image_token" height="25" width="25" [attr.src]="getDefaultImage()" />
+                                            </div>
+                                            <div class="user-post-department-div">
+                                                <b>{{getStringsFormatted([item?.first_name,item?.last_name],25,' ') | titlecase}}</b>
+                                                <p class="user-post-department-multiple">{{getStringsFormatted([item?.designation_title,' '+item?.department],25,',')}}</p>
+                                            </div>
+                                        </ng-template>
+                                    </ng-select>
+                                    <p style="color: red;" *ngIf="formErrors && formErrors.compliance_responsible_user_ids">
+                                        {{formErrors.compliance_responsible_user_ids}}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+
+      
+                <!-- <p style="color: red;" *ngIf="formErrors&&formErrors.name">{{formErrors.corrective_action_responsible_user_id}}</p> -->
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="d-block justify-content-left border-0 mt-3">
+                            <button type="button" data-toggle="modal" data-target="#signal-lost" (click)="save()"
+                                class="btn btn-primary mr-3 btn-active" [disabled]="slaContractForm.invalid || AppStore.loading">
+                                {{ AppStore.loading ? getButtonText('loading') : getButtonText('save') }}</button>
+                            <button type="button" data-toggle="modal" data-target="#signal-lost" (click)="save(true)"
+                                class="btn btn-primary mr-3" [disabled]="slaContractForm.invalid || AppStore.loading">
+                                {{ AppStore.loading ? getButtonText('loading') : getButtonText('save_close') }}</button>
+                            <button type="button" data-toggle="modal" data-target="#error-message"
+                                (click)="closeFormModal()" class="btn btn-primary mr-2">{{ AppStore.loading ?
+                                getButtonText('loading') : getButtonText('cancel') }}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Modal footer -->
+        </form>
+    </div>
+</div>
+<!-- </div> -->
+<!-- service-level-agreement-and-contract-form End -->
+
+<!-- add category master modal -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #categoryFormModal>
+    <app-sla-category-modal *ngIf="slaCategoryObject.type" [source]="slaCategoryObject">
+    </app-sla-category-modal>
+</div>
+<!-- add category master modal -->
+
+
+<!-----------------------Form Modal Start--------------------------->
+<div  class="modal modal-style-1 popup-full-width fade"  data-keyboard="false"
+data-backdrop="static" #organisationChangeFormModal *mobxAutorun>
+<app-organisation-change-modal *ngIf = "openModelPopup" [source] = "slaContractForm?.value" 
+(organizationChangeEvent)="closeModal($event)"></app-organisation-change-modal>
+</div>
+<!-----------------------Form Modal End--------------------------->

@@ -1,0 +1,210 @@
+<!-- <div class="modal modal-style-1 popup-full-width fade" id="add-milestone-popup" data-keyboard="false"
+data-backdrop="static"> -->
+<button type="button" class="close" data-dismiss="modal" (click)="cancel()"><i
+    class="lni-close"></i><span>esc</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered">
+  <div class="modal-content">
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <h4 *ngIf="actionPlanSource.type == 'Add'">{{'sm_actionplan_title' | translate}}</h4>
+      <h4 *ngIf="actionPlanSource.type == 'Edit'">{{'sm_actionplan_edit_title' | translate}}</h4>
+      <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
+    </div>
+    <!-- Modal body -->
+    <div class="modal-body form-body">
+      <p class="head-details">{{'sm_actionplan_popup_title' | translate}}
+      </p>
+      <form [formGroup]="form">
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'title' | translate}}<span class="form-error">*</span></label>
+              <input formControlName="title" type="text" class="form-control"
+                [placeholder]="'sm_action_plan_title' | translate">
+              <!-- <p class="form-error pt-1" *ngIf="isItemExist">{{'title_error_validation' | translate}}</p> -->
+              <p class="form-error pt-1" *ngIf="formErrors && formErrors.title">
+                {{formErrors.title}}
+             </p>
+            </div>
+          </div>
+          <div class="col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'description' | translate}}</label>
+              <textarea formControlName="description" class="form-control " rows="3" id="comment"
+                [placeholder]="'sm_action_plan_decs' | translate"></textarea>
+            </div>
+          </div>
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'start_date' | translate}}<span class="form-error">*</span></label>
+              <!-- <div class="input-group date-picker">
+                      <input class="form-control cal5" placeholder="Start Date">
+                  </div> -->
+              <div class="input-group">
+                <!-- (focus) = "d.toggle()" -->
+                <input class="form-control" id="establish_date" [placeholder]="'select_start_date' | translate"
+                  name="dp" formControlName="start_date" ngbDatepicker #d="ngbDatepicker"
+                  [minDate]="InitiativeStore.is_mileStoneReq ?  StrategyInitiativeStore.selectedStrartDate  : StrategyInitiativeStore.profilemileStoneStartDate ">
+                <div class="input-group-append">
+                  <button class="btn btn-outline-secondary calendar" (click)="d.toggle()" type="button"><i
+                      class="fas fa-calendar-alt"></i></button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6  col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'target_date' | translate}}<span class="form-error">*</span></label>
+              <!-- <div class="input-group date-picker">
+                      <input class="form-control cal6" placeholder="End Date">
+                  </div> -->
+              <div class="input-group">
+                <!-- (focus) = "d.toggle()" -->
+                <input class="form-control" id="target_date" [placeholder]="'sm_target_date' | translate" name="dp"
+                  formControlName="end_date" ngbDatepicker #c="ngbDatepicker" [minDate]="form.value.start_date"
+                  [maxDate]="InitiativeStore.is_mileStoneReq ? StrategyInitiativeStore.selectedEndDate : StrategyInitiativeStore.profilemileStoneEndDate">
+                <div class="input-group-append">
+                  <button class="btn btn-outline-secondary calendar" (click)="c.toggle()" type="button"><i
+                      class="fas fa-calendar-alt"></i></button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'target' | translate}}<span class="form-error">*</span></label>
+              <input type="text" formControlName="target" class="form-control"
+                [placeholder]="'enter_target' | translate">
+              <p class="form-error pt-1" *ngIf="form?.get('target').invalid && form.value.target">
+                {{'numeric_value' | translate}}</p>
+            </div>
+          </div>
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'target_unit' | translate}}<span class="form-error">*</span></label>
+              <div class="clearfix d-flex">
+                <div class="multiple-plain-ngselect select-width-plus w-100">
+                  <ng-select [placeholder]="'select_target_unit' | translate" [multiple]="false"
+                    formControlName="target_unit_id" bindLabel="title" (open)="openTargetUnit()"
+                    (clear)="openTargetUnit()">
+                    <ng-option [value]="type.id" *ngFor="let type of UnitMasterStore.allItems">
+                      {{type.title}}
+                    </ng-option>
+
+                  </ng-select>
+                  <!-- <p class="form-error pt-1" *ngIf="formErrors && formErrors.target_unit_id">{{formErrors.target_unit_id}}</p> -->
+                </div>
+                <button class="btn multi-add-user ml-2" data-toggle="modal" (click)=" addNewUnitItem()"
+                  style="width: 42px;"><i class="fas fa-plus"></i></button>
+
+              </div>
+
+            </div>
+          </div>
+
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'minimum_value' | translate}} (%)</label>
+              <div class="plain-select input-add-report">
+                <input type="text" class="form-control" formControlName="minimum"
+                  [placeholder]="'enter_minimum_value' | translate">
+                <p class="form-error pt-1" *ngIf="form?.get('minimum').invalid && form.value.minimum">
+                  {{'numeric_value' | translate}}</p>
+                <!-- <p class="form-error pt-1" *ngIf="form.value.aggregation_type_id == 2 && form.value.minimum > 99">
+                  {{'sm_kpi_min_value_validation' | translate}} 99</p> -->
+
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'maximum_value' | translate}} (%)</label>
+              <div class="plain-select input-add-report">
+                <input type="text" class="form-control" formControlName="maximum"
+                  [placeholder]="'enter_maximum_value' | translate">
+                <p class="form-error pt-1" *ngIf="form?.get('maximum').invalid && form.value.maximum">
+                  {{'numeric_value' | translate}}</p>
+                <!-- <p class="form-error pt-1" *ngIf="form.value.aggregation_type_id == 2 && form.value.maximum > 100">
+                  {{'sm_kpi_min_value_validation' | translate}} 100</p> -->
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-12 col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'responsible_users' | translate}}<span class="form-error">*</span></label>
+              <div class="clearfix">
+                <div class="dropdown-filter">
+                  <div class="multiple-plain-ngselect">
+                    <ng-select [items]="UsersStore.usersList" bindLabel="email" multiple="true"
+                      formControlName="responsible_user_id" [placeholder]="'select_responsible_users' | translate"
+                      (search)="searchUsers($event)" (open)="getUsers()" [searchFn]="customSearchFn">
+                      <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                        <img *ngIf="item.image_token" class="ng-select-user-display" height="15" width="15"
+                          [attr.src]="createImageUrl('user-profile-picture',item.image_token)"
+                          onerror="this.src='/assets/images/user-demo2.png'" />
+                        <img *ngIf="!item.image_token" class="ng-select-user-display" height="15" width="15"
+                          [attr.src]="getDefaultImage('user-logo')" />
+                        <b style="padding-left: 3px">{{getStringsFormatted([item.first_name,item.last_name],50,'
+                          ') | titlecase}}</b><span aria-hidden="true" (click)="clear(item)" style="border: none"
+                          class="ng-value-icon left">×</span>
+                      </ng-template>
+                      <ng-template ng-option-tmp let-item="item" let-index="index">
+                        <div class="user-post-department-pic">
+                          <img *ngIf="item.image_token" class="ng-select-user-display" height="25" width="25"
+                            [attr.src]="createImageUrl('user-profile-picture',item.image_token)"
+                            onerror="this.src='/assets/images/user-demo2.png'" />
+                          <img *ngIf="!item.image_token" class="ng-select-user-display" height="25" width="25"
+                            [attr.src]="getDefaultImage('user-logo')" />
+                        </div>
+                        <div class="user-post-department-div">
+                          <b>{{getStringsFormatted([item.first_name,item.last_name],50,'
+                            ') | titlecase}}</b>
+                          <p class="user-post-department-multiple">
+                            {{getStringsFormatted([item.designation_title,'
+                            '+item.department],30,',')}}
+                          </p>
+                        </div>
+                      </ng-template>
+                    </ng-select>
+                  </div>
+                </div>
+                <p class="form-error pt-1" *ngIf="formErrors && formErrors.responsible_user_id">
+                  {{formErrors.responsible_user_id}}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+
+
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="d-block justify-content-left border-0 mt-3">
+              <button type="button" data-toggle="modal" class="btn btn-active"
+                [disabled]="form.invalid || AppStore.loading" (click)="save()">{{ AppStore.loading ?
+                getButtonText('loading') : getButtonText('save') }}</button>
+              <button type="button" data-toggle="modal" class="btn" [disabled]="form.invalid || AppStore.loading"
+                (click)="save(true)">{{ AppStore.loading ? getButtonText('loading') : getButtonText('save_close')
+                }}</button>
+              <button type="button" data-toggle="modal" data-dismiss="modal" class="btn" (click)="cancel()">{{
+                AppStore.loading ? getButtonText('loading') : getButtonText('cancel') }}</button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+    <!-- Modal footer -->
+  </div>
+</div>
+<!-- </div> -->
+<!-- Action Plan -->
+
+<!-- unit modal -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+
+  <app-unit-modal *ngIf="unitObject.type" [source]="unitObject">
+
+  </app-unit-modal>
+</div>

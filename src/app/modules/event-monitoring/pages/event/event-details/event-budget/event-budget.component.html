@@ -1,0 +1,71 @@
+<div class="tab-pane" id="project-tab-eight">
+      <div class="container-fluid">
+         <div class="audit-program-box audit-page-table-main min-height-83">
+            <div class="row" *mobxAutorun>
+               <div class="col-sm-12">
+                  <div class="full-width-table">
+                     <table  *ngIf="BudgetStore.loaded && BudgetStore.allItems.length > 0"
+                     class="table table-bordered ordinary-table audit-page-table mb-4 table-scroll">
+                      <thead>
+                      <tr>
+                      <th class="border-top-0" width="4%">#</th>
+                      <th class="border-top-0" width="30%">{{'year' | translate}}</th>
+                      <th class="border-top-0" width="34%">{{'comment' | translate}}</th>
+                      <th class="border-top-0" width="32%">{{'budget' | translate}}({{OrganizationGeneralSettingsStore?.organizationSettings?.currency}})
+                      </tr>
+                      </thead>
+                      <tbody>
+                      <tr class="edit-and-delete-main" *ngFor="let items of BudgetStore.allItems| paginate: {currentPage:BudgetStore.currentPage, itemsPerPage:BudgetStore.itemsPerPage,totalItems:BudgetStore.totalItems};let num=index" > 
+                      <td class="pointer"> {{(BudgetStore.currentPage - 1) * BudgetStore.itemsPerPage + (num + 1)}}</td>
+                      <td>{{items.year? items.year : 'NA'}} </td>
+                      <td style="white-space: pre-wrap;">{{items.comments? items.comments : 'NA'}}</td>
+                      <td>{{items.amount? items.amount : 'NA'}}
+                      <div  *ngIf="AuthStore.getActivityPermission(3700, 'DELETE_EVENT_MONITORING_BUDGET') && (EventsStore?.eventDetails?.event_status?.type=='draft' || EventsStore?.eventDetails?.event_status?.type=='send-back')" class="edit-option-show">
+                        <a (click)="editBudget(items)"><i class="fas fa-pen"></i></a>
+                        <a (click)="delete(items.id)"><i class="fas fa-trash"></i></a>
+                      </div>
+                      </td>
+                      </tr> 
+                      <tr>
+                        <td class="text-center" colspan="3">{{'grand_total' | translate}}</td>
+                        <td>{{getGrandTotalBudget()}}</td>
+                      </tr> 
+                    </tbody>
+                   </table>
+          <ng-container *mobxAutorun>
+            <div *ngIf="!BudgetStore.loaded">
+                <app-four-column-loader></app-four-column-loader>
+           </div>
+            <app-no-data *ngIf = "BudgetStore.allItems.length == 0 && BudgetStore.loaded == true"></app-no-data>
+        </ng-container> 
+       </div>
+   </div>
+</div>
+<div *ngIf="BudgetStore.totalItems>BudgetStore.itemsPerPage"
+   class="col-sm-12">
+   <ul class="pagination justify-content-center mt-3">
+       <div class="list">
+           <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"  class="my-pagination" (pageChange)="pageChange($event)">
+           </pagination-controls>
+       </div>
+   </ul>
+</div> 
+</div>
+</div>
+
+
+
+<div class="modal modal-style-1 popup-full-width fade"  data-keyboard="false"
+data-backdrop="static" #newBudget>
+   <app-add-event-budget [source] ="newBudgetObject" *ngIf="newBudgetObject.type">
+       
+   </app-add-event-budget>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+   <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+
+

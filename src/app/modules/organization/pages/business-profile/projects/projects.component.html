@@ -1,0 +1,559 @@
+<div *ngIf = "!BusinessProjectsStore.loaded">
+   <app-projects-loader *ngIf = "!BusinessProjectsStore.loaded"></app-projects-loader>
+</div>
+<ng-container *mobxAutorun>
+   <!-- BUSINESS_PROFILE_PROJECT_LIST   && AuthStore.getActivityPermission(1900,'PROJECT_LIST')-->
+   <div class="row" *ngIf = "BusinessProjectsStore.loaded && BusinessProjectsStore.projectDetails.length > 0">
+      <div class="col-sm-12">
+         <div class="widget-body-light profile-widg-padding widget">
+            <div class="row">
+               <div class="col-sm-12" *ngIf = "BusinessProjectsStore.loaded && BusinessProjectsStore.projectDetails.length > 0">
+                  <!-- Project List -->
+                  <div [ngClass]="num == 0 ? 'product-listing edit-and-delete-main pt-0 pb-3' : (num == BusinessProjectsStore.projectDetails.length - 1) ? 'product-listing edit-and-delete-main border-none mb-0 pb-0' : 'product-listing edit-and-delete-main'" *ngFor = "let p of BusinessProjectsStore.projectDetails | paginate: {currentPage:BusinessProjectsStore?.currentPage, itemsPerPage:BusinessProjectsStore?.itemsPerPage,totalItems:BusinessProjectsStore?.totalItems};let num = index">
+                    <div class="edit-option-show" style="margin: 15px -15px 0 0;"><!-- edit-and-delete starts -->
+                       <a *ngIf = "AuthStore.getActivityPermission(400,'UPDATE_PROJECT')" (click) = "editProject(p.id)" [attr.title]="'edit' | translate"><i class="fas fa-pen pointer"></i></a>
+                       <a *ngIf = "AuthStore.getActivityPermission(400,'DELETE_PROJECT')" (click) = "deleteProject(p.id)" [attr.title]="'delete' | translate"><i class="fas fa-trash pointer"></i></a>
+                       <a *ngIf = "p.status_id == AppStore.activeStatusId" (click) = "deactivate(p.id)" [attr.title]="'deactivate' | translate"><i class="fas fa-ban pointer"></i></a>
+                       <a *ngIf = "p.status_id == AppStore.inActiveStatusId" (click) = "activate(p.id)" [attr.title]="'activate' | translate"><i class="fas fa-check pointer"></i></a>
+                     </div> 
+                    <div class="row">
+                        <div class="col-sm-3 qoc-pic-sec mb-3" >
+                           <div *ngIf="p.image_token">
+                           <!-- <div class="relative" style=""> -->
+                             <img [attr.src]="p.image_token ? createImagePreviewUrl('project-logo',p.image_token,153,252) : getDefaultGeneralImage()" 
+                             onerror="this.src='/assets/images/placeholder.png'" 
+                             class="img-fluid cmn-bdr mx-auto d-block">
+                          <!-- </div>  -->
+                          <!-- <div class="submitted-bg">
+                              <h3>{{p.project_status_language_title}}</h3>
+                          </div> -->
+                        </div>
+                        <div *ngIf="!p.image_token">
+                           <app-no-image-data [border]="false" ></app-no-image-data>
+                          </div>
+                        </div>
+                        
+                        <div class="col-sm-9">
+                             <h2>{{p.title}} <span [ngClass]="p.project_status_icon_class+' draft-tag label-tag-style-tag label-left-arow-tag'" style="line-height: 16px; vertical-align: middle; margin-top: -5px;">{{p.project_status_language_title}}</span></h2>
+                             <!-- <div class="mb-3" *ngIf = "p.description && !p.view_more" style="white-space: pre-wrap;">{{p.description.length > 650 ? getDescriptionContent(p) : p.description}}
+                                <a  *ngIf = "p.description.length > 650" (click) = "viewDescription('more',p)" class="view-more-pestel-box pointer view-more-doted">... {{'view_more'|translate}}</a>
+                             </div>
+                             <div class="mb-3" *ngIf = "p.description && p.view_more" style="white-space: pre-wrap;">{{p.description}}
+                                <a  *ngIf = "p.description.length > 650" (click) = "viewDescription('less',p)" class="view-more-pestel-box pointer view-more-doted">{{'view_less'|translate}}</a>
+                             </div> -->
+                             <p [innerHTML] = "p.description"></p>
+                           <div class="row">
+                              <div class="col-xl-3 col-lg-6 col-md-6">
+                                 <h6>{{'client' | translate}}</h6>
+                                 <p class=""> 
+                                   <img [attr.src]="p.customer_image_token ? createImagePreviewUrl('customer-logo',p.customer_image_token) : getDefaultImage('client')" 
+                                   class="img-fluid"
+                                   alt="images" style="height: 30px;"
+                                   onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                </p>
+                              </div>
+                              <div class="col-xl-3 col-lg-6 col-md-6">
+                                 <h6>{{'project_manager' | translate}}</h6>
+                                 <div class="d-flex flex-row user-list-sm selected" *ngIf = "p.project_manager_first_name || p.project_manager_last_name">
+                                    <app-user-popup-box [source]="getPopupDetails(p)" [showName] = "true"></app-user-popup-box>
+                                   <!-- <img [attr.src]="p.project_manager_image_token ? createImagePreviewUrl('user-profile-picture',p.project_manager_image_token) : getDefaultImage('user-logo')" width="30" height="30"
+                                       class="rounded-circle">
+                                   <div class="ml-2 mt-2"> -->
+                                    <!-- {{p.project_manager_first_name}} {{p.project_manager_last_name}} -->
+                                      <!-- <p [attr.title] = "p.project_manager_first_name+' '+p.project_manager_last_name" *ngIf = "p.project_manager_first_name || p.project_manager_last_name" class="mb-0">{{getProjectManagerName([p.project_manager_first_name,p.project_manager_last_name],25,' ')}}</p> -->
+                                   <!-- </div> -->
+                                 </div>
+                                 <div class="d-flex flex-row"  *ngIf = "!p.project_manager_first_name && !p.project_manager_last_name">
+                                   <p class="">{{AppStore.noContentText}}</p>
+                                 </div>
+                              </div>
+                              <div class="col-xl-3 col-lg-6 col-md-6">
+                                 <h6>{{'members' | translate}}</h6>
+                                 <p class="">{{p.member_count ? p.member_count : AppStore.noContentText}} </p>
+                              </div>
+                              <div class="col-xl-3 col-lg-6 col-md-6">
+                                 <h6>{{'locations' | translate}}</h6>
+                                 <p class="">{{p.location_title ? p.location_title : AppStore.noContentText}}</p>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+               <!-- <div *ngIf = "BusinessProjectsStore.loaded && BusinessProjectsStore.projectDetails.length == 0" class="no-policy-demo-text bg-white d-flex align-items-center w-100 mt-2" style="height: 200px">
+                 <div class="no-policy-demo">
+                    <div class="no-file-icon">
+                      <i class="far fa-file"></i>
+                    </div>
+                    <h6 class="bold mb-0">No Projects Present</h6>
+                 </div>
+              </div> -->
+              <div class="col-sm-12" *ngIf = "BusinessProjectsStore?.totalItems > BusinessProjectsStore?.itemsPerPage">
+                 <ul class="pagination justify-content-center mt-3">
+                    <div class="list">
+                       <pagination-controls [previousLabel]="'previous' | translate"  [nextLabel]="'next' | translate" (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+                    </div>
+                 </ul>
+              </div>
+            </div>
+         </div>
+      </div>
+   </div>
+</ng-container>
+<ng-container *mobxAutorun>
+   <app-no-data *ngIf = "BusinessProjectsStore.loaded && BusinessProjectsStore.projectDetails.length == 0"></app-no-data>
+</ng-container>
+
+    <!-- add-user-btn-popup Start -->
+   <div class="modal modal-style-1 popup-full-width fade" id="add-nayen-popup" data-keyboard="false"
+   data-backdrop="static" #formModal>
+   <button type="button" class="close" data-dismiss="modal"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+   <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content" *mobxAutorun>
+         <!-- Modal Header -->
+         <div class="modal-header">
+            <h4 class="modal-title" *ngIf = "!BusinessProjectsStore.addOrEditFlag">{{'add_project' | translate}}</h4>
+            <h4 class="modal-title" *ngIf = "BusinessProjectsStore.addOrEditFlag">{{'edit_project' | translate}}</h4>
+            <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
+         </div>
+         <!-- Modal body -->
+         <div class="modal-body form-body">
+            <p class="head-details">{{'project_form_message' | translate}}
+            </p>
+            <form [formGroup]="form">
+               
+               <div class="row">
+                  <div class="col-sm-12">
+                     <div class="form-group">
+                        <label for="title">{{'title' | translate}}<sup>*</sup></label>
+                        <input type="text" id="title" formControlName = "title" class="form-control" [attr.placeholder]="'title_of_the_project' | translate">
+                        <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.title}}</p>
+                        <p class="form-error pt-1" *ngIf = "!formErrors && form.get('title').invalid && (form.controls.title.dirty || form.controls.title.touched)">{{ form.hasError('required', ['title']) ? 'Title required' : 'Maximum 500 characters allowed' }}</p>
+                     </div>
+                  </div>
+               </div>
+               <div class="row">
+                  <div class="col-sm-12">
+                     <div class="form-group add-kpi-textarea">
+                        <span style="float: right;" class="text-grey">{{form?.value.description != null ? form?.value.description?.length : 0}} {{'characters' | translate}}</span>
+                        <label for="description">{{'description' | translate}}</label>
+                        <textarea class="form-control" id="description" rows="11" id="comment12" formControlName = "description" [attr.placeholder]="'write_a_short_description_of_the_project' | translate"></textarea>
+                     </div>
+                  </div>
+               </div>
+               <div class="row">
+                  <div class="col-sm-6">
+                     <div class="form-group">
+                        <label for="member_count">{{'member_count' | translate}}</label>
+                        <input type="number" id="member_count" formControlName = "member_count" class="form-control input-number noscroll" onwheel="this.blur()" onkeyup="this.value=this.value.replace(/[^a-zA-Z0-9]/g, '')" 
+                        [attr.placeholder]="'write_member_count_of_the_project' | translate">
+                     </div>
+                  </div>
+                  <div class="col-sm-6">
+                     <div class="form-group">
+                        <label for="location_id">{{'location' | translate}}<sup>*</sup></label>
+                        <div class="clearfix">
+                           <div class="multiple-plain-ngselect">
+                              <ng-select
+                                 [placeholder]="'select_location' | translate"
+                                 [multiple]="false"
+                                 formControlName = "location_id"
+                                 (search) = "searchLocations($event)"
+                                 (clear) = "getLocations()"
+                                 (open) = "getLocations()">
+                                 <ng-option [value]="locations.id" *ngFor="let locations of LocationsStore.allItems">
+                                    {{locations.title.length > 80 ? locations.title.substring(0,80)+' ...' : locations.title }}
+                                 </ng-option>
+                              </ng-select> 
+                           </div>
+                        </div>
+                        <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.location_id}}</p>
+                     </div>
+                  </div>
+               </div>
+               <div class="row">
+                  <div class="col-sm-6">
+                     <div class="form-group">
+                         <label>{{'start_date' | translate}}<sup>*</sup></label>
+                         <div class="input-group">
+                             <input [readonly]="true" formControlName="start_date" class="form-control bg-white" placeholder="yyyy-mm-dd"
+                                 id="start_date" (click)="startDateInput.toggle()" ngbDatepicker #startDateInput="ngbDatepicker">
+
+                             <div class="input-group-append">
+                                 <button class="btn btn-outline-secondary calendar" (click)="startDateInput.toggle()"
+                                     type="button"><i class="fas fa-calendar-alt"></i></button>
+                             </div>
+                         </div>
+                         <p style="color: red;" *ngIf="formErrors">{{formErrors.start_date}}</p>
+                     </div>
+                 </div>
+                 <div class="col-sm-6">
+                     <div class="form-group">
+                         <label>{{'target_date' | translate}}<sup>*</sup></label>
+                         <div class="input-group">
+                             <input [readonly]="true" formControlName="target_date" class="form-control bg-white" placeholder="yyyy-mm-dd"
+                                 id="start_date" ngbDatepicker #targetDateInput="ngbDatepicker" (click)="targetDateInput.toggle()"
+                                 [minDate]="form.value.start_date?{year: this.form.value.start_date.year, month: this.form.value.start_date.month, day: this.form.value.start_date.day}:''">
+
+                             <div class="input-group-append">
+                                 <button class="btn btn-outline-secondary calendar"
+                                     (click)="targetDateInput.toggle()" type="button"><i
+                                         class="fas fa-calendar-alt"></i></button>
+                             </div>
+
+                         </div>
+                         <p style="color: red;" *ngIf="formErrors">{{formErrors.target_date}}</p>
+                     </div>
+                 </div>
+               </div>
+               <div class="row">
+                  <div class="col-sm-6" *ngIf = "OrganizationLevelSettingsStore.organizationLevelSettings?.is_subsidiary">
+                     <div class="form-group">
+                        <label for="name">{{ 'subsidiaries' | translate }}<sup>*</sup></label>
+                        <div class="clearfix">
+                           <div class="multiple-plain-ngselect">
+                              <ng-select #select [items]="SubsidiaryStore.subsidiaryList"
+                                 bindLabel="title"
+                                 bindValue = "id"
+                                 [placeholder]="'select_subsidiaries' | translate"
+                                 multiple="true"
+                                 [closeOnSelect]="false"
+                                 (change)="searchListclickValueClear(select)"
+                                 searchable = "false"
+                                 formControlName = "organization_ids"
+                                 (add) = "getDivision();handleDropDownClear('organization_id')"
+                                 (search) = "searchSubsidiary($event)"
+                                 (clear) = "getSubsidiary();getDivision();handleDropDownClear('organization_id')"
+                                 (open) = "getSubsidiary()"
+                                 (remove) = "handleDropDownItemClear($event,'organization_id')">
+                                 <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                    {{item.title?.length > 42 ? (item.title | slice:0:42)+' ...' : item.title}}<span aria-hidden="true" (click) = "clear(item)" style="border:none;" class="ng-value-icon left">×</span>
+                                 </ng-template>
+                                 <ng-template ng-option-tmp let-item="item" let-index="index">
+                                    {{item.title?.length > 45 ? (item.title | slice:0:45)+' ...' : item.title}}
+                                 </ng-template>
+                              </ng-select>
+                           </div>
+                        </div>
+                        <p class = "form-error pt-1" *ngIf="formErrors && formErrors.organization_ids">{{formErrors.organization_ids}}</p>
+                     </div>
+                 </div>
+                 <div class="col-sm-6" [ngStyle] = "{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_division ? 'none':'block'}">
+                  <div class="form-group">
+                     <label for="name">{{'divisions' | translate}}<sup>*</sup></label>
+                     <div class="clearfix">
+                        <div class="multiple-plain-ngselect">
+                           <ng-select #select [items]="DivisionStore.allItems"
+                              bindLabel="title"
+                              bindValue = "id"
+                              [placeholder]="'select_divisions' | translate"
+                              multiple="true"
+                              [closeOnSelect]="false"
+                              (change)="searchListclickValueClear(select)"
+                              searchable = "false"
+                              formControlName = "division_ids"
+                              (add) = "getDepartment();handleDropDownClear('division_id')"
+                              (search) = "searchDivision($event)"
+                              (clear) = "getDivision();handleDropDownClear('division_id')"
+                              (open) = "getDivision()"
+                              (remove) = "handleDropDownItemClear($event,'division_id')">
+                              <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                 {{item.title?.length > 42 ? (item.title | slice:0:42)+' ...' : item.title}}<span aria-hidden="true" (click) = "clear(item)" style="border:none;" class="ng-value-icon left">×</span>
+                              </ng-template>
+                              <ng-template ng-option-tmp let-item="item" let-index="index">
+                                 {{item.title?.length > 45 ? (item.title | slice:0:45)+' ...' : item.title}}
+                              </ng-template>
+                           </ng-select>
+                        </div>
+                     </div>
+                     <p class = "form-error pt-1" *ngIf="formErrors && formErrors.division_ids">{{formErrors.division_ids}}</p>
+                  </div>
+                  </div>
+               </div>
+               <div class="row">
+                  <div class="col-sm-6" *ngIf = "OrganizationLevelSettingsStore.organizationLevelSettings?.is_department">
+                     <div class="form-group">
+                        <label for="name">{{'departments' | translate}}<sup>*</sup></label>
+                        <div class="clearfix">
+                        <div class="multiple-plain-ngselect">
+                           <ng-select #select [items]="DepartmentStore.allItems"
+                                 bindLabel="title"
+                                 bindValue = "id"
+                                 [placeholder]="'select_departments' | translate"
+                                 multiple="true"
+                                 [closeOnSelect]="false"
+                                 (change)="searchListclickValueClear(select)"
+                                 searchable = "false"
+                                 formControlName = "department_ids"
+                                 (add) = "getSection();handleDropDownClear('department_id')"
+                                 (search) = "searchDepartment($event)"
+                                 (clear) = "getDepartment();handleDropDownClear('department_id')"
+                                 (open) = "getDepartment()"
+                                 (remove) = "handleDropDownItemClear($event,'department_id')">
+                              <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                 {{item.title?.length > 42 ? (item.title | slice:0:42)+' ...' : item.title}}<span aria-hidden="true" (click) = "clear(item)" style="border:none;" class="ng-value-icon left">×</span>
+                              </ng-template>
+                              <ng-template ng-option-tmp let-item="item" let-index="index">
+                                 {{item.title?.length > 45 ? (item.title | slice:0:45)+' ...' : item.title}}
+                              </ng-template>
+                           </ng-select>
+                        </div>
+                        </div>
+                        <p class = "form-error pt-1" *ngIf="formErrors && formErrors.department_ids">{{formErrors.department_ids}}</p>
+                     </div>
+                 </div>
+                 <div class="col-sm-6" *ngIf = "OrganizationLevelSettingsStore.organizationLevelSettings?.is_section">
+                     <div class="form-group">
+                        <label for="name">{{'sections' | translate}}<sup>*</sup></label>
+                        <div class="clearfix">
+                        <div class="multiple-plain-ngselect">
+                           <ng-select #select [items]="SectionStore.allItems"
+                                 bindLabel="title"
+                                 bindValue = "id"
+                                 [placeholder]="'select_sections' | translate"
+                                 multiple="true"
+                                 [closeOnSelect]="false"
+                                 (change)="searchListclickValueClear(select)"
+                                 searchable = "false"
+                                 formControlName = "section_ids"
+                                 (add) = "getSubSection();handleDropDownClear('section_id')"
+                                 (search) = "searchSection($event)"
+                                 (clear) = "getSection()"
+                                 (open) = "getSection()"
+                                 (remove) = "handleDropDownItemClear($event,'section_id')">
+                              <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                 {{item.title?.length > 42 ? (item.title | slice:0:42)+' ...' : item.title}}<span aria-hidden="true" (click) = "clear(item)" style="border:none;" class="ng-value-icon left">×</span>
+                              </ng-template>
+                              <ng-template ng-option-tmp let-item="item" let-index="index">
+                                 {{item.title?.length > 45 ? (item.title | slice:0:45)+' ...' : item.title}}
+                              </ng-template>
+                           </ng-select>
+                        </div>
+                        </div>
+                        <p class = "form-error pt-1" *ngIf="formErrors && formErrors.section_ids">{{formErrors.section_ids}}</p>
+                     </div>
+                 </div>
+               </div>
+               <div class="row">
+                  <div class="col-sm-6" *ngIf = "OrganizationLevelSettingsStore.organizationLevelSettings?.is_sub_section">
+                     <div class="form-group">
+                        <label for="name">{{'sub_sections' | translate}}<sup>*</sup></label>
+                        <div class="clearfix">
+                          <div class="multiple-plain-ngselect">
+                             <ng-select #select [items]="SubSectionStore.allItems"
+                                 bindLabel="title"
+                                 bindValue = "id"
+                                 [placeholder]="'select_sub_sections' | translate"
+                                 multiple="true"
+                                 [closeOnSelect]="false"
+                                 (change)="searchListclickValueClear(select)"
+                                 searchable = "false"
+                                 formControlName = "sub_section_ids"
+                                 (add) = "handleDropDownClear('sub_section_id')"
+                                 (search) = "searchSubSection($event)"
+                                 (clear) = "getSubSection();handleDropDownClear('sub_section_id')"
+                                 (open) = "getSubSection()"
+                                 (remove) = "handleDropDownItemClear($event,'sub_section_id')">
+                                 <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                    {{item.title?.length > 42 ? (item.title | slice:0:42)+' ...' : item.title}}<span aria-hidden="true" (click) = "clear(item)" style="border:none;" class="ng-value-icon left">×</span>
+                                 </ng-template>
+                                 <ng-template ng-option-tmp let-item="item" let-index="index">
+                                    {{item.title?.length > 45 ? (item.title | slice:0:45)+' ...' : item.title}}
+                                 </ng-template>
+                              </ng-select>
+                          </div>
+                        </div>
+                        <p class = "form-error pt-1" *ngIf="formErrors && formErrors.sub_section_ids">{{formErrors.sub_section_ids}}</p>
+                     </div>
+                  </div>
+                  <div class="col-sm-6">
+                     <div class="form-group">
+                        <label for="project_manager_id">{{'project_manager' | translate}}</label>
+                        <div class="clearfix">
+                           <div class="multiple-plain-ngselect">
+                              <ng-select 
+                                 id="project_manager_id"
+                                 [items]="UsersStore.usersList"
+                                 bindLabel="email"
+                                 bindValue = "id"
+                                 [placeholder]="'select_project_manager' | translate"
+                                 [multiple]="false"
+                                 formControlName = "project_manager_id"
+                                 (search) = "searchUers($event)"
+                                 (clear) = "getUsers()"
+                                 (open) = "getUsers()"
+                                 [searchFn]="customSearchFn">
+                                 <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                       <img *ngIf = "item.image_token" 
+                                       height="15" width="15" 
+                                       class="ng-select-user-display" 
+                                       [attr.src]="createImagePreviewUrl('user-profile-picture',item.image_token)" 
+                                       onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                       <img *ngIf = "!item.image_token" 
+                                       height="15" width="15" 
+                                       class="ng-select-user-display" 
+                                       [attr.src]="getDefaultImage('user-logo')"
+                                       onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                       <b style="padding-left: 3px;">{{getProjectManagerName([item?.first_name,item?.last_name],25,' ') | titlecase}}</b><span (click) = "clear(item)" aria-hidden="true" style="border:none;" class="ng-value-icon left">×</span>
+                                 </ng-template>
+                                 <ng-template ng-option-tmp let-item="item" let-index="index">
+                                    <div class="user-post-department-pic">
+                                       <img *ngIf = "item.image_token" 
+                                       class="ng-select-user-display" 
+                                       height="25" width="25" 
+                                       [attr.src]="createImagePreviewUrl('user-profile-picture',item.image_token)" 
+                                       onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                       <img *ngIf = "!item.image_token" 
+                                       class="ng-select-user-display" 
+                                       height="25" width="25" 
+                                       [attr.src]="getDefaultImage('user-logo')"
+                                       onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                    </div>
+                                    <div class="user-post-department-div">
+                                       <b>{{getProjectManagerName([item?.first_name,item?.last_name],25,' ')}}</b>
+                                       <!-- <p class="user-post-department-multiple">{{item.designation_title}}<span *ngIf = "item.department">,{{item.department}}</span></p> -->
+                                       <p class="user-post-department-multiple">{{getProjectManagerName([item?.designation_title,' '+item?.department],25,',')}}</p>
+                                    </div>
+                                 </ng-template>
+                              </ng-select>
+                           </div>
+                        </div>
+                        <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.project_manager_id}}</p>
+                     </div>
+                  </div>
+               </div>
+               
+               <div class="row" *ngIf="OrganizationModulesStore.checkOrganizationSubModulesPermission(300,4101)">
+                  <div class="col-sm-12">
+                     <div class="form-group">
+                        <label for="customer_id">{{'customer' | translate}}</label>
+                        <div class="clearfix">
+                           <div class="multiple-plain-ngselect">
+                              <ng-select
+                                 [placeholder]="'select_customer' | translate"
+                                 [multiple]="false"
+                                 formControlName = "customer_id"
+                                 (search) = "searchCustomers($event)"
+                                 (clear) = "getCustomers()"
+                                 (open) = "getCustomers()">
+                                 <ng-option [value]="c.id" *ngFor="let c of BusinessCustomersStore.customerDetails">
+                                    {{c.title.length > 80 ? c.title.substring(0,80)+' ...' : c.title }}
+                                 </ng-option>
+                              </ng-select> 
+                           </div>
+                        </div>
+                        <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.customer_id}}</p>
+                     </div>
+                  </div>
+               </div>
+               <label class="label-style mb-0">{{'project_image' | translate}}</label>
+               <div class="row m-0 upload-section" style="padding-top: 0">
+                  <div class="col-sm-4 costmz-logo-new mt-2">
+                     <div class="question-circle-inp" *ngIf = "OrganizationGeneralSettingsStore.organizationSettings?.logo_allowed_types.length > 0" style="margin-right: 7px;">
+                        <i class="far fa-question-circle"></i>
+                        <div class="message-password-inp">
+                            <p class="mb-0">{{'allowed_file_types' | translate}} {{OrganizationGeneralSettingsStore.organizationSettings?.logo_allowed_types.toString()}}</p>
+                        </div>
+                     </div>
+                     <div class="form-group form-group-upload">
+                        <div class="darag-dropifile-upload">
+                           <div class="d-flex justify-content-center align-items-center text-center">
+                              <div>
+                                 <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                                 <div class="drag-file-name"> {{'select_or_upload_your_file_here' | translate}}</div>
+                                 <div class="upload-btn-wrapper">
+                                    <input type="file" [disabled] = "BusinessProjectsStore.logo_preview_available" id="file" (change)="onFileChange($event,'logo')" [accept]="checkAcceptFileTypes('logo')" >
+                                    <button class="btn">{{'browse_files' | translate}}</button>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+                  
+                  <div class="col-sm-4 up-pic-cf mt-2" *ngIf = "BusinessProjectsStore.logo_preview_available">
+                     <div class="upload-pics edit-option file-upload-loader">
+                        <circle-progress  class="browse-form-pic"
+                           [percent] = fileUploadProgress
+                           [title] = fileUploadProgress
+                        ></circle-progress>
+                     </div>
+                  </div> 
+                  <div [ngClass]="BusinessProjectsStore.getFileDetailsByType('logo')?.is_deleted ? 'col-sm-4 up-pic-cf mt-2 image_deleted':'col-sm-4 up-pic-cf mt-2'" *ngIf = "BusinessProjectsStore.getFileDetailsByType('logo')">
+                     <div class="upload-pics edit-option">
+                        <div class="browse-form-pic" [ngStyle]="{'background': 'url(' + BusinessProjectsStore.getFileDetailsByType('logo')?.preview + ') no-repeat 0 0 / cover'}">
+                        </div>
+                         <div class="browse-form-name clearfix">
+                          <div class="float-left">
+                           <h6 [attr.title] = "BusinessProjectsStore.getFileDetailsByType('logo')?.name">{{BusinessProjectsStore.getFileDetailsByType('logo')?.name.length > 20 ? BusinessProjectsStore.getFileDetailsByType('logo')?.name.substring(0,20)+' ...' : BusinessProjectsStore.getFileDetailsByType('logo')?.name}}</h6>
+                           <span>{{BusinessProjectsStore.getFileDetailsByType('logo')?.size/1048576 | number:'0.2-2'}}MB</span>
+                          </div>
+                          <div class="browse-logo">
+                              <!-- <img src="/assets/images/md-jpg.png"> -->
+                            <img *ngIf = "checkExtension(BusinessProjectsStore.getFileDetailsByType('logo')?.ext,'excel') != -1" src="/assets/images/md-xl.png">
+                            <img *ngIf = "checkExtension(BusinessProjectsStore.getFileDetailsByType('logo')?.ext,'image') != -1" src="/assets/images/md-jpg.png">
+                            <img *ngIf = "checkExtension(BusinessProjectsStore.getFileDetailsByType('logo')?.ext,'doc') != -1" src="/assets/images/md-doc.png">
+                            <img *ngIf = "checkExtension(BusinessProjectsStore.getFileDetailsByType('logo')?.ext,'pdf') != -1" src="/assets/images/md-pdf.png">
+                          </div>
+                         </div>
+                         <div class="edit-option-show">
+                          <a (click) = "BusinessProjectsStore.unsetFileDetails('logo')"><i class="fas fa-trash"></i></a>
+                        </div>
+                     </div>
+                  </div>
+                  
+               </div>
+               <p class = "form-error" *ngIf="formErrors && formErrors.image">{{formErrors.image}}</p>
+               <div class="row">
+                  <div class="col-sm-12">
+                     <div class="form-group">
+                        <label for="project_status_id">{{'project_status'| translate}}<sup>*</sup></label>
+                        <div class="clearfix">
+                           <div class="multiple-plain-ngselect">
+                              <ng-select
+                                 [placeholder]="'select_project_status' | translate"
+                                 [multiple]="false"
+                                 formControlName = "project_status_id"
+                                 [searchable] = "false">
+                                 <ng-option [value]="l.id" *ngFor="let l of ProjectStatusStore.projectStatus">
+                                    {{l.project_status_language_title.length > 80 ? l.project_status_language_title.substring(0,80)+' ...' : l.project_status_language_title }}
+                                 </ng-option>
+                              </ng-select> 
+                           </div>
+                        </div>
+                        <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.project_status_id}}</p>
+                     </div>
+                  </div>
+               </div>
+               <div class="row">
+                  <div class="col-sm-12">
+                     <div class="d-block justify-content-left border-0 mt-3">
+                        <button type="button" data-toggle="modal" data-target="#signal-lost"
+                           class="btn  btn-active" (click)="save()"
+                           [disabled]="form.invalid || AppStore.loading || (fileUploadProgress != 0 && fileUploadProgress != 100)">
+                           {{ AppStore.loading  ? getButtonText('loading') : getButtonText('save') }}</button>
+                        <button type="button" data-toggle="modal" data-target="#signal-lost"
+                           class="btn " (click)="save(true)"
+                           [disabled]="form.invalid || AppStore.loading || (fileUploadProgress != 0 && fileUploadProgress != 100)">
+                           {{ AppStore.loading  ? getButtonText('loading') : getButtonText('save_close') }}</button>
+                        <button type="button" data-toggle="modal" data-target="#error-message"
+                           class="btn " (click)="cancel()">
+                           {{ AppStore.loading  ? getButtonText('loading') : getButtonText('cancel') }}</button>
+                     </div>
+                  </div>
+               </div>
+            </form>
+         </div>
+         <!-- Modal footer -->
+      </div>
+   </div>
+</div>
+<!-- add-user-btn-popup End -->
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #deletePopup  data-backdrop="static" data-keyboard="false">
+   <app-delete-popup [source] = "deleteObject"></app-delete-popup>
+</div>
+
+<!------------------- Delete Confirmation Modal End --------------------------->

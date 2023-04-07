@@ -1,0 +1,111 @@
+<button type="button" class="close" (click)="cancel()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header">
+            <h4 class="modal-title" *ngIf="secondaryOwnersSource?.type=='Add'">{{'add_secondary_owner' | translate}}</h4>
+            <h4 class="modal-title" *ngIf="secondaryOwnersSource?.type=='Edit'">{{'edit_secondary_owner' | translate}}</h4>
+        </div>
+        <!-- Modal body -->
+        <div class="modal-body form-body">
+
+            <p class="head-details">{{ 'event_secondary_owner_description' | translate}}</p>
+
+            <form [formGroup]="secondaryOwnerForm" *mobxAutorun>
+
+               <div class="row">
+                  
+                <div class="col-lg-6 col-sm-12">
+                    <div class="form-group">
+                       <label>{{'event_form_owner_secondary_depts' | translate}} <span class="form-error">*</span></label>
+                        <div class="clearfix">
+                           <div class="multiple-plain-ngselect">
+                             <!-- [items] = "DepartmentMasterStore.allItems" -->
+                             <ng-select
+                                id="owner-secondary-department"
+                                bindLabel="title"
+                                [placeholder]="'select_sec_owner_dept' | translate"
+                                [multiple]="true"
+                                [closeOnSelect] = "false"
+                                formControlName = "secondary_department_ids"
+                                (search) = "getDepartments($event)"
+                                (clear) = "getDepartments();resetFormSelectClose()"
+                                (open) = "getDepartments()"
+                                (remove)="resetFormSelectClose()"
+                               >
+                                <ng-option [value]="item.id" *ngFor = "let item of DepartmentMasterStore.allItems">
+                                   {{item.title.length > 30 ? (item.title | slice:0:30)+' ...' : item.title}}
+                                </ng-option>
+                             </ng-select> 
+                           </div>
+                          
+                        </div>
+                        <p class="form-error pt-1" *ngIf="formErrors && formErrors.secondary_department_ids">{{formErrors.secondary_department_ids}}</p>
+                      </div>
+                 </div>
+                 <div class="col-lg-6 col-sm-12">
+                    <div class="form-group">
+                       <label>{{'event_form_owners_secondary' | translate}} <span class="form-error">*</span></label>
+                       <div class="clearfix d-flex">
+                          <div class="multiple-plain-ngselect w-100">
+                             <ng-select
+                                [items]="UsersStore.usersList"
+                                formControlName = "secondary_owner_ids"
+                                bindLabel = "email"
+                                labelForId = "id"
+                                [placeholder]="'select_sec_event_owner' | translate"
+                                multiple="true"
+                                [closeOnSelect]="false"
+                                (search) = "searchUers($event,'secondary_department_ids')"
+                                (clear) = "getUsers('secondary_department_ids')"
+                                (open) = "getUsers('secondary_department_ids')"
+                                [searchFn]="customSearchFn">
+                                <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                   <img *ngIf = "item.image_token" class="ng-select-user-display" height="15" width="15" [attr.src]="createImagePreview('user-profile-picture',item.image_token)" onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                   <img *ngIf = "!item.image_token" class="ng-select-user-display" height="15" width="15" [attr.src]="getDefaultImage()"/>
+                                   <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b><span aria-hidden="true" (click) = "clear(item)" style="border:none;" class="ng-value-icon left">×</span>
+                                </ng-template>
+                                <ng-template ng-option-tmp let-item="item" let-index="index">
+                                   <div class="user-post-department-pic">
+                                      <img *ngIf = "item.image_token" class="ng-select-user-display" height="25" width="25" [attr.src]="createImagePreview('user-profile-picture',item.image_token)" onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                      <img *ngIf = "!item.image_token" class="ng-select-user-display" height="25" width="25" [attr.src]="getDefaultImage()"/>
+                                   </div>
+                                   <div class="user-post-department-div">
+                                      <b>{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b>
+                                      <p class="user-post-department-multiple">{{getStringsFormatted([item.designation_title,' '+item.department],50,',')}}</p>
+                                   </div>
+                                </ng-template>
+                             </ng-select>
+                          </div>
+                       </div>
+                       <p class="form-error pt-1" *ngIf="formErrors && formErrors.secondary_department_ids">{{formErrors.secondary_department_ids}}</p>
+                    </div>
+                 </div>
+       
+                  
+               
+                  
+                 
+                </div>
+
+                <div class="clearfix"></div>
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="d-block justify-content-left border-0 mt-3">
+                            <button type="submit" class="btn btn-active" (click)="save()"
+                                [disabled]="secondaryOwnerForm.invalid || AppStore.loading">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save') }}</button>
+                            <button type="button" data-toggle="modal" data-target="#signal-lost"
+                                class="btn" (click)="save(true)"
+                                [disabled]="secondaryOwnerForm.invalid || AppStore.loading">{{  AppStore.loading  ? getButtonText('loading') : getButtonText('save_close') }}</button>
+                            <button type="button" data-toggle="modal" data-target="#error-message"
+                                class="btn"
+                                (click)="cancel()">{{  AppStore.loading  ? getButtonText('loading') : getButtonText('cancel')}}</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <!-- Modal footer -->
+    </div>
+</div>

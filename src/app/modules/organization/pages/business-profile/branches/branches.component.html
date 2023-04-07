@@ -1,0 +1,332 @@
+    <div *ngIf = "!BranchesStore.loaded">
+       <app-branches-loader *ngIf = "!BranchesStore.loaded"></app-branches-loader>
+    </div>
+    <ng-container *mobxAutorun>
+
+      <div class="common-tab-md clearfix mb-3 tab-same-height" *ngIf = "BranchesStore.loaded && BranchesStore.branchDetails.length > 0">
+         <div class="tab-common-left-md" *ngIf = "BranchesStore.branchDetails.length > 0 && BranchesStore.loaded == true">
+           <div class=" issues-tab"><!-- tab menu start -->
+             <ul class="nav nav-tabs nav-tabs--vertical nav-tabs--left vertical-tab" role="navigation">
+               <li class="nav-item" *ngFor = "let br of BranchesStore.branchDetails; let i = index" data-toggle="tooltip" data-html="true" [attr.title]="br.title" style="word-wrap: break-word;" [ngStyle] = "{opacity: br.status_id == AppStore.inActiveStatusId ? '0.5' : '1' }"> <a data-toggle="tab" 
+                  (click) = "viewBranchDetails(br.id)" [ngClass] = "BranchesStore.selectedItem == br.id ? 'nav-link active show':'nav-link'">
+                  {{ br.title.length > 50 ? br.title.substring(0,50)+' ...' : br.title }}</a></li>
+             </ul>
+           </div><!-- tab menu end -->
+         </div>
+
+         <div class="tab-common-left-content-m">
+           <div class="tab-content widg-padding-cmn bg-white cmn-bdr min-height-83">
+            <div class="tab-pane fade active show" *ngFor = "let brnch of BranchesStore.branchDetails; let j = index" id="'brnch'+j" role="tabpanel">
+               <div *ngIf = "BranchesStore.selectedItem == brnch.id" class="p-0 widget-body-light profile-widg-padding tab-content-body edit-and-delete-main border-none" [ngStyle] = "{opacity: brnch.status_id == AppStore.inActiveStatusId ? '0.5' : '1' }">
+                 <div class="edit-option-show"  style="margin: 40px 0 0 0;">
+                    <a *ngIf = "AuthStore.getActivityPermission(100,'UPDATE_BRANCH')" (click) = "editBranch(brnch.id)" [attr.title]="'edit' | translate"><i class="fas fa-pen pointer"></i></a>
+                    <a *ngIf = "AuthStore.getActivityPermission(100,'DELETE_BRANCH')" (click) = "deleteBranch(brnch.id, j)" [attr.title]="'delete' | translate"><i class="fas fa-trash pointer"></i></a>
+                    <a *ngIf = "brnch.status_id == AppStore.activeStatusId && 'DEACTIVATE_BRANCH' | permission" (click) = "deactivate(brnch.id, j)" [attr.title]="'deactivate' | translate"><i class="fas fa-ban pointer"></i></a>
+                    <a *ngIf = "brnch.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(100,'ACTIVATE_BRANCH')" (click) = "activate(brnch.id, j)" [attr.title]="'activate' | translate"><i class="fas fa-check pointer"></i></a>
+                  </div>
+                  <div class="row">
+                     <div class="col-xl-3">
+                        <div class="organization-profile-sidebar p-0">
+                          <div _ngcontent-gke-c83="" class="profile-img subsidery-logo d-flex" style="height: auto!important;">
+                             <figure _ngcontent-gke-c83="" class="w-100 d-block mb-0">
+                                <img _ngcontent-gke-c83="" 
+                                onerror="this.src='/assets/images/placeholder.png'" 
+                                class="d-block mx-auto img-fluid w-100 cmn-bdr" 
+                                [attr.src]="BranchesStore.getSelectedBranchDetails?.image.token ? createImageUrl(BranchesStore.getSelectedBranchDetails?.image.token) : getDefaultImage()">
+                             </figure>
+                          </div>
+                           <div class="clearfix"></div>
+                           <div class="row">
+                              <div class="col-sm-12">
+                                 <h6>{{'establish_date' | translate}}</h6>
+                                 <p *ngIf = "BranchesStore.selectedBranchDetailsLoaded && BranchesStore.getSelectedBranchDetails?.establish_date">{{ BranchesStore.getSelectedBranchDetails?.establish_date | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format }}</p>
+                                 <p *ngIf = "BranchesStore.selectedBranchDetailsLoaded && !BranchesStore.getSelectedBranchDetails?.establish_date">{{ AppStore.noContentText }}</p>
+                              </div>
+                              <div class="col-sm-12">
+                                 <h6>{{'employee_count' | translate}}</h6>
+                                 <p>{{(BranchesStore.selectedBranchDetailsLoaded && !BranchesStore.getSelectedBranchDetails?.employees_count) ? AppStore.noContentText : BranchesStore.getSelectedBranchDetails?.employees_count}}</p>
+                              </div>
+                              <div class="col-sm-12">
+                                 <h6>{{'phone' | translate}}</h6>
+                                 <p>{{(BranchesStore.selectedBranchDetailsLoaded && !BranchesStore.getSelectedBranchDetails?.phone) ? AppStore.noContentText : BranchesStore.getSelectedBranchDetails?.phone}}</p>
+                              </div>
+                              <div class="col-sm-12">
+                                 <h6>{{'email_id' | translate}}</h6>
+                                 <a *ngIf = "BranchesStore.selectedBranchDetailsLoaded && BranchesStore.getSelectedBranchDetails?.email" class="cmn-clr mb-3 d-block" target="_blank" [attr.href]="'mailto:'+BranchesStore.getSelectedBranchDetails?.email">{{BranchesStore.getSelectedBranchDetails?.email}}</a>
+                                 <p *ngIf = "BranchesStore.selectedBranchDetailsLoaded && !BranchesStore.getSelectedBranchDetails?.email">{{ AppStore.noContentText }}</p>
+                              </div>
+                              <div class="col-sm-12">
+                                 <h6>{{'branch_manager' | translate}}</h6>
+                                 <p *ngIf="BranchesStore.getSelectedBranchDetails?.branch_manager == null">
+                                    {{ AppStore.noContentText }}
+                                  </p>
+                                  <app-user-popup-box
+                                  [source]="assignUserValues(BranchesStore.getSelectedBranchDetails?.branch_manager)">
+                                 </app-user-popup-box>
+                              </div>
+                              <div class="clearfix"></div>
+                           </div>
+                        </div>
+                     </div>
+                     <div class="col-xl-9">
+                        <h5>{{brnch.title}}</h5>
+                        <p *ngIf = "BranchesStore.getSelectedBranchDetails?.description && !BranchesStore.getSelectedBranchDetails?.view_more" style="white-space: pre-line;">{{BranchesStore.getSelectedBranchDetails?.description.length > 1500 ? getDescriptionContent(BranchesStore.getSelectedBranchDetails) : BranchesStore.getSelectedBranchDetails?.description}}
+                          <a  *ngIf = "BranchesStore.getSelectedBranchDetails?.description.length > 1500" (click) = "viewDescription('more',BranchesStore.getSelectedBranchDetails)" class="view-more-pestel-box pointer view-more-doted">... View More</a>
+                        </p>
+                       <p *ngIf = "BranchesStore.getSelectedBranchDetails?.description && BranchesStore.getSelectedBranchDetails?.view_more" style="white-space: pre-line;">{{BranchesStore.getSelectedBranchDetails?.description}}
+                          <a  *ngIf = "BranchesStore.getSelectedBranchDetails?.description.length > 1500" (click) = "viewDescription('less',BranchesStore.getSelectedBranchDetails)" class="view-more-pestel-box pointer view-more-doted">View Less</a>
+                       </p>
+                       <p>{{(BranchesStore.selectedBranchDetailsLoaded && !BranchesStore.getSelectedBranchDetails?.description) ? AppStore.noContentText : ''}}</p>
+                       
+                       <h6>{{'address' | translate}}</h6>
+                       <p>{{(BranchesStore.selectedBranchDetailsLoaded && !BranchesStore.getSelectedBranchDetails?.address) ? AppStore.noContentText : BranchesStore.getSelectedBranchDetails?.address}}</p>
+                     </div>
+                  </div>
+               </div>
+            </div>
+           </div>
+         </div>
+       </div>
+    </ng-container>
+    <ng-container *mobxAutorun>
+      <app-no-data *ngIf = "BranchesStore.branchDetails.length == 0 && BranchesStore.loaded == true"></app-no-data>
+    </ng-container>
+    <!-- Add Branch-popup Start -->
+   <div class="modal modal-style-1 popup-full-width fade" id="add-four-popup" data-keyboard="false"
+   data-backdrop="static" #formModal>
+   <button type="button" class="close" data-dismiss="modal"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+   <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content" *mobxAutorun>
+         <!-- Modal Header -->
+         <div class="modal-header">
+            <h4 class="modal-title" *ngIf = "BranchesStore.addOrEditFlag">{{'edit_branch' | translate}}</h4>
+            <h4 class="modal-title" *ngIf = "!BranchesStore.addOrEditFlag">{{'add_branch' | translate}}</h4>
+         </div>
+         <!-- Modal body -->
+         <div class="modal-body form-body">
+            <p class="head-details">{{'branch_form_message' | translate}}
+            </p>
+            <label class="label-style mb-0">{{ 'logo_url' | translate }}</label>
+            <div class="row m-0 upload-section" style="padding-top: 0">
+               <div class="col-sm-4 costmz-logo-new mt-2">
+                  <div class="question-circle-inp" *ngIf = "OrganizationGeneralSettingsStore.organizationSettings?.logo_allowed_types.length > 0" style="margin-right: 7px;">
+                     <i class="far fa-question-circle"></i>
+                     <div class="message-password-inp">
+                         <p class="mb-0">{{'allowed_file_types' | translate}} {{OrganizationGeneralSettingsStore.organizationSettings?.logo_allowed_types.toString()}}</p>
+                     </div>
+                  </div>
+                  <div class="form-group form-group-upload">
+                     <div class="darag-dropifile-upload">
+                        <div class="d-flex justify-content-center align-items-center text-center">
+                           <div>
+                              <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                              <div class="drag-file-name">{{'select_or_upload_your_file_here' | translate}}</div>
+                              <div class="upload-btn-wrapper">
+                                 <input type="file" [disabled] = "BranchesStore.logo_preview_available" id="file" (change)="onFileChange($event,'logo')" [accept]="checkAcceptFileTypes('logo')"/>
+                                 <button class="btn">{{'browse_files' | translate}}</button>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+               <div class="col-sm-4 up-pic-cf mt-2" *ngIf = "BranchesStore.logo_preview_available">
+                  <div class="upload-pics edit-option file-upload-loader">
+                     <circle-progress
+                        class="browse-form-pic"
+                        [percent] = fileUploadProgress
+                        [title] = fileUploadProgress
+                     ></circle-progress>
+                  </div>
+               </div> 
+               <div [ngClass]="BranchesStore.getFileDetailsByType('logo')?.is_deleted ? 'col-sm-4 up-pic-cf mt-2 image_deleted':'col-sm-4 up-pic-cf mt-2'" *ngIf = "BranchesStore.getFileDetailsByType('logo')">
+                  <div class="upload-pics edit-option">
+                     <div class = "browse-form-pic" [ngStyle]="{'background': 'url(' + BranchesStore.getFileDetailsByType('logo')?.preview + ') no-repeat 0 0 / cover'}">
+                     </div>
+                      <div class="browse-form-name clearfix">
+                       <div class="float-left">
+                        <h6  [attr.title] = "BranchesStore.getFileDetailsByType('logo')?.name">{{BranchesStore.getFileDetailsByType('logo')?.name.length > 20 ? BranchesStore.getFileDetailsByType('logo')?.name.substring(0,20)+' ...' : BranchesStore.getFileDetailsByType('logo')?.name}}</h6>
+                        <span>{{BranchesStore.getFileDetailsByType('logo')?.size/1048576 | number:'0.2-2'}}MB</span>
+                       </div>
+                       <div class="browse-logo">
+                         <img *ngIf = "checkExtension(BranchesStore.getFileDetailsByType('logo')?.ext,'excel') != -1" src="/assets/images/md-xl.png">
+                         <img *ngIf = "checkExtension(BranchesStore.getFileDetailsByType('logo')?.ext,'image') != -1" src="/assets/images/md-jpg.png">
+                         <img *ngIf = "checkExtension(BranchesStore.getFileDetailsByType('logo')?.ext,'doc') != -1" src="/assets/images/md-doc.png">
+                         <img *ngIf = "checkExtension(BranchesStore.getFileDetailsByType('logo')?.ext,'pdf') != -1" src="/assets/images/md-pdf.png">
+                       </div>
+                      </div>
+                      <div class="edit-option-show">
+                       <a (click) = "BranchesStore.unsetFileDetails('logo')"><i class="fas fa-trash"></i></a>
+                     </div>
+                  </div>
+               </div>
+            </div>
+            <form [formGroup]="form" (ngSubmit)="save()">
+               <div class="row">
+                  <div class="col-sm-12" [ngStyle] = "{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_subsidiary ? 'none':'block'}">
+                     <div class="form-group">
+                        <label for="organization_id">{{'organization' | translate}}<sup>*</sup></label>
+                        <div class="clearfix">
+                           <div class="multiple-plain-ngselect">
+                              <ng-select
+                                 [placeholder]="'select_organization' | translate"
+                                 searchable = "true"
+                                 clearable = "true"
+                                 formControlName = "organization_id"
+                                 (search) = "searchSubsidiary($event)"
+                                 (clear) = "getSubsidiary()"
+                                 (open) = "getSubsidiary()"
+                                 (add)="getUsers()">
+                                 <ng-option [value]="item.id" *ngFor="let item of SubsidiaryStore.subsidiaryList">
+                                    {{item.title.length > 80 ? item.title.substring(0,80)+' ...' : item.title }}
+                                 </ng-option>
+                              </ng-select>
+                              <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.organization_id}}</p>
+                              <p class="form-error pt-1" *ngIf = "!formErrors && form.get('organization_id').invalid && (form.controls.organization_id.dirty || form.controls.organization_id.touched)">Organization required</p>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+                  <div *ngIf = "BranchesStore.addOrEditFlag" class="col-sm-12">
+                     <div class="form-group">
+                        <label for="name">{{'branch_manager' | translate}}</label>
+                        <div class="clearfix">
+                            <div class="multiple-plain-ngselect">
+                                <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                                    [placeholder]="'select_branch_manager' | translate " 
+                                    formControlName="branch_manager_id" 
+                                    [multiple]="false"
+                                    (clear)="getUsers()" 
+                                    (search)="searchUsers($event)" 
+                                    multiple="false"
+                                    (open)="getUsers()"
+                                    [searchFn]="customSearchFn">
+                                    <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                      <img *ngIf = "item?.image_token" 
+                                      class="ng-select-user-display" 
+                                      height="15" width="15" 
+                                      [attr.src]="createImagePreview('user-profile-picture',item.image_token)" 
+                                      onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                      <img *ngIf = "!item?.image_token" 
+                                      class="ng-select-user-display" 
+                                      height="15" width="15" 
+                                      [attr.src]="getDefaultImagez('user-logo')"
+                                      onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                      <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b><span aria-hidden="true" (click) = "clear(item)" style="border:none;" class="ng-value-icon left">×</span>
+                                   </ng-template>
+                                   <ng-template ng-option-tmp let-item="item" let-index="index">
+                                      <div class="user-post-department-pic">
+                                         <img *ngIf = "item?.image_token" 
+                                         class="ng-select-user-display" 
+                                         height="25" width="25" 
+                                         [attr.src]="createImagePreview('user-profile-picture',item.image_token)" 
+                                         onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                         <img *ngIf = "!item?.image_token" 
+                                         class="ng-select-user-display" 
+                                         height="25" width="25" 
+                                         [attr.src]="getDefaultImagez('user-logo')"
+                                         onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                      </div>
+                                      <div class="user-post-department-div">
+                                         <b>{{getStringsFormatted([item.first_name,item.last_name],35,' ') | titlecase}}</b>
+                                         <p class="user-post-department-multiple">{{getStringsFormatted([item.designation_title,' '+item.department],35,',')}}</p>
+                                      </div>
+                                   </ng-template>
+                                </ng-select>
+                            </div>
+                        </div>
+                        <p class="form-error pt-1" *ngIf="formErrors&&formErrors.branch_manager_id">
+                            {{formErrors.branch_manager_id}}</p>
+                    </div>
+                  </div>
+                  <div class="col-sm-12">
+                     <div class="form-group">
+                        <label for="title">{{'title' | translate}}<sup>*</sup></label>
+                        <input type="text" class="form-control" id="title" formControlName="title" [attr.placeholder]="'title_of_the_branch' | translate">
+                        <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.title}}</p>
+                        <p class="form-error pt-1" *ngIf = "!formErrors && form.get('title').invalid && (form.controls.title.dirty || form.controls.title.touched)">{{ form.hasError('required', ['title']) ? 'Title required' : 'Maximum 500 characters allowed' }}</p>
+                     </div>
+                     <div class="form-group add-kpi-textarea">
+                        <span style="float: right;" class="text-grey">{{form?.value.description != null ? form?.value.description?.length : 0}} {{'characters' | translate}}</span>
+                        <label for="description">{{'description' | translate}}</label>
+                        <textarea class="form-control" rows="11" id="description" formControlName="description" id="comment4" [attr.placeholder]="'write_a_short_description_of_the_branch' | translate"></textarea>
+                     </div>
+                  </div>
+                  <div class="col-sm-6">
+                     <div class="form-group">
+                        <label for="establish_date">{{'establish_date' | translate}}</label>
+                        <div class="input-group">
+                           <!-- (focus) = "d.toggle()" -->
+                          <input [readonly]="true" class="form-control bg-white" id="establish_date" placeholder="yyyy-mm-dd"
+                                 name="dp" formControlName = "establish_date" (click)="d.toggle()" ngbDatepicker #d="ngbDatepicker" [minDate]="{year: 1950, month: 1, day: 1}"
+                                 [maxDate] = "getTodaysDateObject()">
+                          <div class="input-group-append">
+                            <button class="btn btn-outline-secondary calendar" (click)="d.toggle()" type="button"><i class="fas fa-calendar-alt"></i></button>
+                          </div>
+                        </div>
+                        <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.established_date}}</p>
+                     </div>
+                  </div>
+                  <div class="col-sm-6">
+                     <div class="form-group">
+                        <label for="employees_count">{{'employee_count' | translate}}</label>
+                        <input type="number" class="form-control input-number noscroll" onwheel="this.blur()" onkeyup="this.value=this.value.replace(/[^a-zA-Z0-9]/g, '')" 
+                        formControlName = "employees_count" id="employees_count" [attr.placeholder]="'select_employee_count' | translate">
+                        <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.employees_count}}</p>
+                     </div>
+                  </div>
+                  <div class="col-sm-6">
+                     <div class="form-group">
+                        <label for="phone">{{'phone' | translate}}</label>
+                        <input type="number" class="form-control input-number" [attr.placeholder]="'write_branch_phone_number' | translate" id="phone" formControlName = "phone">
+                        <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.phone}}</p>
+                        <p class="form-error pt-1" *ngIf = "!formErrors && form.get('phone').invalid && (form.controls.phone.dirty || form.controls.phone.touched)">Enter a valid phone number</p>
+                     </div>
+                  </div>
+                  <div class="col-sm-6">
+                     <div class="form-group">
+                        <label for="email">{{'email_id' | translate}}</label>
+                        <input type="text" class="form-control" [attr.placeholder]="'write_branch_email_id' | translate" id="email" formControlName = "email">
+                        <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.email}}</p>
+                        <p class="form-error pt-1" *ngIf = "!formErrors && form.get('email').invalid && (form.controls.email.dirty || form.controls.email.touched)">Enter a valid email</p>
+                     </div>
+                  </div>
+                  <div class="col-sm-12">
+                     <div class="form-group add-kpi-textarea">
+                        <span style="float: right;" class="text-grey">{{form?.value.address != null ? form?.value.address?.length : 0}} {{'characters' | translate}}</span>
+                        <label for="address">{{'address' | translate}}</label>
+                        <textarea class="form-control" rows="11" formControlName="address" id="address" [attr.placeholder]="'write_branch_address' | translate"></textarea>
+                     </div>
+                  </div>
+               </div>
+            </form>
+            <div class="row">
+               <div class="col-sm-12">
+                  <div class="d-block justify-content-left border-0 mt-3">
+                     <button type="button" data-toggle="modal" data-target="#signal-lost" (click)="save()"
+                        class="btn  btn-active"
+                        [disabled]="form.invalid || AppStore.loading || (fileUploadProgress != 0 && fileUploadProgress != 100)">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save') }}</button>
+                     <button type="button" data-toggle="modal" data-target="#signal-lost" (click)="save(true)"
+                        class="btn "
+                        [disabled]="form.invalid || AppStore.loading || (fileUploadProgress != 0 && fileUploadProgress != 100)">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save_close') }}</button>
+                     <button type="button" data-toggle="modal" data-target="#error-message" (click)="cancel()"
+                        class="btn ">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('cancel') }}</button>
+                  </div>
+               </div>
+            </div>
+         </div>
+         <!-- Modal footer -->
+      </div>
+   </div>
+</div>
+
+<!-- Add Branch-popup End -->
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #deletePopup  data-backdrop="static" data-keyboard="false">
+   <app-delete-popup [source] = "deleteObject"></app-delete-popup>
+</div>
+
+<!------------------- Delete Confirmation Modal End --------------------------->
+ 

@@ -1,0 +1,1515 @@
+<nav class="edit-bar" data-toggle="affix" #navigationBar>
+    <app-breadcrumb-menu></app-breadcrumb-menu>
+    <app-sub-menu></app-sub-menu>
+ </nav>
+ <main class="mt-3 organization-page tab-btns-five" *mobxAutorun>
+    <div class="container-fluid">
+       <div class="organization-form-page">
+          <form [formGroup]='documentForm' [ngClass]="KHSettingStore?.khSettingsItems?.is_document_workflow?'organization-multi-stup-form issue-multi-stup-form':'organization-multi-stup-form'">
+       
+             <!-- Circles which indicates the steps of the form: -->
+             <div id="header-sroll-form" class="form-indicates-sec clearfix" #formSteps>
+                <span class="step pointer" (click)="changeStep(0)"><span class="multi-form-nbr">1</span>{{'info' | translate}}</span>
+                <span class="step pointer" (click)="changeStep(1)" ><span class="multi-form-nbr">2</span>{{'classification' | translate}}</span>
+                <span class="step pointer" (click)="changeStep(2)" ><span class="multi-form-nbr">3</span>{{'access' | translate}}</span>
+               
+                <span class="step pointer" [hidden] = "KHSettingStore?.khSettingsItems?.is_document_workflow ? false : true" (click)="changeStep(3)"><span class="multi-form-nbr">4</span>{{'workflow' | translate}}</span>
+                <!-- <span class="step pointer" (click)="changeStep(3)"><span class="multi-form-nbr">4</span>{{'workflow' | translate}}</span> -->
+                <span class="step pointer" (click)="changeStep(4)" ><span class="multi-form-nbr">{{KHSettingStore?.khSettingsItems?.is_document_workflow?'5':'4'}}</span>{{'preview_save' | translate}}</span>
+                <!-- <span class="step pointer" (click)="changeStep(4)" ><span class="multi-form-nbr">5</span>{{'preview_save' | translate}}</span> -->
+             </div>
+             <!-- !Intial File Upload Tab Starts here -->
+             <div class="tab">
+                <!-- tab start -->
+                <div class="row">
+                   <div class="col-sm-6">
+                      <div class="form-group">
+                         <label>{{'document_type'|translate}}<sup>*</sup></label><!---->
+                         <!-- <label>{{'document_type'|translate}}</label> -->
+                         <div class="clearfix d-flex">
+                            <div class="multiple-plain-ngselect w-100">
+                               <ng-select [items]="DocumentTypeMasterStore.allItems"
+                               bindLabel="title"
+                               [placeholder]="'kh_select_doc_type' | translate " 
+                               [multiple]="false"
+                               formControlName = "document_type_id"
+                               (search) = "searchDocTypes($event)"
+                               (change)="switchEvent($event)"
+                               (clear) = "getDocumentTypes()"
+                               (open) = "getDocumentTypes()">
+                            </ng-select>
+                            </div>
+                            <button *ngIf="AuthStore.getActivityPermission(2400,'CREATE_USER_DOCUMENT_TYPE')" class="btn multi-add-user ml-2" style="width: 42px;" (click)="addDocumentType()"><i
+                                  class="fas fa-plus"></i></button>
+                         </div>
+                         <p class="form-error pt-1" *ngIf="showWorkflowMessage && KHSettingStore?.khSettingsItems?.is_document_workflow">{{'kh_no_workflow' | translate}}</p>
+                         <p class="form-error pt-1" *ngIf="!template_document_type && template_document_type !=0">{{templateMessage}}</p>
+                      </div>                     
+                   </div>
+                   <div class="col-sm-6">
+                      <div class="form-group">
+                         <label>{{'document_name'|translate}}<sup>*</sup></label>
+                         <!-- <label for="name">{{'document_name' | translate}}</label> -->
+                         <div class="plain-select input-add-report">
+                            <input type="text" class="form-control" formControlName="title"
+                               [placeholder]="'kh_doc_name'| translate ">
+                            <p class="form-error pt-1"
+                               *ngIf="documentForm.value.title && documentForm.value.title.length>500 && !documentFormErrors">
+                               {{'maximum_500_characters'|translate}}</p>
+                            <p class="form-error pt-1" *ngIf="documentFormErrors&&documentFormErrors.title">
+                               {{documentFormErrors.title}}</p>
+                         </div>
+                      </div>
+                   </div>
+                </div>
+                  <div class="mb-3 box-cnt-one tab-type-btn-small"> 
+                 <label *ngIf="KHSettingStore.khSettingsItems?.knowledge_hub_setting_type?.type=='external'" (click)="setCustom(true)" [ngClass]="customCheck?'outline-tag active':'outline-tag'"><i class="fas fa-cog"></i>Custom</label>
+                 <label *ngIf="getTemplate() && KHSettingStore.khSettingsItems?.knowledge_hub_setting_type?.type=='external'" (click)="setCustom(false)" [ngClass]="customCheck?'outline-tag':'outline-tag active'"><i class="fas fa-file-alt"></i>Templates</label>
+               </div>
+               
+                <label *ngIf="customCheck && KHSettingStore.khSettingsItems?.knowledge_hub_setting_type?.type=='external'" class="label-style mb-0">{{'file_upload' | translate}}<sup>*</sup></label>
+                <div *ngIf="customCheck && KHSettingStore.khSettingsItems?.knowledge_hub_setting_type?.type=='external'" class="row m-0 upload-section" style="padding-top: 0">
+                   <div class="col-sm-3 costmz-logo-new mt-2">
+                      <div class="question-circle-inp" *ngIf = "OrganizationGeneralSettingsStore?.organizationSettings?.support_file_allowed_types?.length > 0" style="margin-right: 7px;">
+                         <i class="far fa-question-circle"></i>
+                         <div class="message-password-inp">
+                             <p class="mb-0">Allowed File Types {{OrganizationGeneralSettingsStore?.organizationSettings?.support_file_allowed_types?.toString()}}</p>
+                         </div>
+                      </div>
+                      <div class="form-group form-group-upload">
+                         <div class="darag-dropifile-upload">
+                            <div class="d-flex justify-content-center align-items-center text-center">
+                               <div>
+                                  <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                                  <div class="drag-file-name"> {{'drag_drop_file_here' | translate}}</div>
+                                  <div class="upload-btn-wrapper">
+                                     <input type="file" name="myfile" (change)="onFileChange($event,'support-file','version-file')" accept=
+                                     "application/msword, application/pdf, image/*, 	application/vnd.ms-excel, 	application/vnd.ms-powerpoint, video/mp4" />
+                                     <button [disabled]="editCheck" class="btn">{{'browse_files' | translate}}</button>
+                                  </div>
+                               </div>
+                            </div>
+                         </div>
+                      </div>
+                   </div>
+  
+                   <div [ngClass] = "files.success || files.file_type != 'support-file' ? 'col-sm-3 up-pic-cf mt-2 hide_loader' : 'col-sm-3 up-pic-cf mt-2'" *ngFor = "let files of versionFIleArray">
+                      <div class="upload-pics edit-option file-upload-loader">
+                         <circle-progress
+                            [percent] = files.uploadProgress
+                            [title] = files.uploadProgress
+                         ></circle-progress>
+                      </div>
+                   </div> 
+ 
+                   <div [ngClass]="DocumentsStore.getVersionFile?.is_deleted ? 'col-sm-4 col-lg-3 up-pic-cf mt-2 image_deleted':'col-sm-4 col-lg-3 up-pic-cf mt-2'" *ngIf = "DocumentsStore.getVersionFile">
+                     <div class="upload-pics edit-option">
+                           <div class="browse-form-pic" [ngStyle]="{'background': 'url(' + DocumentsStore.getVersionFile?.preview + ') no-repeat 0 0 / cover'}">
+                           </div>
+                            <div class="browse-form-name clearfix">
+                             <div class="float-left">
+                               <h6 [attr.title] = "DocumentsStore.getVersionFile?.name">{{DocumentsStore.getVersionFile?.name.length > 20 ? DocumentsStore.getVersionFile?.name.substring(0,20)+' ...' : DocumentsStore.getVersionFile?.name}}</h6>
+                               <span>{{DocumentsStore.getVersionFile?.size/1048576 | number:'0.2-2'}}MB</span>
+                             </div>
+                             <div class="browse-logo">
+                               <img *ngIf = "checkExtension(DocumentsStore.getVersionFile?.ext,'excel') != -1" src="/assets/images/md-xl.png">
+                               <img *ngIf = "checkExtension(DocumentsStore.getVersionFile?.ext,'image') != -1" src="/assets/images/md-jpg.png">
+                               <img *ngIf = "checkExtension(DocumentsStore.getVersionFile?.ext,'doc') != -1" src="/assets/images/md-doc.png">
+                               <img *ngIf = "checkExtension(DocumentsStore.getVersionFile?.ext,'pdf') != -1" src="/assets/images/md-pdf.png">
+                               <img *ngIf = "checkExtension(DocumentsStore.getVersionFile?.ext,'ppt') != -1" src="/assets/images/md-ppt.png">
+                             </div>
+                            </div>
+                            <div *ngIf="!editCheck" class="edit-option-show">
+                             <a (click) = "DocumentsStore.unsetFileDetails('version-file')"><i class="fas fa-trash"></i></a>
+                           </div>
+                         </div>
+                  </div>
+  
+                </div>
+ 
+                <div *ngIf="!customCheck" class="row">
+                   <div class="col-sm-12">
+                      <div class="form-group">
+                         <!-- <sup>*</sup> -->
+                         <label>{{'choose_template' | translate}}</label>
+                           <button type="button" [disabled]="!template_document_type" class="btn btn-active btn-small ml-3" data-toggle="modal" (click)="openTemplatePopup()" >Choose</button>                          
+                      </div>
+                   </div>
+                   <!-- <div class="row"> -->
+                   <!-- <label *ngIf="TemplateStore.activeTemplate" class="label-style mb-0">{{'selected_template' | translate}}</label> -->
+ 
+ 
+                <!-- </div> -->
+                </div> 
+                                 
+ 
+                <label *ngIf="TemplateStore.activeTemplate" [ngClass]="KHSettingStore.khSettingsItems?.knowledge_hub_setting_type?.type=='internal'?'label-style':'label-style mb-0'">{{'selected_template' | translate}}</label>
+                <div  *ngIf="TemplateStore?.getActiveTemplate!=null && KHSettingStore.khSettingsItems?.knowledge_hub_setting_type?.type=='external'" class="row m-0 upload-section" style="padding-top: 0">
+                 
+                 <div class="col-lg-3 col-sm-6 up-pic-cf mt-2">
+  
+                    <div class="upload-pics edit-option">              
+                             <div class="browse-form-pic" *ngIf="TemplateStore?.getActiveTemplate.documents.length > 0"
+                             [ngStyle]="{'background': 'url(' + createImageUrl(TemplateStore?.getActiveTemplate.documents[0].token,'document-template-document') + ') , url(' + getDefaultImage('no-preview') + ') no-repeat 0 0 / cover'}"  onerror="this.src='/assets/images/no-image-popup-icon.png'">
+                        </div>
+                        <div class="browse-form-pic" *ngIf="!(TemplateStore?.getActiveTemplate.documents.length > 0)" [ngStyle]="{'background': ' url(' + getDefaultImage('no-preview') + ') no-repeat 0 0 / cover'}"  onerror="this.src='/assets/images/no-image-popup-icon.png'">
+                       </div>
+                        <div class="browse-form-name clearfix">
+                            <div class="float-left">
+                                <h6>{{TemplateStore?.getActiveTemplate.title}}.{{TemplateStore?.getActiveTemplate.documents[0].ext}}
+                                </h6>
+                                <span>{{TemplateStore.getActiveTemplate?.documents[0].size/1048576 | number:'0.2-2'}}MB</span>
+                            </div>
+                            <div class="browse-logo">
+                                <img *ngIf="checkExtension(TemplateStore?.getActiveTemplate.documents[0].ext,'image') != -1"
+                                    class="folder-picher" src="/assets/images/jpg-icone.png">
+                                <img *ngIf="checkExtension(TemplateStore?.getActiveTemplate.documents[0].ext,'doc') != -1"
+                                    class="folder-picher" src="/assets/images/word-icone.png">
+                                <img *ngIf="checkExtension(TemplateStore?.getActiveTemplate.documents[0].ext,'pdf') != -1"
+                                    class="folder-picher" src="/assets/images/pdf-icone.png">
+                                <img *ngIf="checkExtension(TemplateStore?.getActiveTemplate.documents[0].ext,'excel') != -1"
+                                    class="folder-picher" src="/assets/images/excel-icone.png">
+                                <img *ngIf="checkExtension(TemplateStore?.getActiveTemplate.documents[0].ext,'video') != -1"
+                                    class="folder-picher" src="/assets/images/md-video.png">
+                                <img *ngIf="checkExtension(TemplateStore?.getActiveTemplate.documents[0].ext,'audio') != -1"
+                                    class="folder-picher" src="/assets/images/md-audio.png">
+                                <img *ngIf="checkExtension(TemplateStore?.getActiveTemplate.documents[0].ext,'ppt') != -1"
+                                    class="folder-picher" src="/assets/images/md-ppt.png">
+                            </div>
+                        </div>
+                        <div  class="edit-option-show">
+                            <a (click)="removeDocument()"><i class="fas fa-trash"></i></a>
+                        </div>
+                    </div>
+                </div>
+         
+                </div>
+ 
+                <div class="row mb-3" *ngIf="TemplateStore?.getActiveTemplate!=null && KHSettingStore.khSettingsItems?.knowledge_hub_setting_type?.type=='internal'">
+ 
+                   <div class="col-sm-12">
+                      <div class="cmn-bdr d-inline-block pl-3 pr-3 pt-2 pb-2 border-radius">
+                         <div>                
+                            <p class="mb-0">{{TemplateStore?.getActiveTemplate.title}}</p>
+                         </div>
+ 
+                      </div>
+                   </div>
+ 
+                </div>
+ 
+                <!-- <div class="row">
+                   <div class="col-sm-12">
+                      <div class="form-group">
+                          <div class="Preview-checkbox clearfix">
+                              <label class="container2 float-left pl-4" style="font-size: 14px; padding-top:2px;">
+                                  <input type="checkbox" (change)="setDocumentAssessment($event)"
+                                      [checked]="documentForm.value.is_assessment_required">
+                                  <span class="checkmark mt-1"></span> {{'is_assessment_required' | translate}}?</label>
+                          </div>
+                      </div>
+                  </div>
+                </div>
+  -->
+ 
+                <div class="row">
+                   <div class="col-sm-6">
+                      <div class="form-group add-kpi-textarea">
+                         <span class="text-grey"
+                            style="float: right;">{{documentForm?.value.description != null ? documentForm?.value.description?.length : 0}}
+                            {{'characters' | translate}}</span>
+                         <label for="name">{{'description' | translate}}</label>
+                         <textarea class="form-control" rows="11" formControlName="description"
+                            [attr.placeholder]="'document_description' | translate"></textarea>
+                      </div>
+                   </div>
+                   <div class="col-sm-6">
+                      <div class="form-group add-kpi-textarea">
+                         <span class="text-grey"
+                            style="float: right;">{{documentForm?.value.purpose != null ? documentForm?.value.purpose?.length : 0}}
+                            {{'characters' | translate}}</span>
+                         <label for="name">{{'purpose' | translate}}</label>
+                         <textarea class="form-control" rows="11" formControlName="purpose"
+                            [attr.placeholder]="'purpose_description' | translate"></textarea>
+                      </div>
+                   </div>
+ 
+                </div>
+
+                <!-- Document Owner -->
+                <div class="row">
+
+                
+                <div class="col-sm-6">
+                  <div class="form-group">
+                      <label for="name">{{'document_owner' | translate}}<sup>*</sup></label>
+                      <div class="clearfix">
+                        <div class="multiple-plain-ngselect">
+                            <ng-select [items]="UsersStore.usersList" bindLabel="email" [multiple]="false" [closeOnSelect]="true" 
+                                [placeholder]="'select_kh_review_user'|translate" formControlName="owner_id"
+                                (clear)="getDocumentOwners()" (search)="searchDocumentOwner($event)" (open)="getDocumentOwners()">
+                                <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                    <img class="ng-select-user-display" *ngIf="item.image_token" height="15"
+                                        width="15"
+                                        [attr.src]="createImageUrl(item.image_token,'user-profile-picture')" />
+                                    <img class="ng-select-user-display" *ngIf="!item.image_token"
+                                        height="15" width="15" [attr.src]="getDefaultImage('user-logo')" />
+                                    <b style="padding-left: 3px;">{{getStringsFormatted([item?.first_name?item.first_name:item.name,item.last_name],50,' ') | titlecase}}</b><span aria-hidden="true"
+                                        (click)="clear(item)" style="border:none;"
+                                        class="ng-value-icon left">×</span>
+                                </ng-template>
+                                <ng-template ng-option-tmp let-item="item" let-index="index">
+                                    <div class="user-post-department-pic">
+                                        <img class="ng-select-user-display" *ngIf="item.image_token"
+                                            height="25" width="25"
+                                            [attr.src]="createImageUrl(item.image_token,'user-profile-picture')" />
+                                        <img class="ng-select-user-display" *ngIf="!item.image_token"
+                                            height="25" width="25"
+                                            [attr.src]="getDefaultImage('user-logo')" />
+                                    </div>
+                                    <div class="user-post-department-div">
+                                        <b>{{getStringsFormatted([item?.first_name?item.first_name:item.name,item.last_name],50,' ') | titlecase}}</b>
+                                        <p class="user-post-department-multiple">
+                                           {{getStringsFormatted([item.designation_title,' '+item.department],50,',')}}</p>
+                                    </div>
+                                </ng-template>
+                            </ng-select>
+                        </div>
+                    </div>
+                      <p class="form-error pt-1" *ngIf="documentFormErrors&&documentFormErrors.owner_id">
+                          {{documentFormErrors.owner_id}}</p>
+                  </div>
+                </div>
+
+                <!-- Document Mapping -->
+
+                  <div class="col-sm-6">
+                     <div class="form-group">
+                         <a class="text-light-blue" data-toggle="modal" (click)="organisationChanges()" style="border-bottom: 1px solid;">{{'change_organization_unit' | translate}}</a>
+                      </div>
+                      
+
+                <!-- Document Mapping -->
+
+
+               </div>
+               </div>
+                <!-- Docuemnt owner Ends -->
+
+                <!-- Document Review -->
+                <!-- <div class="row">
+                   <div class="col-sm-6">
+                      <div class="form-group">
+                          <label for="name">{{'kh_review_user' | translate}}</label>
+                          <div class="clearfix">
+                            <div class="multiple-plain-ngselect">
+                                <ng-select [items]="UsersStore.usersList" bindLabel="email" [multiple]="false" [closeOnSelect]="true" 
+                                    [placeholder]="'select_kh_review_user'|translate" formControlName="review_user_id"
+                                    (clear)="getResponsibleUsers()" (search)="searchResponsibleUsers($event)" (open)="getResponsibleUsers()">
+                                    <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                        <img class="ng-select-user-display" *ngIf="item.image_token" height="15"
+                                            width="15"
+                                            [attr.src]="createImageUrl(item.image_token,'user-profile-picture')" />
+                                        <img class="ng-select-user-display" *ngIf="!item.image_token"
+                                            height="15" width="15" [attr.src]="getDefaultImage('user-logo')" />
+                                        <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b><span aria-hidden="true"
+                                            (click)="clear(item)" style="border:none;"
+                                            class="ng-value-icon left">×</span>
+                                    </ng-template>
+                                    <ng-template ng-option-tmp let-item="item" let-index="index">
+                                        <div class="user-post-department-pic">
+                                            <img class="ng-select-user-display" *ngIf="item.image_token"
+                                                height="25" width="25"
+                                                [attr.src]="createImageUrl(item.image_token,'user-profile-picture')" />
+                                            <img class="ng-select-user-display" *ngIf="!item.image_token"
+                                                height="25" width="25"
+                                                [attr.src]="getDefaultImage('user-logo')" />
+                                        </div>
+                                        <div class="user-post-department-div">
+                                            <b>{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b>
+                                            <p class="user-post-department-multiple">
+                                               {{getStringsFormatted([item.designation_title,' '+item.department],50,',')}}</p>
+                                        </div>
+                                    </ng-template>
+                                </ng-select>
+                            </div>
+                        </div>
+                          <p class="form-error pt-1" *ngIf="documentFormErrors&&documentFormErrors.resposible_user_id">
+                              {{documentFormErrors.resposible_user_id}}</p>
+                      </div>
+                  </div>
+                  <div class="col-lg-6 col-sm-12">
+                      <div class="form-group">
+                          <label for="name">{{'document_review_frequency' | translate}}</label>
+                          <div class="clearfix d-flex">
+                              <div class="multiple-plain-ngselect select-width-plus w-100">
+                                  <ng-select
+                                     [items]="DocumentReviewFrequenciesMasterStore.allItems"
+                                      [placeholder]="'select_kh_document_review_frequency' | translate" [multiple]="false"
+                                      formControlName="document_review_frequency_id"
+                                      (search)="searchDocumentReview($event)"
+                                      (clear)="getDocumentReview()"
+                                      (open)="getDocumentReview()" [closeOnSelect]="true"
+                                      bindLabel="type">
+                     
+                                      <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                        {{item?.document_review_frequency_language_title?.length > 60 ? (item.document_review_frequency_language_title | slice:0:60)+' ...' :
+                                        item.document_review_frequency_language_title}}
+                                    </ng-template>
+                                    <ng-template ng-option-tmp let-item="item" let-index="index">
+                                        {{item?.document_review_frequency_language_title?.length > 80 ? (item.document_review_frequency_language_title | slice:0:80)+' ...' :
+                                        item.document_review_frequency_language_title}}
+                                    </ng-template>
+                                  </ng-select>
+                              </div>                                    
+                          </div>
+                          <p class="pt-1" style="color: red;"
+                              *ngIf="documentFormErrors && documentFormErrors.document_review_frequency">
+                              {{documentFormErrors.document_review_frequency}}</p>
+                      </div>
+                  </div>
+                </div> -->
+                <div class="row">
+                   <div class="col-sm-6">
+                      <div class="form-group">
+                         <label for="name">{{'version' | translate}}</label>
+                         <div class="plain-select input-add-report">
+                            <input type="text" class="form-control" formControlName="version"
+                               placeholder="Enter Version ">
+                         </div>
+                      </div>
+                   </div>
+                   <!-- <div class="col-lg-6 col-sm-12">
+                      <div class="form-group">
+                          <label for="name">{{'expiry_date' | translate}}</label>
+                          <div class="input-group date-picker">
+                              <input class="form-control cal4" [minDate]="todayDate" formControlName="expiry_date"
+                                  placeholder="yyyy-mm-dd"  (click)="dueDateInput.toggle()"
+                                  id="start" ngbDatepicker #dueDateInput="ngbDatepicker">
+ 
+                              <div class="input-group-append">
+                                  <button class="btn btn-outline-secondary calendar"
+                                      (click)="dueDateInput.toggle()" type="button"><i
+                                          class="fas fa-calendar-alt"></i></button>
+                              </div>
+                          </div>
+                      </div>
+                  </div> -->
+                  <!-- <div class="col-lg-6 col-sm-12">
+ 
+                     <div class="form-group">
+                        <label>{{'ms_type' | translate}}</label>
+                        <div class="clearfix">
+                           <div class="multiple-plain-ngselect">
+                              <ng-select 
+                              [placeholder]="'kh_select_ms_types'| translate" 
+                              [multiple]="false" 
+                              [items]="MsTypeStore.msTypeDetails"
+                              formControlName="ms_type_organization_id" 
+                              (clear)="getMsTypes()"
+                              (open)="getMsTypes()"
+                              (search)="searchMsType($event)"
+                              bindLabel="ms_type_title">
+                                
+            
+                              </ng-select>
+                            </div>
+                        </div>
+                     </div>
+
+                  </div> -->
+                  <!-- <ng-option  [value]="mstypes.id" *ngFor="let mstypes of MsTypeStore.msTypeDetails">
+                                    <label class="mb-0">{{mstypes.ms_type_title.length > 80 ? mstypes.ms_type_title.substring(0,80)+' ...' : mstypes.ms_type_title }} <span style="color: #7c7a7a;">V {{mstypes.ms_type_version_title}}</span></label>
+                                   </ng-option> -->
+                  <div class="col-lg-6 col-sm-12">
+ 
+                     <div class="form-group">
+                        <label>{{'related_ms_types' | translate}}</label>
+                        <div class="clearfix">
+                           <div class="multiple-plain-ngselect">
+                              <ng-select [placeholder]="'kh_select_ms_types'| translate " multiple="true" formControlName="ms_type_organization_ids" [closeOnSelect]="false"
+                                 (clear)="getMsTypes()"
+                                (open)="getMsTypes()"
+                                (search)="searchMsType($event)">
+                                <ng-option  [value]="mstypes.id" *ngFor="let mstypes of MsTypeStore.msTypeDetails">
+                                    <label class="mb-0">{{mstypes.ms_type_title.length > 80 ? mstypes.ms_type_title.substring(0,80)+' ...' : mstypes.ms_type_title }} <span style="color: #7c7a7a;">V {{mstypes.ms_type_version_title}}</span></label>
+                                   </ng-option>
+            
+                              </ng-select>
+                            </div>
+                        </div>
+                     </div>
+
+                  </div>
+                </div>
+                <label class="label-style mb-0">{{'support_file' | translate}}</label>
+                     <!-- Common File Upload Starts Here -->
+                     <div class="scroll-documents" #uploadArea>
+                      <div class="thumb-pics-bg thumb-pics-col-4 clearfix thumb-pics-fix-text"
+                          style="padding-top: 0;">
+                          <div class="thumb-pics">
+                              <div class="question-circle-inp" style="margin-right: 7px;">
+                                  <i class="far fa-question-circle"></i>
+                                  <div class="message-password-inp">
+                                      <p class="mb-0">{{'allowed_file_types' | translate}}
+                                          {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                                      </p>
+                                  </div>
+                              </div>
+ 
+                              <div class="form-group form-group-upload">
+                                  <div class="darag-dropifile-upload">
+                                      <div class="d-flex justify-content-center align-items-center text-center">
+                                          <div>
+                                              <img src="/assets/images/drag-pic.png" alt="image"
+                                                  class="drag-pic-files">
+                                              <div class="drag-file-name"> Select or Upload Your File Here </div>
+                                              <div class="upload-btn-wrapper">
+                                                  <button (click)="openFileUploadModal()" type="button"
+                                                      class="btn">{{'browse_files' | translate}}</button>
+                                              </div>
+                                          </div>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+ 
+                          <div class="thumb-pics"
+                              *ngFor="let docs of fileUploadPopupStore.displayFiles ;let i = index">
+                              <div class="upload-pics edit-option" data-toggle="modal">
+                                  <div *ngIf="docs.id && !docs.preview" class="browse-form-pic"
+                                      [ngStyle]="{'background': 'url('+createImageUrl(docs?.token,'document-version')+') no-repeat'}">
+                                  </div>
+                                  <div *ngIf="docs.preview" class="browse-form-pic"
+                                      [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">
+                                  </div>
+                                  <div class="browse-form-name clearfix">
+                                      <div class="float-left">
+                                          <h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                          </h6>
+                                          <span *ngIf="docs.is_kh_document" class="mr-2 cmn-clr"><i
+                                                  class="fas fa-book"></i></span>
+                                          <span *ngIf="!docs.is_kh_document" class="mr-2 cmn-clr"><i
+                                                  class="fas fa-laptop"></i></span>
+                                          <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                                      </div>
+                                      <div class="browse-logo">
+                                          <img *ngIf="checkExtension(docs.ext,'image') != -1" class="folder-picher"
+                                              src="/assets/images/jpg-icone.png">
+                                          <img *ngIf="checkExtension(docs.ext,'doc') != -1" class="folder-picher"
+                                              src="/assets/images/word-icone.png">
+                                          <img *ngIf="checkExtension(docs.ext,'pdf') != -1" class="folder-picher"
+                                              src="/assets/images/pdf-icone.png">
+                                          <img *ngIf="checkExtension(docs.ext,'excel') != -1" class="folder-picher"
+                                              src="/assets/images/excel-icone.png">
+                                          <img *ngIf="checkExtension(docs.ext,'video') != -1" class="folder-picher"
+                                              src="/assets/images/md-video.png">
+                                          <img *ngIf="checkExtension(docs.ext,'audio') != -1" class="folder-picher"
+                                              src="/assets/images/md-audio.png">
+                                          <img *ngIf="checkExtension(docs.ext,'ppt') != -1" class="folder-picher"
+                                              src="/assets/images/md-ppt.png">
+                                      </div>
+                                  </div>
+                                  <div class="edit-option-show">
+                                     <a (click) = "deleteDocuments(docs)"><i class="fas fa-trash"></i></a>
+                                  </div>
+                              </div>
+                          </div>
+ 
+ 
+                      </div>
+                  </div>
+                  <!-- Common File Upload Ends Here -->
+ 
+                   <!-- <div class="scroll-documents" #suportUploadArea>
+                      <div class="row m-0 upload-section" style="padding-top: 0">
+                         <div class="col-sm-3 costmz-logo-new mt-2">
+                            <div class="question-circle-inp" *ngIf = "OrganizationGeneralSettingsStore?.organizationSettings?.support_file_allowed_types?.length > 0" style="margin-right: 7px;">
+                               <i class="far fa-question-circle"></i>
+                               <div class="message-password-inp">
+                                   <p class="mb-0">{{'allowed_file_types' | translate}} {{OrganizationGeneralSettingsStore?.organizationSettings?.support_file_allowed_types?.toString()}}</p>
+                               </div>
+                            </div>
+                            <div class="form-group form-group-upload">
+                               <div class="darag-dropifile-upload">
+                                  <div class="d-flex justify-content-center align-items-center text-center">
+                                     <div>
+                                        <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                                        <div class="drag-file-name"> {{'kh_file_upload' | translate}} </div>
+                                        <div class="upload-btn-wrapper">
+                                           <input type="file" name="myfile" (change)="onFileChange($event,'support-file','document-file')" [accept]="checkAcceptFileTypes('support-file')" multiple/>
+                                           <button class="btn">{{'browse_files' | translate}}</button>
+                                        </div>
+                                     </div>
+                                  </div>
+                               </div>
+                            </div>
+                         </div>
+        
+                          <div [ngClass] = "files.success || files.file_type != 'support-file' ? 'col-sm-3 up-pic-cf mt-2 hide_loader' : 'col-sm-3 up-pic-cf mt-2'" *ngFor = "let files of supportFIleArray">
+                            <div class="upload-pics edit-option file-upload-loader">
+                               <circle-progress
+                                  [percent] = files.uploadProgress
+                                  [title] = files.uploadProgress
+                               ></circle-progress>
+                            </div>
+                         </div> 
+                         
+                           <div [ngClass]="b?.is_deleted ? 'col-sm-3 up-pic-cf mt-2 image_deleted':'col-sm-3 up-pic-cf mt-2'" *ngFor = "let b of DocumentsStore.getSupportFile"> 
+                            <div class="upload-pics edit-option">
+                               <div class="browse-form-pic" [ngStyle]="{'background': 'url(' + b?.preview + ') no-repeat 0 0 / cover'}">
+                               </div>
+                                <div class="browse-form-name clearfix">
+                                 <div class="float-left">
+                                  <h6 [attr.title] = "b?.name">{{b?.name.length > 20 ? b?.name.substring(0,20)+' ...' : b?.name}}</h6>
+                                  <span>{{b?.size/1048576 | number:'0.2-2'}}MB</span>
+                                 </div>
+                                 <div class="browse-logo">
+                                   <img *ngIf = "checkExtension(b?.ext,'excel') != -1" src="/assets/images/md-xl.png">
+                                   <img *ngIf = "checkExtension(b?.ext,'image') != -1" src="/assets/images/md-jpg.png">
+                                   <img *ngIf = "checkExtension(b?.ext,'doc') != -1" src="/assets/images/md-doc.png">
+                                   <img *ngIf = "checkExtension(b?.ext,'pdf') != -1" src="/assets/images/md-pdf.png">
+                                   <img *ngIf = "checkExtension(b?.ext,'video') != -1" src="/assets/images/md-video.png">
+                                   <img *ngIf = "checkExtension(b?.ext,'audio') != -1" src="/assets/images/md-audio.png">
+                                   <img *ngIf = "checkExtension(b?.ext,'ppt') != -1" src="/assets/images/md-ppt.png">
+                                 </div>
+                                </div>
+                                <div class="edit-option-show">
+                                 <a (click) = "removeBrochure('document-file',b?.token)"><i class="fas fa-trash"></i></a>
+                               </div>
+                            </div>
+                         </div> 
+                      </div>
+       
+                   </div> -->
+                
+             </div>
+              <!-- !Intial File Upload Tab Ends here -->
+              <!-- !Category Classification Table Starts here -->
+             <div class="tab">
+                <div class="row">
+                   <div class="col-lg-6 col-sm-12">
+ 
+                      <div class="form-group">
+                         <label>{{'categories' | translate}}</label>
+                         <div class="clearfix d-flex">
+                            <div class="multiple-plain-ngselect w-100">
+                               <ng-select [items]="DocumentCategoryMasterStore.allItems"
+                               bindLabel="title"
+                               [placeholder]="'kh_select_categories'| translate"
+                               [multiple]="true"
+                               formControlName = "document_category_ids"
+                               (clear) = "getDocumentCategories()"
+                               [closeOnSelect]="false"
+                               (search) = "searchDocumentSubCategories($event)"
+                               (open) = "getDocumentCategories()">
+                            </ng-select>
+                            </div>
+                            <button *ngIf="AuthStore.getActivityPermission(2400,'CREATE_DOCUMENT_CATEGORY')" class="btn multi-add-user ml-2" style="width: 42px;" (click)="addDocumentCategory()"><i
+                                  class="fas fa-plus"></i></button>
+                         </div>
+                      </div>
+ 
+                   </div>
+                   <div class="col-lg-6 col-sm-12">
+                      <div class="form-group">
+                         <label>{{'sub_categories' | translate}}</label>
+                         <div class="clearfix d-flex">
+                            <div class="multiple-plain-ngselect w-100">
+                               <ng-select [items]="DocumentSubCategoryMasterStore.allItems"
+                               bindLabel="title"
+                               [placeholder]="'kh_select_sub_categories'| translate"
+                               [multiple]="true"
+                               formControlName = "document_sub_category_ids"
+                               [closeOnSelect]="false"
+                               (search) = "searchDocumentCategories($event)"
+                               (clear) = "getDocumentSubCategories()"
+                               (search) = "searchDocumentSubSubCategories($event)"
+                               (open) = "getDocumentSubCategories()">
+                            </ng-select>
+                            </div>
+                            <button *ngIf="AuthStore.getActivityPermission(2400,'CREATE_DOCUMENT_SUB_CATEGORY')" [disabled]="documentForm?.value?.document_category_ids==null || documentForm?.value?.document_category_ids?.length==0" class="btn multi-add-user ml-2" style="width: 42px;" (click)="addDocumentSubCategory()"><i
+                                  class="fas fa-plus"></i></button>
+                         </div>
+                      </div>
+ 
+                   </div>
+                   <div class="col-lg-6 col-sm-12">
+ 
+                      <div class="form-group">
+                         <!-- <label>Further Sub Category<sup>*</sup></label> -->
+                         <label>{{'further_sub_categories' | translate}}</label>
+                         <div class="clearfix d-flex">
+                            <div class="multiple-plain-ngselect w-100">
+                               <ng-select [items]="DocumentSubSubCategoryMasterStore.allItems"
+                               bindLabel="title"
+                               [placeholder]="'kh_select_sub_sub_categories'| translate"
+                               [multiple]="true"
+                               formControlName = "document_sub_sub_category_ids"
+                               [closeOnSelect]="false"
+                               (clear) = "getDocumentSubSubCategoires()"
+                               (open) = "getDocumentSubSubCategoires()">
+                            </ng-select>
+                            </div>
+                            <button *ngIf="AuthStore.getActivityPermission(2400,'CREATE_DOCUMENT_SUB_SUB_CATEGORY')" [disabled]="documentForm?.value?.document_sub_category_ids==null || documentForm?.value?.document_sub_category_ids?.length==0" class="btn multi-add-user ml-2" style="width:42px" (click)="addDocumentSubSubCategory()"><i
+                                  class="fas fa-plus"></i></button>
+                         </div>
+                      </div>
+ 
+                   </div>
+                   <div class="col-lg-6 col-sm-12">
+ 
+                      <div class="form-group">
+                         <label>{{'industries' | translate}}</label>
+                         <div class="clearfix">
+                            <div class="multiple-plain-ngselect">
+                               <ng-select [items]="IndustryMasterStore.allItems"
+                               bindLabel="title"
+                               [placeholder]="'kh_select_industries'| translate"
+                               multiple="true"
+                               [closeOnSelect]="false"
+                               formControlName = "industry_ids"
+                               (search) = "searchIndustry($event)"
+                               (clear) = "getIndustries()"
+                               (open) = "getIndustries()">
+                            </ng-select>
+                            </div>
+                         </div>
+                      </div>
+ 
+                   </div>
+                </div>
+ 
+                <div class="user-details-page mt-2">
+                   <div class="right-block p-0">
+                      <h5 class="mt-0 mb-3"> <span> {{'geo_area' | translate}}</span></h5>
+                   </div>
+                </div>
+                <div class="row">
+                   <div class="col-lg-6 col-sm-12">
+ 
+                      <div class="form-group">
+                         <label>{{'regions' | translate}}</label>
+                         <div class="clearfix">
+                            <div class="multiple-plain-ngselect">
+                               <ng-select [items]="RegionMasterStore.allItems"
+                               bindLabel="title"
+                               [placeholder]="'kh_select_regions'| translate"
+                               multiple="true"
+                               [closeOnSelect]="false"
+                               formControlName = "region_ids"
+                               (search) = "searchRegion($event)"
+                               (clear) = "getRegions()"
+                               (open) = "getRegions()">
+                            </ng-select>
+                            </div>
+                         </div>
+                      </div>
+ 
+                   </div>
+                   <div class="col-lg-6 col-sm-12">
+ 
+                      <div class="form-group">
+                         <label>{{'countries' | translate}}</label>
+                         <div class="clearfix">
+                            <div class="multiple-plain-ngselect">
+                               <ng-select [items]="CountryMasterStore.allItems"
+                               bindLabel="title"
+                               [placeholder]="'kh_select_countries'| translate"
+                               multiple="true"
+                               [closeOnSelect]="false"
+                               formControlName = "country_ids"
+                               (search) = "searchCountry($event)"
+                               (clear) = "getCountries()"
+                               (open) = "getCountries()">
+                            </ng-select>
+                            </div>
+                         </div>
+                      </div>
+ 
+                   </div>
+                </div>
+ 
+                <div class="user-details-page mt-2">
+                   <div class="right-block p-0">
+                      <h5 class="mt-0 mb-3"> <span> {{'other' | translate}} </span> </h5>
+                   </div>
+                </div>
+                <div class="row">
+                   <div class="col-lg-6 col-sm-12">
+ 
+                      <div class="form-group">
+                         <label>{{'families' | translate}}</label>
+                         <div class="clearfix d-flex">
+                            <div class="multiple-plain-ngselect w-100">
+                               <ng-select [items]="DocumentFamilyMasterStore.allItems"
+                               bindLabel="title"
+                               [placeholder]="'kh_select_families'| translate"
+                               multiple="true"
+                               [closeOnSelect]="false"
+                               formControlName = "document_family_ids"
+                               (search) = "searchDocumentFamily($event)"
+                               (clear) = "getDocumentFamilies()"
+                               (open) = "getDocumentFamilies()">
+                            </ng-select>
+                            </div>
+                            <button *ngIf="AuthStore.getActivityPermission(2400,'CREATE_DOCUMENT_FAMILY')" class="btn multi-add-user ml-2" style="width: 42px;" (click)="addDocumentFamily()"><i
+                                  class="fas fa-plus"></i></button>
+                         </div>
+                      </div>
+ 
+                   </div>
+                   
+                </div>
+                <div class="row">
+                   <div class="col-sm-12">
+ 
+                      <div class="form-group">
+                         <label>{{'tags' | translate}}</label>
+                         <div class="clearfix d-flex">
+                            <div class="multiple-plain-ngselect w-100">
+                               <ng-select [items]="DocumentTagMasterStore.allItems"
+                               bindLabel="title"
+                               [placeholder]="'kh_select_tags'| translate"
+                               multiple="true"
+                               [closeOnSelect]="false"
+                               formControlName = "tag_ids"
+                               (search) = "searchDocumentTag($event)"
+                               (clear) = "getDocumentTags()"
+                               (open) = "getDocumentTags()">
+                            </ng-select>
+                       
+                            </div>
+                            <button class="btn multi-add-user ml-2" style="width: 40px;" (click)="addDocumentTag()"><i
+                                  class="fas fa-plus"></i></button>
+                         </div>
+                      </div>
+ 
+                   </div>
+                </div>
+ 
+             </div>
+              <!-- !Category Classification Table Ends here -->
+              <!-- !Access Tab Starts Here -->
+             <div class="tab">
+                <div class="mb-3 box-cnt-one tab-type-btn-small">
+                  <label *ngFor="let item of DocumentAccessTypeMasterStore.allItems"  (click) = "DocumentsStore.accessVerification() && selectAccessType(item.id) ; addValidation(item.id)" [ngClass] = "findSelectedAccessType(item.id) ? 'outline-tag active pointer' : 'outline-tag pointer'"><i [class]="setAccessCLass(item)"></i>{{item.title}}</label>
+                  <div class="question-circle-inp d-inline-block" style="vertical-align: middle; margin: -15px 0 0 15px; position: relative;">
+                   <i class="far fa-question-circle"></i>
+                   <div class="message-password-inp bottom-show">
+                      <p class="mb-0">The file will have the same access as parent folder and you can easily change the permission from the details page.</p>
+                   </div>
+                </div>
+                 </div>
+ 
+                <div class="row" [hidden]="!isShared">
+                   <div class="col-sm-6" *ngIf = "OrganizationLevelSettingsStore.organizationLevelSettings?.is_subsidiary">
+                      <div class="form-group">
+                         <label for="name">{{'organizations' | translate}}<span class="form-error">*</span></label>
+                         <div class="clearfix">
+                             <div class="multiple-plain-ngselect">
+                               <ng-select [items]="SubsidiaryStore.subsidiaryList"
+                               bindLabel="title"
+                               [readonly]="DocumentsStore.readOnlyVerification()"
+                               [placeholder]="'kh_select_subsidiaries' | translate"
+                               multiple="true"
+                               [closeOnSelect]="false"
+                               searchable = "false"
+                               formControlName = "organization_ids"
+                               (add) = "getDivision()"
+                               (search) = "searchSubsidiary($event)"
+                               (clear) = "getSubsidiary();getDivision()"
+                               (open) = "getSubsidiary()">
+                            </ng-select>
+                             </div>
+                         </div>
+                     </div>
+                   </div>
+                   <div class="col-sm-6" *ngIf = "OrganizationLevelSettingsStore.organizationLevelSettings?.is_division">
+                      <div class="form-group">
+                         <label for="name">{{'divisions' | translate}}</label>
+                         <div class="clearfix">
+                             <div class="multiple-plain-ngselect">
+                               <ng-select [items]="DivisionStore.allItems"
+                               bindLabel="title"
+                               [readonly]="DocumentsStore.readOnlyVerification()"
+                               [placeholder]="'kh_select_divisions' | translate"
+                               multiple="true"
+                               [closeOnSelect]="false"
+                               searchable = "false"
+                               formControlName = "division_ids"
+                               (add) = "getDepartment()"
+                               (search) = "searchDivision($event)"
+                               (clear) = "getDivision()"
+                               (open) = "getDivision()">
+                            </ng-select>
+                             </div>
+                         </div>
+                     </div>
+                   </div>
+                   <div class="col-sm-6" *ngIf = "OrganizationLevelSettingsStore.organizationLevelSettings?.is_department">
+                      <div class="form-group">
+                         <!-- <label for="name">{{'department' | translate}}<span class="form-error">*</span></label> -->
+                         <label for="name">{{'departments' | translate}}</label>
+                         <div class="clearfix">
+                             <div class="multiple-plain-ngselect">
+                               <ng-select [items]="DepartmentStore.allItems"
+                               bindLabel="title"
+                               [readonly]="DocumentsStore.readOnlyVerification()"
+                               [placeholder]="'kh_select_departments' | translate"
+                               multiple="true"
+                               [closeOnSelect]="false"
+                               formControlName = "department_ids"
+                               (add) = "getSection()"
+                               (search) = "searchDepartment($event)"
+                               (clear) = "getDepartment()"
+                               (open) = "getDepartment()">
+                            </ng-select>
+                             </div>
+                         </div>
+                         <!-- <p class="form-error" *ngIf="documentFormErrors && documentFormErrors.department_ids"> Select Any Department</p> -->
+                     </div>
+                   </div>
+                   <div class="col-sm-6" *ngIf = "OrganizationLevelSettingsStore.organizationLevelSettings?.is_section">
+                      <div class="form-group">
+                         <label for="name">{{'sections' | translate}}</label>
+                         <div class="clearfix">
+                             <div class="multiple-plain-ngselect">
+                               <ng-select [items]="SectionStore.allItems"
+                               bindLabel="title"
+                               [readonly]="DocumentsStore.readOnlyVerification()"
+                               [placeholder]="'kh_select_sections' | translate"
+                               multiple="true"
+                               [closeOnSelect]="false"
+                               formControlName = "section_ids"
+                               (add) = "getSubSection()"
+                               (search) = "searchSection($event)"
+                               (clear) = "getSection()"
+                               (open) = "getSection()">
+                            </ng-select>
+                             </div>
+                         </div>
+                     </div>
+                   </div>
+                   <div class="col-sm-6" *ngIf = "OrganizationLevelSettingsStore.organizationLevelSettings?.is_sub_section">
+                      <div class="form-group">
+                         <label for="name">{{'sub_sections' | translate}}</label>
+                         <div class="clearfix">
+                             <div class="multiple-plain-ngselect">
+                               <ng-select [items]="SubSectionStore.allItems"
+                               bindLabel="title"
+                               [readonly]="DocumentsStore.readOnlyVerification()"
+                               [placeholder]="'kh_select_sub_sections' | translate"
+                               multiple="true"
+                               [closeOnSelect]="false"
+                               formControlName = "sub_section_ids"
+                               (search) = "searchSubSection($event)"
+                               (clear) = "getSubSection()"
+                               (open) = "getSubSection()">
+                            </ng-select>
+                             </div>
+                         </div>
+                     </div>
+                   </div>
+                   <div class="col-sm-6">
+                      <div class="form-group">
+                          <label for="name">{{'users'|translate}}</label>
+ 
+                          <div class="clearfix">
+                              <div class="multiple-plain-ngselect">
+                                  <ng-select [items]="UsersStore.usersList" bindLabel="email" multiple="true" [closeOnSelect]="false" [readonly]="DocumentsStore.readOnlyVerification()"
+                                      [placeholder]="'kh_select_users'|translate" formControlName="user_ids"
+                                      (clear)="getUsers()" (search)="searchUers($event)" (open)="getUsers()" [searchFn]="customSearchFn">
+                                      <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                          <img class="ng-select-user-display" *ngIf="item.image_token" height="15"
+                                              width="15"
+                                              [attr.src]="createImageUrl(item.image_token,'user-profile-picture')" />
+                                          <img class="ng-select-user-display" *ngIf="!item.image_token"
+                                              height="15" width="15" [attr.src]="getDefaultImage('user-logo')" />
+                                          <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b><span aria-hidden="true"
+                                              (click)="clear(item)" style="border:none;"
+                                              class="ng-value-icon left">×</span>
+                                      </ng-template>
+                                      <ng-template ng-option-tmp let-item="item" let-index="index">
+                                          <div class="user-post-department-pic">
+                                              <img class="ng-select-user-display" *ngIf="item.image_token"
+                                                  height="25" width="25"
+                                                  [attr.src]="createImageUrl(item.image_token,'user-profile-picture')" />
+                                              <img class="ng-select-user-display" *ngIf="!item.image_token"
+                                                  height="25" width="25"
+                                                  [attr.src]="getDefaultImage('user-logo')" />
+                                          </div>
+                                          <div class="user-post-department-div">
+                                              <b>{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b>
+                                              <p class="user-post-department-multiple">
+                                                 {{getStringsFormatted([item.designation_title,' '+item.department],50,',')}}</p>
+                                          </div>
+                                      </ng-template>
+                                  </ng-select>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+                  <div class="col-sm-6">
+                   <div class="form-group">
+                       <label for="name">{{'designations' | translate}}</label>
+                       <div class="clearfix d-flex">
+                           <div class="multiple-plain-ngselect w-100">
+                               <ng-select [items]="DesignationMasterStore.designations"
+                               bindLabel="title"
+                               [readonly]="DocumentsStore.readOnlyVerification()"
+                               [placeholder]="'kh_select_designations' | translate"
+                               multiple="true"
+                               [closeOnSelect]="false"
+                               formControlName = "designation_ids"
+                               (search) = "searchDesignation($event)"
+                               (clear) = "getDesignation()"
+                               (open) = "getDesignation()">
+                            </ng-select>
+                           </div>
+                           <button [disabled]="DocumentsStore.readOnlyVerification()" class="btn multi-add-user ml-2" style="width: 42px;" (click)="openDesignationForm()"><i
+                                   class="fas fa-plus"></i></button>
+ 
+                       </div>
+                       <!-- <p class="form-error pt-1" *ngIf="documentFormErrors&&documentFormErrors.designation_ids">
+                           The designation field is required</p> -->
+                   </div>
+               </div>
+                </div>
+             </div>
+             <!-- !Access Tab Ends Here -->
+             <!-- !Workflow Tab Starts here -->
+            <div class="tab">
+            
+               <ng-container *ngIf="KHSettingStore?.khSettingsItems?.is_document_workflow">
+
+               <!-- If the access type is private | shared -->
+            
+               <ng-container *ngIf="selectedAccessType!=2">
+                  <p>{{'private_shared_no_workflow_message' | translate}}</p>
+               </ng-container>
+            
+               <!-- if the access type is public -->
+               <ng-container *ngIf="selectedAccessType==2">
+            
+                  <h5 class="pt-1" style="color: red;">{{workflowError}}</h5>
+            
+                  <main class="mt-3">
+            
+                     <ng-container *ngIf="WorkFlowStore?.workFlowDetails?.workflow_items.length > 0">
+            
+            
+                        <div class="widget bg-white">
+                           <div class="widget-body-light widg-padding-cmn" *mobxAutorun>
+                              <div class="row">
+                                 <div class="col-sm-12 col-lg-12 pt-0 pb-0">
+            
+                                    <div class="workflow-tab">
+                                       <div class="work-flow-review-approval-main"
+                                          *ngIf="WorkFlowStore.workFlowDetails && WorkFlowStore.workFlowDetails.workflow_items">
+                                          <div *ngFor="let item of WorkFlowStore.workFlowDetails.workflow_items;let i=index"
+                                             [ngClass]="assignClass(item)">
+                                             <span *ngIf="item.type == 'user'" class="label-work-flow-audit">{{'user' |
+                                                translate}}</span>
+                                             <span *ngIf="item.type == 'designation'" class="label-work-flow-audit">{{'designation'
+                                                | translate}}</span>
+                                             <span *ngIf="item.type == 'team'" class="label-work-flow-audit">{{'team' |
+                                                translate}}</span>
+                                             <span *ngIf="item.type == 'subsidiary-head'"
+                                                class="label-work-flow-audit">{{'subsidiary_head' | translate}}</span>
+                                             <span *ngIf="item.type == 'division-head'"
+                                                class="label-work-flow-audit">{{'division_head' | translate}}</span>
+                                             <span *ngIf="item.type == 'department-head'"
+                                                class="label-work-flow-audit">{{'department_head' | translate}}</span>
+                                             <span *ngIf="item.type == 'role'" class="label-work-flow-audit">{{'system_role' |
+                                                translate}}</span>
+                                             <div class="work-flow-user-box d-flex align-items-center pt-1 pb-1"
+                                                *ngIf="item.type == 'user'">
+                                                <div class="work-flow-pic">
+                                                   <app-user-popup-box [showName]="false"
+                                                      [source]=" getCreatedByPopupDetails(item.user,null,'user')">
+                                                   </app-user-popup-box>
+                                                </div>
+                                                <div class="pl-3">
+                                                   <h5>{{item.user?.first_name}} {{item.user?.last_name}}</h5>
+                                                   <p>{{item.user?.designation}}</p>
+                                                </div>
+                                             </div>
+                                             <div class="work-flow-user-box d-flex align-items-center pt-1 pb-1"
+                                                *ngIf="item.type == 'designation'">
+                                                <div class="pl-3">
+                                                   <h5>{{item.designation?.title}}</h5>
+                                                   <p>{{item.department?.title}}</p>
+                                                </div>
+                                             </div>
+                                             <div class="work-flow-user-box d-flex align-items-center pt-1 pb-1"
+                                                *ngIf="item.type == 'subsidiary-head'">
+                                                <div class="pl-3">
+                                                   <h5>{{item.organization?.title}}</h5>
+                                                </div>
+                                             </div>
+            
+                                             <div class="work-flow-user-box d-flex align-items-center pt-1 pb-1"
+                                                *ngIf="item.type == 'division-head'">
+                                                <div class="pl-3">
+                                                   <h5>{{item.division?.title}}</h5>
+                                                </div>
+                                             </div>
+                                             <div class="work-flow-user-box d-flex align-items-center pt-1 pb-1"
+                                                *ngIf="item.type == 'department-head'">
+                                                <div class="pl-3">
+                                                   <h5>{{item.department?.title}}</h5>
+                                                </div>
+                                             </div>
+                                             <div class="work-flow-user-box d-flex align-items-center pt-1 pb-1"
+                                                *ngIf="item.type == 'user-type'">
+                                                <div class="pl-3">
+                                                   <h5>{{item.user_type?.language[0]?.pivot.title}}</h5>
+                                                </div>
+                                             </div>
+                                             <ul class="arci-user-tab-dtl workflow-lst-pics-loop clearfix">
+                                                <li class="rounde-hov-bg" *ngFor="let row of item.team">
+                                                   <app-user-popup-box [showName]="false"
+                                                      [source]=" getCreatedByPopupDetails(row,null,'user')">
+                                                   </app-user-popup-box>
+                                                </li>
+                                             </ul>
+                                             <div class="work-flow-user-box d-flex align-items-center pt-1 pb-1"
+                                                *ngIf="item.type == 'role'">
+                                                <div class="pl-3">
+                                                   <h5>{{item?.role?.title}}</h5>
+                                                   <!-- <p>{{item.department?.title}}</p> -->
+                                                </div>
+                                             </div>
+                                             <span class="l-number-rounde bg-green">L{{item.level}}</span>
+                                          </div>
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+            
+            
+                     </ng-container>
+                     <ng-container *ngIf="WorkFlowStore?.workFlowDetails?.workflow_items.length==0">
+                        <p>{{'kh_no_workflow_items' | translate}}</p>
+                     </ng-container>
+            
+            
+                  </main>
+            
+               </ng-container>
+
+             </ng-container>
+
+             <p *ngIf="!KHSettingStore?.khSettingsItems?.is_document_workflow">{{'workflow_disable_message' | translate}}</p>
+
+
+             <!-- Required Code Commented for timebeing. -->
+
+             <!-- <div class="row">          
+               <div class="col-sm-6" *ngIf="checkWorkflowStatus()">
+                  <div class="form-group">
+                     <label for="name">{{'document_status' | translate}}</label>
+                     <div class="clearfix">
+                         <div class="multiple-plain-ngselect">
+                           <ng-select
+                           [placeholder]="'document_status' | translate"
+                           [closeOnSelect]="true"
+                           searchable = "false"                             
+                           formControlName = "document_status_id">
+                           <ng-option *ngFor="let data of processedDocumentStatusArray" [value]="data.id">{{data.document_status_language_title}}</ng-option>
+                        </ng-select>
+                         </div>
+                     </div>
+                 </div>
+               </div>
+            </div> -->
+
+            </div>
+         
+              <!-- !Workflow Tab Ends here -->
+             <!-- !Preview Tab Starts Here -->
+             <div class="tab">
+ 
+                <!-- tab start -->
+                <div class="row">
+                   <div class="col-lg-6 col-sm-12">
+                     <div class="issue-top-sec">
+                        <div class="clearfix">
+                           <h5 class="d-inline-block cmn-head-style label-tag-style" *ngIf="displayForm?.title">
+                              <!-- <span class="issue-smoal-head-text">#0001</span>  -->
+                              {{displayForm?.title}} 
+                              <!-- <span class="draft-tag draft-tag-red label-tag-style-tag label-left-arow-tag d-inline-block status-tag-new-one">New</span> -->
+                           </h5>
+                        </div>
+                        <!-- <div class="clearfix">
+                           <p class="label-tag-style mb-2"><i class="fas fa-calendar-alt date-pics-two"></i> Jan 20, 2020 - Jan 30, 2020</p>
+                        </div> -->
+                        <p *ngIf="displayForm?.description">{{displayForm?.description}}</p>
+
+                     </div>
+
+                     <div class="labels mb-3" *ngIf="displayForm?.version">
+                        <div>
+                           <label class="outline-tag outline-tag-small">V{{displayForm?.version}}</label>
+                        </div>
+                        <!-- <div>
+                           <label class="outline-tag outline-tag-small">MS Type</label>
+                        </div> -->
+                     </div>
+                      <div class="pb-0" style="padding-top: 0px !important">
+                         <div class="relative">
+                            <!-- <div class="clearfix d-flex mb-2">
+                               <div class="left-pic-work-flow">
+                                  <div *ngIf="DocumentsStore?.getVersionFile">
+                                    <img *ngIf = "checkExtension(DocumentsStore?.getVersionFile?.ext,'image') != -1"  style="width: 37px;" class="img-fluid" src="/assets/images/md-jpg.png">
+                                    <img *ngIf = "checkExtension(DocumentsStore?.getVersionFile?.ext,'doc') != -1"   style="width: 37px;" class="img-fluid" src="/assets/images/word-icone.png">
+                                    <img *ngIf = "checkExtension(DocumentsStore?.getVersionFile?.ext,'pdf') != -1"  style="width: 37px;" class="img-fluid" src="/assets/images/pdf-icone.png">
+                                    <img *ngIf = "checkExtension(DocumentsStore?.getVersionFile?.ext,'excel') != -1"   style="width: 37px;" class="img-fluid" src="/assets/images/excel-icone.png">
+                                    <img *ngIf = "checkExtension(DocumentsStore?.getVersionFile?.ext,'video') != -1"  style="width: 37px;" class="img-fluid" src="/assets/images/md-video.png">
+                                    <img *ngIf = "checkExtension(DocumentsStore?.getVersionFile?.ext,'audio') != -1"   style="width: 37px;" class="img-fluid" src="/assets/images/md-audio.png">
+                                    <img *ngIf = "checkExtension(DocumentsStore?.getVersionFile?.ext,'ppt') != -1"   style="width: 37px;" class="img-fluid" src="/assets/images/md-ppt.png">
+                                  </div>
+                               </div>
+          
+                               <div class="issue-top-sec issuue-new-style p-0 w-100 ml-2">
+                                  <div class="clearfix pt-0">
+                                     <h5 class="d-inline-block cmn-head-style label-tag-style pt-1"
+                                     style="font-weight: normal;"> PRO-03-001 <span class="draft-tag label-tag-style-tag label-left-arow-tag d-inline-block status-tag-new-one ml-3">Draft</span></h5>
+                                  </div>
+                                  <h5>{{displayForm?.title?displayForm.title:AppStore.noContentText}}</h5>             
+                               </div>
+                            </div> -->
+                            <!-- <div class="mb-2" *ngIf="DocumentsStore?.getVersionFile"> -->
+                               <!-- <div *ngIf="DocumentsStore?.getVersionFile"> -->
+                                  
+                                  <!-- <div style="width: 60px; height: 75px;"  [ngStyle]="{'background': 'url(' + DocumentsStore.getVersionFile?.preview + ') no-repeat 0 0 / cover'}">
+                                  </div> -->
+                               <!-- </div> -->
+ 
+                                  <!-- <h5 class="d-inline-block cmn-head-style label-tag-style mr-2">#{{DocumentsStore?.documentDetails?.reference_code ? DocumentsStore?.documentDetails?.reference_code:'XXXXXX'}}<span class="draft-tag label-tag-style-tag label-left-arow-tag d-inline-block status-tag-new-one ml-3">Draft</span></h5>
+                                  <h5 class="medium-text-new">{{displayForm?.title}}</h5> -->
+                                  <!-- <div class="labels">
+                                     <label class="outline-tag outline-tag-small hover-no-effect-tag">V0.99</label>
+                                     <label class="outline-tag outline-tag-small hover-no-effect-tag">V0.98</label>
+                                  </div> -->
+                            <!-- </div> -->
+                            <div class="row">
+                              <div class="col-sm-12">
+                                 <div class="label-and-user-pic">
+                                    <h6>{{'document_owner' | translate}}</h6>
+                                    <div>
+                                        <app-user-popup-box
+                                            [source]=" getEmployeePopupDetails(displayForm?.owner_id)">
+                                        </app-user-popup-box>
+                                    </div>
+                                 </div>
+                                
+                             </div>
+                             <div class="col-sm-12">
+                              <h6 class="mt-3">{{'purpose' | translate}}</h6>
+                              <div *ngIf = "displayForm?.purpose && !view_more_purpose" style="white-space: pre-wrap;">{{displayForm?.purpose.length > 650 ? getDescriptionContent(displayForm?.purpose) : displayForm?.purpose}}
+                                 <a *ngIf = "(displayForm?.purpose.length) > 650" (click) = "viewDescription('more','purpose')" class="view-more-pestel-box pointer view-more-doted">... View More</a>
+                              </div>
+                              <div *ngIf = "displayForm?.purpose && view_more_purpose" style="white-space: pre-wrap;">{{displayForm?.purpose}}
+                                 <a *ngIf = "(displayForm?.purpose.length) > 650" (click) = "viewDescription('less','purpose')" class="view-more-pestel-box pointer view-more-doted">View Less</a>
+                              </div>
+                              <div *ngIf="!displayForm?.purpose">
+                                 <p>{{AppStore.noContentText}}</p>
+                              </div>
+                             </div>
+                             <!-- <div class="col-sm-6">
+                              <h6>{{'version'|translate}}</h6>                  
+                              <div class="labels pt-1" *ngIf="displayForm?.version ; else noVersion">
+                                 <label class="outline-tag">V{{displayForm?.version}}</label>
+                              </div>
+                              <ng-template #noVersion>{{AppStore.noContentText}}</ng-template>
+                             </div> -->
+                            </div>
+                         
+ 
+                       
+                            
+                               <!-- !Description -->
+                                  <div *ngIf = "displayForm?.description && !view_more_description" style="white-space: pre-wrap;">{{displayForm?.description.length > 650 ? getDescriptionContent(displayForm?.description) : displayForm?.description}}
+                                     <a *ngIf = "(displayForm?.description.length) > 650" (click) = "viewDescription('more','description')" class="view-more-pestel-box pointer view-more-doted">... View More</a>
+                                  </div>
+                                  <div *ngIf = "displayForm?.description && view_more_description" style="white-space: pre-wrap;">{{displayForm?.description}}
+                                     <a *ngIf = "(displayForm?.description.length) > 650" (click) = "viewDescription('less','description')" class="view-more-pestel-box pointer view-more-doted">View Less</a>
+                                  </div>
+                  
+ 
+                      
+          
+                      <div class="user-details-page mt-3">
+                         <div class="right-block p-0">
+                            <h5 class="bold mt-0 mb-3"> <span> {{'classification' | translate}} </span> </h5>
+                         </div>
+                      </div>
+ 
+                       <!-- !MS TYPE -->
+                         <!-- <div class="issuue-new-style p-0 mt-1 mb-2">
+                            <h6 class="bold">{{'ms_type' | translate}}</h6>
+                            <label *ngFor="let item of DocumentsStore._msType" class="outline-tag">{{item.title}} <span style="color: #b2b2b2;">V {{item.version}}</span></label>
+                            <p *ngIf="!(DocumentsStore._msType.length > 0)">{{AppStore.noContentText}}</p>
+                         </div> -->
+ 
+                      <div class="row">
+                         <div class="col-lg-6 col-sm-12">
+                            <h6 class="bold">{{'category' | translate}}</h6>
+                            <p>{{getArrayFormatedString(displayForm?.document_category_ids)}}</p>
+                         </div>
+                         <div class="col-lg-6 col-sm-12">
+                            <h6 class="bold">{{'sub_categories' | translate}}</h6>
+                            <p>{{getArrayFormatedString(displayForm?.document_sub_category_ids)}}</p>
+                         </div>
+                         <div class="col-lg-6 col-sm-12">
+                            <h6 class="bold">{{'further_sub_categories' | translate}}</h6>
+                            <p>{{getArrayFormatedString(displayForm?.document_sub_sub_category_ids)}}</p>
+                         </div>
+                         <div class="col-lg-6 col-sm-12">
+                            <h6 class="bold">{{'regions' | translate}}</h6>
+                            <p>{{getArrayFormatedString(displayForm?.region_ids)}}</p>
+                         </div>
+                         <div class="col-lg-6 col-sm-12">
+                            <h6 class="bold">{{'countries' | translate}}</h6>
+                            <p>{{getArrayFormatedString(displayForm?.country_ids)}}</p>
+                         </div>
+                         <div class="col-lg-6 col-sm-12">
+                            <h6 class="bold">{{'industries' | translate}}</h6>
+                            <p>{{getArrayFormatedString(displayForm?.industry_ids)}}</p>
+                         </div>
+                         <div class="col-lg-6 col-sm-12">
+                            <h6 class="bold">{{'families' | translate}}</h6>
+                            <p>{{getArrayFormatedString(displayForm?.document_family_ids)}}</p> 
+                         </div>
+                         <div class="col-lg-6 col-sm-12">
+                           <h6 class="bold">{{'tags' | translate}}</h6>
+                           <p>{{getArrayFormatedString(displayForm?.tag_ids)}}</p> 
+                        </div>
+                         <!-- <div class="col-md-6">
+                            <h6 class="bold">{{'kh_review_user' | translate}}</h6>                           
+                            <app-user-popup-box [source]="assignUserValues(displayForm?.review_user_id)" [showName] = "false" ></app-user-popup-box> 
+                            <p *ngIf="!displayForm?.review_user_id">{{AppStore.noContentText}}</p>
+                         </div> -->
+                         <!-- <div class="col-md-6">
+                            <h6 class="bold">{{'document_review_frequency' | translate}}</h6>
+                            <p>{{displayForm?.document_review_frequency_id?.document_review_frequency_language_title ? displayForm?.document_review_frequency_id?.document_review_frequency_language_title:AppStore.noContentText}}</p> 
+                         </div> -->
+                         <!-- <div class="col-md-6">
+                            <h6 class="bold">{{'expiry_date' | translate}}</h6>
+                            <p *ngIf="previewDate">{{previewDate | date: OrganizationGeneralSettingsStore?.organizationSettings?.date_format}}</p>
+                            <p *ngIf="!previewDate">{{AppStore.noContentText}}</p> 
+                         </div> -->
+                      </div>
+                      
+                          <!-- <div class="mt-1 mb-2">
+                            <h6 class="bold">{{'tags' | translate}}</h6>
+                      <p>{{getArrayFormatedString(displayForm?.tag_ids)}}</p>
+                         </div>                  -->
+                         </div>
+                      </div>
+                   </div>
+                   <div class="col-lg-6 col-sm-12">
+ 
+ 
+                      <div class="user-details-page">
+                         <div class="right-block p-0">
+                            <h5 class="bold mt-0 mb-3"> <span> {{'access' | translate}}</span>  </h5>
+                         </div>
+                      </div>
+ 
+                      <div class="mb-3 box-cnt-one tab-type-btn-small">
+            <label *ngFor="let item of DocumentAccessTypeMasterStore.allItems"  style="pointer-events: none;"  [ngClass] = "findSelectedAccessType(item.id) ? 'outline-tag active' : 'outline-tag'"><i [class]="setAccessCLass(item)"></i>{{item.title}}</label>
+           </div>
+ 
+ 
+                       <div class="row mb-3" [hidden]="!isShared">
+ 
+ 
+ 
+                         <div class="col-lg-6 col-sm-12">
+                            <h6 class="bold">{{'organizations' | translate}}</h6>
+                           
+                            <p> {{getArrayFormatedString(displayForm?.organization_ids)}}</p>
+                         </div>
+                         <div class="col-lg-6 col-sm-12">
+                            <h6 class="bold">{{'divisions' | translate}}</h6>
+                            <p>{{getArrayFormatedString(displayForm?.division_ids)}}</p>
+                         </div>
+                         <div class="col-lg-6 col-sm-12">
+                            <h6 class="bold">{{'departments' | translate}}</h6>
+                            <p>{{getArrayFormatedString(displayForm?.department_ids)}}</p>
+                         </div>
+                         <div class="col-lg-6 col-sm-12">
+                            <h6 class="bold">{{'sections' | translate}}</h6>
+                            <p>{{getArrayFormatedString(displayForm?.section_ids)}}</p>
+                         </div>
+                         <div class="col-lg-6 col-sm-12" *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_sub_section">
+                            <h6 class="bold">{{'sub_sections' | translate}}</h6>
+                            <p>{{getArrayFormatedString(displayForm?.sub_section_ids)}}</p>
+                         </div>
+                         <div class="col-md-12" *ngIf="displayForm?.user_ids?.length > 0">
+                            <h6 class="bold text-left">{{'users' | translate}}</h6>
+                            <ul class="arci-user-tab-dtl workflow-lst-pics-loop clearfix">
+                               <li class="rounde-hov-bg" *ngFor="let userData of displayForm?.user_ids ; let i = index">
+                                <app-user-popup-box [source]="assignUserValues(userData)" [showName] = "false" ></app-user-popup-box>
+                               </li>
+                           </ul>
+                         </div>
+                      </div>
+ 
+                      <h6>{{'support_file' | translate}}</h6>
+                      <div *ngIf="!(fileUploadPopupStore.displayFiles.length > 0)">
+                         <p>{{AppStore.noContentText}}</p>
+                      </div>
+                      <div class="scroll-documents" #previewUploadArea>
+                         <div class="thumb-pics-bg thumb-pics-col-2 clearfix thumb-pics-fix-text"
+                             *ngIf="fileUploadPopupStore.displayFiles.length > 0">
+                             <div class="thumb-pics"
+                                 *ngFor="let docs of fileUploadPopupStore.displayFiles ;let i = index">
+                                 <div class="upload-pics edit-option" data-toggle="modal">
+                                     <div *ngIf="docs.id && !docs.preview" class="browse-form-pic"
+                                         [ngStyle]="{'background': 'url('+createImageUrl(docs?.token,'document-version')+') no-repeat'}">
+                                     </div>
+                                     <div *ngIf="docs.preview" class="browse-form-pic"
+                                         [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">
+                                     </div>
+                                     <div class="browse-form-name clearfix">
+                                         <div class="float-left">
+                                             <h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                             </h6>
+                                             <span *ngIf="docs.is_kh_document"
+                                                 class="mr-2 cmn-clr"><i
+                                                     class="fas fa-book"></i></span>
+                                             <span *ngIf="!docs.is_kh_document"
+                                                 class="mr-2 cmn-clr"><i
+                                                     class="fas fa-laptop"></i></span>
+                                             <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                                         </div>
+                                         <div class="browse-logo">
+                                             <img *ngIf="checkExtension(docs.ext,'image') != -1"
+                                                 class="folder-picher"
+                                                 src="/assets/images/jpg-icone.png">
+                                             <img *ngIf="checkExtension(docs.ext,'doc') != -1"
+                                                 class="folder-picher"
+                                                 src="/assets/images/word-icone.png">
+                                             <img *ngIf="checkExtension(docs.ext,'pdf') != -1"
+                                                 class="folder-picher"
+                                                 src="/assets/images/pdf-icone.png">
+                                             <img *ngIf="checkExtension(docs.ext,'excel') != -1"
+                                                 class="folder-picher"
+                                                 src="/assets/images/excel-icone.png">
+                                             <img *ngIf="checkExtension(docs.ext,'video') != -1"
+                                                 class="folder-picher"
+                                                 src="/assets/images/md-video.png">
+                                             <img *ngIf="checkExtension(docs.ext,'audio') != -1"
+                                                 class="folder-picher"
+                                                 src="/assets/images/md-audio.png">
+                                             <img *ngIf="checkExtension(docs.ext,'ppt') != -1"
+                                                 class="folder-picher"
+                                                 src="/assets/images/md-ppt.png">
+                                         </div>
+                                     </div>
+                                 </div>
+                             </div>
+                         </div>
+                     </div>                    
+                   </div>
+                </div>
+                <hr class="mt-4">
+                <div class="row">
+                   <div class="col-sm-12">   
+                       <div class="d-flex flex-row user-list-sm selected">
+                       <img [attr.src]="AuthStore.user?.image_token ? createImageUrl(AuthStore.user?.image_token,'user-profile-picture') : getDefaultImage('user-logo')" width="30px" height="30px" class="rounded-circle">
+                       <div>
+                         <h6>{{AuthStore.user?.name}} {{AuthStore.user?.last_name}}</h6>
+                         <span>{{ AuthStore.user?.designation?.title }}| created at {{getDate() | date: OrganizationGeneralSettingsStore.organizationSettings?.date_time_format}}</span>
+                       </div>       
+                     </div>
+                   </div>          
+                  </div>           
+             </div><!-- tab end -->
+             <!-- !Preview Tab Ends Here -->
+             <div style="overflow:auto;">
+                <div class="form-next-page-btns" style="float:left;">
+                   <button class="btn btn-active" type="button" id="nextBtn" (click)="nextPrev(1)" [disabled]="(!checkFormObject()|| (checkCondition(DocumentsStore.getVersionFile,TemplateStore?.getActiveTemplate)) || AppStore.loading)">{{nextButtonText}}</button>
+                   <button class="btn" type="button" id="prevBtn" (click)="nextPrev(-1)" [disabled]="documentForm.invalid || AppStore.loading">{{previousButtonText}}</button>
+                  <button class="btn" type="button" (click) = "cancelClicked()">{{'cancel' | translate}}</button>
+                </div>
+              </div>
+ 
+          </form>
+       </div>
+    </div>
+ </main>
+ 
+ <!-- Document Type Modal Start -->
+ <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #documentTypesModal>
+    <button type="button" class="close" data-dismiss="modal" (click)="closeDocModal()"><i
+          class="lni-close"></i><span>esc</span></button>
+    <app-document-types-modal></app-document-types-modal>
+ </div>
+ 
+ <!-- Document Type Modal End-->
+ 
+ <!-- Document Category Modal Start -->
+ <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #documentCategoryModal>
+    <app-document-category-modal></app-document-category-modal>
+ </div>
+ <!-- Document Category Modal End -->
+ 
+ <!-- Document Sub Category Modal Start -->
+ <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #documentSubCategoryModal>
+    <app-document-sub-categories-modal  [documentCategorySelect]="categorySelect" ></app-document-sub-categories-modal>
+ </div>
+ <!-- Document Sub Category Modal End -->
+ 
+ <!-- Document Sub Sub Category Modal Start -->
+ <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #documentSubSubCategoryModal>
+    <app-document-sub-sub-categories-modal [documentCategorySelect]="categorySelect" ></app-document-sub-sub-categories-modal>
+ </div>
+ <!-- Document Sub Sub Category Modal End -->
+ <!-- Document Family Modal Start -->
+ <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #documentFamily>
+    <app-document-family-modal></app-document-family-modal>
+ </div>
+ <!-- Document Family Modal End -->
+ <!-- Document Tag Modal Start -->
+ <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #documentTags>
+    <app-tag-modal></app-tag-modal>
+ </div>
+ <!-- Document Tag Modal End -->
+ <!-- Confirmation Popup Starts Here -->
+ <div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopup data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source] = "confirmationObject"></app-delete-popup>
+ </div>  
+ <!-- Confirmation Poup Ends Here -->
+ 
+ <!-- Designation Form Modal Starts Here -->
+ <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #designationModal>
+    <app-designation-modal></app-designation-modal>
+ </div>
+ <!-- Designation Form Modal Ends Here -->
+ 
+ <div class="modal modal-style-1 popup-full-width fade" style="z-index: 999999;overflow: auto;" *mobxAutorun data-keyboard="false" data-backdrop="static" data-backdrop="static" #templateModal>
+    <app-template-list-popup [source]="templateObject.values" *ngIf="templateObject.type"></app-template-list-popup>
+ </div>
+ 
+ 
+ <!-- * Documetn Attach/Upload Common Component Starts Here -->
+ <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #fileUploadModal>
+ 
+    <app-file-upload-popup *ngIf="fileUploadPopupStore.openPopup"></app-file-upload-popup>
+ 
+ </div>
+ <!-- * Documetn Attach/Upload Common Component Ends Here -->
+  <!-----------------------Form Modal Start--------------------------->
+<div  class="modal modal-style-1 popup-full-width fade"  data-keyboard="false"
+data-backdrop="static" #organisationChangeFormModal *mobxAutorun>
+<app-organisation-change-modal *ngIf = "openModelPopup" [source] = "documentForm.value" 
+(organizationChangeEvent)="closeModal($event)"></app-organisation-change-modal>
+</div>
+<!-----------------------Form Modal End--------------------------->

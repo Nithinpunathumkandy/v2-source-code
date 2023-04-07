@@ -1,0 +1,43 @@
+<div class="tab-pane" id="external-issue">
+    <app-external-issues-loader *ngIf = "!ExternalIssueStore.loaded"></app-external-issues-loader>
+    <div class="profile-widg-padding context-issue-page-tabes min-height-83" *ngIf = "ExternalIssueStore.loaded && AuthStore.getActivityPermission(100,'EXTERNAL_ISSUES_LIST')">
+      <div class="row external-issue-tab">
+        <div *ngFor = "let item of ExternalIssueStore.externalIssueList | paginate: {currentPage:ExternalIssueStore?.currentPage, itemsPerPage:ExternalIssueStore?.itemsPerPage,totalItems:ExternalIssueStore?.totalItems}; let i = index" class="col-lg-6 col-sm-12">
+          <div [ngClass]="!checkPosition(i+1) ? 'row pestel-box-main pestel-box-main-left' : 'row pestel-box-main pestel-box-main-right'">
+            <div class="col-md-5" *ngIf = "checkPosition(i+1)">
+              <div [ngClass]="'pestle-clr-box ' + getColorStyle(i).bg">
+                <h2>{{item.issue_category_title | slice:0:1}}</h2>
+              </div>
+            </div>
+            <div class="col-md-7">
+              <div class="pestel-box">
+                <h5 [ngClass]="getColorStyle(i).text">{{item.issue_category_title}}</h5>
+                <ul class="mb-3">
+                  <li [ngClass]="AuthStore.getActivityPermission(100,'ORGANIZATION_ISSUE_DETAILS') ? 'pointer' : ''" [attr.title] = "'View '+issue.title" *ngFor = "let issue of item.issues" (click) = "AuthStore.getActivityPermission(100,'ORGANIZATION_ISSUE_DETAILS') ? gotoIssueDetails(issue.id) : ''"><a>{{issue.title}}</a></li>
+                </ul>
+                <a class="view-more-pestel-box" (click) = "viewMore(item.issue_category_id,item.issue_category_title)" *ngIf = "item.total_items > 5">View More</a>
+                <ng-container>
+                  <app-context-no-data [sourceData] = "getNoDataSource(i+1)" *ngIf="item.issues.length == 0"></app-context-no-data>
+               </ng-container>
+              </div>
+            </div>
+            <div class="col-md-5" *ngIf = "!checkPosition(i+1)">
+              <div [ngClass]="'pestle-clr-box ' + getColorStyle(i).bg">
+                <h2>{{item.issue_category_title | slice:0:1}}</h2>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-12" *ngIf = "ExternalIssueStore.externalIssueList.length > 0 && ExternalIssueStore?.totalItems > ExternalIssueStore?.itemsPerPage">
+        <ul class="pagination justify-content-center mt-3">
+           <div class="list">
+              <pagination-controls [previousLabel]="'previous' | translate"  [nextLabel]="'next' | translate" (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+           </div>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="modal modal-style-1 popup-full-width fade" id="view-more" data-keyboard="false" data-backdrop="static" #viewMoreModal *mobxAutorun>
+    <app-view-more *ngIf = "selectedTypeDetails.type" [details] = "selectedTypeDetails"></app-view-more>
+  </div>

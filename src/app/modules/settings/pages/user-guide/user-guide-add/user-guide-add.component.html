@@ -1,0 +1,158 @@
+<div class="modal modal-style-1 popup-full-width fade show" id="add-user-guide-popup" data-keyboard="false" data-backdrop="static" style="display: block; padding-left: 17px;">
+    <button type="button" (click)="cancel()" class="close" data-dismiss="modal"><i class="lni-close"></i><span>esc</span></button>
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h4 class="modal-title" *ngIf="InfoSource.type=='Add'">{{'add_user_guide' | translate}}</h4> 
+          <h4 class="modal-title" *ngIf="InfoSource.type=='Edit'">{{'edit_user_guide' | translate}}</h4> 
+          <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
+        </div>
+        <!-- Modal body -->
+        <div class="modal-body form-body">
+
+            <p class="head-details">{{'pm_doc_form_head' | translate}}</p>
+
+            <form [formGroup]="form" *mobxAutorun>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                           <label for="name">{{'module_group' | translate}}<span class="form-error">*</span></label>
+                           <div class="clearfix">
+                           <div class="multiple-plain-ngselect">
+                            <ng-select [placeholder]="'select_module_group' | translate " 
+                            (change)="getModuleData()" 
+                            [multiple]="false" 
+                            formControlName="module_group_id">
+                            
+                           <ng-option [value]="modules.id"    *ngFor = "let modules of OrganizationModulesStore.organizationModules; let i = index"> 
+                               <label class="mb-0">{{modules.title}} </label>
+                            </ng-option>
+                         </ng-select>
+                           </div>
+                           </div>
+                           <p class = "form-error pt-1" *ngIf="formErrors && formErrors.module_group_id">{{formErrors.module_group_id}}</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                           <label for="name">{{'module' | translate}}<span class="form-error">*</span></label>
+                           <div class="clearfix">
+                           <div class="multiple-plain-ngselect">
+                            <ng-select [placeholder]="'select_module' | translate " (open)="getModuleData()" [multiple]="false" formControlName="module_id">
+                           <ng-option [value]="modules.module_id"   *ngFor = "let modules of subModule; let i = index"> 
+                               <label class="mb-0">{{modules.title}} </label>
+                            </ng-option>
+                         </ng-select>
+                           </div>
+                           </div>
+                           <p class = "form-error pt-1" *ngIf="formErrors && formErrors.module_id">{{formErrors.module_id}}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label for="title">{{'title' | translate}}<span class="form-error">*</span></label>
+                            <input type="text" formControlName="title" class="form-control"
+                                placeholder="{{'enter_the_title' | translate}}" id="title" #titleInput>
+                            <p class="form-error" *ngIf="formErrors"> {{formErrors.title}}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <span style="float: right;"><p class="text-grey mb-0">{{form?.value.description != null ? getDescriptionLength() : 0}} {{'characters' | translate}}</p></span>
+                            <label>{{'description' | translate}}</label>
+                            <!-- <textarea class="form-control" rows="3" id="comment11" formControlName = "description"
+                                placeholder="{{'em_doc_form_description_placeholder' | translate}}"></textarea> -->
+                                <ckeditor id="comment11" (change)="descriptionValueChange($event)" [editor]="Editor" formControlName="description"></ckeditor>
+                        </div>
+                    </div>
+                </div>
+
+                <label class="label-style">{{'support_files' | translate}}</label>
+                
+                  <!-- new upolad area -->
+ 
+                  <div class="row m-0 upload-section" style="padding-top: 0">
+                     <div class="col-sm-4 costmz-logo-new mt-2">
+                        <div class="question-circle-inp" *ngIf = "OrganizationGeneralSettingsStore.organizationSettings?.logo_allowed_types.length > 0" style="margin-right: 7px;">
+                           <i class="far fa-question-circle"></i>
+                           <div class="message-password-inp">
+                               <p class="mb-0">{{'allowed_file_types' | translate}} {{OrganizationGeneralSettingsStore.organizationSettings?.logo_allowed_types.toString()}}</p>
+                           </div>
+                        </div>
+                        <div class="form-group form-group-upload">
+                           <div class="darag-dropifile-upload">
+                              <div class="d-flex justify-content-center align-items-center text-center">
+                                 <div>
+                                    <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                                    <div class="drag-file-name">{{'drag_drop_file_here' | translate}}</div>
+                                    <div class="upload-btn-wrapper">
+                                       <input type="file" [disabled] = "OrganizationOverviewStore.logo_preview_available" id="file" (change)="onFileChange($event,'logo')" [accept]="checkAcceptFileTypes('logo')"/>
+                                       <button class="btn">{{'browse_files' | translate}}</button>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                     <div class="col-sm-4 up-pic-cf mt-2" *ngIf = "OrganizationOverviewStore.logo_preview_available">
+                        <div class="upload-pics edit-option file-upload-loader">
+                           <circle-progress
+                              class="browse-form-pic"
+                              [percent] = fileUploadProgress
+                              [title] = fileUploadProgress
+                           ></circle-progress>
+                        </div>
+                     </div> 
+                     <div [ngClass]="OrganizationOverviewStore.getFileDetailsByType('logo')?.is_deleted ? 'col-sm-4 up-pic-cf mt-2 image_deleted':'col-sm-4 up-pic-cf mt-2'" *ngIf = "OrganizationOverviewStore.getFileDetailsByType('logo')">
+                        <div class="upload-pics edit-option">
+                           <div class = "browse-form-pic" [ngStyle]="{'background': 'url(' + OrganizationOverviewStore.getFileDetailsByType('logo')?.preview + ') no-repeat 0 0 / cover'}">
+                           </div>
+                            <div class="browse-form-name clearfix">
+                             <div class="float-left">
+                              <h6  [attr.title] = "OrganizationOverviewStore.getFileDetailsByType('logo')?.name">{{OrganizationOverviewStore.getFileDetailsByType('logo')?.name.length > 20 ? OrganizationOverviewStore.getFileDetailsByType('logo')?.name.substring(0,20)+' ...' : OrganizationOverviewStore.getFileDetailsByType('logo')?.name}}</h6>
+                              <span>{{OrganizationOverviewStore.getFileDetailsByType('logo')?.size/1048576 | number:'0.2-2'}}MB</span>
+                             </div>
+                             <div class="browse-logo">
+                               <img *ngIf = "checkExtension(OrganizationOverviewStore.getFileDetailsByType('logo')?.ext,'excel') != -1" src="/assets/images/md-xl.png">
+                               <img *ngIf = "checkExtension(OrganizationOverviewStore.getFileDetailsByType('logo')?.ext,'image') != -1" src="/assets/images/md-jpg.png">
+                               <img *ngIf = "checkExtension(OrganizationOverviewStore.getFileDetailsByType('logo')?.ext,'doc') != -1" src="/assets/images/md-doc.png">
+                               <img *ngIf = "checkExtension(OrganizationOverviewStore.getFileDetailsByType('logo')?.ext,'pdf') != -1" src="/assets/images/md-pdf.png">
+                             </div>
+                            </div>
+                            <div class="edit-option-show">
+                             <a (click) = "OrganizationOverviewStore.unsetFileDetails('logo',OrganizationOverviewStore.getFileDetailsByType('logo')?.id)"><i class="fas fa-trash"></i></a>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+                                   <div class="clearfix"></div>
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="d-block justify-content-left border-0 mt-3">
+                            <button type="submit" class="btn btn-active" (click)="save()" [disabled]="form.invalid"
+                                >{{  AppStore.loading  ? getButtonText('loading') : getButtonText('save') }}</button>
+                            <button type="button" data-toggle="modal" data-target="#signal-lost"
+                                class="btn" (click)="save(true)" [disabled]="form.invalid"
+                                >{{  AppStore.loading  ? getButtonText('loading') : getButtonText('save_close') }}</button>
+                            <button type="button" data-toggle="modal" data-target="#error-message"
+                                class="btn"
+                                (click)="cancel()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('cancel') }}</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <!-- Modal footer --> 
+      </div>
+      <!-- * Documetn Attach/Upload Common Component Starts Here -->
+
+  </div>
+  <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #fileUploadModal>
+    <app-file-upload-popup *ngIf="fileUploadPopupStore.openPopup"></app-file-upload-popup>
+    </div>

@@ -1,0 +1,236 @@
+<!-- new-corrective-actions Start -->
+    <button type="button" class="close" data-dismiss="modal" (click)="cancel()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title" *ngIf="Source?.type=='Add'">{{'new_corrective_action' | translate}}</h4>
+                <h4 class="modal-title" *ngIf="Source?.type=='Edit'">{{'edit_corrective_action' | translate}}</h4>
+                <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
+            </div>
+            <!-- Modal body -->
+            <div class="modal-body form-body">
+                <p class="head-details">{{'cyber_incident_ca_description' | translate}}</p>
+                <form [formGroup]="correctiveActionForm" *mobxAutorun>
+                <div class="row">
+                  <div class="col-sm-12">
+                     <div class="form-group">
+                        <label for="name">{{'cyber_incident' | translate}}<span class="form-error">*</span></label>
+                        <div class="clearfix d-flex">
+                           <div class="multiple-plain-ngselect w-100">
+     
+                              <ng-select [placeholder]="'select_cyber_incident'| translate"
+                                 [items]="CyberIncidentStore.allItems"
+                                 [multiple]="false" bindLabel="title" bindValue="id"
+                                 [readonly]="Source.readOnly==true" formControlName="cyber_incident_id"
+                                 (search)="searchCI($event)" (clear)="getCI()" (open)="getCI()">
+                              </ng-select>
+                              <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.cyber_incident_id">
+                                 {{formErrors.cyber_incident_id}}
+                              </p>
+                              <p style="color: red;" class="pt-1" *ngIf="CyberIncidentStore?.cyberIncidentDetails?.cyber_incident_status?.type=='close'"> {{'selected_cyber_incident_is_closed' | translate}}</p>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'title' | translate}}<sup>*</sup></label>
+                            <input type="text" class="form-control" placeholder="Title of the corrective action" formControlName="title">
+                            <p style="color: red;" *ngIf="formErrors"> {{formErrors.title}}</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'description' | translate}}</label>
+                            <span style="float: right;">
+                                <p class="text-grey mb-0">{{correctiveActionForm?.value.description != null ?
+                                   correctiveActionForm?.value.description?.length : 0}}
+                                   {{'characters' | translate}}</p>
+                             </span>
+                            <textarea class="form-control" rows="3" id="comment" placeholder="Write a short description of the corrective action" formControlName="description"></textarea>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-sm-6">
+                        <div class="form-group">
+                            <label for="name">{{'start_date' | translate}}<sup>*</sup></label>
+                            <div class="input-group date-picker">
+                                <input class="form-control cal5" placeholder="Enter Field Name" formControlName="start_date"
+                                (click)="startDateInput.toggle()" id="start_date" ngbDatepicker #startDateInput="ngbDatepicker">
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary calendar" (click)="startDateInput.toggle()"
+                                       type="button"><i class="fas fa-calendar-alt"></i></button>
+                                 </div>
+                            </div>
+                            <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.start_date">
+                                {{formErrors.start_date}}</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-sm-6">
+                        <div class="form-group">
+                            <label for="name">{{'target_date' | translate}}<sup>*</sup></label>
+                            <div class="input-group date-picker">
+                                <input class="form-control cal6" placeholder="Enter Field Name" formControlName="target_date"
+                                (click)="targetDateInput.toggle()" id="target_date" ngbDatepicker #targetDateInput="ngbDatepicker"
+                                [minDate]="correctiveActionForm.value.start_date?{year: this.correctiveActionForm.value.start_date.year, month: this.correctiveActionForm.value.start_date.month, day: this.correctiveActionForm.value.start_date.day}:''">
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary calendar" (click)="targetDateInput.toggle()"
+                                       type="button"><i class="fas fa-calendar-alt"></i></button>
+                                 </div>
+                            </div>
+                            <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.target_date">
+                                {{formErrors.target_date}}</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'estimated_cost' | translate}}</label>
+                            <input type="text" class="form-control" placeholder="Title of the corrective action" formControlName="estimated_cost">
+                            <p style="color: red;" *ngIf="formErrors"> {{formErrors.estimated_cost}}</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                           <label>{{'responsible_user' | translate}}<span class="form-error">*</span></label>
+                           <div class="clearfix">
+                              <div class="multiple-plain-ngselect">
+                                 <ng-select [items]="UsersStore.usersList" bindValue="id"
+                                    [placeholder]="'select_responsible_user' | translate" [multiple]="true"
+                                    formControlName="responsible_user_ids" (search)="searchUsers($event)"
+                                    (open)="getResponsibleUsers()" [searchFn]="customSearchFn">
+                                    <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                       <img *ngIf="item.image_token" height="15" width="15"
+                                          [attr.src]="createImagePreview('user-profile-picture',item.image_token)"
+                                          onerror = "this.src='/assets/images/user-demo2.png'" />
+                                       <img *ngIf="!item.image_token" height="15" width="15"
+                                          [attr.src]="getDefaultImage('user-logo')" 
+                                          onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                       <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,'
+                                          ') | titlecase}}</b><span aria-hidden="true" (click)="clear(item)"
+                                          style="border:none;" class="ng-value-icon left">×</span>
+                                    </ng-template>
+                                    <ng-template ng-option-tmp let-item="item" let-index="index">
+                                       <div class="user-post-department-pic">
+                                          <img *ngIf="item.image_token" height="25" width="25"
+                                             [attr.src]="createImagePreview('user-profile-picture',item.image_token)" 
+                                             onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                          <img *ngIf="!item.image_token" height="25" width="25"
+                                             [attr.src]="getDefaultImage('user-logo')" 
+                                             onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                       </div>
+                                       <div class="user-post-department-div">
+                                          <b>{{getStringsFormatted([item.first_name,item.last_name],50,' ') |
+                                             titlecase}}</b>
+                                          <p class="user-post-department-multiple">
+                                             {{getStringsFormatted([item.designation_title,'
+                                             '+item.department],50,',')}}</p>
+                                       </div>
+                                    </ng-template>
+                                 </ng-select>
+                                 <p style="color: red;" *ngIf="formErrors">
+                                    {{formErrors.responsible_user_ids}}</p>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                    <!-- <div class="col-sm-12">
+                        <div class="form-group">
+                            <a class="text-light-blue" data-toggle="modal" data-target="#change-organization-unit" style="border-bottom: 1px solid;">Change Organization Unit</a>
+                        </div>
+                    </div> -->
+
+                    <div class="col-sm-12">
+                        <label class="label-style">{{'support_files' | translate}}</label>
+                        <div class="thumb-pics-bg thumb-pics-col-3 clearfix thumb-pics-fix-text" #uploadArea>
+                        <div class="thumb-pics">
+                            <div class="question-circle-inp" style="margin-right: 7px;">
+                               <i class="far fa-question-circle"></i>
+                               <div class="message-password-inp">
+                                  <p class="mb-0">{{'allowed_file_types' | translate}}
+                                     {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                                  </p>
+                               </div>
+                            </div>
+                            <div class="form-group form-group-upload">
+                               <div class="darag-dropifile-upload">
+                                  <div class="d-flex justify-content-center align-items-center text-center">
+                                     <div>
+                                        <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                                        <div class="drag-file-name"> {{'select_or_upload_your_file_here' | translate}}</div>
+                                        <div class="upload-btn-wrapper">
+                                           <button (click)="openFileUploadModal()" type="button" class="btn">{{'browse_files' |
+                                              translate}}</button>
+                                        </div>
+                                     </div>
+                                  </div>
+                               </div>
+                            </div>
+                         </div>
+                         <div class="thumb-pics" *ngFor="let docs of fileUploadPopupStore.displayFiles ;let i = index">
+                            <div class="upload-pics edit-option" data-toggle="modal">
+                               <div *ngIf="docs.id && !docs.preview" class="browse-form-pic"
+                                  [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                               </div>
+                               <div *ngIf="docs.preview" class="browse-form-pic"
+                                  [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">
+                               </div>
+                               <div class="browse-form-name clearfix">
+                                  <div class="float-left">
+                                     <h6>
+                                        {{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                     </h6>
+                                     <span *ngIf="docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-book"></i></span>
+                                     <span *ngIf="!docs.is_kh_document" class="mr-2 cmn-clr"><i
+                                           class="fas fa-laptop"></i></span>
+                                     <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                                  </div>
+                                  <div class="browse-logo">
+                                     <img *ngIf="checkExtension(docs.ext,'image') != -1" class="folder-picher"
+                                        src="/assets/images/jpg-icone.png">
+                                     <img *ngIf="checkExtension(docs.ext,'doc') != -1" class="folder-picher"
+                                        src="/assets/images/word-icone.png">
+                                     <img *ngIf="checkExtension(docs.ext,'pdf') != -1" class="folder-picher"
+                                        src="/assets/images/pdf-icone.png">
+                                     <img *ngIf="checkExtension(docs.ext,'excel') != -1" class="folder-picher"
+                                        src="/assets/images/excel-icone.png">
+                                     <img *ngIf="checkExtension(docs.ext,'video') != -1" class="folder-picher"
+                                        src="/assets/images/md-video.png">
+                                     <img *ngIf="checkExtension(docs.ext,'audio') != -1" class="folder-picher"
+                                        src="/assets/images/md-audio.png">
+                                     <img *ngIf="checkExtension(docs.ext,'ppt') != -1" class="folder-picher"
+                                        src="/assets/images/md-ppt.png">
+                                  </div>
+                               </div>
+                               <div class="edit-option-show">
+                                  <a (click)="removeDocument(docs)"><i class="fas fa-trash"></i></a>
+                               </div>
+                            </div>
+                         </div>
+                    </div>
+                </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="d-block justify-content-left border-0 mt-3">
+                            <button type="button" class="btn btn-active" (click)="save()"
+                            [disabled]="correctiveActionForm.invalid || AppStore.loading || checkFileIsUploading()">{{ AppStore.loading ? getButtonText('loading') : getButtonText('save') }}</button>
+                            <button type="button" class="btn" (click)="save(true)"
+                            [disabled]="correctiveActionForm.invalid || AppStore.loading || checkFileIsUploading()">{{ AppStore.loading ? getButtonText('loading') : getButtonText('save_close') }}</button>
+                            <button type="button" data-dismiss="modal" class="btn" (click)="cancel()">{{ AppStore.loading ? getButtonText('loading') : getButtonText('cancel') }}</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            </div>
+            <!-- Modal footer -->
+        </div>
+    </div>
+
+<!-- new-corrective-actions End -->
+
+<!-- * Documetn Attach/Upload Common Component Starts Here -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #fileUploadModal>
+    <app-file-upload-popup *ngIf="fileUploadPopupStore.openPopup"></app-file-upload-popup>
+</div>
+   <!-- * Documetn Attach/Upload Common Component Ends Here -->

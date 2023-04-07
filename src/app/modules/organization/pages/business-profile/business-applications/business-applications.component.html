@@ -1,0 +1,131 @@
+
+   <div *ngIf = "!BusinessApplicationsMasterStore.loaded">
+    <app-ms-types-loader *ngIf = "!BusinessApplicationsMasterStore.loaded"></app-ms-types-loader>
+ </div>
+<ng-container *mobxAutorun>
+    <!-- <div class="row" *ngIf="BusinessApplicationsMasterStore?.businessApplications.length!=0"> -->
+    <div class="row"
+        *ngIf="BusinessApplicationsMasterStore.loaded && BusinessApplicationsMasterStore?.businessApplications.length!=0 && AuthStore.getActivityPermission(1900,'BUSINESS_PROFILE_BUSINESS_APPLICATION')">
+
+        <div class="col-sm-12">
+            <div class="panel-group panel-drop-sections panel-drop-white" id="application-accordion" role="tablist"
+                aria-multiselectable="true">
+                <div class="panel panel-default"
+                    *ngFor="let row of BusinessApplicationsMasterStore?.businessApplications | paginate: {currentPage: BusinessApplicationsMasterStore?.currentPage,itemsPerPage: BusinessApplicationsMasterStore?.itemsPerPage,totalItems: BusinessApplicationsMasterStore?.totalItems};  let num = index">
+                    <!-- <div class="panel-heading active" -->
+                    <div class="pointer"
+                        [ngClass]="(row.is_accordion_active == true || (initialLoad && num == 0))? 'panel-heading active' : 'panel-heading'" role="tab"
+                        id="headingOne">
+                        <div class="panel-title">
+                            <a role="button" data-toggle="collapse" aria-expanded="true" aria-controls="collapseOne"
+                                (click)="applicationAccordianClick(num)">
+
+                                <h5 class="width96pc mt-0"><span>{{(BusinessApplicationsMasterStore.currentPage - 1) *
+                                        BusinessApplicationsMasterStore.itemsPerPage + (num + 1)}}. </span>
+                                    <span class="ml-2">{{row.title}}</span><span class="drop-down-icone"><i
+                                            class="fas fa-chevron-down"></i></span>
+                                </h5>
+                            </a>
+                        </div>
+                    </div>
+                    <div [ngClass]="(row.is_accordion_active == true || (initialLoad && num == 0))? 'panel-collapse collapse show' : 'panel-collapse collapse'"
+                        class="drop-detail-sec" role="tabpanel" aria-labelledby="headingOne"
+                        data-parent="#application-accordion">
+                        <div class="panel-body bg-white edit-and-delete-main">
+                            <div class="edit-option-show" style="margin: -17px 22px 0 0;">
+                                <a *ngIf="AuthStore.getActivityPermission(1100,'UPDATE_BUSINESS_APPLICATION')"
+                                    (click)=" getBusinessApplications(row.id)" [attr.title]="'edit' | translate"><i
+                                        class="fas fa-pen pointer"></i></a>
+                                <a *ngIf="AuthStore.getActivityPermission(1100,'DELETE_BUSINESS_APPLICATION')"
+                                    (click)="delete(row.id)" [attr.title]="'delete' | translate"><i
+                                        class="fas fa-trash pointer"></i></a>
+                                <a *ngIf="row.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(1100,'ACTIVATE_BUSINESS_APPLICATION')"
+                                    (click)="activate(row.id)" [attr.title]="'activate' | translate"><i
+                                        class="fas fa-check pointer"></i></a>
+                                <a *ngIf="row.status_id == AppStore.activeStatusId && AuthStore.getActivityPermission(1100,'DEACTIVATE_BUSINESS_APPLICATION')"
+                                    (click)="deactivate(row.id)" [attr.title]="'deactivate' | translate"><i
+                                        class="fas fa-ban pointer"></i></a>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-xl-3 col-lg-4 col-sm-6">
+                                    <h6>Type</h6>
+                                    <p>{{row.business_application_type_title ? row.business_application_type_title : AppStore.noContentText}}</p>
+                                </div>
+
+                                <div class="col-xl-3 col-lg-4 col-sm-6">
+                                    <h6>Quantity in Use</h6>
+                                    <p>{{row.quantity ? row.quantity : AppStore.noContentText}}</p>
+                                </div>
+
+                                <div class="col-xl-3 col-lg-4 col-sm-6">
+                                    <h6>Availability of Maintanence Contract</h6>
+                                    <p>{{row.is_amc==1?'Yes':'No'}}</p>
+                                </div>
+                                <div class="col-xl-3 col-lg-4 col-sm-6">
+                                    <h6>AMC Start</h6>
+                                    <p>{{row.amc_start  | date:
+                                        OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</p>
+                                </div>
+                                <div class="col-xl-3 col-lg-4 col-sm-6">
+                                    <h6>AMC End</h6>
+                                    <p>{{row.amc_end  | date:
+                                        OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</p>
+                                </div>
+                                <div class="col-xl-3 col-lg-4 col-sm-6">
+                                    <h6>Supplier</h6>
+                                    <div class="d-flex align-items-center mb-3"> <img *ngIf = "row.image_token"
+                                            [attr.src]="createImageUrl(row.image_token)" 
+                                            width="30"
+                                            class="img-fluid mr-2" 
+                                            onerror = "this.src='/assets/images/icon-employees.png'">
+                                            <img *ngIf = "!row.image_token"
+                                            [attr.src]="getDefaultImage('client')" 
+                                            width="30"
+                                            class="img-fluid mr-2">
+                                        <p class="mb-0">{{row.supplier_title}}</p>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-12">
+                                    <h6 *ngIf="row.business_application_type_title == 'Software'">Reason For Using Software</h6>
+                                    <h6 *ngIf="row.business_application_type_title == 'Hardware'">Reason For Using Hardware</h6>
+                                    <p style="white-space: pre-line;" class="mb-0">{{row.description ? row.description : AppStore.noContentText}}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div *ngIf="BusinessApplicationsMasterStore.loaded&&BusinessApplicationsMasterStore.totalItems>BusinessApplicationsMasterStore.itemsPerPage"
+        class="col-sm-12">
+        <ul class="pagination justify-content-center mt-3">
+            <div class="list">
+                <pagination-controls (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+            </div>
+        </ul>
+    </div>
+    <!-- [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate" -->
+</ng-container>
+<ng-container *mobxAutorun>
+    <div *ngIf="!BusinessApplicationsMasterStore.loaded">
+        <app-ms-types-loader></app-ms-types-loader>
+    </div>
+    
+    <app-no-data *ngIf = "BusinessApplicationsMasterStore.loaded && BusinessApplicationsMasterStore?.businessApplications.length == 0"></app-no-data>
+ </ng-container>
+
+
+<!--Modal part-->
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+    <app-business-applications-modal *ngIf="businessApplicationsObject.type" [source]="businessApplicationsObject">
+    </app-business-applications-modal>
+</div>
+
+<!-- popup modal -->
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>

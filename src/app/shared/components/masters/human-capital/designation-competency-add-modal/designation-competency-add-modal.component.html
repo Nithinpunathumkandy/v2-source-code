@@ -1,0 +1,153 @@
+<button type="button" class="close" (click)="closeCompetencyModal()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+
+        <div class="modal-header">
+            <h4 class="modal-title">{{'designation_competencies' | translate}}</h4>
+        </div>
+
+        <div class="modal-body form-body">
+            <form [formGroup]="competencyForm" *mobxAutorun>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'competency_group' | translate}}<sup>*</sup></label>
+                            <div class="clearfix d-flex">
+                                <div class="multiple-plain-ngselect w-100">
+                                    <ng-select placeholder="{{'competency_group' | translate}}" [multiple]="false" searchable="true"
+                                        formControlName="competency_group_id" (clear)="getCompetencyGroups()"
+                                        (search)="searchCompetencyGroups($event)" (open)="getCompetencyGroups()">
+                                        <ng-option [value]="type.id" [attr.title]="type.title.length>50?type.title:''"
+                                            *ngFor="let type of CompetencyGroupMasterStore.competencyGroups">
+                                            {{type.title.length>80?type.title.substring(0,80)+' ...':type.title}}
+                                        </ng-option>
+                                    </ng-select>
+                                </div>
+                                <button style="width:38px;" class="btn multi-add-user ml-2"
+                                    (click)="openCompetencyGroupModal()"><i class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label for="name">{{'competencies' | translate}}<sup>*</sup></label>
+                            <div class="question-circle-inp d-inline-block"
+                                style="vertical-align: middle; margin: -15px 0 5px 15px; position: relative;">
+                                <i class="far fa-question-circle"></i>
+                                <div class="message-password-inp">
+                                    <p class="mb-0">{{'competency_info_message' | translate}}</p>
+                                </div>
+                            </div>
+                            <div class="clearfix d-flex">
+                                <div class="multiple-plain-ngselect w-100">
+                                    <ng-select [items]="CompetencyMasterStore.competencies"
+                                        placeholder="{{'select_competency' | translate}}" [multiple]="false"
+                                        formControlName="competency_id" (clear)="getCompetencies()"
+                                        (search)="searchCompetencies($event)" (open)="getCompetencies()"
+                                        bindLabel="title">
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            {{item.title.length > 35 ? item.title.substring(0,35)+' ...' : item.title}}
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            <div class="user-post-department-div">
+                                                <b>{{item.title.length > 35 ? item.title.substring(0,35)+' ...' : item.title}}</b>
+                                            </div>
+                                        </ng-template>
+                                    </ng-select>
+                                </div>
+                                <button type="button"
+                                    
+                                (click)="openAddCompetencyModal()" class="btn multi-add-user mr-0 ml-2"
+                                style="width: 38px;"><i class="fas fa-plus"></i></button>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label>{{'required' | translate}}<sup>*</sup></label>
+                            <div class="d-flex">
+                                <input type="number" formControlName="required" class="form-control w-100"
+                                    placeholder="{{'required' | translate}}" id="required" min="0" max="10" (keyup)="getRequired()">
+                                    <button class="btn ml-2" [disabled]="!competencyForm.value.competency_id||!competencyForm.value.required"
+                                    (click)="pushCompetency()">Add to list</button>
+                            </div>
+                            <p class="form-error pt-1" *ngIf="msg && competencyForm?.value?.required">
+                                {{msg}}</p>
+                        </div>
+                    </div>
+                    <p style="color: red;" class="pt-1 ml-3" *ngIf="duplicate!=null">
+                        {{duplicate}}
+                    </p>
+                    <p style="color: red;" class="pt-1 ml-3" *ngIf="formErrors&&formErrors.competencies">
+                        {{formErrors.competencies}}
+                    </p>
+                </div>
+                <div class="audit-form-table w-100" *ngIf="competencyAddSource.values?.displayArray?.length>0">
+                    <table class="table table-bordered ordinary-table table-hover issue-list-table-org mb-4">
+                        <thead>
+                            <tr>
+                                <th class="border-top-0 issue-list-org-tab-one" width="5%">
+                                    #
+                                </th>
+                                <th class="border-top-0 issue-list-org-tab-one" width="80%">
+                                    {{'competency' | translate}}
+                                </th>
+
+                                <th class="border-top-0 issue-list-org-tab-one" width="15%">
+                                    {{'required' | translate}}
+                                </th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="edit-and-delete-main" *ngFor="let array of competencyAddSource.values?.displayArray;let op=index">
+                                <td>
+                                    {{op + 1}}
+
+                                </td>
+                                <td>
+                                    {{array.competency.title}}
+                                </td>
+                                <td style="text-align: center;">
+                                    <div class="edit-option-show" style="margin:6px 0 0 0">
+                                        <a [attr.title]="'delete'|translate" (click)="removeOption(op)"><i
+                                                class="fas fa-trash"></i></a>
+                                    </div>
+                                    {{array.required}}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="d-block justify-content-left border-0 mt-3">
+                            <button type="submit" class="btn btn-active" (click)="saveCompetency()"
+                                [disabled]="AppStore.loading || (!competencyForm.valid) || competencyAddSource.values?.displayArray?.length==0">{{ AppStore.loading  ? 'Loading...' : 'save' | translate }}</button>
+                            <button type="button" data-toggle="modal"class="btn"
+                                (click)="saveCompetency(true)"
+                                [disabled]="AppStore.loading || (!competencyForm.valid)|| competencyAddSource.values?.displayArray?.length==0">{{ AppStore.loading  ? 'Loading...' : 'save_close' | translate }}</button>
+                            <button type="button" data-toggle="modal" class="btn"
+                                (click)="closeCompetencyModal()">{{ AppStore.loading  ? 'Loading...' : 'cancel' | translate }}</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+<div class="modal modal-style-1 popup-full-width fade 124" id="competency-group" data-keyboard="false"
+    data-backdrop="static" #groupModal>
+    <app-competency-group-modal *ngIf="competencyGroupObject.type" [source]="competencyGroupObject">
+    </app-competency-group-modal>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade 123" id="competency" data-keyboard="false" data-backdrop="static"
+    #competencyAddModal>
+    <app-competency-modal *ngIf="competencyObject.type" [source]="competencyObject">
+    </app-competency-modal>
+</div>

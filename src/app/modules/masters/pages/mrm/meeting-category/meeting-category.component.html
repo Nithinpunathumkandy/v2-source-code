@@ -1,0 +1,90 @@
+<div class="widget bg-white">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item pointer" [routerLink]="['/masters/mrm']"><a>{{'mrm' | translate}}</a></li>
+            <li class="breadcrumb-item active">{{'meeting_category' | translate}}</li>
+        </ol>
+    </nav>
+    <table class="table-master table" *ngIf="MeetingCategoryMasterStore?.loaded && MeetingCategoryMasterStore.allItems.length > 0">
+        <tr>
+            <th style="width: 5%; text-align: center;">{{'sl' | translate}}</th>
+            <th (click)="sortTitle('meeting_categories.title')" class="border-top-0 issue-list-org-tab-three pointer" style="width: 43%;"><span>{{'meeting_category' | translate}}</span>
+                <img _ngcontent-twv-c17="" *ngIf="MeetingCategoryMasterStore.orderItem=='meeting_categories.title'" class="sort-down-pics pl-2" 
+                [attr.src]="MeetingCategoryMasterStore.orderBy=='desc' ? 
+                'assets/images/sort-up.png' : MeetingCategoryMasterStore.orderBy=='asc' ? 
+                'assets/images/sort-down.png' : 'assets/images/sort-empty.png'">
+
+
+            </th>
+            <th style="width: 40;">{{'description' | translate}}</th>
+
+            
+            <th style="width: 12%; text-align: center;">{{'status' | translate}}</th>
+        </tr>
+        <ng-container *mobxAutorun>
+            <tr class="edit-and-delete-main" *ngFor="let row of MeetingCategoryMasterStore?.allItems | paginate: {currentPage:MeetingCategoryMasterStore?.currentPage, itemsPerPage:MeetingCategoryMasterStore?.itemsPerPage,totalItems:MeetingCategoryMasterStore?.totalItems}; let num = index">
+                <td style="text-align: center;">{{(MeetingCategoryMasterStore?.currentPage - 1) * MeetingCategoryMasterStore?.itemsPerPage + (num + 1)}}</td>
+                <td><a (click)="getMeetingCategory(row.id)" [ngStyle] = "{ 'pointer-events' : AuthStore.getActivityPermission(1100,'UPDATE_MEETING_CATEGORY') ? '' : 'none'}">{{row.title}}</a></td>
+                <td>{{row.description ? row?.description : AppStore.noContentText}}</td>
+              
+                <td style="padding:0.75rem; text-align: center;" >
+                    <div [attr.class]="'dot-div '+row.status_label">{{row.status}}</div>
+                    <div class="edit-option-show" >
+                        
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'UPDATE_MEETING_CATEGORY')" (click)=" getMeetingCategory(row.id)" [attr.title]="'edit' | translate"><i class="fas fa-pen pointer"></i></a>
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'DELETE_MEETING_CATEGORY')" (click)="delete(row.id)" [attr.title]="'delete' | translate"><i class="fas fa-trash pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(1100,'ACTIVATE_MEETING_CATEGORY')" (click)="activate(row.id)" [attr.title]="'activate' | translate"><i
+                                class="fas fa-check pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.activeStatusId && AuthStore.getActivityPermission(1100,'DEACTIVATE_MEETING_CATEGORY')" (click)="deactivate(row.id)" [attr.title]="'deactivate' | translate"><i
+                                class="fas fa-ban pointer"></i></a>
+                    </div>
+                </td>           
+            </tr>
+        </ng-container>
+    </table>
+    <p class="float-right" *ngIf="MeetingCategoryMasterStore?.loaded && MeetingCategoryMasterStore.totalItems > 0"><b>{{'total_Items' | translate}}:{{MeetingCategoryMasterStore?.totalItems}}</b></p>
+
+    <ng-container *mobxAutorun>
+        <div *ngIf="!MeetingCategoryMasterStore.loaded">
+            <app-table-loader></app-table-loader>
+        </div>
+        <app-no-data *ngIf = "MeetingCategoryMasterStore.allItems.length == 0 && MeetingCategoryMasterStore.loaded == true"></app-no-data>
+   
+    </ng-container>
+
+    <!-- <div *ngIf = "MeetingCategoryMasterStore.totalItems == 0 && MeetingCategoryMasterStore.loaded == true" class="no-policy-demo-text bg-white d-flex align-items-center w-100 mt-2" style="height: 200px">
+        <div class="no-policy-demo">
+           <div class="no-file-icon">
+             <i class="far fa-file"></i>
+           </div>
+           <h6 class="bold mb-0">Nothing To Show</h6>
+        </div>
+     </div> -->
+
+    <div *ngIf="MeetingCategoryMasterStore.totalItems>MeetingCategoryMasterStore.itemsPerPage" class="col-sm-12">
+        <ul class="pagination justify-content-center mt-3">
+            <div class="list">
+                <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate" (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls> 
+            </div>
+        </ul>
+    </div>
+</div>
+<!-- Modal part -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+   
+    <app-meeting-category-modal *ngIf="meetingCategoryObject.type" [source]="meetingCategoryObject">
+
+    </app-meeting-category-modal>
+
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+
+<div class="modal modal-style-1 email-popup-new fade" data-backdrop="static" data-keyboard="false"
+  id="email-notification-popup" #mailConfirmationPopup>
+  <app-mail-send-popup [source] = "mailConfirmationData"></app-mail-send-popup>
+</div>

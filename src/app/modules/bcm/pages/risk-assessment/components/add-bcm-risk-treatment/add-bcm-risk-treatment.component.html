@@ -1,0 +1,286 @@
+<button type="button" class="close" (click) = "cancel()"><i class="lni-close"></i><span>esc</span></button>
+<div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h4 class="modal-title pb-2" *ngIf = "source.type == 'Add'">{{'new_treatment' | translate}}</h4>
+            <h4 class="modal-title pb-2" *ngIf = "source.type == 'Edit'">{{'edit_treatment' | translate}}</h4>
+        </div>
+        <div class="modal-body form-body" *mobxAutorun>
+            <!-- <p class="head-details">{{'bcp_form_message' | translate}}</p> -->
+            <form [formGroup]="form" *mobxAutorun>
+                <div class="row">
+                    <div class="col-sm-12" *ngIf="BcmRiskTreatmentStore.isRiskTreatmentPlan">
+                        <div class="form-group">
+                            <label for="name">{{'risk_id'|translate}}<sup>*</sup></label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect">
+                                    <ng-select [items]="RisksStore.riskDetails" 
+                                        [placeholder]="'select_risk' | translate"
+                                        formControlName="risk_id" bindLabel="reference_code" bindValue="id"
+                                        [closeOnSelect]="true" searchable="true" (change)="getRiskDetails()"
+                                        (search)="searchRisks($event)" (clear)="getRisks()" (open)="getRisks()"
+                                        autocomplete="new-password">
+
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            {{item.reference_code}}<span aria-hidden="true" (click) = "clear(item)" style="border:none;" class="ng-value-icon left">×</span>
+                                        </ng-template>
+                                    </ng-select>
+                                </div>
+                            </div>
+                            <p class="form-error pt-1" *ngIf="formErrors && formErrors.risk_id">
+                                {{formErrors.risk_id}}</p>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-12" *ngIf="form.value.risk_id && BcmRiskAssessmentStore.detailsLoaded">
+                        <div class="form-group">
+                            <div class="cmn-bdr border-radius p-3">
+                                <div class="issue-top-sec">
+                                    <div class="clearfix">
+                                        <h5 class="d-inline-block cmn-head-style label-tag-style"><span
+                                                class="issue-smoal-head-text">#{{BcmRiskAssessmentStore.bcmRiskDetails?.reference_code}}</span>
+                                            {{BcmRiskAssessmentStore.bcmRiskDetails?.title}}</h5>
+                                    </div>
+                                    <p *ngIf="BcmRiskAssessmentStore.bcmRiskDetails?.description"
+                                        [innerHTML]="BcmRiskAssessmentStore.bcmRiskDetails?.description | safeHtml"></p>
+                                    <p *ngIf="!BcmRiskAssessmentStore.bcmRiskDetails?.description">
+                                        {{AppStore.noContentText}}</p>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-lg-4 col-sm-6"
+                                        [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_subsidiary ? 'none':'block'}">
+                                        <h6>{{'organizations'|translate}}</h6>
+                                        <p>{{BcmRiskAssessmentStore.bcmRiskDetails?.organizations.length>0?getArrayFormatedString('title',BcmRiskAssessmentStore.bcmRiskDetails?.organizations):AppStore.noContentText}}
+                                        </p>
+                                    </div>
+                                    <div class="col-lg-4 col-sm-6"
+                                        [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_division ? 'none':'block'}">
+                                        <h6>{{'divisions'|translate}}</h6>
+                                        <p>{{BcmRiskAssessmentStore.bcmRiskDetails?.divisions.length>0?getArrayFormatedString('title',BcmRiskAssessmentStore.bcmRiskDetails?.divisions):AppStore.noContentText}}
+                                        </p>
+                                    </div>
+                                    <div class="col-lg-4 col-sm-6"
+                                        [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_department ? 'none':'block'}">
+                                        <h6>{{'departments'|translate}}</h6>
+                                        <p>{{BcmRiskAssessmentStore.bcmRiskDetails?.departments.length>0?getArrayFormatedString('title',BcmRiskAssessmentStore.bcmRiskDetails?.departments):AppStore.noContentText}}
+                                        </p>
+                                    </div>
+                                    <div class="col-lg-4 col-sm-6"
+                                        [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_section ? 'none':'block'}">
+                                        <h6>{{'sections'|translate}}</h6>
+                                        <p>{{BcmRiskAssessmentStore.bcmRiskDetails?.sections.length>0?getArrayFormatedString('title',BcmRiskAssessmentStore.bcmRiskDetails?.sections):AppStore.noContentText}}
+                                        </p>
+                                    </div>
+                                    <div class="col-lg-4 col-sm-6"
+                                        [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_sub_section ? 'none':'block'}">
+                                        <h6>{{'sub_sections'|translate}}</h6>
+                                        <p>{{BcmRiskAssessmentStore.bcmRiskDetails?.sub_sections.length>0?getArrayFormatedString('title',BcmRiskAssessmentStore.bcmRiskDetails?.sub_sections):AppStore.noContentText}}
+                                        </p>
+                                    </div>
+                                    <div class="col-lg-12 col-sm-12">
+                                        <div class="label-and-user-pic mb-0">
+                                            <h6>{{'risk_owner'|translate}}</h6>
+                                            <app-user-popup-box id="jd"
+                                                *ngIf="BcmRiskAssessmentStore.bcmRiskDetails?.risk_owner"
+                                                [source]="getRiskPopupDetails(BcmRiskAssessmentStore.bcmRiskDetails?.risk_owner)">
+                                            </app-user-popup-box>
+                                            <div *ngIf="!BcmRiskAssessmentStore.bcmRiskDetails?.risk_owner">
+                                                {{AppStore.noContentText}}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label for="name">{{'action_plan' | translate}}<sup>*</sup></label>
+                            <div class="plain-select input-add-report">
+                                <input type="text" formControlName="title" class="form-control" [placeholder]="'add_treatment_title' | translate">
+                            </div>
+                            <p class="form-error pt-1"
+                                *ngIf="form?.value.title && form?.value.title.length > 500 && !formErrors">
+                                {{'maximum_500_characters'|translate}}</p>
+                            <p class="form-error pt-1" *ngIf="formErrors&&formErrors.title">
+                                {{formErrors.title[0]}}</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-6"
+                        *ngIf="RiskManagementSettingStore.loaded && RiskManagementSettingStore.riskManagementSettings.is_budget">
+                        <div class="form-group">
+                            <label for="name">{{'allocated_budget' | translate}}
+                                ({{OrganizationGeneralSettingsStore?.organizationSettings?.currency}})</label>
+                            <div class="plain-select input-add-report">
+                                <input type="text" formControlName="budget" class="form-control"
+                                [attr.placeholder]="'enter_allocated_budget' | translate"/>
+                            </div>
+                            <p class="form-error pt-1"
+                                *ngIf="form?.get('budget').invalid && form.value.budget">
+                                {{'allocated_budget_message' | translate}}</p>
+                            <p class="form-error pt-1" *ngIf="formErrors&&formErrors.budget">
+                                {{formErrors.budget[0]}}</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label for="name">{{'treatment_description' | translate}}</label>
+                            <textarea formControlName="description" class="form-control " rows="3" id="comment"
+                                [attr.placeholder]="'treatment_description_placeholder' | translate"></textarea>
+                            <p class="form-error pt-1" *ngIf="formErrors&&formErrors.description">
+                                {{formErrors.description[0]}}</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label for="name">{{'dependency' | translate}}</label>
+                            <textarea formControlName="treatment_dependency" class="form-control " rows="3"
+                                id="comment" [attr.placeholder]="'enter_treatment_dependency' | translate"></textarea>
+                            <p class="form-error pt-1" *ngIf="formErrors&&formErrors.treatment_dependency">
+                                {{formErrors.treatment_dependency[0]}}</p>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label for="name">{{'start_date' | translate}}<sup>*</sup></label>
+                            <div class="input-group date-picker input-clear-btn-main">
+                                <input formControlName="start_date" class="form-control bg-white"
+                                    placeholder="yyyy-mm-dd" id="start_date" [readonly]="true"
+                                    [maxDate]="{year: form.value.target_date?.year?this.form.value.target_date?.year:null, month: form.value.target_date?.month?this.form.value.target_date?.month:null, day: form.value.target_date?.day?this.form.value.target_date?.day-1:null}"
+                                    ngbDatepicker #startInput="ngbDatepicker"><span *ngIf="form.value.start_date"
+                                    aria-hidden="true" (click)="clear('start_date')" style="border:none;"
+                                    class="input-clear-btn">×</span>
+
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary calendar" (click)="startInput.toggle()"
+                                        type="button"><i class="fas fa-calendar-alt"></i></button>
+                                </div>
+                            </div>
+                            <p class="form-error pt-1" *ngIf="formErrors&&formErrors.start_date">
+                                {{formErrors.start_date[0]}}</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label for="name">{{'target_date' | translate}}<sup>*</sup></label>
+                            <div class="input-group date-picker input-clear-btn-main">
+                                <input formControlName="target_date" class="form-control bg-white"
+                                    placeholder="yyyy-mm-dd" id="target_date" ngbDatepicker [readonly]="true"
+                                    [minDate]="{year: this.form.value.start_date?.year, month: this.form.value.start_date?.month, day: this.form.value.start_date?.day+1}"
+                                    #endInput="ngbDatepicker"><span aria-hidden="true"
+                                    *ngIf="form.value.target_date" (click)="clear('target_date')"
+                                    style="border:none;" class="input-clear-btn">×</span>
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary calendar" (click)="endInput.toggle()"
+                                        type="button"><i class="fas fa-calendar-alt"></i></button>
+                                </div>
+                            </div>
+                            <p class="form-error pt-1" *ngIf="formErrors&&formErrors.target_date">
+                                {{formErrors.target_date[0]}}</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label for="name">{{'responsible_user'|translate}}<sup>*</sup></label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect">
+                                    <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                                        [placeholder]="'corrective_action_select_responsible_user'|translate"
+                                        formControlName="responsible_user_id" (clear)="getUsers('owner')"
+                                        (search)="searchUsers($event,'owner')" (open)="getUsers('owner')"
+                                        autocomplete="new-password" [searchFn]="customSearchFn">
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            <img *ngIf="item.image_token" class="ng-select-user-display" height="15"
+                                                width="15" [attr.src]="createImageUrl(item.image_token)"
+                                                onerror="this.src='/assets/images/user-demo2.png'" />
+                                            <img *ngIf="!item.image_token" class="ng-select-user-display"
+                                                height="15" width="15" [attr.src]="getDefaultImage('user-logo')" />
+                                            <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,'
+                                                ') | titlecase}}</b><span aria-hidden="true" (click)="clear(item)"
+                                                style="border:none;" class="ng-value-icon left">×</span>
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            <div class="user-post-department-pic">
+                                                <img *ngIf="item.image_token" class="ng-select-user-display"
+                                                    height="25" width="25"
+                                                    [attr.src]="createImageUrl(item.image_token)"
+                                                    onerror="this.src='/assets/images/user-demo2.png'" />
+                                                <img *ngIf="!item.image_token" class="ng-select-user-display"
+                                                    height="25" width="25"
+                                                    [attr.src]="getDefaultImage('user-logo')" />
+                                            </div>
+                                            <div class="user-post-department-div">
+                                                <b>{{getStringsFormatted([item.first_name,item.last_name],50,' ') |
+                                                    titlecase}}</b>
+                                                <p class="user-post-department-multiple">
+                                                    {{getStringsFormatted([item.designation_title,'
+                                                    '+item.department],50,',')}}</p>
+                                            </div>
+                                        </ng-template>
+                                    </ng-select>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.responsible_user_id">
+                                    {{formErrors.responsible_user_id[0]}}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label for="name">{{'watchers' | translate}}</label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect">
+                                    <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                                        [placeholder]="'select_watchers' | translate" formControlName="watcher_ids"
+                                        (clear)="getUsers('watcher')" (search)="searchUsers($event,'watcher')"
+                                        (open)="getUsers('watcher')" autocomplete="new-password"
+                                        [searchFn]="customSearchFn" multiple="true">
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            <img *ngIf="item.image_token" class="ng-select-user-display" height="15"
+                                                width="15" [attr.src]="createImageUrl(item.image_token)"
+                                                onerror="this.src='/assets/images/user-demo2.png'" />
+                                            <img *ngIf="!item.image_token" class="ng-select-user-display"
+                                                height="15" width="15" [attr.src]="getDefaultImage('user-logo')" />
+                                            <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,'
+                                                ') | titlecase}}</b><span aria-hidden="true" (click)="clear(item)"
+                                                style="border:none;" class="ng-value-icon left">×</span>
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            <div class="user-post-department-pic">
+                                                <img *ngIf="item.image_token" class="ng-select-user-display"
+                                                    height="25" width="25"
+                                                    [attr.src]="createImageUrl(item.image_token)"
+                                                    onerror="this.src='/assets/images/user-demo2.png'" />
+                                                <img *ngIf="!item.image_token" class="ng-select-user-display"
+                                                    height="25" width="25"
+                                                    [attr.src]="getDefaultImage('user-logo')" />
+                                            </div>
+                                            <div class="user-post-department-div">
+                                                <b>{{getStringsFormatted([item.first_name,item.last_name],50,' ') |
+                                                    titlecase}}</b>
+                                                <p class="user-post-department-multiple">
+                                                    {{getStringsFormatted([item.designation_title,'
+                                                    '+item.department],50,',')}}</p>
+                                            </div>
+                                        </ng-template>
+                                    </ng-select>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.watcher_ids">
+                                    {{formErrors.watcher_ids[0]}}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <div class="row">
+                <div class="col-sm-12">
+                   <div class="d-block justify-content-left border-0 mt-3">
+                      <button type="button"  [disabled]="form.invalid || AppStore.loading" class="btn btn-active" (click) = "save()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save') }}</button>
+                      <button type="button"  [disabled]="form.invalid || AppStore.loading" class="btn" (click) = "save(true)">{{  AppStore.loading  ? getButtonText('loading') : getButtonText('save_close')}}</button>
+                      <button type="button" data-toggle="modal" (click) = "cancel()" class="btn">Cancel</button>
+                   </div>
+                </div>
+             </div>
+        </div>
+    </div>
+</div>

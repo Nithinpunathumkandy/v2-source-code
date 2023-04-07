@@ -1,0 +1,289 @@
+<button type="button" class="close" (click)="cancel()"><i class="lni-close"></i><span>{{'esc' |
+    translate}}</span></button>
+
+
+<div class="modal-dialog modal-xl modal-dialog-centered" *mobxAutorun>
+    <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header">
+            <h4 *ngIf="!MsAuditProgramsStore.editFlag" class="modal-title">{{'add_ms_audit_programs' | translate}}</h4>
+            <h4 *ngIf="MsAuditProgramsStore.editFlag" class="modal-title">{{'edit_ms_audit_programs' | translate}}</h4>
+        </div>
+        <!-- Modal body -->
+        <div class="modal-body form-body">
+            <p class="head-details">{{'ms_audit_program_deception' | translate}}</p>
+            <form [formGroup]="form">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label for="name"> {{'audit_category' | translate}}<span class="form-error">*</span></label>
+                            <div class="clearfix d-flex">
+                                <div class="multiple-plain-ngselect w-100">
+                                    <ng-select [placeholder]="'select_ms_audit_category' | translate" 
+                                        [multiple]="false"
+                                        [items]=" MsAuditCategoryMasterStore?.msAuditCategory" formControlName="ms_audit_category_id"
+                                        bindLabel="title" (open)="getMsAuditCategory()"
+                                        (change)="patchAuditLeader(true)"
+                                        (search)="searchMsAuditCategory($event)">
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            {{item?.title?.length > 100 ? (item.title | slice:0:100)+' ...' : item.title}}
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            {{item?.title?.length > 100 ? (item.title | slice:0:100)+' ...' : item.title}}
+                                        </ng-template>
+                                    </ng-select>
+                                    <p class="pt-1 form-error ng-star-inserted" style="color: red;" *ngIf="formErrors && formErrors.ms_audit_category_id">
+                                        {{formErrors.ms_audit_category_id}}
+                                    </p>
+                                </div>
+                                <button class="btn multi-add-user ml-2" style="width: 42px;" *ngIf="AuthStore.getActivityPermission(5356,'CREATE_MS_AUDIT_CATEGORY')"
+                                (click)="msAuditCategoryModalAdd()"><i
+                                    class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label for="name">{{'title' | translate}}<span class="form-error">*</span></label>
+                            <div class="plain-select input-add-report">
+                                <input type="text" class="form-control" [placeholder]="'title_of_the_ms_audit_program' | translate"
+                                    formControlName="title">
+                                <p class="pt-1 form-error ng-star-inserted" *ngIf="formErrors && formErrors.title"> {{formErrors.title}}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6 col-sm-6" >
+                        <div class="form-group">
+                            <label for="name"> {{'ms_type' | translate}}<span class="form-error">*</span></label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect">
+                                    <ng-select [placeholder]="'select_ms_types' | translate"
+                                        [items]="MsTypeStore.msTypeDetails" multiple="true"
+                                        formControlName="ms_type_ids" (open)="getMsType()"
+                                        (search)="searchMsType($event)" bindLabel="ms_type_title">
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            <label class="mb-0">{{item?.ms_type_title?.length > 60 ?
+                                                (item.ms_type_title | slice:0:60)+' ...' : item.ms_type_title}}<span
+                                                class="ml-2 font-normal text-grey">V
+                                                    {{item.ms_type_version_title}}</span></label><span
+                                                aria-hidden="true" (click)="clear(item)" style="border:none;"
+                                                class="ng-value-icon left">×</span>
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            <label class="mb-0">{{item?.ms_type_title?.length > 80 ?
+                                                (item.ms_type_title | slice:0:80)+' ...' : item.ms_type_title}}<span
+                                                    class="ml-2 font-normal text-grey">V
+                                                    {{item.ms_type_version_title}}</span></label>
+                                        </ng-template>
+                                    </ng-select>
+                                    <p class="pt-1" style="color: red;"
+                                        *ngIf="formErrors && formErrors.ms_type_ids">
+                                        {{formErrors.ms_type_ids}}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label for="name"> {{'no_of_audit_plan' | translate}}<span class="form-error">*</span></label>
+                            <div class="clearfix d-flex">
+                                <div class="multiple-plain-ngselect w-100">
+                                    <ng-select [placeholder]="'select_no_of_audit_plan' | translate" 
+                                        [multiple]="false"
+                                        (change)="patchAuditLeader(false)"
+                                        [items]=" numberOfAuditPlan" formControlName="no_of_audit_plan"
+                                        bindLabel="title" 
+                                        >
+                                        
+                                    </ng-select>
+                                    <!-- <p class="pt-1 form-error ng-star-inserted" style="color: red;" *ngIf="formErrors && formErrors.ms_audit_category_id">
+                                        {{formErrors.ms_audit_category_id}}
+                                    </p> -->
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label for="name"> {{'start_date' | translate}}<span class="form-error">*</span></label>
+                            <div class="input-group date-picker">
+                                <input class="form-control cal4" formControlName="start_date" placeholder="yyyy-mm-dd"
+                                    (click)="startDateInput.toggle()" id="start" ngbDatepicker
+                                    #startDateInput="ngbDatepicker">
+    
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary calendar" (click)="startDateInput.toggle()"
+                                        type="button"><i class="fas fa-calendar-alt"></i></button>
+                                </div>
+                            </div>
+                            <p class="pt-1 form-error ng-star-inserted" style="color: red;" *ngIf="formErrors && formErrors.start_date"> {{formErrors.start_date}}</p>
+                        </div>
+                    </div>
+    
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label for="name"> {{'end_date' | translate}}<span class="form-error">*</span></label>
+                            <div class="input-group date-picker" style="width:90%">
+                                <input class="form-control cal4" formControlName="end_date" placeholder="yyyy-mm-dd"
+                                    (click)="targetDateInput.toggle()"
+                                    [minDate]="form.value.start_date?{year: this.form.value.start_date.year, month: this.form.value.start_date.month, day: this.form.value.start_date.day}:''"
+                                    id="target" ngbDatepicker #targetDateInput="ngbDatepicker">
+    
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary calendar"
+                                        (click)="targetDateInput.toggle()" type="button"><i
+                                            class="fas fa-calendar-alt"></i></button>
+                                </div>
+                            </div>
+                            <p class="pt-1 form-error ng-star-inserted" style="color: red;" *ngIf="formErrors && formErrors.end_date"> {{formErrors.end_date}} </p>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-12" *ngIf="form.value?.no_of_audit_plan?.title && form?.value?.ms_audit_category_id && selectedAuditPlans.length &&
+                    form.value?.start_date && form?.value?.end_date
+                    ">
+                        <!-- <h4>{{'pre_plan'| translate}}<span class="form-error">*</span></h4> -->
+                        <div class="form-group mb-0"> <label for="name"> {{'pre_plan' | translate}}<span class="form-error">*</span></label></div>
+                        <div class="audit-form-table w-100 not-fixed-table mb-3">
+                            <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 5%;" class="border-top-0 text-center">#</th>
+                                        <th style="width: 30%;" class="border-top-0">{{'audit_category' | translate}}</th>
+                                        <th style="width: 25%;" class="border-top-0">{{'audit_leader' | translate}}</th>
+                                        <th style="width: 20%;" class="border-top-0">{{'start_date' | translate}}</th>
+                                        <th style="width: 20%;" class="border-top-0">{{'end_date' | translate}}</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="edit-option" *ngFor="let row of selectedAuditPlans;let i=index">
+                                        <ng-container >
+                                            <td class="text-center">
+                                                {{i+1}}
+                                            </td>
+                                            <td>
+                                                <input [ngModelOptions]="{standalone: true}" type="text" class="form-control" [(ngModel)]="row.audit_plan">
+                                            </td>
+                                            <td>
+                                                
+                            
+                                                    <div class="clearfix">
+                                                        <div class="multiple-plain-ngselect" style="pointer-events:none ;">
+                                                            <ng-select [ngModelOptions]="{standalone: true}"  bindLabel="email"
+                                                      [placeholder]="'select_audit_leader' | translate"
+                                                      [(ngModel)]="row.audit_leader" [multiple]="false" (search)="searchUsers($event)"
+                                                      [searchFn]="customSearchFn" multiple="false" (open)="getUsers()">
+                                                      <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                                         <img *ngIf="item?.image_token" class="ng-select-user-display" height="15" width="15"
+                                                            [attr.src]="createImagePreview('user-profile-picture',item?.image_token)"
+                                                            onerror="this.src='/assets/images/user-demo2.png'" />
+                                                         <img *ngIf="!item?.image_token" class="ng-select-user-display" height="15" width="15"
+                                                            [attr.src]="getDefaultImage('user-logo')" onerror = "this.src='/assets/images/user-demo2.png'" />
+                                                         <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,'
+                                                            ') |
+                                                            titlecase}}</b><span aria-hidden="true" (click)="clear(item)" style="border:none;"
+                                                            class="ng-value-icon left">×</span>
+                                                      </ng-template>
+                                                      <ng-template ng-option-tmp let-item="item" let-index="index">
+                                                         <div class="user-post-department-pic">
+                                                            <img *ngIf="item?.image_token" class="ng-select-user-display" height="25" width="25"
+                                                               [attr.src]="createImagePreview('user-profile-picture',item?.image_token)"
+                                                               onerror="this.src='/assets/images/user-demo2.png'" />
+                                                            <img *ngIf="!item?.image_token" class="ng-select-user-display" height="25"
+                                                               width="25" [attr.src]="getDefaultImage('user-logo')" onerror = "this.src='/assets/images/user-demo2.png'" />
+                                                         </div>
+                                                         <div class="user-post-department-div">
+                                                            <b>{{getStringsFormatted([item.first_name,item.last_name],35,' ') | titlecase}}</b>
+                                                            <p class="user-post-department-multiple">
+                                                               {{getStringsFormatted([item.designation_title,'
+                                                               '+item.department],35,',')}}</p>
+                                                         </div>
+                                                      </ng-template>
+                                                   </ng-select>
+                                                            
+                                                        </div>
+                                                    </div>
+                                                
+    
+                                            </td>
+                                            <td>
+                                                <div class="input-group date-picker">
+                                                <input class="form-control cal4"  (blur)="changePlanName(row)" [ngModelOptions]="{standalone: true}" [(ngModel)]="row.audit_plan_start_date" 
+                                                 placeholder="yyyy-mm-dd"
+                                                 [minDate]="form.value.start_date?{year: this.form.value.start_date.year, month: this.form.value.start_date.month, day: this.form.value.start_date.day}:''"
+                                                 [maxDate]="form.value.end_date?{year: this.form.value.end_date.year, month: this.form.value.end_date.month, day: this.form.value.end_date.day}:''"
+                                                (click)="startDateInput2.toggle()"  ngbDatepicker
+                                                #startDateInput2="ngbDatepicker">
+
+                                                <div class="input-group-append">
+                                                    <button (blur)="changePlanName(row)" class="btn btn-outline-secondary calendar"
+                                                        (click)="startDateInput2.toggle()" type="button"><i
+                                                            class="fas fa-calendar-alt"></i></button>
+                                                </div>
+                                            </div>
+                                            </td>
+                                            <td>
+                                                <div class="input-group date-picker" style="width:90%">
+                                                <input  (blur)="changePlanName(row)" class="form-control cal4"  [(ngModel)]="row.audit_plan_end_date" 
+                                        [ngModelOptions]="{standalone: true}"  placeholder="yyyy-mm-dd"
+                                        (click)="targetDateInput2.toggle()"
+                                        [minDate]="row.audit_plan_start_date?{year: row.audit_plan_start_date.year, month: row.audit_plan_start_date.month, day: row.audit_plan_start_date.day}:''"
+                                        [maxDate]="form.value.end_date?{year: this.form.value.end_date.year, month: this.form.value.end_date.month, day: this.form.value.end_date.day}:''"
+                                         ngbDatepicker #targetDateInput2="ngbDatepicker">
+
+                                         <div class="input-group-append">
+                                            <button (blur)="changePlanName(row)" class="btn btn-outline-secondary calendar"
+                                                (click)="targetDateInput2.toggle()" type="button"><i
+                                                    class="fas fa-calendar-alt"></i></button>
+                                        </div>
+                                    </div>
+    
+                                         <div  class="edit-option-show-inner" style="margin-right: -10px !important;"><a 
+                                             title="Delete" (click)="delete(i,row)"><i  class="fas fa-trash"></i></a></div>
+    
+                                            </td>
+                                        </ng-container>
+                                        
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <p *ngIf="errorValidation" class="text-danger">{{'duplicate_plans_start_date_and_end_date'|translate}}</p>
+                        </div>
+                        
+                    </div>
+
+                    <div class="col-sm-12">
+                        <div class="d-block justify-content-left border-0 mt-3">
+                            <button type="submit" class="btn btn-active" (click)="save()"
+                                [disabled]="form.invalid || AppStore.loading || !checkValid()">{{ AppStore.loading ?
+                                getButtonText('loading') : getButtonText('save') }}</button>
+                            <button type="button" data-toggle="modal" data-target="#signal-lost" class="btn"
+                                (click)="save(true)" [disabled]="form.invalid || AppStore.loading || !checkValid()">{{ AppStore.loading ?
+                                getButtonText('loading') : getButtonText('save_close') }}</button>
+                            <button type="button" data-toggle="modal" data-target="#error-message" class="btn"
+                                (click)="cancel()">{{ AppStore.loading ? getButtonText('loading') :
+                                getButtonText('cancel') }}</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <!-- Modal footer -->
+    </div>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #msAuditCategoryformModal>
+    <app-ms-audit-category-modal [source]="msAuditCategoryObject" *ngIf="MsAuditProgramsStore.msAuditCategoryformModal">
+    </app-ms-audit-category-modal>
+</div>
+
+

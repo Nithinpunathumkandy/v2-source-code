@@ -1,0 +1,796 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navigationBar>
+
+    <app-breadcrumb-menu></app-breadcrumb-menu>
+    <app-sub-menu></app-sub-menu>
+
+</nav>
+
+
+
+<main class="mt-3 organization-page">
+    <div class="container-fluid">
+        <div class="organization-form-page master-form-page" *mobxAutorun>
+
+            <form id="regForm" [formGroup]="form" class="organization-multi-stup-form multi-stup-form-common"
+                action="/action_page.php">
+                <!-- Circles which indicates the steps of the form: -->
+                <div id="header-sroll-form" class="form-indicates-sec clearfix" #formSteps>
+                    <span class="step pointer" (click)="changeStep(0)"><span class="multi-form-nbr">1</span>{{'info' |
+                        translate}}</span>
+                    <span class="step pointer" (click)="changeStep(1)"><span class="multi-form-nbr">2</span>{{'controls'
+                        | translate}}</span>
+                    <span class="step pointer" (click)="changeStep(2)"><span
+                            class="multi-form-nbr">3</span>{{'checklist' | translate}}</span>
+                    <span class="step pointer" (click)="changeStep(3)"><span
+                            class="multi-form-nbr">4</span>{{'preview_save' | translate}}</span>
+
+                </div>
+                <!-- One "tab" for each step in the form: -->
+                <div class="tab">
+                    <!-- tab start -->
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label for="name">{{'auditable_items' | translate}}<sup>*</sup></label>
+                                <input type="text" formControlName='title' class="form-control"
+                                    [placeholder]="'Title_of_the_auditable_item'| translate">
+                                <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.title ">
+                                    {{formErrors.title}}</p>
+                            </div>
+                        </div>
+                        <div class="col-sm-12">
+
+                            <div class="form-group">
+                                <div class="clearfix">
+
+                                    <label class="float-left">{{'description' | translate}}
+                                    </label>
+                                    <span class="float-right">
+                                        <p class="text-grey mb-0">{{form?.value.description != null ?
+                                            form?.value.description?.length : 0}}
+                                            Characters</p>
+                                    </span>
+                                </div>
+                                <textarea class="form-control" formControlName="description" rows="3" id="comment"
+                                    [placeholder]="'write_a_short_description_of_the_auditable_item'| translate"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="name">{{'auditable_item_types' | translate}}<span
+                                        class="form-error">*</span></label>
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect">
+                                        <ng-select [placeholder]="'select_type'| translate" [multiple]="false"
+                                            formControlName="auditable_item_type_id" bindLabel="title"
+                                            (search)="searchAuditableItemType($event)" (open)="getAuditableItemType()">
+                                            <ng-option [value]="type"
+                                                *ngFor="let type of AuditItemTypeMasterStore.allItems">
+                                                {{type.title.length > 80 ? type.title.substring(0,80)+' ...' :
+                                                type.title}}
+                                            </ng-option>
+                                        </ng-select>
+                                        <p class="pt-1" style="color: red;"
+                                            *ngIf="formErrors && formErrors.auditable_item_type_id">
+                                            {{formErrors.auditable_item_type_id}}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        </div>
+
+
+
+
+
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="name">{{'audit_categories' | translate}}<span
+                                        class="form-error">*</span></label>
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect select-width-plus">
+                                        <ng-select [items]="AuditItemCategoryMasterStore.allItems"
+                                            [placeholder]="'select_category'| translate" [multiple]="false"
+                                            formControlName="auditable_item_category_id" bindLabel="title"
+                                            (search)="searchAuditableItemCategory($event)"
+                                            (open)="getAuditableItemCategory()">
+                                            <!-- <ng-option [value]="audit"
+                                                *ngFor="let audit of AuditItemCategoryMasterStore.allItems">
+                                                {{audit.title.length > 80 ? audit.title.substring(0,80)+' ...' : audit.title}}
+                                            </ng-option> -->
+                                            <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                                {{item.title.length > 60 ? (item.title | slice:0:60)+' ...' :
+                                                item.title}}<span aria-hidden="true" (click)="clear(item)"
+                                                    style="border:none;" class="ng-value-icon left">×</span>
+                                            </ng-template>
+                                            <ng-template ng-option-tmp let-item="item" let-index="index">
+                                                {{item.title.length > 80 ? (item.title | slice:0:80)+' ...' :
+                                                item.title}}
+                                            </ng-template>
+                                        </ng-select>
+                                        <p class="pt-1" style="color: red;"
+                                            *ngIf="formErrors && formErrors.auditable_item_category_id">
+                                            {{formErrors.auditable_item_category_id}}</p>
+                                    </div>
+                                    <button class="btn multi-add-user"
+                                        *ngIf="AuthStore.getActivityPermission(1000,'CREATE_AUDITABLE_ITEM_CATEGORY')"
+                                        (click)="addAuditableItemCategory()"><i class="fas fa-plus"></i></button>
+                                </div>
+                            </div>
+
+
+
+
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="name">{{'risk_rating' | translate}}</label>
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect ">
+                                        <ng-select [items]="RiskRatingMasterStore.allItems" bindLabel="title"
+                                            bindValue="id" [placeholder]="'select_risk_rating'| translate"
+                                            formControlName="risk_rating_id">
+                                            <ng-template ng-label-tmp let-item="item">
+                                                <div
+                                                    [ngClass]="item.label == 'orange'?'dot-div orange-dot':item.label == 'red'?'dot-div red-dot':item.label == 'yellow'?'dot-div yellow-dot':'dot-div green-dot'">
+                                                    {{item.title}}
+                                                </div>
+                                            </ng-template>
+                                            <ng-template ng-option-tmp let-item="item" let-index="index">
+                                                <div
+                                                    [ngClass]="item.label == 'orange'?'dot-div orange-dot':item.label == 'red'?'dot-div red-dot':item.label == 'yellow'?'dot-div yellow-dot':'dot-div green-dot'">
+                                                    {{item.title}}
+                                                </div>
+                                            </ng-template>
+                                        </ng-select>
+                                        <p class="pt-1" style="color: red;"
+                                            *ngIf="formErrors && formErrors.risk_rating_id">
+                                            {{formErrors.risk_rating_id}}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6"
+                            [ngStyle]="{display: !OrganizationGeneralSettingsStore.organizationSettings?.is_ms_type ? 'none':'block'}">
+                            <div class="form-group">
+                                <label for="name">{{'ms_types' | translate}}</label>
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect ">
+                                        <ng-select [placeholder]="'select_ms_type'| translate" multiple="true"
+                                            formControlName="ms_type_organization_ids" (search)="searchMsType($event)"
+                                            (open)="getMsType()">
+                                            <ng-option [value]="mstype.id"
+                                                *ngFor="let mstype of MsTypeStore.msTypeDetails">
+                                                <label class="mb-0">{{mstype.ms_type_title.length > 80 ?
+                                                    mstype.ms_type_title.substring(0,80)+' ...' : mstype.ms_type_title
+                                                    }}
+                                                    <span style="color: #7c7a7a;">V
+                                                        {{mstype.ms_type_version_title}}</span></label>
+                                            </ng-option>
+                                        </ng-select>
+                                        <p class="pt-1" style="color: red;"
+                                            *ngIf="formErrors && formErrors.ms_type_organization_ids">
+                                            {{formErrors.ms_type_organization_ids}}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-12 col-sm-12">
+                            <div class="form-group">
+                                <a class="text-light-blue" data-toggle="modal" (click)="organisationChanges()"
+                                    style="border-bottom: 1px solid;">{{'change_organization_unit' | translate}}</a>
+                            </div>
+                        </div>
+
+
+
+                    </div>
+
+
+
+                    <label for="name" class="label-style mb-0">{{'documents' | translate}}</label>
+                    <!-- Common File Upload Starts Here -->
+                    <div class="scroll-documents" #uploadArea>
+                        <div class="thumb-pics-bg thumb-pics-col-4 clearfix thumb-pics-fix-text"
+                            style="padding-top: 0;">
+                            <div class="thumb-pics">
+                                <div class="question-circle-inp" style="margin-right: 7px;">
+                                    <i class="far fa-question-circle"></i>
+                                    <div class="message-password-inp">
+                                        <p class="mb-0">{{'allowed_file_types' | translate}}
+                                            {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="form-group form-group-upload">
+                                    <div class="darag-dropifile-upload">
+                                        <div class="d-flex justify-content-center align-items-center text-center">
+                                            <div>
+                                                <img src="/assets/images/drag-pic.png" alt="image"
+                                                    class="drag-pic-files">
+                                                <div class="drag-file-name"> Select or Upload Your File Here </div>
+                                                <div class="upload-btn-wrapper">
+                                                    <button (click)="openFileUploadModal()" type="button"
+                                                        class="btn">{{'browse_files' | translate}}</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="thumb-pics"
+                                *ngFor="let docs of fileUploadPopupStore.displayFiles ;let i = index">
+                                <div class="upload-pics edit-option" data-toggle="modal">
+                                    <div *ngIf="docs.id && !docs.preview" class="browse-form-pic"
+                                        [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                                    </div>
+                                    <div *ngIf="docs.preview" class="browse-form-pic"
+                                        [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">
+                                    </div>
+                                    <div class="browse-form-name clearfix">
+                                        <div class="float-left">
+                                            <h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                            </h6>
+                                            <span *ngIf="docs.is_kh_document" class="mr-2 cmn-clr"><i
+                                                    class="fas fa-book"></i></span>
+                                            <span *ngIf="!docs.is_kh_document" class="mr-2 cmn-clr"><i
+                                                    class="fas fa-laptop"></i></span>
+                                            <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                                        </div>
+                                        <div class="browse-logo">
+                                            <img *ngIf="checkExtension(docs.ext,'image') != -1" class="folder-picher"
+                                                src="/assets/images/jpg-icone.png">
+                                            <img *ngIf="checkExtension(docs.ext,'doc') != -1" class="folder-picher"
+                                                src="/assets/images/word-icone.png">
+                                            <img *ngIf="checkExtension(docs.ext,'pdf') != -1" class="folder-picher"
+                                                src="/assets/images/pdf-icone.png">
+                                            <img *ngIf="checkExtension(docs.ext,'excel') != -1" class="folder-picher"
+                                                src="/assets/images/excel-icone.png">
+                                            <img *ngIf="checkExtension(docs.ext,'video') != -1" class="folder-picher"
+                                                src="/assets/images/md-video.png">
+                                            <img *ngIf="checkExtension(docs.ext,'audio') != -1" class="folder-picher"
+                                                src="/assets/images/md-audio.png">
+                                            <img *ngIf="checkExtension(docs.ext,'ppt') != -1" class="folder-picher"
+                                                src="/assets/images/md-ppt.png">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+                    <!-- Common File Upload Ends Here -->
+
+
+
+
+
+
+
+                </div><!-- tab end -->
+                <div class="tab">
+                    <!-- tab start -->
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="processes-issue audit-processes-issue clearfix">
+                                <h5><img src="/assets/images/controls-icon.png">{{'map_controls_with_auditable_items' | translate}}</h5>
+
+                                <div class="float-right">
+                                    <a class="btn" (click)="addNewControl()">{{'add_new_controls' | translate}}</a>
+                                    <a (click)="addControls()" class="btn">{{'choose_controls' | translate}}</a>
+                                </div>
+                            </div>
+                            <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.control_ids ">
+                                {{formErrors.control_ids}}</p>
+
+                            <div class="audit-program-box audit-page-table-main"
+                                *ngIf="AuditableItemMasterStore.controlsToDisplay.length>0">
+                                <div class="row">
+                                    <div class="col-sm-12 full-width-table">
+                                        <table
+                                            class="table table-bordered ordinary-table audit-page-table mb-4 table-scroll">
+                                            <thead>
+                                                <tr>
+                                                    <th class="border-top-0" width="10%">
+                                                        <label class="container2 float-left"
+                                                            style="margin-top: 2px; padding-left: 22px;">
+
+
+                                                        </label>
+                                                        {{'sl' | translate}}
+                                                    </th>
+
+                                                    <th class="border-top-0" width="9%">Ref. No</th>
+                                                    <th class="border-top-0" width="25%">{{ 'title' | translate }}</th>
+                                                    <th class="border-top-0" width="25%">{{ 'control_category' |
+                                                        translate }}</th>
+                                                    <th class="border-top-0" width="26%">{{ 'control_types' | translate }}</th>
+                                                    <th class="border-top-0" width="9%">{{ 'action' | translate }}</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr
+                                                    *ngFor="let row of AuditableItemMasterStore.controlsToDisplay;let num = index">
+                                                    <td class="pointer">
+                                                        <label class="container2 float-left"
+                                                            style="margin-top: 2px; padding-left: 22px;">
+
+
+                                                        </label>
+                                                        {{num+1}}
+                                                    </td>
+                                                    <td >{{ row.reference_code }}</td>
+                                                    <td >{{ row.title }}</td>
+                                                    <td >{{
+                                                        row.control_category_title?row.control_category_title:'NA' }}
+                                                    </td>
+                                                    <td>{{
+                                                        row.control_type_title?row.control_type_title:'NA' }}</td>
+
+
+                                                    <td>
+                                                        <div class="edit-option-table">
+                                                            <button type="button" title="Delete"
+                                                                (click)="deleteControl(row)"
+                                                                class="edit-btn-table fa-trash-clr"><i
+                                                                    class="fas fa-trash"></i></button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <app-no-data-list [source]="controlsEmptyList"
+                                *ngIf="AuditableItemMasterStore.controlsToDisplay.length==0"></app-no-data-list>
+
+                        </div>
+                    </div>
+
+                </div><!-- tab end -->
+                <div class="tab">
+                    <!-- tab start -->
+                    <div class="row">
+                        <div class="col-sm-12">
+
+                            <div class="processes-issue audit-processes-issue clearfix">
+                                <h5><img src="/assets/images/controls-icon.png">{{ 'map_checklist_with_auditable_items' | translate }}</h5>
+
+                                <div class="float-right">
+                                    <a class="btn" (click)="addNewCheckList()">{{'add_new_checklist' | translate}}</a>
+                                    <a class="btn" (click)="addCheckList()">{{ 'choose_checklist' | translate }}</a>
+                                </div>                                
+                            </div>
+
+                            <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.checklist_ids">
+                                {{formErrors.checklist_ids}}</p>
+
+                            <div class="audit-program-box audit-page-table-main"
+                                *ngIf="AuditableItemMasterStore.checklistToDisplay.length>0">
+                                <div class="row">
+                                    <div class="col-sm-12 full-width-table">
+                                        <table
+                                            class="table table-bordered ordinary-table audit-page-table mb-4 table-scroll">
+                                            <thead>
+                                                <tr>
+                                                    <th class="border-top-0 text-center" width="5%" style="text-align: center;">
+
+                                                        {{'sl' | translate}}</th>
+
+
+                                                    <th class="border-top-0" width="45%">{{ 'title' | translate }}</th>
+
+                                                    <th class="border-top-0 text-center" width="5%">{{ 'action' | translate }}</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr
+                                                    *ngFor="let row of AuditableItemMasterStore.checklistToDisplay;let num = index">
+                                                    <td class="text-center">
+                                                        <label class="container2 float-left"
+                                                            style="margin-top: 2px; padding-left: 22px;">
+
+
+                                                        </label>
+                                                        {{num+1}}
+                                                    </td>
+
+                                                    <td >{{ row.title }}</td>
+
+
+
+                                                    <td class="text-center">
+                                                        <div class="edit-option-table">
+                                                            <button type="button" title="Delete"
+                                                                (click)="deleteChecklist(row)"
+                                                                class="edit-btn-table fa-trash-clr"><i
+                                                                    class="fas fa-trash"></i></button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <app-no-data-list [source]="checklistEmptyList"
+                                *ngIf="AuditableItemMasterStore.checklistToDisplay.length==0"></app-no-data-list>
+
+
+
+                        </div>
+                    </div>
+
+
+
+                </div><!-- tab end -->
+                <div class="tab">
+                    <!-- tab start -->
+                    <div class="widget bg-white">
+                        <div class="widget-body-light issuue-new-style master-form-preview">
+                            <div class="row">
+                                <div class="col-sm-12 col-lg-6 master-form-left">
+                                    <div class="left-box-issue-details">
+                                        <div class="issue-top-sec">
+                                            <div class="clearfix">
+                                                <h5 class="d-inline-block cmn-head-style label-tag-style">
+                                                    {{form.value.title?form.value.title:AppStore.noContentText}}
+                                                </h5>
+                                                <!-- <a href="#" class="draft-tag label-tag-style-tag">
+                                                    {{form.value.auditable_item_type_id?form.value.auditable_item_type_id.title:AppStore.noContentText}}</a> -->
+
+
+                                            </div>
+                                            <p style="white-space: pre-wrap;">
+                                                {{form.value.description?form.value.description:AppStore.noContentText}}
+                                            </p>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-sm-6">
+                                                <div>
+                                                    <h6>{{'audit_categories' | translate}}</h6>
+                                                    <div class="loop-cmn-p">
+                                                        <p>{{form.value.auditable_item_category_id?form.value.auditable_item_category_id.title:AppStore.noContentText}}
+                                                        </p>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6"
+                                                *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_subsidiary">
+                                                <div>
+                                                    <h6>{{ 'subsidiaries' | translate }}</h6>
+                                                    <div class="loop-cmn-p">
+                                                        <p
+                                                            *ngFor="let Subsidiary of form.value.organization_ids; let isLast=last">
+                                                            {{Subsidiary.title}} {{isLast ? '' : ',' }}</p>
+                                                    </div>
+                                                    <p *ngIf="!form.value.organization_ids">{{AppStore.noContentText}}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6"
+                                                [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_division ? 'none':'block'}">
+                                                <div>
+                                                    <h6>{{'divisions' | translate}}</h6>
+                                                    <div class="loop-cmn-p">
+                                                        <p
+                                                            *ngFor="let divisions of form.value.division_ids; let isLast=last">
+                                                            {{divisions.title}} {{isLast ? '' : ',' }}</p>
+                                                    </div>
+                                                    <p *ngIf="!form.value.division_ids">{{AppStore.noContentText}} </p>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6"
+                                                [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_department ? 'none':'block'}">
+                                                <div>
+                                                    <h6>{{'departments' | translate}}</h6>
+                                                    <div class="loop-cmn-p">
+                                                        <p
+                                                            *ngFor="let department of form.value.department_ids; let isLast=last">
+                                                            {{department.title}} {{isLast ? '' : ',' }}</p>
+                                                    </div>
+                                                    <p *ngIf="!form.value.department_ids">{{AppStore.noContentText}}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6"
+                                                [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_section ? 'none':'block'}">
+                                                <div>
+                                                    <h6>{{'sections' | translate}}</h6>
+                                                    <div class="loop-cmn-p">
+                                                        <p
+                                                            *ngFor="let sections of form.value.section_ids; let isLast=last">
+                                                            {{sections.title}} {{isLast ? '' : ',' }}</p>
+                                                    </div>
+                                                    <p *ngIf="!form.value.section_ids">{{AppStore.noContentText}} </p>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6"
+                                                [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_sub_section ? 'none':'block'}">
+                                                <div>
+                                                    <h6>{{'sub_sections' | translate}}</h6>
+                                                    <div class="loop-cmn-p">
+                                                        <p
+                                                            *ngFor="let subsection of form.value.sub_section_ids; let isLast=last">
+                                                            {{subsection.title}} {{isLast ? '' : ',' }}</p>
+                                                    </div>
+                                                    <p *ngIf="!form.value.sub_section_ids">{{AppStore.noContentText}}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <div>
+                                                    <h6>{{'risk_rating' | translate}}</h6>
+                                                    <p>{{RiskRatingMasterStore?.singleRiskDetails?.title}}
+                                                    </p>
+
+
+                                                </div>
+
+
+                                            </div>
+
+
+                                        </div>
+
+                                        <h6>{{'documents' | translate}}</h6>
+
+
+                                        <p *ngIf="fileUploadPopupStore.displayFiles.length==0">
+                                            {{AppStore.noContentText}}</p>
+                                        <div class="scroll-documents" #previewUploadArea>
+                                            <div class="thumb-pics-bg thumb-pics-col-2 clearfix thumb-pics-fix-text"
+                                                *ngIf="fileUploadPopupStore.displayFiles.length > 0">
+                                                <div class="thumb-pics"
+                                                    *ngFor="let docs of fileUploadPopupStore.displayFiles ;let i = index">
+                                                    <div class="upload-pics edit-option" data-toggle="modal">
+                                                        <div *ngIf="docs.id && !docs.preview" class="browse-form-pic"
+                                                            [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                                                        </div>
+                                                        <div *ngIf="docs.preview" class="browse-form-pic"
+                                                            [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">
+                                                        </div>
+                                                        <div class="browse-form-name clearfix">
+                                                            <div class="float-left">
+                                                                <h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                                                </h6>
+                                                                <span *ngIf="docs.is_kh_document"
+                                                                    class="mr-2 cmn-clr"><i
+                                                                        class="fas fa-book"></i></span>
+                                                                <span *ngIf="!docs.is_kh_document"
+                                                                    class="mr-2 cmn-clr"><i
+                                                                        class="fas fa-laptop"></i></span>
+                                                                <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                                                            </div>
+                                                            <div class="browse-logo">
+                                                                <img *ngIf="checkExtension(docs.ext,'image') != -1"
+                                                                    class="folder-picher"
+                                                                    src="/assets/images/jpg-icone.png">
+                                                                <img *ngIf="checkExtension(docs.ext,'doc') != -1"
+                                                                    class="folder-picher"
+                                                                    src="/assets/images/word-icone.png">
+                                                                <img *ngIf="checkExtension(docs.ext,'pdf') != -1"
+                                                                    class="folder-picher"
+                                                                    src="/assets/images/pdf-icone.png">
+                                                                <img *ngIf="checkExtension(docs.ext,'excel') != -1"
+                                                                    class="folder-picher"
+                                                                    src="/assets/images/excel-icone.png">
+                                                                <img *ngIf="checkExtension(docs.ext,'video') != -1"
+                                                                    class="folder-picher"
+                                                                    src="/assets/images/md-video.png">
+                                                                <img *ngIf="checkExtension(docs.ext,'audio') != -1"
+                                                                    class="folder-picher"
+                                                                    src="/assets/images/md-audio.png">
+                                                                <img *ngIf="checkExtension(docs.ext,'ppt') != -1"
+                                                                    class="folder-picher"
+                                                                    src="/assets/images/md-ppt.png">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- end -->
+
+                                    </div>
+                                </div>
+                                <div class="col-sm-12 col-lg-6 bdr-line-fill">
+                                    <div class="right-box-issue-details">
+                                        <h6 class="pb-2 mb-0">{{'controls' | translate}}</h6>
+                                        <div class="panel-group panel-drop-sections pt-0" id="jd" role="tablist"
+                                            aria-multiselectable="true">
+                                            <div *ngIf="!(AuditableItemMasterStore.controlsToDisplay.length > 0)">
+                                                <p>{{AppStore.noContentText}}</p>
+                                            </div>
+                                            <div class="panel-group panel-drop-sections pt-0" id="cc" role="tablist"
+                                                aria-multiselectable="true">
+                                                <div class="panel panel-default"
+                                                    *ngFor="let row of AuditableItemMasterStore.controlsToDisplay;let num = index">
+                                                    <div class="pointer"
+                                                        [ngClass]="selectedIndex==num ? 'panel-heading active' : 'panel-heading'"
+                                                        role="tab" id="activityHeader">
+                                                        <div class="panel-title">
+                                                            <a role="button" data-toggle="collapse" aria-expanded="true"
+                                                                aria-controls="collapseOne"
+                                                                (click)="getControlDetails(row.id, num)">
+                                                                <h5 class="width96pc mt-0">
+                                                                    <span>#{{row.reference_code}}</span> -
+                                                                    <span title="{{row.title}}">{{row.title.length > 13
+                                                                        ? row.title.substring(0,13)+' ...':
+                                                                        row.title}}</span> -
+                                                                    <span
+                                                                        title="{{row.control_category_title?row.control_category_title:'NA'}}">{{row?.control_category_title?.length
+                                                                        > 13 ?
+                                                                        row?.control_category_title?.substring(0,13)+'
+                                                                        ...': row?.control_category_title}}</span> <span
+                                                                        class="drop-down-icone"><i
+                                                                            class="fas fa-chevron-down"></i></span>
+                                                                </h5>
+
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                    <div class="drop-detail-sec"
+                                                        [ngClass]="selectedIndex==num ? 'panel-collapse collapse show' : 'panel-collapse collapse'"
+                                                        role="tabpanel" aria-labelledby="activityHeader">
+                                                        <div class="panel-body bg-white">
+                                                            <div class="drop-detail-sec">
+                                                                <ul class="banking-issue"
+                                                                    *ngFor="let list of ControlStore.controlDetails?.control_objectives">
+                                                                    <li class="clearfix"><a
+                                                                            style="cursor: default !important;">{{list.title}}</a>
+                                                                    </li>
+                                                                </ul>
+                                                            </div>
+                                                            <div style="cursor: default !important;"
+                                                                *ngIf="ControlStore.controlDetails?.control_objectives.length== 0 && ControlStore.control_details_loaded">
+                                                                {{AppStore.noContentText}}
+                                                            </div>
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                        <h6 class="pb-2 mb-0">{{'checklist' | translate}}</h6>
+                                        <div *ngIf="!(AuditableItemMasterStore?.checklistToDisplay.length > 0)">
+                                            <p>{{AppStore.noContentText}}</p>
+                                        </div>
+                                        <div class="drop-detail-sec">
+                                            <ul class="banking-issue">
+                                                <li class="clearfix"
+                                                    *ngFor="let checklist of AuditableItemMasterStore?.checklistToDisplay">
+                                                    <a style="cursor: default !important;">{{checklist.title}}</a>
+                                                </li>
+                                            </ul>
+                                        </div>
+
+
+
+
+
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+
+
+                </div><!-- tab end -->
+                <div style="overflow:auto;">
+                    <div class="form-next-page-btns" style="float:left;">
+                        <button class="btn btn-active" type="button" id="nextBtn" (click)="nextPrev(1)"
+                            [disabled]="AppStore.loading || !checkFormObject()">{{getButtonText(nextButtonText)}}</button>
+                        <button class="btn" type="button" id="prevBtn" (click)="nextPrev(-1)"
+                            [disabled]="AppStore.loading">{{getButtonText(previousButtonText)}}</button>
+                        <button class="btn" type="button" (click)="confirmCancel()">{{getButtonText('cancel')}}</button>
+                    </div>
+                </div>
+
+            </form>
+
+
+
+
+
+        </div>
+
+
+
+
+
+
+    </div>
+</main>
+
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #cancelPopup data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="confirmationObject"></app-delete-popup>
+</div>
+
+
+<!-- Control Choose Popup Modal Starts Here -->
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #controlPopup>
+    <app-controls-add-modal *ngIf="controlObject.type">
+
+    </app-controls-add-modal>
+
+</div>
+
+<!-- Control Choose Popup Modal Ends Here -->
+
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #checklistPopup>
+    <app-checklist-add-modal *ngIf="checklistObject.type" [source]="checklistObject">
+
+    </app-checklist-add-modal>
+
+</div>
+
+<!-- calling add auditable item category modal -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static"
+    #auditableItemCategoryAddPopup>
+    <app-audit-item-category-modal>
+
+    </app-audit-item-category-modal>
+
+</div>
+
+<!-- Add Control Modal Starts Here -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #newControl>
+    <app-add-control *ngIf="newcontrolObject.type" [source]="newcontrolObject"></app-add-control>
+</div>
+<!-- 
+ <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #newControl>
+    <app-add-controls-modal *ngIf="newcontrolObject.type" [source]="newcontrolObject"></app-add-controls-modal>
+</div>  -->
+
+<!-- Add Control Modal Starts Here -->
+
+<!----------------------- Organization form modal starts here --------------------------->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static"
+    #organisationChangeFormModal *mobxAutorun>
+    <app-organisation-change-modal *ngIf="openModelPopup" [source]="form.value"
+        (organizationChangeEvent)="closeOrganizationModal($event)"></app-organisation-change-modal>
+</div>
+<!----------------------- Organization form modal ends here --------------------------->
+
+
+<!-- * Documetn Attach/Upload Common Component Starts Here -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #fileUploadModal>
+
+    <app-file-upload-popup *ngIf="fileUploadPopupStore.openPopup"></app-file-upload-popup>
+
+</div>
+<!-- * Documetn Attach/Upload Common Component Ends Here -->
+
+<!-------------------------Add CheckList form modal------------>
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #checklistNewPopup>
+    <app-audit-check-list-modal *ngIf="newChecklistObject.type"></app-audit-check-list-modal>
+</div>

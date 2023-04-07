@@ -1,0 +1,463 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navBar>
+  <div class="module-name-block module-name-block-space float-left">
+    <a class="dropdown module-title">{{'process_arci'|translate}}</a>
+  </div>
+  <app-sub-menu>-</app-sub-menu>
+  <!-- <app-sub-menu-drop-down></app-sub-menu-drop-down> -->
+  <!-- <ul class="nav nav-pills float-left d-none d-lg-block" role="tablist">
+    <li class="nav-item">
+       <a class="nav-link nav-link-show" [routerLink]="['/bpm/arci']"
+           routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">{{'process_arci' | translate}} </a>
+   </ul> -->
+</nav>
+<main class="mt-3 organization-page">
+  
+  <div class="container-fluid">
+    <app-filter-menu></app-filter-menu>
+
+      <div class="row">
+        <div class="col-sm-12">
+          <div class="arci-table-main full-width-table">
+          <table class="table table-bordered ordinary-table customer-listing-table table-hover mb-1 arci-table button-top-table table-scroll" *ngIf="ArciStore?.loaded && ArciStore?.arciMatrixData.length > 0 && AuthStore.getActivityPermission(600,'PROCESS_ARCI_LIST')">
+            <thead>
+              <tr>
+                <th class="border-top-0 text-center" width="3%">{{'sl' | translate}}</th>
+                <th class="border-top-0 issue-list-org-tab-three pointer" width="9%" (click) = "setARCISort('ref_no')"> {{'ref_no' | translate}} <img *ngIf = "ArciStore.orderItem == 'ref_no'"
+                  [attr.src]="ArciStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" class="sort-down-pics"></th>
+                <th (click) = "setARCISort('process')" class="border-top-0 pointer" width="19%">{{'process' | translate}} <img *ngIf = "ArciStore.orderItem == 'process'"
+                  [attr.src]="ArciStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" class="sort-down-pics"></th>
+                <th (click) = "setARCISort('process_grp')" class="border-top-0 pointer" width="17%">{{'process_group' | translate}} <img *ngIf = "ArciStore.orderItem == 'process_grp'"
+                  [attr.src]="ArciStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"></th>
+                <th class="border-top-0 text-center" width="13%">{{'accountable' | translate}}</th>
+                <th class="border-top-0 text-center" width="13%">{{'responsible' | translate}}</th>
+                <th class="border-top-0 text-center" width="13%">{{'consulted' | translate}}</th>
+                <th class="border-top-0 text-center" width="13%">{{'informed' | translate}}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *mobxAutorun>
+                <tr  class="cursor-pointer edit-and-delete-main" *ngFor="let row of ArciStore?.arciMatrixData | paginate: {currentPage:ArciStore?.currentPage, itemsPerPage:ArciStore?.itemsPerPage,totalItems:ArciStore?.totalItems} ; let indexMain = index">
+                  <td style="text-align: center;" style="padding:0.75rem" (click) = "AuthStore.getActivityPermission(600,'PROCESS_ARCI_DETAILS') ? gotoProcessDetails(row.process_id) : ''">
+                    {{
+                      (ArciStore?.currentPage - 1) *
+                      ArciStore?.itemsPerPage +
+                        (indexMain + 1)
+                    }}
+                  </td>
+                  <td style="padding:0.75rem" (click) = "AuthStore.getActivityPermission(600,'PROCESS_ARCI_DETAILS') ? gotoProcessDetails(row.process_id) : ''">{{ row.reference_code }}</td>
+                  <td style="padding:0.75rem" (click) = "AuthStore.getActivityPermission(600,'PROCESS_ARCI_DETAILS') ? gotoProcessDetails(row.process_id) : ''">{{ row.title }}</td>
+                  <td style="padding:0.75rem" (click) = "AuthStore.getActivityPermission(600,'PROCESS_ARCI_DETAILS') ? gotoProcessDetails(row.process_id) : ''" >{{row.process_group.title}}</td>
+                  <!-- Accountable Users -->
+                  <td class="text-center">
+                    <div class="show-more"  *ngIf = "getUsersCount(row,'accountable') > 0 && !row.view_more_accountable_user">
+                    <ul class="arci-user-tab-dtl clearfix read-more-wrap min-height-auto">
+                      <li *ngFor="let du of row.accountable_user; let i = index" class="rounde-hov-bg">
+                        <!-- <a><img
+                            [attr.src]="du.image.token ? createPreviewUrl(du.image.token) : getDefaultImage('user-logo')"
+                            class="user-round-pics-new rounde-hov" (mouseenter)="mouseHover($event,i,'accountable',indexMain)"></a> -->
+                       
+                        <!-- <div *ngIf="i==accountableActiveIndex && indexMain == activeIndex"class="user-dtl-popup user-dtl-popup-right" (mouseleave)="mouseOut($event)"
+                          [ngStyle]="{display:hover?'block':'none'}" #popup>
+                          <div class="user-dtl-popup-head">
+                       
+                            <div class="user-detail-smol-dtl clearfix">
+                              <img
+                                [attr.src]="du.image.token ? createPreviewUrl(du.image.token) : getDefaultImage('user-logo')"
+                                class="rounded-circle user-pic-new">
+                              <span class="online-user online"></span>
+                              <div class="user-details">
+                                <h6>{{du.first_name}} {{du.last_name}}</h6>
+                                <span>{{du.designation}}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <ul>
+                            <li><a href="#"><i class="fas fa-user"></i> {{du.designation}}</a></li>
+                            <li><a href="#"><i class="fas fa-phone"></i> 980 9946 365</a></li>
+                            <li><a href="#"><i class="fas fa-envelope"></i> {{du.email}}</a></li>
+                          </ul>
+                          <div class="btn-bg-popup">
+                            <button type="button" data-toggle="modal" data-target="#signal-lost"
+                              class="btn ordinary-btn mr-3 btn-active">Send Email</button>
+                            <button type="button" (click)="gotoUserDetails(du)" data-toggle="modal"
+                              data-target="#signal-lost" class="btn ordinary-btn mr-3">View Detail</button>
+                          </div>
+                        </div> -->
+                        <app-user-popup-box [source]="getPopupDetails(du)" [showName] = "false"></app-user-popup-box>
+                        
+                      </li>
+
+                    </ul>
+                    <label *ngIf = "getUsersCount(row,'accountable') > 9 && !row.view_more_accountable_user" for="post-9" class="read-more-trigger" (click) = "viewUsers('more','accountable',row)">{{'more' | translate}}</label>
+                  </div>
+                  <div class="d-inline-block text-center" *ngIf = "getUsersCount(row,'accountable') == 0 && !row.view_more_accountable_user">
+                    <ng-container>
+                      <app-table-no-data-image ></app-table-no-data-image>
+                      
+                   </ng-container>
+                  </div>
+                  <div class="show-more"  *ngIf = "getUsersCount(row,'accountable') > 0 && row.view_more_accountable_user">
+                    <ul class="arci-user-tab-dtl clearfix read-more-wrap min-height-auto">
+                      <li *ngFor="let du of row.accountable_user; let i = index" class="rounde-hov-bg">
+                        <!-- <a><img
+                            [attr.src]="du.image.token ? createPreviewUrl(du.image.token) : getDefaultImage('user-logo')"
+                            class="user-round-pics-new rounde-hov" (mouseenter)="mouseHover($event,i,'accountable',indexMain)"></a>
+                       
+                        <div *ngIf="i==accountableActiveIndex && indexMain == activeIndex"class="user-dtl-popup user-dtl-popup-right" (mouseleave)="mouseOut($event)"
+                          [ngStyle]="{display:hover?'block':'none'}" #popup>
+                          <div class="user-dtl-popup-head">
+                       
+                            <div class="user-detail-smol-dtl clearfix">
+                              <img
+                                [attr.src]="du.image.token ? createPreviewUrl(du.image.token) : getDefaultImage('user-logo')"
+                                class="rounded-circle user-pic-new">
+                              <span class="online-user online"></span>
+                              <div class="user-details">
+                                <h6>{{du.first_name}} {{du.last_name}}</h6>
+                                <span>{{du.designation}}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <ul>
+                            <li><a href="#"><i class="fas fa-user"></i> {{du.designation}}</a></li>
+                            <li><a href="#"><i class="fas fa-phone"></i> 980 9946 365</a></li>
+                            <li><a href="#"><i class="fas fa-envelope"></i> {{du.email}}</a></li>
+                          </ul>
+                          <div class="btn-bg-popup">
+                            <button type="button" data-toggle="modal" data-target="#signal-lost"
+                              class="btn ordinary-btn mr-3 btn-active">Send Email</button>
+                            <button type="button" (click)="gotoUserDetails(du)" data-toggle="modal"
+                              data-target="#signal-lost" class="btn ordinary-btn mr-3">View Detail</button>
+                          </div>
+                        </div> -->
+                        <app-user-popup-box [source]="getPopupDetails(du)" [showName] = "false"></app-user-popup-box>
+                      </li>
+
+                    </ul>
+                    <label for="post-9" class="read-more-trigger" (click) = "viewUsers('less','accountable',row)">{{'less' | translate}}</label>
+                  </div>
+                  </td>
+                  <!-- Responsible Users -->
+                  <td class="text-center">
+                    <div class="show-more" *ngIf = "getUsersCount(row,'responsible') > 0 && !row.view_more_responsible_user">
+                      <ul class="arci-user-tab-dtl clearfix read-more-wrap min-height-auto">
+                        <li *ngFor="let du of row.responsible_user; let i = index" class="rounde-hov-bg">
+                          <!-- <a><img
+                              [attr.src]="du.image.token ? createPreviewUrl(du.image.token) : getDefaultImage('user-logo')"
+                              class="user-round-pics-new rounde-hov" (mouseenter)="mouseHover($event,i,'responsible',indexMain)"></a> -->
+                        
+                          <!-- <div *ngIf="i==responsibleActiveIndex && indexMain == activeIndex" class="user-dtl-popup user-dtl-popup-right" (mouseleave)="mouseOut($event)"
+                            [ngStyle]="{display:hover?'block':'none'}" #popup>
+                            <div class="user-dtl-popup-head">
+                              <div class="user-detail-smol-dtl clearfix">
+                                <img
+                                  [attr.src]="du.image.token ? createPreviewUrl(du.image.token) : getDefaultImage('user-logo')"
+                                  class="rounded-circle user-pic-new">
+                                <span class="online-user online"></span>
+                                <div class="user-details">
+                                  <h6>{{du.first_name}} {{du.last_name}}</h6>
+                                  <span>{{du.designation}}</span>
+                                </div>
+                              </div>
+                            </div>
+                            <ul>
+                              <li><a href="#"><i class="fas fa-user"></i> {{du.designation}}</a></li>
+                              <li><a href="#"><i class="fas fa-phone"></i> 980 9946 365</a></li>
+                              <li><a href="#"><i class="fas fa-envelope"></i> {{du.email}}</a></li>
+                            </ul>
+                            <div class="btn-bg-popup">
+                              <button type="button" data-toggle="modal" data-target="#signal-lost"
+                                class="btn ordinary-btn mr-3 btn-active">Send Email</button>
+                              <button type="button" (click)="gotoUserDetails(du)" data-toggle="modal"
+                                data-target="#signal-lost" class="btn ordinary-btn mr-3">View Detail</button>
+                            </div>
+                          </div> -->
+                          <app-user-popup-box [source]="getPopupDetails(du)" [showName] = "false"></app-user-popup-box>
+                        </li>
+                      </ul>
+                      <label *ngIf = "getUsersCount(row,'responsible') > 9 && !row.view_more_responsible_user" for="post-9" class="read-more-trigger" (click) = "viewUsers('more','responsible',row)">{{'more' | translate}}</label>
+                    </div>
+                    <div class="d-inline-block text-center" *ngIf = "getUsersCount(row,'responsible') == 0 && !row.view_more_responsible_user">
+                      <ng-container>
+                        <app-table-no-data-image ></app-table-no-data-image>
+                        
+                     </ng-container>
+                    </div>
+                    <div class="show-more" *ngIf = "getUsersCount(row,'responsible') > 0 && row.view_more_responsible_user">
+                      <ul class="arci-user-tab-dtl clearfix read-more-wrap min-height-auto">
+                        <li *ngFor="let du of row.responsible_user; let i = index" class="rounde-hov-bg">
+                          <!-- <a><img
+                              [attr.src]="du.image.token ? createPreviewUrl(du.image.token) : getDefaultImage('user-logo')"
+                              class="user-round-pics-new rounde-hov" (mouseenter)="mouseHover($event,i,'responsible',indexMain)"></a>
+                        
+                          <div *ngIf="i==responsibleActiveIndex && indexMain == activeIndex" class="user-dtl-popup user-dtl-popup-right" (mouseleave)="mouseOut($event)"
+                            [ngStyle]="{display:hover?'block':'none'}" #popup>
+                            <div class="user-dtl-popup-head">
+                              <div class="user-detail-smol-dtl clearfix">
+                                <img
+                                  [attr.src]="du.image.token ? createPreviewUrl(du.image.token) : getDefaultImage('user-logo')"
+                                  class="rounded-circle user-pic-new">
+                                <span class="online-user online"></span>
+                                <div class="user-details">
+                                  <h6>{{du.first_name}} {{du.last_name}}</h6>
+                                  <span>{{du.designation}}</span>
+                                </div>
+                              </div>
+                            </div>
+                            <ul>
+                              <li><a href="#"><i class="fas fa-user"></i> {{du.designation}}</a></li>
+                              <li><a href="#"><i class="fas fa-phone"></i> 980 9946 365</a></li>
+                              <li><a href="#"><i class="fas fa-envelope"></i> {{du.email}}</a></li>
+                            </ul>
+                            <div class="btn-bg-popup">
+                              <button type="button" data-toggle="modal" data-target="#signal-lost"
+                                class="btn ordinary-btn mr-3 btn-active">Send Email</button>
+                              <button type="button" (click)="gotoUserDetails(du)" data-toggle="modal"
+                                data-target="#signal-lost" class="btn ordinary-btn mr-3">View Detail</button>
+                            </div>
+                          </div> -->
+                          <app-user-popup-box [source]="getPopupDetails(du)" [showName] = "false"></app-user-popup-box>
+                        </li>
+  
+                      </ul>
+                      <label for="post-9" class="read-more-trigger" (click) = "viewUsers('less','responsible',row)">{{'less' | translate}}</label>
+                    </div>
+                  
+                  </td>
+                  <!-- Consulted Users -->
+                  <td class="text-center">
+
+                    <div class="show-more" *ngIf = "getUsersCount(row,'consulted') > 0 && !row.view_more_consulted_user">
+                      <ul class="arci-user-tab-dtl clearfix read-more-wrap min-height-auto">
+                        <li *ngFor="let du of row.consulted_user; let i = index" class="rounde-hov-bg">
+                          <!-- <a><img
+                              [attr.src]="du.image.token ? createPreviewUrl(du.image.token) : getDefaultImage('user-logo')"
+                              class="user-round-pics-new rounde-hov" (mouseenter)="mouseHover($event,i,'consulted',indexMain)"></a> -->
+                          <!-- user-dtl-popup start -->
+                          <!-- <div *ngIf="i==consultedActiveIndex && indexMain == activeIndex" class="user-dtl-popup user-dtl-popup-right" (mouseleave)="mouseOut($event)"
+                            [ngStyle]="{display:hover?'block':'none'}" #popup>
+                            <div class="user-dtl-popup-head">
+                              
+                              <div class="user-detail-smol-dtl clearfix">
+                                <img
+                                  [attr.src]="du.image.token ? createPreviewUrl(du.image.token) : getDefaultImage('user-logo')"
+                                  class="rounded-circle user-pic-new">
+                                <span class="online-user online"></span>
+                                <div class="user-details">
+                                  <h6>{{du.first_name}} {{du.last_name}}</h6>
+                                  <span>{{du.designation}}</span>
+                                </div>
+                              </div>
+                            </div>
+                            <ul>
+                              <li><a href="#"><i class="fas fa-user"></i> {{du.designation}}</a></li>
+                              <li><a href="#"><i class="fas fa-phone"></i> 980 9946 365</a></li>
+                              <li><a href="#"><i class="fas fa-envelope"></i> {{du.email}}</a></li>
+                            </ul>
+                            <div class="btn-bg-popup">
+                              <button type="button" data-toggle="modal" data-target="#signal-lost"
+                                class="btn ordinary-btn mr-3 btn-active">Send Email</button>
+                              <button type="button" (click)="gotoUserDetails(du)" data-toggle="modal"
+                                data-target="#signal-lost" class="btn ordinary-btn mr-3">View Detail</button>
+                            </div>
+                          </div> -->
+                          <app-user-popup-box [source]="getPopupDetails(du)" [showName] = "false"></app-user-popup-box>
+                          <!-- user-dtl-popup end -->
+                        </li>
+  
+                      </ul>
+                      <label *ngIf = "getUsersCount(row,'consulted') > 9 && !row.view_more_consulted_user" for="post-9" class="read-more-trigger" (click) = "viewUsers('more','consulted',row)">{{'more' | translate}}</label>
+                    </div>
+                    <div class="d-inline-block text-center" *ngIf = "getUsersCount(row,'consulted') == 0 && !row.view_more_consulted_user">
+                      <ng-container>
+                        <app-table-no-data-image ></app-table-no-data-image>
+                        
+                     </ng-container>
+                    </div>
+                    <div class="show-more" *ngIf = "getUsersCount(row,'consulted') > 0 && row.view_more_consulted_user">
+                      <ul class="arci-user-tab-dtl clearfix read-more-wrap min-height-auto">
+                        <li *ngFor="let du of row.consulted_user; let i = index" class="rounde-hov-bg">
+                          <app-user-popup-box [source]="getPopupDetails(du)" [showName] = "false"></app-user-popup-box>
+                          <!-- <a><img
+                              [attr.src]="du.image.token ? createPreviewUrl(du.image.token) : getDefaultImage('user-logo')"
+                              class="user-round-pics-new rounde-hov" (mouseenter)="mouseHover($event,i,'consulted',indexMain)"></a>
+                       
+                          <div *ngIf="i==consultedActiveIndex && indexMain == activeIndex" class="user-dtl-popup user-dtl-popup-right" (mouseleave)="mouseOut($event)"
+                            [ngStyle]="{display:hover?'block':'none'}" #popup>
+                            <div class="user-dtl-popup-head">
+                              
+                              <div class="user-detail-smol-dtl clearfix">
+                                <img
+                                  [attr.src]="du.image.token ? createPreviewUrl(du.image.token) : getDefaultImage('user-logo')"
+                                  class="rounded-circle user-pic-new">
+                                <span class="online-user online"></span>
+                                <div class="user-details">
+                                  <h6>{{du.first_name}} {{du.last_name}}</h6>
+                                  <span>{{du.designation}}</span>
+                                </div>
+                              </div>
+                            </div>
+                            <ul>
+                              <li><a href="#"><i class="fas fa-user"></i> {{du.designation}}</a></li>
+                              <li><a href="#"><i class="fas fa-phone"></i> 980 9946 365</a></li>
+                              <li><a href="#"><i class="fas fa-envelope"></i> {{du.email}}</a></li>
+                            </ul>
+                            <div class="btn-bg-popup">
+                              <button type="button" data-toggle="modal" data-target="#signal-lost"
+                                class="btn ordinary-btn mr-3 btn-active">Send Email</button>
+                              <button type="button" (click)="gotoUserDetails(du)" data-toggle="modal"
+                                data-target="#signal-lost" class="btn ordinary-btn mr-3">View Detail</button>
+                            </div>
+                          </div> -->
+           
+                        </li>
+  
+                      </ul>
+                      <label for="post-9" class="read-more-trigger" (click) = "viewUsers('less','consulted',row)">{{'less' | translate}}</label>
+                    </div>
+
+              
+                  </td>
+                  <!-- Informed Users -->
+                  <td class="text-center">
+                    <div class="edit-option-show">
+                      <a [attr.title]="'edit'|translate" (click) = "getARCI(row)" *ngIf="AuthStore.getActivityPermission(100,'CREATE_PROCESS_ARCI')"><i class="fas fa-pen pointer"></i></a>
+                      <a [attr.title]="'delete'|translate" (click) = "delete(row.process_id)" *ngIf="AuthStore.getActivityPermission(100,'DELETE_PROCESS_ARCI')"><i class="fas fa-trash pointer"></i></a>
+                   </div>
+
+                   <div class="show-more" *ngIf = "getUsersCount(row,'informed') > 0 && !row.view_more_informed_user">
+                    <ul class="arci-user-tab-dtl clearfix read-more-wrap min-height-auto">
+                      <li *ngFor="let du of row.informed_user; let i = index" class="rounde-hov-bg">
+                        <!-- <a><img
+                            [attr.src]="du.image.token ? createPreviewUrl(du.image.token) : getDefaultImage('user-logo')"
+                            class="user-round-pics-new rounde-hov" (mouseenter)="mouseHover($event,i,'informed',indexMain)"></a> -->
+                        <!-- user-dtl-popup start -->
+                        <!-- <div *ngIf="i==informedActiveIndex && indexMain == activeIndex" class="user-dtl-popup user-dtl-popup-right" (mouseleave)="mouseOut($event)"
+                          [ngStyle]="{display:hover?'block':'none'}" #popup>
+                          <div class="user-dtl-popup-head">
+                            <div class="user-detail-smol-dtl clearfix">
+                              <img
+                                [attr.src]="du.image.token ? createPreviewUrl(du.image.token) : getDefaultImage('user-logo')"
+                                class="rounded-circle user-pic-new">
+                              <span class="online-user online"></span>
+                              <div class="user-details">
+                                <h6>{{du.first_name}} {{du.last_name}}</h6>
+                                <span>{{du.designation}}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <ul>
+                            <li><a href="#"><i class="fas fa-user"></i> {{du.designation}}</a></li>
+                            <li><a href="#"><i class="fas fa-phone"></i> 980 9946 365</a></li>
+                            <li><a href="#"><i class="fas fa-envelope"></i> {{du.email}}</a></li>
+                          </ul>
+                          <div class="btn-bg-popup">
+                            <button type="button" data-toggle="modal" data-target="#signal-lost"
+                              class="btn ordinary-btn mr-3 btn-active">Send Email</button>
+                            <button type="button" (click)="gotoUserDetails(du)" data-toggle="modal"
+                              data-target="#signal-lost" class="btn ordinary-btn mr-3">View Detail</button>
+                          </div>
+                        </div> -->
+                        <app-user-popup-box [source]="getPopupDetails(du)" [showName] = "false"></app-user-popup-box>
+                      </li>          
+                    </ul>
+                    <label *ngIf = "getUsersCount(row,'informed') > 9 && !row.view_more_informed_user" for="post-9" class="read-more-trigger" (click) = "viewUsers('more','informed',row)">{{'more' | translate}}</label>
+                   </div>
+                   <div class="d-inline-block text-center" *ngIf = "getUsersCount(row,'informed') == 0 && !row.view_more_informed_user">
+                    <ng-container>
+                      <app-table-no-data-image ></app-table-no-data-image>
+                      
+                   </ng-container>
+                  </div>
+                   <div class="show-more" *ngIf = "getUsersCount(row,'informed') > 0 && row.view_more_informed_user">
+                    <ul class="arci-user-tab-dtl clearfix read-more-wrap min-height-auto">
+                      <li *ngFor="let du of row.informed_user; let i = index" class="rounde-hov-bg">
+                        <app-user-popup-box [source]="getPopupDetails(du)" [showName] = "false"></app-user-popup-box>
+                        <!-- <a><img
+                            [attr.src]="du.image.token ? createPreviewUrl(du.image.token) : getDefaultImage('user-logo')"
+                            class="user-round-pics-new rounde-hov" (mouseenter)="mouseHover($event,i,'informed',indexMain)"></a>
+                        
+                        <div *ngIf="i==informedActiveIndex && indexMain == activeIndex" class="user-dtl-popup user-dtl-popup-right" (mouseleave)="mouseOut($event)"
+                          [ngStyle]="{display:hover?'block':'none'}" #popup>
+                          <div class="user-dtl-popup-head">
+                            <div class="user-detail-smol-dtl clearfix">
+                              <img
+                                [attr.src]="du.image.token ? createPreviewUrl(du.image.token) : getDefaultImage('user-logo')"
+                                class="rounded-circle user-pic-new">
+                              <span class="online-user online"></span>
+                              <div class="user-details">
+                                <h6>{{du.first_name}} {{du.last_name}}</h6>
+                                <span>{{du.designation}}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <ul>
+                            <li><a href="#"><i class="fas fa-user"></i> {{du.designation}}</a></li>
+                            <li><a href="#"><i class="fas fa-phone"></i> 980 9946 365</a></li>
+                            <li><a href="#"><i class="fas fa-envelope"></i> {{du.email}}</a></li>
+                          </ul>
+                          <div class="btn-bg-popup">
+                            <button type="button" data-toggle="modal" data-target="#signal-lost"
+                              class="btn ordinary-btn mr-3 btn-active">Send Email</button>
+                            <button type="button" (click)="gotoUserDetails(du)" data-toggle="modal"
+                              data-target="#signal-lost" class="btn ordinary-btn mr-3">View Detail</button>
+                          </div>
+                        </div> -->
+                      </li>
+
+                    </ul>
+                    <label for="post-9" class="read-more-trigger" (click) = "viewUsers('less','informed',row)">{{'less' | translate}}</label>
+                   </div>
+               
+                  </td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
+        </div>
+        <p class="float-right bold mb-0" *ngIf="ArciStore?.loaded && ArciStore.totalItems > 0">{{'total_Items' | translate}}:{{ArciStore.totalItems}}</p>
+          <ng-container *mobxAutorun>
+            <div *ngIf="!ArciStore?.loaded">
+              <app-eight-column-loader></app-eight-column-loader>
+            </div>
+          </ng-container>
+          <div class="col-sm-12" *ngIf="ArciStore.totalItems > ArciStore.itemsPerPage && ArciStore?.loaded">
+            <ul class="pagination justify-content-center mt-3">
+                <div class="list">
+                    <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate" (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+                </div>
+            </ul>
+        </div>
+        </div>
+      </div>
+      <ng-container>
+        <app-no-data *ngIf="ArciStore?.loaded && ArciStore?.arciMatrixData.length == 0"></app-no-data>
+     </ng-container>
+    
+
+
+
+
+  </div>
+  <!-- Pagination TO be Done -->
+</main>
+
+<!-- -------------- ARCI Add Modal-------------- -->
+
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+  <button type="button" class="close" data-dismiss="modal" (click)="closeFormModal()"><i
+      class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+  <app-arci-add-modal *ngIf="arciMatrixObject.type" [source]="arciMatrixObject"></app-arci-add-modal>
+
+</div>
+
+<!-- ------------------------------------------ -->
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #deletePopup>
+  <app-delete-popup [source] = "deleteObject"></app-delete-popup>
+</div>
+
+<!------------------- Delete Confirmation Modal End --------------------------->

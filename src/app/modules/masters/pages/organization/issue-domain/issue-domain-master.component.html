@@ -1,0 +1,97 @@
+<div class="widget bg-white">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item pointer" [routerLink]="['/masters/organization']"><a>{{'the_organization' | translate}}</a></li>
+            <li class="breadcrumb-item active">{{'issue_domain' | translate}}</li>
+        </ol>
+    </nav>
+   
+    <div class="audit-form-table w-100 not-fixed-table mb-0">
+    <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scrol" *ngIf="IssueDomainMasterStore?.loaded && IssueDomainMasterStore.issueDomains.length > 0">
+        
+        <tr>
+            <th style="width: 5%; text-align: center;">{{'sl' | translate}}</th>
+            <th (click)="sortTitle('issue_domains.title')" class="border-top-0 issue-list-org-tab-three pointer" style="width: 83%;"><span>{{'issue_domain' | translate}}</span>
+                <img _ngcontent-twv-c17="" *ngIf="IssueDomainMasterStore.orderItem=='issue_domains.title'" class="sort-down-pics pl-2" 
+                [attr.src]="IssueDomainMasterStore.orderBy=='desc' ? 
+                'assets/images/sort-up.png' : IssueDomainMasterStore.orderBy=='asc' ? 
+                'assets/images/sort-down.png' : 'assets/images/sort-empty.png'">
+            </th>
+            <th style="width: 12%; text-align:center;">{{'status' | translate}}</th>
+        </tr>
+
+        <ng-container *mobxAutorun>
+           
+            <tr [ngClass]="AuthStore.getActivityPermission(1100,'UPDATE_ISSUE_DOMAIN') ? 'edit-and-delete-main pointer' : 'edit-and-delete-main'"
+            *ngFor="let row of IssueDomainMasterStore?.issueDomains | paginate:
+                {
+                    currentPage:IssueDomainMasterStore?.currentPage, 
+                    itemsPerPage:IssueDomainMasterStore?.itemsPerPage,
+                    totalItems:IssueDomainMasterStore?.totalItems
+                }; let num = index" (click)="getIssueDomain(row.id)"
+                [ngStyle] = "{ 'pointer-events' : AuthStore.getActivityPermission(1100,'UPDATE_ISSUE_DOMAIN') ? '' : 'none'}">
+                <td style="text-align: center;">{{(IssueDomainMasterStore?.currentPage - 1) * IssueDomainMasterStore?.itemsPerPage + (num + 1)}}</td>
+                <td>>{{row.title}}</td>
+                <td class="text-center" style="padding:0.75rem;" >
+                    <div [attr.class]="'dot-div '+row.status_label">{{row.status}}</div>
+                    <div class="edit-option-show">
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'UPDATE_ISSUE_DOMAIN')" (click)=" getIssueDomain(row.id)" [attr.title]="'edit' | translate"><i class="fas fa-pen pointer"></i></a>
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'DELETE_ISSUE_DOMAIN')" (click)="delete(row.id)" [attr.title]="'delete' | translate"><i class="fas fa-trash pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(1100,'ACTIVATE_ISSUE_DOMAIN')" (click)="activate(row.id)" [attr.title]="'activate' | translate"><i
+                                class="fas fa-check pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.activeStatusId && AuthStore.getActivityPermission(1100,'DEACTIVATE_ISSUE_DOMAIN')" (click)="deactivate(row.id)" [attr.title]="'deactivate' | translate"><i
+                                class="fas fa-ban pointer"></i></a>
+                    </div>
+                </td>           
+            </tr>
+        </ng-container>
+    </table>
+    </div>
+
+    <p class="float-right" *ngIf="IssueDomainMasterStore?.loaded && IssueDomainMasterStore.totalItems > 0"><b>{{'total_Items' | translate}}:{{IssueDomainMasterStore?.totalItems}}</b></p>
+
+    <ng-container *mobxAutorun>
+        <div *ngIf="!IssueDomainMasterStore.loaded">
+            <app-table-loader></app-table-loader>
+        </div>
+        <app-no-data *ngIf = "IssueDomainMasterStore.issueDomains.length == 0 && IssueDomainMasterStore.loaded == true"></app-no-data>
+   
+    </ng-container>
+
+    <!-- <div *ngIf = "IssueDomainMasterStore.totalItems == 0 && IssueDomainMasterStore.loaded == true" class="no-policy-demo-text bg-white d-flex align-items-center w-100 mt-2" style="height: 200px">
+        <div class="no-policy-demo">
+           <div class="no-file-icon">
+             <i class="far fa-file"></i>
+           </div>
+           <h6 class="bold mb-0">Nothing To Show</h6>
+        </div>
+     </div> -->
+
+    <div *ngIf="IssueDomainMasterStore.totalItems>IssueDomainMasterStore.itemsPerPage" class="col-sm-12">
+        <ul class="pagination justify-content-center mt-3">
+            <div class="list">
+                <pagination-controls [previousLabel]="'previous' | translate"  [nextLabel]="'next' | translate" (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls> 
+            </div>
+        </ul>
+    </div>
+</div>
+
+<!-- Modal part -->
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+
+    <app-add-issue-domain *ngIf="issueDomainObject.type" [source]="issueDomainObject">
+
+    </app-add-issue-domain>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+
+<div class="modal modal-style-1 email-popup-new fade" data-backdrop="static" data-keyboard="false"
+  id="email-notification-popup" #mailConfirmationPopup>
+  <app-mail-send-popup [source] = "mailConfirmationData"></app-mail-send-popup>
+</div>

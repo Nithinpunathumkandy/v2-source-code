@@ -1,0 +1,205 @@
+<div class="tab-pane" id="outcome">
+    <ng-container *mobxAutorun>
+        <app-no-data *ngIf="OutcomeStore.detailsLoaded && !OutcomeStore.Outcome"></app-no-data>
+    </ng-container>
+    <div class="widget" *ngIf="OutcomeStore.detailsLoaded && OutcomeStore.Outcome">
+        <div class="row issuue-new-style p-0">
+            <div class="col-lg-12 col-sm-12 padding-right-0">
+                <div class="bg-white widg-padding-cmn">
+                    <div class="min-height-64">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h5 class="d-inline-block cmn-head-style">BCP
+                                    Effectiveness
+                                </h5>
+                            </div>
+                            <ng-container *ngIf="OutcomeStore.Outcome.checklists.length==0">
+                                <p>{{AppStore.noContentText}}</p>
+                            </ng-container>
+                            <ng-container *ngIf="OutcomeStore.Outcome.checklists.length!=0">
+                                <div class="col-lg-12 col-sm-12"
+                                    *ngFor="let outcome of OutcomeStore.Outcome.checklists">
+                                    <h6>{{outcome.title}}</h6>
+                                    <p> <strong>{{outcome.answer==1?'Yes':'No'}}{{outcome.comments?',':''}}</strong>{{outcome.comments}}
+                                    </p>
+                                </div>
+                            </ng-container>
+
+                            <div class="col-lg-6 col-sm-12">
+                                <h6> Recover Time? </h6>
+                                <p>{{OutcomeStore.Outcome.recovery_time?OutcomeStore.Outcome.recovery_time:AppStore.noContentText}}
+                                </p>
+
+                            </div>
+                            <div class="col-lg-6 col-sm-12">
+                                <h6> Recovery Level? </h6>
+                                <p>{{OutcomeStore.Outcome.recovery_level?OutcomeStore.Outcome.recovery_level.title+' -
+                                    '+OutcomeStore.Outcome.recovery_level.description:AppStore.noContentText}}
+                                </p>
+
+                            </div>
+                            <div class="col-md-12">
+
+                                <h6>
+                                    What Went Well</h6>
+                                <p
+                                    innerHtml="{{OutcomeStore.Outcome?.what_went_well ? OutcomeStore.Outcome?.what_went_well : AppStore.noContentText}}">
+                                </p>
+                                <h6>
+                                    What Could Be Improved</h6>
+                                <p
+                                    innerHtml="{{OutcomeStore.Outcome?.improvements ? OutcomeStore.Outcome?.improvements : AppStore.noContentText}}">
+                                </p>
+                                <h6>{{'actual_cost'|translate}}({{OrganizationGeneralSettingsStore?.organizationSettings?.currency}})
+                                </h6>
+                                <p>{{OutcomeStore.Outcome.actual_cost?OutcomeStore.Outcome.actual_cost:AppStore.noContentText}}
+                                </p>
+                                <h6>{{'remarks'|translate}}</h6>
+                                <p style="white-space: pre-wrap;">
+                                    {{OutcomeStore.Outcome.remarks?OutcomeStore.Outcome.remarks:AppStore.noContentText}}
+                                </p>
+                                <div class="col-md-12 pl-0">
+                                    <h6 class="mb-2">
+                                        {{'attachents' | translate}}</h6>
+                                    <p *ngIf="OutcomeStore.Outcome?.documents.length == 0">
+                                        {{AppStore.noContentText}}</p>
+                                    <div class="thumb-pics-bg thumb-pics-col-5 thumb-pics-fix-text clearfix"
+                                        style="padding-top: 0" *ngIf="OutcomeStore.Outcome?.documents.length != 0">
+                                        <div class="thumb-pics"
+                                            *ngFor="let docs of OutcomeStore.Outcome?.documents;let i = index">
+
+                                            <!-- System Files Starts Here -->
+                                            <div class="upload-pics edit-option" *ngIf="!docs.document_id"
+                                                (click)="viewDocument('test-and-exercise-outcomes',docs,docs)">
+                                                <div class="browse-form-pic"
+                                                    [ngStyle]="{'background': 'url('+createImageUrl('test-and-exercise-outcomes',docs?.token)+') no-repeat'}">
+                                                </div>
+                                                <div class="browse-form-name clearfix">
+                                                    <div class="float-left">
+                                                        <h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                                        </h6>
+                                                        <span>{{docs.size/1048576 |
+                                                            number:'0.2-2'}}MB</span><span
+                                                            class="text-blue bold pl-2">System</span>
+                                                    </div>
+                                                    <div class="browse-logo">
+                                                        <img *ngIf="checkExtension(docs.ext,'image') != -1"
+                                                            class="folder-picher" src="/assets/images/jpg-icone.png">
+                                                        <img *ngIf="checkExtension(docs.ext,'doc') != -1"
+                                                            class="folder-picher" src="/assets/images/word-icone.png">
+                                                        <img *ngIf="checkExtension(docs.ext,'pdf') != -1"
+                                                            class="folder-picher" src="/assets/images/pdf-icone.png">
+                                                        <img *ngIf="checkExtension(docs.ext,'excel') != -1"
+                                                            class="folder-picher" src="/assets/images/excel-icone.png">
+                                                        <img *ngIf="checkExtension(docs.ext,'video') != -1"
+                                                            class="folder-picher" src="/assets/images/md-video.png">
+                                                        <img *ngIf="checkExtension(docs.ext,'audio') != -1"
+                                                            class="folder-picher" src="/assets/images/md-audio.png">
+                                                        <img *ngIf="checkExtension(docs.ext,'ppt') != -1"
+                                                            class="folder-picher" src="/assets/images/md-ppt.png">
+                                                    </div>
+                                                </div>
+                                                <div class="edit-option-show">
+                                                    <a><i class="fas fa-download"
+                                                            (click)="downloadDocumentFile('test-and-exercise-outcomes',docs)"></i></a>
+                                                </div>
+                                            </div>
+                                            <div class="upload-pics edit-option" *ngIf="docs.document_id">
+
+                                                <div *ngFor="let mainDoc of docs.kh_document.versions"
+                                                    (click)="viewDocument('document-version',docs,mainDoc)">
+                                                    <div *ngIf="mainDoc.is_latest">
+                                                        <div class="browse-form-pic"
+                                                            [ngStyle]="{'background': 'url('+createImageUrl('document-version',mainDoc?.token)+') no-repeat'}">
+                                                        </div>
+                                                        <div class="browse-form-name clearfix">
+                                                            <div class="float-left">
+                                                                <h6>{{mainDoc.title}}.{{mainDoc.ext}}
+                                                                </h6>
+                                                                <span>{{mainDoc.size/1048576 |
+                                                                    number:'0.2-2'}}MB</span><span
+                                                                    class="text-blue bold pl-2">Knowledge
+                                                                    Hub</span>
+                                                            </div>
+                                                            <div class="browse-logo">
+                                                                <img *ngIf="checkExtension(mainDoc.ext,'image') != -1"
+                                                                    class="folder-picher"
+                                                                    src="/assets/images/jpg-icone.png">
+                                                                <img *ngIf="checkExtension(mainDoc.ext,'doc') != -1"
+                                                                    class="folder-picher"
+                                                                    src="/assets/images/word-icone.png">
+                                                                <img *ngIf="checkExtension(mainDoc.ext,'pdf') != -1"
+                                                                    class="folder-picher"
+                                                                    src="/assets/images/pdf-icone.png">
+                                                                <img *ngIf="checkExtension(mainDoc.ext,'excel') != -1"
+                                                                    class="folder-picher"
+                                                                    src="/assets/images/excel-icone.png">
+                                                                <img *ngIf="checkExtension(mainDoc.ext,'video') != -1"
+                                                                    class="folder-picher"
+                                                                    src="/assets/images/md-video.png">
+                                                                <img *ngIf="checkExtension(mainDoc.ext,'audio') != -1"
+                                                                    class="folder-picher"
+                                                                    src="/assets/images/md-audio.png">
+                                                                <img *ngIf="checkExtension(mainDoc.ext,'ppt') != -1"
+                                                                    class="folder-picher"
+                                                                    src="/assets/images/md-ppt.png">
+                                                            </div>
+                                                        </div>
+                                                        <div class="edit-option-show">
+                                                            <a><i class="fas fa-download"
+                                                                    (click)="downloadDocumentFile('document-version',docs,mainDoc)"></i></a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xl-12">
+                            <hr class="mb-2">
+                            <app-user-popup-box
+                                [source]=" getCreatedByPopupDetails(TestAndExerciseStore?.riskTestEndExercise,TestAndExerciseStore?.riskTestEndExercise?.created_at,'default')">
+                            </app-user-popup-box>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <ng-container *ngIf="!OutcomeStore.detailsLoaded">
+        <app-test-info-loader></app-test-info-loader>
+    </ng-container>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup" data-keyboard="false"
+    data-backdrop="static" #filePreviewModal *mobxAutorun>
+    <button type="button" class="close" data-dismiss="modal" (click)="closePreviewModal($event)"><i
+            class="lni-close"></i><span>esc</span></button>
+    <app-bcm-preview *ngIf="previewObject" [source]="previewObject" (close)="closePreviewModal($event)">
+    </app-bcm-preview>
+</div>
+
+<!-- <div class="modal modal-style-1 popup-full-width fade" style="overflow: auto;" id="new-bcp" data-keyboard="false"
+    data-backdrop="static" #formModal>
+    <app-test-exercise-outcome-add *ngIf="testObject.type" [source]="testObject"></app-test-exercise-outcome-add>
+</div> -->
+
+<div class="modal modal-style-1 popup-full-width fade" id="process-popup" data-keyboard="false" data-backdrop="static"
+    #workflowHistory *mobxAutorun>
+    <app-test-and-exercises-workflow-history
+        *ngIf="workflowHistoryOpened == true"></app-test-and-exercises-workflow-history>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="process-popup" data-keyboard="false" data-backdrop="static"
+    #workflowModal *mobxAutorun>
+    <app-test-and-exercises-workflow-popup *ngIf="workflowModalOpened == true"></app-test-and-exercises-workflow-popup>
+</div>
+
+<div [ngClass]="fileUploadPopupStore.openPopup?'modal modal-style-1 fade popup-full-width':'modal modal-style-1 fade popup-full-width small-step-form-popup'"
+    id="new-bcp" style="overflow: auto;" data-keyboard="false" data-backdrop="static" #formModal>
+    <app-test-exercise-outcome-add *ngIf="testObject.type" [source]="testObject"></app-test-exercise-outcome-add>
+</div>

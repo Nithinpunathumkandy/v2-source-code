@@ -1,0 +1,67 @@
+<div class="pdf-page-section">
+   <div class="introduction-page intro-right">
+      <div class="panel panel-default">
+         <div id="collapse106" class="panel-collapse collapse in show" role="tabpanel" aria-labelledby="heading106">
+            <div class="panel-body">
+               <div class="audit-program-box audit-page-table-main min-height-83">
+                  <div class="row">
+                     <div class="col-sm-12">
+                        <div class="full-width-table mb-3" *mobxAutorun>
+                           <table *ngIf="EventLessonLearnedStore?.eventLessonLearnedList.length > 0 && EventLessonLearnedStore.loaded"
+                              class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                              <thead>
+                                 <tr>
+                                    <th class="border-top-0" width="4%">#</th>                                    
+                                    <th class="border-top-0" width="36%">{{'title' | translate}}</th>
+                                    <th class="border-top-0" width="45%">{{'recommendation' | translate}}</th>
+                                    <th class="border-top-0" width="15%">{{'further_action_required' | translate}}</th>
+                                 </tr>
+                              </thead>
+                              <tbody>
+                                 <tr (click)="gotoDetails(lesson.id)" *ngFor="let lesson of EventLessonLearnedStore?.eventLessonLearnedList | paginate: {currentPage:EventLessonLearnedStore?.currentPage, itemsPerPage:EventLessonLearnedStore?.itemsPerPage,totalItems:EventLessonLearnedStore?.totalItems}; let num = index"
+                                    class="pointer edit-option">
+                                    <td class="text-center">{{(EventLessonLearnedStore?.currentPage - 1)*EventLessonLearnedStore?.itemsPerPage +(num + 1)}}</td>                                    
+                                    <td [title]="lesson?.title">{{lesson?.title?.length > 60 ? lesson?.title.substring(0,60)+' ...' : lesson?.title}}</td>
+                                    <td style="white-space: pre-wrap;" *ngIf="lesson?.recommendation" [title]="lesson?.recommendation">{{lesson?.recommendation?.length > 150 ? lesson?.recommendation.substring(0,150)+' ...' : lesson?.recommendation}}</td>
+                                    <td *ngIf="!lesson?.recommendation">{{AppStore.noContentText}}</td>
+                                    <td class="text-center">
+                                       <div>{{lesson?.is_further_action_required==1 ? 'Yes':'No'}}</div>                                                     
+                                       <div class="edit-option-show-inner" style="margin: 30px 0 0 0; ">                                          
+                                          <a *ngIf="AuthStore.getActivityPermission(3000,'DELETE_EVENT_LESSON_LEARNED')" [attr.title]="'edit'|translate" (click)="edit($event,lesson)"><i class="fas fa-pen pointer"></i></a>
+                                          <a *ngIf="AuthStore.getActivityPermission(3000,'DELETE_EVENT_LESSON_LEARNED')" [attr.title]="'delete'|translate" (click)="delete($event,lesson.id)"><i class="fas fa-trash pointer"></i></a>
+                                       </div>
+                                    </td>
+                                 </tr>
+                              </tbody>
+                           </table>
+                           <ng-container *mobxAutorun>
+                              <div *ngIf="!EventLessonLearnedStore.loaded">
+                                 <app-table-loader></app-table-loader>
+                              </div>
+                              <app-no-data *ngIf="EventLessonLearnedStore?.eventLessonLearnedList.length == 0 && EventLessonLearnedStore.loaded == true"></app-no-data>
+                           </ng-container>
+                           <div *ngIf="EventLessonLearnedStore.totalItems>EventLessonLearnedStore.itemsPerPage && EventLessonLearnedStore.loaded == true" class="col-sm-12">
+                              <ul class="pagination justify-content-center mt-3">
+                                 <div class="list">
+                                    <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate" (pageChange)="getDetails($event)" class="my-pagination"></pagination-controls>
+                                 </div>
+                              </ul>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+
+   </div>
+</div>
+<!-------------------------------Form Modal--------------------------------------->
+<div class="modal modal-style-1 popup-full-width fade" style="z-index:99999;overflow: auto;" data-keyboard="false" data-backdrop="static" #lessonLearnedForm>
+   <app-add-lesson-learned *ngIf="lessonLearnedObject.type" [source]="lessonLearnedObject"></app-add-lesson-learned>
+</div>
+<!------------------- Delete Confirmation Modal Start --------------------------->
+<div class="modal modal-style-1 fade" id="delete-popup" #deleteModal data-backdrop="static" data-keyboard="false">
+   <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>

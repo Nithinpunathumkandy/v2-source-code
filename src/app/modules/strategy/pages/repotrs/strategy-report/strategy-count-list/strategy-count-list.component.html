@@ -1,0 +1,648 @@
+<!-- <div> -->
+    <div #plainDev></div>
+    <nav class="edit-bar" data-toggle="affix" #navBar>
+        <div class="module-name-block float-left">
+            <a class="nav-link current-page border-right-0"
+                [routerLink]="['/strategy-management/report', riskcountType]">
+                <i class="fas fa-chevron-left"></i>{{'Strategy report details' | translate}}</a>
+        </div>
+        <ul class="nav nav-pills float-left d-none d-lg-block" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link nav-link-show" [routerLink]="['/strategy-management/report', riskcountType, id]"
+                    routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">{{'Strategy' | translate}}</a>
+            </li>
+        </ul>
+        <app-sub-menu></app-sub-menu>
+    </nav>
+    <main class="audit-program-details-page mt-3">
+        <div class="container-fluid">
+            <!-- <a data-toggle="modal" data-target="#custom-date-popup">Custom date popup</a> -->
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="tab-content">
+                        <!-- Profille -->
+                        <div class="tab-pane active" id="info">
+
+
+                            <div class="widget bg-white widg-padding-cmn min-height-83">
+
+                                <div class="row"
+                                    *ngIf="StrategyReportStore?.listloaded && StrategyReportStore.StrategyManagementReportsItemsDetails.length > 0">
+
+
+                                    <div class="col-md-12 text-center">
+
+                                        <h5>{{AuthStore.user.organization?.title}}</h5>
+                                        <h4 class="bold">
+                                            {{StrategyReportStore.getStrategyManagementReportDetailsListingTableTitle
+                                            |
+                                            translate}}
+                                        </h4>
+                                        <div *ngIf="filterDateObject.startDate != null">
+                                            <p class="mb-0"><i class="fas fa-calendar-alt date-pics-two"></i>{{'from' |
+                                                translate}} <i class="bold">{{filterDateObject.startDate | date:
+                                                    OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</i>
+                                                {{'to' | translate}} <i class="bold">{{filterDateObject.endDate | date:
+                                                    OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</i>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <!-- focus area -->
+                                    <div class="col-md-12 mt-4"
+                                        *ngIf="StrategyReportStore.selectedReportObject.reportType == 'focus_area'">
+
+                                        <div class="row">
+                                            <div class="col-sm-12 full-width-table table-scroll-first-time mb-3">
+                                                <table
+                                                    class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                                                    <thead>
+                                                        <tr>
+                                                            <th class="border-top-0" width="2%">#</th>
+                                                            <th class="border-top-0" width="25%"
+                                                                class="border-top-0 issue-list-org-tab-three pointer">
+                                                                <span>{{'title' | translate}}</span>
+                                                            </th>
+                                                            <th class="border-top-0" width="8%"
+                                                                class="border-top-0 issue-list-org-tab-three pointer">
+                                                                <span>{{'weightage' | translate}}</span>
+                                                            </th>
+                                                            <th class="border-top-0" width="17%"
+                                                                class="border-top-0 issue-list-org-tab-three pointer">
+                                                                <span>{{'strategy_profile' | translate}}</span>
+                                                            </th>
+                                                            <th class="border-top-0" width="10%"
+                                                                class="border-top-0 issue-list-org-tab-three pointer">
+                                                                <span>{{'department' | translate}}</span>
+                                                            </th>
+                                                            <th class="border-top-0" width="15%"
+                                                                class="border-top-0 issue-list-org-tab-three pointer">
+                                                                <span>{{'created_by' | translate}}</span>
+                                                            </th>
+                                                            <th class="border-top-0" width="17%">{{'score' |
+                                                                translate}}</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <ng-container *mobxAutorun>
+                                                        <tr class="pointer edit-and-delete-main"
+                                                            *ngFor="let row of StrategyReportStore.StrategyManagementReportsItemsDetails| paginate: {currentPage:StrategyReportStore.currentPage, itemsPerPage:StrategyReportStore.itemsPerPage,totalItems:StrategyReportStore.totalItems};let num=index "
+                                                            >
+
+                                                            <td style="text-align: center;" class="cursor-pointer">
+                                                                {{(StrategyReportStore.currentPage - 1) *
+                                                                StrategyReportStore.itemsPerPage +
+                                                                (num + 1)}}
+                                                            </td>
+                                                            <td>{{row.title}}</td>
+                                                            <td>{{row.weightage ? (StrategyManagementSettingStore?.strategyManagementSettings?.is_weightage_fraction ? row.weightage : (row.weightage | number : '1.0-0')) : '0'}} %</td>
+                                                            <td>{{row.strategy_profile_title}}</td>
+                                                            <td>{{row.created_by_department}}</td>
+                                                            <td>
+                                                                <div
+                                                                    class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                                                                    <img *ngIf="row.created_by_image_token"
+                                                                        data-toggle="modal" data-target="#user02"
+                                                                        data-ui-class="a-zoom"
+                                                                        [attr.src]="createImagePreview('user-profile-picture',row.created_by_image_token)"
+                                                                        width="30px" height="30px"
+                                                                        class="rounded-circle rounde-hov details-show-popup"
+                                                                        onerror="this.src='/assets/images/user-demo2.png'">
+                                                                    <img *ngIf="!row.created_by_image_token"
+                                                                        [attr.src]="getDefaultImage('user-logo')"
+                                                                        width="30px" height="30px"
+                                                                        class="rounded-circle"
+                                                                        onerror="this.src='/assets/images/user-demo2.png'">
+                                                                    <div class="pointer">
+                                                                        <h6>{{row.created_by_first_name}}
+                                                                            {{row.created_by_last_name}}</h6>
+                                                                        <span>{{row.created_by_designation}}</span>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <div class="dot-div green-dot">
+                                                                    {{row.score}}</div>
+                                                            </td>
+                                                        </tr>
+                                                    </ng-container>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- profile -->
+                                    <div class="col-md-12 mt-4"
+                                        *ngIf="StrategyReportStore.selectedReportObject.reportType == 'profile'">
+
+                                        <div class="row">
+                                            <div class="col-sm-12 full-width-table table-scroll-first-time mb-3">
+                                                <table
+                                                    class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                                                    <thead>
+                                                        <tr>
+                                                            <th class="border-top-0" width="2%">#</th>
+                                                            <th style="width: 6%;"
+                                                                class="border-top-0 issue-list-org-tab-three pointer">
+                                                                <span>{{'ref_id' | translate}}</span>
+                                                            </th>
+                                                            <th style="width: 35%;"
+                                                                class="border-top-0 issue-list-org-tab-three pointer">
+                                                                <span>{{'title' | translate}}</span>
+                                                            </th>
+                                                            <th style="width: 22%;"
+                                                                class="border-top-0 issue-list-org-tab-three pointer">
+                                                                <span>{{'duration' | translate}}</span>
+                                                            </th>
+                                                            <th class="border-top-0"
+                                                                class="border-top-0 issue-list-org-tab-three pointer"
+                                                                width="12%">
+                                                                <span>{{'created_by' | translate}}</span>
+                                                            </th>
+                                                            <th class="border-top-0" width="12%"
+                                                                class="border-top-0 issue-list-org-tab-three pointer">
+                                                                <span>{{'department' | translate}}</span>
+                                                          </th>
+                                                            <th class="border-top-0 text-center" width="13%">{{'status' |
+                                                                translate}}</th>
+                                                        </tr>
+
+                                                    </thead>
+                                                    <ng-container *mobxAutorun>
+                                                        <tr class="pointer edit-and-delete-main"
+                                                            *ngFor="let row of StrategyReportStore.StrategyManagementReportsItemsDetails| paginate: {currentPage:StrategyReportStore.currentPage, itemsPerPage:StrategyReportStore.itemsPerPage,totalItems:StrategyReportStore.totalItems};let num=index "
+                                                            (click)="getStrategy(row.id)">
+
+                                                            <td style="text-align: center;" class="cursor-pointer">
+                                                                {{(StrategyReportStore.currentPage - 1) *
+                                                                StrategyReportStore.itemsPerPage +
+                                                                (num + 1)}}
+                                                            </td>
+                                                            <td>{{row.reference_code}}</td>
+                                                            <td>{{row.title}}</td>
+                                                            <td>{{row.start_date | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}} to  {{row.end_date | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                            </td>
+                                                            <td>                  <div class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                                                                <!-- <app-user-popup-box [source]="assignUserValues(row)" [showName] = "false" ></app-user-popup-box> -->
+                                                                <img *ngIf="row.created_by_image_token" data-toggle="modal" data-target="#user02" data-ui-class="a-zoom" [attr.src]="createImagePreview('user-profile-picture',row.created_by_image_token)"
+                                                                  width="30px" height="30px" class="rounded-circle rounde-hov details-show-popup" onerror = "this.src='/assets/images/user-demo2.png'">
+                                                                  <img *ngIf="!row.created_by_image_token"
+                                                                        [attr.src]="getDefaultImage('user-logo')" width="30px" height="30px"
+                                                                        class="rounded-circle" onerror = "this.src='/assets/images/user-demo2.png'">
+                                                                <div class="pointer">
+                                                                   <h6>{{row.created_by_first_name ? row.created_by_first_name : AppStore.noContentText }} {{row.created_by_last_name ? row.created_by_last_name : AppStore.noContentText  }}</h6>
+                                                                   <span>{{row.created_by_designation ? row.created_by_designation : AppStore.noContentText}}</span>
+                                                                </div>
+                                                             </div></td>
+                                                            <td>{{row.departments}}</td>
+                                                            
+                                                            <td class="text-center">
+                                                                <div 
+                                                                [attr.class]="'dot-div '+row.strategy_profile_status_label+'-dot'">
+                                                                    {{row.strategy_profile_status_title}}</div>
+                                                            </td>
+                                                        </tr>
+                                                    </ng-container>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- objectives -->
+                                    <div class="col-md-12 mt-4"
+                                        *ngIf="StrategyReportStore.selectedReportObject.reportType == 'objective'">
+
+                                        <div class="row">
+                                            <div class="col-sm-12 full-width-table table-scroll-first-time mb-3">
+                                                <table
+                                                    class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                                                    <thead>
+                                                        <tr>
+                                                            <th class="border-top-0" width="2%">#</th>
+                                                            <!-- <th style="width: 6%;"
+                                                                class="border-top-0 issue-list-org-tab-three pointer">
+                                                                <span>{{'ref_id' | translate}}</span>&nbsp;
+                                                            </th> -->
+                                                            <th style="width: 25%;"
+                                                                class="border-top-0 issue-list-org-tab-three pointer">
+                                                                <span>{{'title' | translate}}</span>&nbsp;
+                                                            </th>
+                                                            <th style="width: 6%;"
+                                                                class="border-top-0 issue-list-org-tab-three pointer">
+                                                                <span>{{'weightage' | translate}}</span>&nbsp;
+                                                            </th>
+                                                            <th class="border-top-0 pointer" width="10%">
+                                                                <span>{{'start_date' | translate}} </span>&nbsp;
+                                                            </th>
+                                                            <th class="border-top-0 pointer" width="10%">
+                                                                <span>{{'end_date' | translate}}</span>&nbsp;
+                                                            </th>
+                                                            <th class="border-top-0" width="15%">{{'created_by' |
+                                                                translate}} </th>
+                                                          
+                                                        </tr>
+                                                    </thead>
+                                                    <ng-container *mobxAutorun>
+                                                        <tr class="pointer edit-and-delete-main"
+                                                            *ngFor="let row of StrategyReportStore.StrategyManagementReportsItemsDetails| paginate: {currentPage:StrategyReportStore.currentPage, itemsPerPage:StrategyReportStore.itemsPerPage,totalItems:StrategyReportStore.totalItems};let num=index "
+                                                            >
+
+                                                            <td style="text-align: center;" class="cursor-pointer">
+                                                                {{(StrategyReportStore.currentPage - 1) *
+                                                                StrategyReportStore.itemsPerPage +
+                                                                (num + 1)}}
+                                                            </td>
+                                                            <!-- <td>{{row.reference_code}}</td> -->
+                                                            <td>{{row.title}}</td>
+                                                            <td>{{row.weightage ? (StrategyManagementSettingStore?.strategyManagementSettings?.is_weightage_fraction ? row.weightage : (row.weightage | number : '1.0-0')) : '0'}} %</td>
+                                                            <td>{{row.start_date | date:
+                                                                OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                            </td>
+                                                            <td>{{row.end_date | date:
+                                                                OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                            </td>
+
+
+                                                            <td>
+                                                                <div
+                                                                    class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                                                                    <img *ngIf="row.created_by_image_token"
+                                                                        data-toggle="modal" data-target="#user02"
+                                                                        data-ui-class="a-zoom"
+                                                                        [attr.src]="createImagePreview('user-profile-picture',row.created_by_image_token)"
+                                                                        width="30px" height="30px"
+                                                                        class="rounded-circle rounde-hov details-show-popup"
+                                                                        onerror="this.src='/assets/images/user-demo2.png'">
+                                                                    <img *ngIf="!row.created_by_image_token"
+                                                                        [attr.src]="getDefaultImage('user-logo')"
+                                                                        width="30px" height="30px"
+                                                                        class="rounded-circle"
+                                                                        onerror="this.src='/assets/images/user-demo2.png'">
+                                                                    <div class="pointer">
+                                                                        <h6>{{row.created_by_first_name}}
+                                                                            {{row.created_by_last_name}}</h6>
+                                                                        <span>{{row.created_by_designation}}</span>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                          
+                                                        </tr>
+                                                    </ng-container>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- kpi -->
+                                    <div class="col-md-12 mt-4"
+                                    *ngIf="StrategyReportStore.selectedReportObject.reportType == 'kpi'">
+
+                                    <div class="row">
+                                        <div class="col-sm-12 full-width-table table-scroll-first-time mb-3">
+                                            <table
+                                                class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="border-top-0 text-center" width="5%">#</th>
+
+                                <th class="border-top-0" width="25%">KPI</th>
+                                <th class="border-top-0" width="26%">{{'objective' | translate}}</th>
+                                <th class="border-top-0" width="6%">{{'minimum_value' | translate}}</th>
+                                <th class="border-top-0" width="6%">{{'maximum_value' | translate}}</th>
+                                <th class="border-top-0" width="15%">{{'achieved' | translate}} / {{'target' | translate}}</th>
+                                <!-- <th class="border-top-0" width="16%">Start Date & End Date</th> -->
+                                <th class="border-top-0" width="11%">{{'created_by' | translate}}</th>
+                                <!-- <th class="border-top-0" width="8%">Status</th> -->
+                                                      
+                                                    </tr>
+                                                </thead>
+                                                <ng-container *mobxAutorun>
+                                                    <tr class="pointer edit-and-delete-main"
+                                                        *ngFor="let row of StrategyReportStore.StrategyManagementReportsItemsDetails| paginate: {currentPage:StrategyReportStore.currentPage, itemsPerPage:StrategyReportStore.itemsPerPage,totalItems:StrategyReportStore.totalItems};let num=index "
+                                                        (click)="getStrategy(row.id)">
+
+                                                        <td style="text-align: center;" class="cursor-pointer">
+                                                            {{(StrategyReportStore.currentPage - 1) *
+                                                            StrategyReportStore.itemsPerPage +
+                                                            (num + 1)}}
+                                                        </td>
+                                                        <!-- <td>{{row.reference_code}}</td> -->
+                                                        <td>{{row.kpi_title}}</td>
+                                                        <td>{{row.objective_title}}
+                        
+                                                            <!-- <div class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                        
+                        
+                                                                <div class="pointer" >
+                                                                    <h6></h6>
+                                                                    <span>{{row.strategy_profile_title}} | {{row.focus_area_title}}</span>
+                                                                </div>
+                                                            </div> -->
+                                                        </td>
+                        
+                                                        <td>{{row.minimum}}</td>
+                        
+                                                        <td>{{row.maximum}}</td>
+                                                        <td [ngClass]="(row.score  <= 30 ||  row.score == null) ? 'blinking' : (row.score <= 90)? 'text-yellow' : 'text-green'">{{row.score ? row.score : '0'}} {{row.target_unit_title ? row.target_unit_title : ''}} / {{row.target ? row.target : "0"}} {{row.target_unit_title ? row.target_unit_title : ''}}</td>
+                                                       
+                                                            <!--<div class="edit-option-show-inner">
+                                                                <a row-toggle="modal" row-target="#kpi-measures-edit-popup"><i class="fas fa-pen"></i></a>
+                                                                <a row-toggle="modal" row-target="#kpi-measures-history-popup"><i class="fas fa-history"></i></a>
+                                                            </div>-->
+                                                
+                                                        <!-- <td>{{row?.start_date | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}} - {{data?.end_date | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</td> -->
+                                                        <td>
+                                                            <div
+                                                                class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                                                                <img *ngIf="row.created_by_image_token"
+                                                                    data-toggle="modal" data-target="#user02"
+                                                                    data-ui-class="a-zoom"
+                                                                    [attr.src]="createImagePreview('user-profile-picture',row.created_by_image_token)"
+                                                                    width="30px" height="30px"
+                                                                    class="rounded-circle rounde-hov details-show-popup"
+                                                                    onerror="this.src='/assets/images/user-demo2.png'">
+                                                                <img *ngIf="!row.created_by_image_token"
+                                                                    [attr.src]="getDefaultImage('user-logo')"
+                                                                    width="30px" height="30px"
+                                                                    class="rounded-circle"
+                                                                    onerror="this.src='/assets/images/user-demo2.png'">
+                                                                <div class="pointer">
+                                                                    <h6>{{row.created_by_first_name}}
+                                                                        {{row.created_by_last_name}}</h6>
+                                                                    <span>{{row.created_by_designation}}</span>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <!-- <td >
+                                                            <div class="dot-div green-dot">New</div>
+                                                        </td> -->
+
+
+                                                        
+                                                      
+                                                    </tr>
+                                                </ng-container>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- milestone -->
+                                <div class="col-md-12 mt-4"
+                                *ngIf="StrategyReportStore.selectedReportObject.reportType == 'milestone'">
+
+                                <div class="row">
+                                    <div class="col-sm-12 full-width-table table-scroll-first-time mb-3">
+                                        <table
+                                            class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                                            <thead>
+                                                <tr>
+                                                    <th class="border-top-0 text-center" width="5%">#</th>
+
+                            <th class="border-top-0" width="25%">KPI</th>
+                            <th class="border-top-0" width="26%">{{'initiative' | translate}}</th>
+                            <th class="border-top-0 pointer" width="10%">
+                                <span>{{'start_date' | translate}} </span>&nbsp;
+                            </th>
+                            <th class="border-top-0 pointer" width="10%">
+                                <span>{{'end_date' | translate}}</span>&nbsp;
+                            </th>
+                            <th class="border-top-0" width="15%">{{'budget' | translate}}</th>
+                            <!-- <th class="border-top-0" width="16%">Start Date & End Date</th> -->
+                            <th class="border-top-0" width="11%">{{'created_by' | translate}}</th>
+                            <!-- <th class="border-top-0" width="8%">Status</th> -->
+                                                  
+                                                </tr>
+                                            </thead>
+                                            <ng-container *mobxAutorun>
+                                                <tr class="pointer edit-and-delete-main"
+                                                    *ngFor="let row of StrategyReportStore.StrategyManagementReportsItemsDetails| paginate: {currentPage:StrategyReportStore.currentPage, itemsPerPage:StrategyReportStore.itemsPerPage,totalItems:StrategyReportStore.totalItems};let num=index "
+                                                    >
+
+                                                    <td style="text-align: center;" class="cursor-pointer">
+                                                        {{(StrategyReportStore.currentPage - 1) *
+                                                        StrategyReportStore.itemsPerPage +
+                                                        (num + 1)}}
+                                                    </td>
+                                                    <!-- <td>{{row.reference_code}}</td> -->
+                                                    <td>{{row.kpi_title}}</td>
+                                                    <td>
+                    
+                                                        <div class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                    
+                    
+                                                            <!-- user-dtl-popup end -->
+                                                            <div class="pointer" >
+                                                                <h6>{{row.strategy_initiative_title}}</h6>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                    
+                                                    <td>{{row.start_date | date:
+                                                        OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                    </td>
+                                                    <td>{{row.end_date | date:
+                                                        OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                    </td>
+                                                    <td >{{row.strategy_initiative_budget}}</td>
+                                                   
+                                                        <!--<div class="edit-option-show-inner">
+                                                            <a row-toggle="modal" row-target="#kpi-measures-edit-popup"><i class="fas fa-pen"></i></a>
+                                                            <a row-toggle="modal" row-target="#kpi-measures-history-popup"><i class="fas fa-history"></i></a>
+                                                        </div>-->
+                                            
+                                                    <!-- <td>{{row?.start_date | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}} - {{data?.end_date | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</td> -->
+                                                    <td>
+                                                        <div
+                                                            class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                                                            <img *ngIf="row.created_by_image_token"
+                                                                data-toggle="modal" data-target="#user02"
+                                                                data-ui-class="a-zoom"
+                                                                [attr.src]="createImagePreview('user-profile-picture',row.created_by_image_token)"
+                                                                width="30px" height="30px"
+                                                                class="rounded-circle rounde-hov details-show-popup"
+                                                                onerror="this.src='/assets/images/user-demo2.png'">
+                                                            <img *ngIf="!row.created_by_image_token"
+                                                                [attr.src]="getDefaultImage('user-logo')"
+                                                                width="30px" height="30px"
+                                                                class="rounded-circle"
+                                                                onerror="this.src='/assets/images/user-demo2.png'">
+                                                            <div class="pointer">
+                                                                <h6>{{row.created_by_first_name}}
+                                                                    {{row.created_by_last_name}}</h6>
+                                                                <span>{{row.created_by_designation}}</span>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <!-- <td >
+                                                        <div class="dot-div green-dot">New</div>
+                                                    </td> -->
+
+
+                                                    
+                                                  
+                                                </tr>
+                                            </ng-container>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                                </div>
+                                <!-- initiative -->
+                                <div class="col-md-12 mt-4"
+                                *ngIf="StrategyReportStore.selectedReportObject?.reportType == 'initiative'">
+
+                                <div class="row">
+                                    <div class="col-sm-12 full-width-table table-scroll-first-time mb-3">
+                                        <table
+                                            class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                                            <thead>
+                                                <tr>
+                                                    <th class="border-top-0" width="2%">#</th>
+                                                    <th class="border-top-0" width="6%">
+                                                     <span>{{'ref_id' | translate}}</span>
+                                                     
+                                                    </th>
+                                                    <th class="border-top-0" width="31%" >
+                                                     <span>{{'title' | translate}}</span>
+                                                    </th>
+                                                    <th class="border-top-0" width="28%">{{'Objective' | translate}}</th>
+        
+                                                    <th class="border-top-0" width="22%" >
+                                                     <span>{{'duration' | translate}}</span>
+                                                   
+                                                    </th>
+                                                   
+                                                    <!-- <th class="border-top-0" width="13%">{{'department' | translate}}</th> -->
+                                                    <th class="border-top-0 text-center" width="12%">{{'status' | translate}}</th>
+                                                  
+                                                </tr>
+                                            </thead>
+                                            <ng-container *mobxAutorun>
+                                                <tr class="pointer edit-and-delete-main"
+                                                    *ngFor="let row of StrategyReportStore.StrategyManagementReportsItemsDetails| paginate: {currentPage:StrategyReportStore.currentPage, itemsPerPage:StrategyReportStore.itemsPerPage,totalItems:StrategyReportStore.totalItems};let num=index "
+                                                    (click)="getStrategy(row.id)">
+
+                                                    <td>{{(StrategyReportStore.currentPage - 1) * StrategyReportStore.itemsPerPage + (num + 1)}}</td>
+                                            <td>{{row.reference_code}}</td>
+                                            <td>{{row.title ? row.title : AppStore.noContentText }}</td>
+                                            <td >  <div class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+
+
+                                             <!-- user-dtl-popup end -->
+                                             <div class="pointer" >
+                                                 <h6>{{row?.objective_title}}</h6>
+                                                 <span>{{row?.strategy_profile_title}} | {{row?.focus_area_title}}</span>
+                                             </div>
+                                         </div>
+                                            <!-- edit-and-delete end --> 
+                                            </td>
+                                            <td>{{row.start_date | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}} to {{row.end_date | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}} </td>
+                                          
+                                         
+                                             
+                     
+                                            <td class="text-center">
+                                             <div ng  [attr.class]="'dot-div '+row?.strategy_initiative_status_label+'-dot'"> {{row.status_title ? row.status_title : 'New' }}</div>
+                                            
+                                          </td>
+                                                  
+                                                </tr>
+                                            </ng-container>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- action plan -->
+                            <div class="col-md-12 mt-4"
+                            *ngIf="StrategyReportStore.selectedReportObject?.reportType == 'action_plan'">
+
+                            <div class="row">
+                                <div class="col-sm-12 full-width-table table-scroll-first-time mb-3">
+                                    <table
+                                        class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                                        <thead>
+                                            <tr>
+                                                <th class="border-top-0" width="2%">#</th>
+                                                <th class="border-top-0" width="30%">{{'title' | translate}}</th>
+                                                <!-- <th class="border-top-0" width="18%">Milestone</th> -->
+                                                <th class="border-top-0" width="13%">{{'initiatives' | translate}}</th>
+                                                <th class="border-top-0" width="10%">{{'created_by' | translate}}</th>
+                                                <th class="border-top-0" width="6%">
+                                                    {{'achieved_value' | translate}}
+                                                </th>
+                                                <th class="border-top-0" width="10%">
+                                                    {{'sm_actual_end_date' | translate}}
+                                                </th>
+                                                <th class="border-top-0" width="8%">{{'sm_cost' | translate}}</th>
+                                              
+                                            </tr>
+                                        </thead>
+                                        <ng-container *mobxAutorun>
+                                            <tr class="pointer edit-and-delete-main"
+                                                *ngFor="let row of StrategyReportStore.StrategyManagementReportsItemsDetails| paginate: {currentPage:StrategyReportStore.currentPage, itemsPerPage:StrategyReportStore.itemsPerPage,totalItems:StrategyReportStore.totalItems};let num=index "
+                                                (click)="getStrategy(row.id)">
+
+                                                <td>{{(StrategyReportStore.currentPage - 1) * StrategyReportStore.itemsPerPage + (num + 1)}}</td>
+                                                <td>{{row.title}}</td>
+
+                                                <!-- <td>{{row.strategy_initiative_milestone_title ? row.strategy_initiative_milestone_title : 'NA'}}</td> -->
+                                                <td>{{row.strategy_initiative_title}}</td>
+                                                <td>  <div
+                                                    class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                                                    <img *ngIf="row.created_by_image_token"
+                                                        data-toggle="modal" data-target="#user02"
+                                                        data-ui-class="a-zoom"
+                                                        [attr.src]="createImagePreview('user-profile-picture',row.created_by_image_token)"
+                                                        width="30px" height="30px"
+                                                        class="rounded-circle rounde-hov details-show-popup"
+                                                        onerror="this.src='/assets/images/user-demo2.png'">
+                                                    <img *ngIf="!row.created_by_image_token"
+                                                        [attr.src]="getDefaultImage('user-logo')"
+                                                        width="30px" height="30px"
+                                                        class="rounded-circle"
+                                                        onerror="this.src='/assets/images/user-demo2.png'">
+                                                    <div class="pointer">
+                                                        <h6>{{row.created_by_first_name}}
+                                                            {{row.created_by_last_name}}</h6>
+                                                        <span>{{row.created_by_designation}}</span>
+                                                    </div>
+                                                </div></td>
+
+                                                <td>{{row.actual_value ? row.actual_value : 'NA'}}</td>
+                                                <td>{{row.actual_end_date ? (row.actual_end_date | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format) : 'NA'}}</td>
+                                                <td>
+                                                    {{row.cost ? row.cost : 'NA'}} {{ row.cost ? OrganizationGeneralSettingsStore?.organizationSettings?.currency : ''}}
+
+                                                    
+                                                    <!-- edit-and-delete end -->
+                                                </td>
+                                              
+                                            </tr>
+                                        </ng-container>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                                <ng-container *mobxAutorun>
+                                    <div *ngIf="!StrategyReportStore?.listloaded">
+                                        <app-table-loader></app-table-loader>
+                                    </div>
+                                    <app-no-data
+                                        *ngIf="StrategyReportStore.StrategyManagementReportsItemsDetails.length == 0 && StrategyReportStore.listloaded == true">
+                                    </app-no-data>
+                                </ng-container>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <div *ngIf="StrategyReportStore.totalItems>StrategyReportStore.itemsPerPage" class="col-sm-12">
+        <ul class="pagination justify-content-center mt-3">
+            <div class="list">
+                <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+                    (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+            </div>
+        </ul>
+    </div>
+<!-- </div> -->
+
+<div class="modal modal-style-1 fade email-popup-new" id="custom-date-popup" #confirmationPopUp>
+    <app-custom-date-popup (dateEvent)="passDates($event)"></app-custom-date-popup>
+</div>

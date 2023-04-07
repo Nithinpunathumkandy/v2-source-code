@@ -1,0 +1,60 @@
+export interface EventRiskResidualAnalysis{
+    risk_residual_analysis:{
+        comments
+        impact
+        likelihood
+        process_details
+        risk_score
+        risk_rating:{
+            id
+            type
+            label
+            color_code
+            language: [{
+                    pivot: {
+                    risk_rating_id
+                    title
+                    }
+                    }]
+            }
+        risk_impact_category_analyses:risk_impact_category_analyses[]
+    }
+}
+export interface risk_impact_category_analyses{
+    bia_impact_category_id
+    id
+    is_inherent
+    is_residual
+    risk_id
+    risk_matrix_impact_id
+    risk_matrix_likelihood_id
+    risk_rating_id
+    risk_score
+    risk_matrix_impact:{
+        id
+        language:{
+            description
+            title
+        }
+    }
+    risk_matrix_likelihood:{
+        id
+        language:{
+            description
+            title
+        }
+    }
+    risk_matrix_calculation_method_id
+    risk_matrix_calculation_method:{
+        id
+        is_addition
+        is_division
+        is_multiplication
+        is_selected
+        is_subtraction
+        language:[{
+            description
+            title
+        }]
+    }
+}

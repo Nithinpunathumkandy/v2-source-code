@@ -1,0 +1,83 @@
+<div class="widget bg-white">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item pointer" [routerLink]="['/masters/bcm']"><a>{{'bcm' | translate}}</a></li>
+            <li class="breadcrumb-item active">{{'bia_tire' | translate}}</li>
+        </ol>
+    </nav>
+    <table class="table-master table" *ngIf="BiaTireMasterStore?.loaded && BiaTireMasterStore.allItems.length > 0">
+        <tr>
+            <th style="width: 5%; text-align: center;">{{'sl' | translate}}</th>
+            <th (click)="sortTitle('bia_tires.title')" class="border-top-0 issue-list-org-tab-three pointer"
+                style="width: 52%;">
+                <span>{{'title' | translate}}</span>
+                <img _ngcontent-twv-c17="" *ngIf="BiaTireMasterStore.orderItem=='bia_tires.title'" class="sort-down-pics pl-2" [attr.src]="BiaTireMasterStore.orderBy=='desc' ? 
+                'assets/images/sort-up.png' : BiaTireMasterStore.orderBy=='asc' ? 
+                'assets/images/sort-down.png' : 'assets/images/sort-empty.png'">
+            </th>
+            <!-- <th style="width: 10%;" *ngIf="BiaTireMasterStore?.allItems[0].to">{{'from' | translate}}</th>
+            <th style="width: 10%;" *ngIf="!BiaTireMasterStore?.allItems[0].to">{{'value' | translate}}</th>
+            <th style="width: 10%;" *ngIf="BiaTireMasterStore?.allItems[0].to">{{'to' | translate}}</th>
+            <th style="width: 10%;">{{'Hour/Day' | translate}}</th> -->
+            <!-- <th>{{ 'bia_impact_category_id' | translate  }}</th> -->
+            <th style="width: 13%;">{{'status' | translate}}</th>
+        </tr>
+        <ng-container *mobxAutorun>
+            <tr class="edit-and-delete-main"
+                *ngFor="let row of BiaTireMasterStore?.allItems | paginate: {currentPage:BiaTireMasterStore?.currentPage, itemsPerPage:BiaTireMasterStore?.itemsPerPage,totalItems:BiaTireMasterStore?.totalItems}; let num = index">
+                <td style="text-align: center;">{{(BiaTireMasterStore?.currentPage - 1) *
+                    BiaTireMasterStore?.itemsPerPage + (num + 1)}}</td>
+                <td>{{row.title }}</td>
+                <!-- <td>{{row.from}}</td>
+                <td *ngIf="BiaTireMasterStore?.allItems[0].to">{{row.to}}</td>
+                <td>{{row.bia_scale_category}} -->
+                    <!-- <td>{{ row.bia_impact_rating_id }}</td>-->
+                <td style="padding:0.75rem;">
+                    <div [attr.class]="'dot-div '+row.status_label">{{row.status}}</div>
+                    <div class="edit-option-show">
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'UPDATE_BIA_TIRE')"
+                            (click)="editBiaTire(row.id)"><i class="fas fa-pen"></i></a>
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'DELETE_BIA_TIRE')"
+                            (click)="deleteBiaTire(row.id)"><i class="fas fa-trash"></i></a>
+                        <a *ngIf="row.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(1100,'ACTIVATE_BIA_TIRE')"
+                            (click)="activate(row.id)" title="Activate"><i class="fas fa-check pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.activeStatusId && AuthStore.getActivityPermission(1100,'DEACTIVATE_BIA_TIRE')"
+                            (click)="deactivate(row.id)" title="Deactivate"><i class="fas fa-ban pointer"></i></a>
+                    </div>
+                </td>
+            </tr>
+        </ng-container>
+    </table>
+    <p class="float-right" *ngIf="BiaTireMasterStore?.loaded && BiaTireMasterStore.totalItems > 0"><b>{{'total_Items' | translate}}:{{BiaTireMasterStore?.totalItems}}</b></p>
+
+    <ng-container *mobxAutorun>
+        <div *ngIf="!BiaTireMasterStore.loaded">
+            <app-table-loader></app-table-loader>
+        </div>
+        <app-no-data *ngIf="BiaTireMasterStore.allItems.length == 0 && BiaTireMasterStore.loaded == true"></app-no-data>
+    </ng-container>
+
+    <div *ngIf="BiaTireMasterStore.totalItems>BiaTireMasterStore.itemsPerPage" class="col-sm-12">
+        <ul class="pagination justify-content-center mt-3">
+            <div class="list">
+                <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+                    (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+            </div>
+        </ul>
+    </div>
+</div>
+<!-- New Modal -->
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #biaTireModal>
+    <app-bia-tire-modal *ngIf="biaTireObject.type" [source]="biaTireObject"></app-bia-tire-modal>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+<div class="modal modal-style-1 email-popup-new fade" data-backdrop="static" data-keyboard="false"
+    id="email-notification-popup" #mailConfirmationPopup>
+    <app-mail-send-popup [source]="mailConfirmationData"></app-mail-send-popup>
+</div>

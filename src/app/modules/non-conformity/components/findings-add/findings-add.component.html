@@ -1,0 +1,256 @@
+<!----------new-popup starts------>
+<button type="button" class="close" (click)="close()" data-dismiss="modal"><i
+      class="lni-close"></i><span>esc</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered">
+   <div class="modal-content">
+      <!-- Modal Header -->
+      <div class="modal-header">
+            <!-- <h4 class="modal-title pb-2">{{'non-conformity_findings' | translate}}</h4> -->
+            <h4 class="modal-title" *ngIf="FindingsSource?.type=='Add'">{{'new_finding' | translate}}</h4>
+            <h4 class="modal-title" *ngIf="FindingsSource?.type=='Edit'">{{'edit_finding' | translate}}</h4>
+            <!-- <p></p> -->
+         </div>
+      <!-- Modal body -->
+      <div class="modal-body form-body">
+         <p class="head-details">A nonconformity is a deviation from a specification, a standard, or an expectation.</p>
+         <form [formGroup]="form" *mobxAutorun>
+            <div class="row">
+               <div class="col-lg-6 col-sm-12">
+                  <div class="form-group">
+                     <label for="name">{{'finding_category' | translate}}<span class="form-error">*</span></label>
+                     <div class="clearfix d-flex">
+                        <div class="multiple-plain-ngselect w-100">
+                           <ng-select [placeholder]="'findings_addform_placeholder_finding_category' | translate" [multiple]="false"
+                              searchable="true" (search)="searchFindingCategory($event)"
+                              formControlName="finding_category_id" (clear)="getFindingCategory()"
+                              (open)="getFindingCategory()">
+                              <!-- (change)="getSection()" -->
+                              <ng-option [value]="type.id"
+                                 *ngFor="let type of AuditFindingCategoryMasterStore.allItems">
+                                 {{type.title}}
+                              </ng-option>
+                           </ng-select>
+                        </div>
+                        <button class="btn multi-add-user ml-2" style="width: 42px;" (click)="FindingsCategoryAdd()"
+                           *ngIf="AuthStore.getActivityPermission(1600,'CREATE_FINDING_CATEGORY')"><i
+                              class="fas fa-plus"></i></button>
+                     </div>
+                     <p class="form-error pt-1" *ngIf="formErrors && formErrors.finding_category_id">
+                        {{formErrors.finding_category_id}}</p>
+                  </div>
+               </div>
+
+               <div class="col-sm-6">
+                  <div class="form-group">
+                     <label for="name">{{'risk_rating' | translate}}<span class="form-error">*</span></label>
+                     <div class="clearfix">
+                        <div class="multiple-plain-ngselect ">
+                           <ng-select [items]="RiskRatingMasterStore.allItems" bindLabel="title" bindValue="id"
+                              [placeholder]="'findings_addform_placeholder_risk_rating'| translate" formControlName="risk_rating_id">
+                              <ng-template ng-label-tmp let-item="item">
+                                 <div
+                                    [ngClass]="item.label == 'orange'?'dot-div orange-dot':item.label == 'red'?'dot-div red-dot':item.label == 'yellow'?'dot-div yellow-dot':'dot-div green-dot'">
+                                    {{item.title}}
+                                 </div>
+                              </ng-template>
+                              <ng-template ng-option-tmp let-item="item" let-index="index">
+                                 <div
+                                    [ngClass]="item.label == 'orange'?'dot-div orange-dot':item.label == 'red'?'dot-div red-dot':item.label == 'yellow'?'dot-div yellow-dot':'dot-div green-dot'">
+                                    {{item.title}}
+                                 </div>
+                              </ng-template>
+                           </ng-select>
+                           <p class="form-error pt-1"  *ngIf="formErrors && formErrors.risk_rating_id">
+                              {{formErrors.risk_rating_id}}</p>
+                        </div>
+
+                     </div>
+                  </div>
+               </div>
+
+               <div class="col-lg-12 col-sm-12">
+                  <div class="form-group">
+                     <label for="title">{{'title' | translate}}<span class="form-error">*</span></label>
+                     <input type="text" formControlName="title" class="form-control"
+                        placeholder="{{'findings_addform_placeholder_finding' | translate}}" id="title">
+                     <p class="form-error pt-1"  *ngIf="formErrors"> {{formErrors.title}}</p>
+                  </div>
+               </div>
+
+               <div class="col-lg-6 col-sm-6">
+                  <div class="form-group">
+                     <a class="text-light-blue" data-toggle="modal" (click)="organisationChanges()"
+                        style="border-bottom: 1px solid;">{{'change_organization_unit' | translate}}</a>
+                  </div>
+               </div>
+
+               <div class="col-lg-6 col-sm-12">
+                  <div class="form-group">
+                     <label for="name">{{'supplier' | translate}}</label>
+                     <div class="clearfix d-flex">
+                        <div class="multiple-plain-ngselect w-100">
+                           <ng-select [placeholder]="'findings_addform_placeholder_supplier' | translate" [multiple]="false"
+                              searchable="true" (search)="searchSupplier($event)"
+                              formControlName="supplier_id" (clear)="getSupplier()"
+                              (open)="getSupplier()">
+                              <ng-option [value]="type.id"
+                                 *ngFor="let type of SuppliersMasterStore.allItems">
+                                 {{type.title}}
+                              </ng-option>
+                           </ng-select>
+                        </div>
+                     </div>
+                     <p class="form-error pt-1" *ngIf="formErrors && formErrors.supplier_id">
+                        {{formErrors.supplier_id}}</p>
+                  </div>
+               </div>
+
+               <div class="col-sm-12">
+                  <div class="form-group">
+                     <span style="float: right;">
+                        <p class="text-grey mb-0">{{form?.value.description != null ? getDescriptionLength() :
+                           0}}
+                           {{'characters' | translate}}</p>
+                     </span>
+                     <label>{{'description' | translate}}</label>
+                     <textarea class="form-control" rows="3" id="comment11" placeholder="{{'findings_addform_placeholder_description' | translate}}"
+                        formControlName="description"></textarea>
+                  </div>
+               </div>
+
+               <div class="col-lg-6 col-sm-12">
+                  <div class="form-group">
+                     <label>{{'evidence' | translate}}</label>
+                     <textarea class="form-control" rows="3" id="comment2" placeholder="{{'finding_addform_placeholder_evidence' | translate}}"
+                        formControlName="evidence"></textarea>
+                  </div>
+               </div>
+
+               <div class="col-lg-6 col-sm-12">
+                  <div class="form-group">
+                     <label>{{'recommendation' | translate}}</label>
+                     <textarea class="form-control" rows="3" id="comment2"
+                        placeholder="{{'finding_addform_placeholder_recommendation' | translate}}" formControlName="recommendation"></textarea>
+                  </div>
+               </div>
+            </div>
+            <label class="label-style">{{'support_files' | translate}}</label>
+
+
+            <!-- Common File Upload Starts Here -->
+            <div class="scroll-documents" #uploadArea>
+               <div class="thumb-pics-bg thumb-pics-col-3 clearfix thumb-pics-fix-text" style="padding-top: 0;">
+                  <div class="thumb-pics">
+                     <div class="question-circle-inp" style="margin-right: 7px;">
+                        <i class="far fa-question-circle"></i>
+                        <div class="message-password-inp">
+                            <p class="mb-0">{{'allowed_file_types' | translate}}
+                                {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                            </p>
+                        </div>
+                    </div>
+
+                     <div class="form-group form-group-upload">
+                        <div class="darag-dropifile-upload">
+                           <div class="d-flex justify-content-center align-items-center text-center">
+                              <div>
+                                 <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                                 <div class="drag-file-name"> Select or Upload Your File Here </div>
+                                 <div class="upload-btn-wrapper">
+                                    <button (click)="openFileUploadModal()" type="button" class="btn">{{'browse_files' |
+                                       translate}}</button>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+
+                  <div class="thumb-pics" *ngFor="let docs of fileUploadPopupStore.displayFiles ;let i = index">
+                     <div class="upload-pics edit-option" data-toggle="modal">
+                        <div *ngIf="docs.id && !docs.preview" class="browse-form-pic"
+                           [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                        </div>
+                        <div *ngIf="docs.preview" class="browse-form-pic"
+                           [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">
+                        </div>
+                        <div class="browse-form-name clearfix">
+                           <div class="float-left">
+                              <h6>
+                                 {{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                              </h6>
+                              <span *ngIf="docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-book"></i></span>
+                              <span *ngIf="!docs.is_kh_document" class="mr-2 cmn-clr"><i
+                                    class="fas fa-laptop"></i></span>
+                              <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                           </div>
+                           <div class="browse-logo">
+                              <img *ngIf="checkExtension(docs.ext,'image') != -1" class="folder-picher"
+                                 src="/assets/images/jpg-icone.png">
+                              <img *ngIf="checkExtension(docs.ext,'doc') != -1" class="folder-picher"
+                                 src="/assets/images/word-icone.png">
+                              <img *ngIf="checkExtension(docs.ext,'pdf') != -1" class="folder-picher"
+                                 src="/assets/images/pdf-icone.png">
+                              <img *ngIf="checkExtension(docs.ext,'excel') != -1" class="folder-picher"
+                                 src="/assets/images/excel-icone.png">
+                              <img *ngIf="checkExtension(docs.ext,'video') != -1" class="folder-picher"
+                                 src="/assets/images/md-video.png">
+                              <img *ngIf="checkExtension(docs.ext,'audio') != -1" class="folder-picher"
+                                 src="/assets/images/md-audio.png">
+                              <img *ngIf="checkExtension(docs.ext,'ppt') != -1" class="folder-picher"
+                                 src="/assets/images/md-ppt.png">
+                           </div>
+                        </div>
+                        <div class="edit-option-show">
+                           <a (click) = "removeDocument(docs)"><i class="fas fa-trash"></i></a>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+            <!-- Common File Upload Ends Here -->
+
+            <div class="clearfix"></div>
+            <div class="row">
+               <div class="col-sm-12">
+                  <div class="d-block justify-content-left border-0 mt-3">
+                     <button type="submit" class="btn btn-active" (click)="save()"
+                        [disabled]="form.invalid || AppStore.loading">{{ AppStore.loading ?
+                        getButtonText('loading') : getButtonText('save') }}</button>
+                     <button type="button" data-toggle="modal" data-target="#signal-lost" class="btn"
+                        (click)="save(true)" [disabled]="form.invalid || AppStore.loading">{{
+                        AppStore.loading ?
+                        getButtonText('loading') : getButtonText('save_close') }}</button>
+                     <button type="button" data-toggle="modal" data-target="#error-message" class="btn"
+                        (click)="cancel()">{{
+                        AppStore.loading ? getButtonText('loading') :
+                        getButtonText('cancel')}}</button>
+                  </div>
+               </div>
+            </div>
+         </form>
+      </div>
+      <!-- Modal footer -->
+   </div>
+</div>
+<!----------new-popup ends------>
+
+<!-- * Documetn Attach/Upload Common Component Starts Here -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #fileUploadModal>
+   <app-file-upload-popup *ngIf="fileUploadPopupStore.openPopup"></app-file-upload-popup>
+</div>
+
+<!-- Modal part -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static"
+   #addFindingsCategory>
+   <app-audit-finding-categories-modal *ngIf="auditFindingCategoryObject.type" [source]="auditFindingCategoryObject">
+   </app-audit-finding-categories-modal>
+</div>
+
+<!-----------------------Form Modal Start--------------------------->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static"
+   #organisationChangeFormModal *mobxAutorun>
+   <app-organisation-change-modal *ngIf="openModelPopup" [source]="form.value"
+      (organizationChangeEvent)="closeModal($event)"></app-organisation-change-modal>
+</div>
+<!-----------------------Form Modal End--------------------------->

@@ -1,0 +1,379 @@
+<button type="button" class="close" (click)="closeFormModal()">
+  <i class="lni-close"></i><span>{{ "esc" | translate }}</span>
+</button>
+<div class="modal-dialog modal-lg modal-dialog-centered">
+  <div class="modal-content">
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <h4 class="modal-title">
+        {{ 'erm_detail_risk_reports' | translate }}
+      </h4>
+    </div>
+    <!-- Modal body -->
+    <div class="modal-body form-body">
+      <form [formGroup]="ermdetailRiskForm" *mobxAutorun>
+        <div class="row">
+          <div class="col-lg-12 col-sm-12">
+            <div class="form-group">
+              <label for="title"
+                >{{ "title" | translate
+                }}<span class="form-error">*</span></label
+              >
+              <input
+                type="text"
+                formControlName="title"
+                class="form-control"
+                [attr.placeholder]="'title' | translate"
+                id="cctitle"
+              />
+              <p class="form-error" *ngIf="ermdetailRiskFormError">
+                {{ ermdetailRiskFormError.title }}
+              </p>
+            </div>
+          </div>
+          <div class="col-lg-12 col-sm-12">
+            <div class="form-group add-kpi-textarea">
+              <span style="float: right" class="text-grey"
+                >{{
+                  ermdetailRiskForm?.value.description != null
+                    ? getDescriptionLength()
+                    : 0
+                }}
+                {{ 'characters' | translate }}</span
+              >
+
+              <label for="name">{{ "description" | translate }}
+                <span class="form-error">*</span>
+              </label>
+              <ckeditor id="description" (change)="descriptionValueChange($event)" [editor]="Editor" formControlName="description"></ckeditor>
+            </div>
+          </div>
+          <div class="col-lg-12 col-sm-12">
+            <div class="form-group add-kpi-textarea">
+              <span style="float: right" class="text-grey"
+                >{{
+                  ermdetailRiskForm?.value.observation != null
+                    ? getDescriptionLength()
+                    : 0
+                }}
+                {{ 'characters' | translate }}</span
+              >
+
+              <label for="name">{{ "observation" | translate }}
+                <span class="form-error">*</span>
+              </label>
+              <ckeditor id="observation" (change)="descriptionValueChange($event)" [editor]="Editor" formControlName="observation"></ckeditor>
+            </div>
+          </div>
+        </div>
+      <div class="row">
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'likelihood' | translate}}</label>
+              <div class="clearfix">
+                  <div class="multiple-plain-ngselect">
+                      <ng-select [placeholder]="'likelihood' | translate"
+                          [multiple]="false"
+                           bindLabel="risk_matrix_likelihood_title"
+                           searchable="true" 
+                          formControlName="risk_matrix_likelihood_id"
+                          (search)="searchRiskLikelihood($event)" 
+                          (clear)="getRiskLikelihood()"
+                          (open)="getRiskLikelihood()" 
+                          autocomplete="new-password">
+                          <ng-option
+                          [value]="type.id"
+                          *ngFor="let type of LikelihoodStore.likelihoodDetails"
+                        >
+                          {{ type?.risk_matrix_likelihood_title }}
+                        </ng-option>
+                      </ng-select>
+                  </div>
+              </div>
+              <p class="form-error pt-1" *ngIf="ermdetailRiskFormError && ermdetailRiskFormError.risk_matrix_likelihood_id">
+                  {{ermdetailRiskFormError.risk_matrix_likelihood_id}}</p>
+          </div>
+          </div>
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group">
+              <label for="title"
+                >{{ "score" | translate
+                }}<span class="form-error">*</span></label
+              >
+              <input
+                type="text"
+                formControlName="score"
+                class="form-control"
+                [attr.placeholder]="'score' | translate"
+                id="cctitle"
+              />
+              <p class="form-error" *ngIf="ermdetailRiskFormError">
+                {{ ermdetailRiskFormError.score }}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'risk_zone' | translate}}<sup>*</sup></label>
+              <div class="clearfix">
+                  <div class="multiple-plain-ngselect">
+                      <ng-select
+                          [placeholder]="'risk_zone' | translate" [multiple]="false" searchable="true"
+                          formControlName="risk_rating_id"
+                          (search)="searchRiskRating($event)" (clear)="getRiskRating()"
+                          (open)="getRiskRating()" autocomplete="new-password"
+                          bindLabel="id">
+                          <ng-option
+                          [value]="type.id"
+                          *ngFor="let type of RiskRatingMasterStore.allItems"
+                        >
+                          {{ type.title }}
+                        </ng-option>
+                      </ng-select>
+                  </div>
+              </div>
+              <p class="form-error pt-1" *ngIf="ermdetailRiskFormError && ermdetailRiskFormError.risk_rating_id">
+                  {{ermdetailRiskFormError.risk_rating_id}}</p>
+          </div>
+          </div>
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'risk_status' | translate}}<sup>*</sup></label>
+              <div class="clearfix">
+                  <div class="multiple-plain-ngselect">
+                      <ng-select 
+                          [placeholder]="'select_risk_status' | translate" [multiple]="false" searchable="true"
+                          bindLabel="id" formControlName="risk_status_id"
+                          (search)="searchRiskStatus($event)" (clear)="getRiskStatus()"
+                          (open)="getRiskStatus()" autocomplete="new-password"
+                         >
+                          <ng-option
+                          [value]="type.id"
+                          *ngFor="let type of RiskStatusMasterStore.allItems"
+                        >
+                          {{ type.risk_status_language_title }}
+                        </ng-option>
+                      </ng-select>
+                  </div>
+              </div>
+              <p class="form-error pt-1" *ngIf="ermdetailRiskFormError && ermdetailRiskFormError.risk_status_id">
+                  {{ermdetailRiskFormError.risk_status_id}}</p>
+          </div>
+          </div>
+     
+        </div>
+        <div class="row">
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'risk_owner' | translate}}<sup>*</sup></label>
+              <div class="clearfix">
+                  <div class="multiple-plain-ngselect">
+                      <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                          [placeholder]="'risk_owner' | translate " formControlName="risk_owner_id" [multiple]="false"
+                          (clear)="getUsers()" (search)="searchUers($event)" multiple="false"
+                          (open)="getUsers()">
+                          <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                            <img *ngIf = "item?.image_token" class="ng-select-user-display" height="15" width="15" [attr.src]="createImagePreview('user-profile-picture',item.image_token)" onerror = "this.src='/assets/images/user-demo2.png'"/>
+                            <img *ngIf = "!item?.image_token" class="ng-select-user-display" height="15" width="15" [attr.src]="getDefaultImage('user-logo')"/>
+                            <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b><span aria-hidden="true" (click) = "clear(item)" style="border:none;" class="ng-value-icon left">×</span>
+                         </ng-template>
+                         <ng-template ng-option-tmp let-item="item" let-index="index">
+                            <div class="user-post-department-pic">
+                               <img *ngIf = "item?.image_token" class="ng-select-user-display" height="25" width="25" [attr.src]="createImagePreview('user-profile-picture',item.image_token)" onerror = "this.src='/assets/images/user-demo2.png'"/>
+                               <img *ngIf = "!item?.image_token" class="ng-select-user-display" height="25" width="25" [attr.src]="getDefaultImage('user-logo')"/>
+                            </div>
+                            <div class="user-post-department-div">
+                               <b>{{getStringsFormatted([item.first_name,item.last_name],35,' ') | titlecase}}</b>
+                               <p class="user-post-department-multiple">{{getStringsFormatted([item.designation_title,' '+item.department],35,',')}}</p>
+                            </div>
+                         </ng-template>
+                      </ng-select>
+                  </div>
+              </div>
+              <p class="form-error pt-1" *ngIf="ermdetailRiskFormError&&ermdetailRiskFormError.risk_owner_id">
+                  {{ermdetailRiskFormError.risk_owner_id}}</p>
+          </div>
+          </div>
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'risk_category' | translate}}<sup>*</sup></label>
+              <div class="clearfix">
+                  <div class="multiple-plain-ngselect">
+                      <ng-select
+                          [placeholder]="'select_risk_category' | translate" 
+                          [multiple]="false" searchable="true"
+                          bindLabel="id" 
+                          formControlName="risk_category_id"
+                          (search)="searchRiskCategory($event)" 
+                          (clear)="getRiskCategory()"
+                          (open)="getRiskCategory()" 
+                          autocomplete="new-password">
+                          
+                          <ng-option
+                          [value]="type.id"
+                          *ngFor="let type of RiskCategoryStore.allItems"
+                        >
+                          {{ type.title }}
+                        </ng-option>
+                      </ng-select>
+                  </div>
+              </div>
+              <p class="form-error pt-1" *ngIf="ermdetailRiskFormError && ermdetailRiskFormError.risk_category_id">
+                  {{ermdetailRiskFormError.risk_category_id}}</p>
+          </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group">
+              <label>{{'impacts'|translate}}</label>
+              <div class="d-flex popup-select-two"> <input type="text" class="form-control w-100"
+                      [placeholder]=" 'impact' | translate" formControlName="risk_impacts">
+                  <button class="btn multi-add-user ml-2" [disabled]="!ermdetailRiskForm.value.risk_impacts"
+                      (click)="addImpact()"><i class="fas fa-plus"></i></button>
+              </div>
+
+              <ul class="arrowlist pl-0 mt-2" *ngIf="RisksStore.impactList?.length>0">
+                  <li class="clearfix" *ngFor="let impact of RisksStore.impactList;let i=index">{{impact.title}}
+                      <Button type="button" (click) = "removeImpact(i)" class="btn btn-small float-right btn-small-delete" style="border: none;"><i class="fas fa-trash"></i></Button>
+                  </li>
+              </ul>
+              <p class="form-error pt-1" *ngIf="ermdetailRiskFormError && ermdetailRiskFormError.risk_impacts">{{ermdetailRiskFormError.risk_impacts}}
+              </p>
+          </div>
+          </div>
+          <div class="col-lg-6 col-sm-12">
+              <div class="form-group add-kpi-textarea">
+                  <label for="name">{{ 'risk_cause' | translate }}</label>
+                  <div class="d-flex popup-select-two"> <input type="text" class="form-control w-100"
+                          [placeholder]=" 'risk_cause' | translate" formControlName="risk_causes">
+                      <button class="btn multi-add-user ml-2" (click)="addRiskCause()"
+                          [disabled]="!ermdetailRiskForm.value.risk_causes"><i class="fas fa-plus"></i></button>
+                  </div>
+
+                  <ul class="arrowlist pl-0 mt-2" *ngIf="RisksStore.riskCauseList?.length>0">
+
+                      <li class="clearfix" *ngFor="let cause of RisksStore.riskCauseList;let j=index">{{cause.title}}
+                          <Button type="button" (click) = "removeRiskCause(j)" class="btn btn-small float-right btn-small-delete" style="border: none;"><i class="fas fa-trash"></i></Button>
+                      </li>
+
+                  </ul>
+                  <p class="form-error pt-1" *ngIf="ermdetailRiskFormError && ermdetailRiskFormError.risk_causes">
+                      {{ermdetailRiskFormError.risk_causes}}
+                  </p>
+              </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'risk_areas' | translate}}</label>
+              <div class="clearfix">
+                  <div class="multiple-plain-ngselect">
+                      <ng-select [placeholder]="'risk_area' | translate"
+                          [multiple]="true" 
+                          searchable="true" 
+                          bindLabel="title"
+                          formControlName="risk_area_ids" 
+                          (search)="searchRiskArea($event)"
+                          (clear)="getRiskArea()" 
+                          (open)="getRiskArea()" 
+                          autocomplete="new-password">
+                          <ng-option
+                          [value]="type"
+                          *ngFor="let type of RiskAreaStore.allItems"
+                        >
+                          {{ type.title }}
+                        </ng-option>
+
+                      </ng-select>
+                  </div>
+              </div>
+              <p class="form-error pt-1" *ngIf="ermdetailRiskFormError && ermdetailRiskFormError.risk_area_ids">
+                  {{ermdetailRiskFormError.risk_area_ids}}</p>
+          </div>
+          </div>
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'risk_matrix_impact' | translate}}<span class="form-error">*</span></label>
+              <div class="clearfix">
+                <div
+                  class="multiple-plain-ngselect">
+                  <ng-select
+                    [placeholder]="'risk_matrix_impact' | translate"
+                    [multiple]="false"
+                    searchable="true"
+                    (search)="searchRiskMatrixImpact($event)"
+                    formControlName="risk_matrix_impact_id"
+                    (change)="getRiskMatrixImpact()"
+                    (clear)="getRiskMatrixImpact()"
+                    (open)="getRiskMatrixImpact()"
+                    bindLabel="risk_matrix_impact_title"
+                  >
+                    <ng-option
+                      [value]="type.id"
+                      *ngFor="let type of ImpactStore?.impactDetails"
+                    >
+                      {{ type.risk_matrix_impact_title }}
+                    </ng-option>
+                  </ng-select>
+         
+                </div>
+              </div>
+            </div>
+           </div>
+        </div>
+      </form>
+
+      <div class="row">
+        <div class="col-sm-12">
+          <div class="d-block justify-content-left border-0 mt-3">
+            <button
+              type="submit"
+              class="btn btn-active"
+              (click)="saveErmDetailRiskSummary()"
+              [disabled]="ermdetailRiskForm.invalid || AppStore.loading"
+            >
+              {{
+                AppStore.loading
+                  ? getButtonText("loading")
+                  : getButtonText("save")
+              }}
+            </button>
+            <button
+              type="button"
+              data-toggle="modal"
+              data-target="#signal-lost"
+              class="btn"
+              (click)="saveErmDetailRiskSummary(true)"
+              [disabled]="ermdetailRiskForm.invalid || AppStore.loading"
+            >
+              {{
+                AppStore.loading
+                  ? getButtonText("loading")
+                  : getButtonText("save_close")
+              }}
+            </button>
+            <button
+              type="button"
+              data-toggle="modal"
+              data-target="#error-message"
+              class="btn"
+              (click)="closeFormModal()"
+            >
+              {{
+                AppStore.loading
+                  ? getButtonText("loading")
+                  : getButtonText("cancel")
+              }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Modal footer -->
+  </div>
+</div>
+

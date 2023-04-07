@@ -1,0 +1,306 @@
+<button type="button" class="close" (click)="closeFormModal()"><i class="lni-close"></i><span>{{'esc' | translate }}</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered" #formModal>
+    <div class="modal-content" *mobxAutorun>
+       <!-- Modal Header -->
+       <div class="modal-header">
+          <h4 class="modal-title">{{'quick_upload' | translate }}</h4>
+       </div>
+       <!-- Modal body -->
+       <div class="modal-body form-body">
+          <form [formGroup]="quickUploadForm">
+
+    
+          <p class="head-details">The quick and easy files upload feature allows you to upload multiple files/items at once. It supports all the most popular and used file types.
+          </p>
+          <label>{{'choose_file' | translate }}<span class="form-error">*</span></label>
+          <div class="scroll-documents" #uploadArea>
+             <div class="row m-0 upload-section" style="padding-top: 0">
+                <div class="col-sm-4 costmz-logo-new mt-2">
+                   <div class="question-circle-inp" *ngIf = "OrganizationGeneralSettingsStore?.organizationSettings?.support_file_allowed_types?.length > 0" style="margin-right: 7px;">
+                      <i class="far fa-question-circle"></i>
+                      <div class="message-password-inp">
+                          <p class="mb-0">{{'allowed_file_types' | translate }} {{OrganizationGeneralSettingsStore?.organizationSettings?.support_file_allowed_types?.toString()}}</p>
+                      </div>
+                   </div>
+                   <div class="form-group form-group-upload">
+                      <div class="darag-dropifile-upload">
+                         <div class="d-flex justify-content-center align-items-center text-center">
+                            <div>
+                               <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                               <div class="drag-file-name"> {{'drag_drop_file_here' | translate }} </div>
+                               <div class="upload-btn-wrapper">
+                                  <input type="file" name="myfile" (change)="onFileChange($event,'support-file')" [accept]="checkAcceptFileTypes('support-file')" multiple/>
+                                  <button class="btn">{{'browse_files' | translate }}</button>
+                               </div>
+                            </div>
+                         </div>
+                      </div>
+                   </div>
+                </div>
+
+                 <div [ngClass] = "files.success || files.file_type != 'support-file' ? 'col-sm-4 up-pic-cf mt-2 hide_loader' : 'col-sm-4 up-pic-cf mt-2'" *ngFor = "let files of quickUploadFiles">
+                   <div class="upload-pics edit-option file-upload-loader">
+                      <circle-progress
+                         [percent] = files.uploadProgress
+                         [title] = files.uploadProgress
+                      ></circle-progress>
+                   </div>
+                </div> 
+                
+                  <div [ngClass]="b?.is_deleted ? 'col-sm-4 up-pic-cf mt-2 image_deleted':'col-sm-4 up-pic-cf mt-2'" *ngFor = "let b of DocumentsStore.getSupportFile"> 
+                   <div class="upload-pics edit-option">
+                      <div class="browse-form-pic" [ngStyle]="{'background': 'url(' + b?.preview + ') no-repeat 0 0 / cover'}">
+                      </div>
+                       <div class="browse-form-name clearfix">
+                        <div class="float-left">
+                         <h6 [attr.title] = "b?.name">{{b?.name.length > 20 ? b?.name.substring(0,20)+' ...' : b?.name}}</h6>
+                         <span>{{b?.size/1048576 | number:'0.2-2'}}MB</span>
+                        </div>
+                        <div class="browse-logo">
+                          <img *ngIf = "checkExtension(b?.ext,'excel') != -1" src="/assets/images/md-xl.png">
+                          <img *ngIf = "checkExtension(b?.ext,'image') != -1" src="/assets/images/md-jpg.png">
+                          <img *ngIf = "checkExtension(b?.ext,'doc') != -1" src="/assets/images/md-doc.png">
+                          <img *ngIf = "checkExtension(b?.ext,'pdf') != -1" src="/assets/images/md-pdf.png">
+                          <img *ngIf = "checkExtension(b?.ext,'video') != -1" src="/assets/images/md-video.png">
+                          <img *ngIf = "checkExtension(b?.ext,'audio') != -1" src="/assets/images/md-audio.png">
+                          <img *ngIf = "checkExtension(b?.ext,'ppt') != -1" src="/assets/images/md-ppt.png">
+                        </div>
+                       </div>
+                       <div class="edit-option-show">
+                        <a (click) = "removeBrochure('document-file',b?.token)"><i class="fas fa-trash"></i></a>
+                      </div>
+                   </div>
+                </div> 
+             </div>
+
+          </div>
+
+          <div class="row">             
+            <div class="col-sm-12">
+              <div class="form-group">
+                 <label for="name">{{'document _access_type' | translate }}<span class="form-error">*</span>
+                </label>
+                <div class="question-circle-inp d-inline-block" style="vertical-align: middle; margin: -15px 0 0 15px; position: relative;">
+                  <i class="far fa-question-circle"></i>
+                  <div class="message-password-inp">
+                     <p class="mb-0">The file will have the same access as parent folder and you can easily change the permission from the details page.</p>
+                  </div>
+               </div>
+                 <div class="mb-3 box-cnt-one tab-type-btn-small">
+                  <label *ngFor="let item of DocumentAccessTypeMasterStore.allItems"  (click) = "DocumentsStore.accessVerification() && selectAccessType(item.id)" [ngClass] = "findSelectedAccessType(item.id) ? 'outline-tag active pointer' : 'outline-tag pointer'"><i [class]="setAccessCLass(item)"></i>{{item.title}}</label>
+                 </div>
+                 <p class="form-error" *ngIf="FormErrors && FormErrors.document_access_type_id">{{'select_any_document_acess_type' | translate }} </p>
+             </div>
+           </div>
+           <div class="col-sm-12">
+            <div class="form-group">
+               <label for="name">{{'document_status' | translate}}<span class="form-error">*</span></label>
+               <div class="clearfix">
+                   <div class="multiple-plain-ngselect">
+                     <ng-select
+                     [placeholder]="'document_status' | translate"
+                     [closeOnSelect]="true"
+                     searchable = "false"
+                     formControlName = "document_status_id">
+                     <ng-option *ngFor="let data of processedDocumentStatusArray" [value]="data.id">{{data.document_status_language_title}}</ng-option>
+                  </ng-select>
+                   </div>
+               </div>
+           </div>
+         </div>
+          </div>   
+
+          <div class="row" [hidden]="!isShared">
+            <div class="col-sm-12">
+               <div class="form-group">
+                  <label for="name">{{'organization' | translate}}</label>
+                  <div class="clearfix">
+                      <div class="multiple-plain-ngselect">
+                        <ng-select [items]="SubsidiaryStore.subsidiaryList"
+                        bindLabel="title"
+                        [readonly]="DocumentsStore.readOnlyVerification()"
+                        [placeholder]="'subsidiaries' | translate"
+                        [multiple]="true"
+                        [closeOnSelect]="false"
+                        searchable = "false"
+                        formControlName = "organization_ids"
+                        (add) = "getDivision()"
+                        (search) = "searchSubsidiary($event)"
+                        (clear) = "getSubsidiary();getDivision()"
+                        (open) = "getSubsidiary()">
+                     </ng-select>
+                      </div>
+                  </div>
+              </div>
+            </div>
+            <div class="col-sm-6">
+               <div class="form-group">
+                  <label for="name">{{'division' | translate}}</label>
+                  <div class="clearfix">
+                      <div class="multiple-plain-ngselect">
+                        <ng-select [items]="DivisionStore.allItems"
+                        bindLabel="title"
+                        [readonly]="DocumentsStore.readOnlyVerification()"
+                        [placeholder]="'division' | translate"
+                        multiple="true"
+                        [closeOnSelect]="false"
+                        searchable = "false"
+                        formControlName = "division_ids"
+                        (add) = "getDepartment()"
+                        (search) = "searchDivision($event)"
+                        (clear) = "getDivision()"
+                        (open) = "getDivision()">
+                     </ng-select>
+                      </div>
+                  </div>
+              </div>
+            </div>
+            <div class="col-sm-6">
+               <div class="form-group">
+                  <label for="name">{{'department' | translate}}</label>
+                  <div class="clearfix">
+                      <div class="multiple-plain-ngselect">
+                        <ng-select [items]="DepartmentStore.allItems"
+                        bindLabel="title"
+                        [readonly]="DocumentsStore.readOnlyVerification()"
+                        [placeholder]="'department' | translate"
+                        multiple="true"
+                        [closeOnSelect]="false"
+                        formControlName = "department_ids"
+                        (add) = "getSection()"
+                        (search) = "searchDepartment($event)"
+                        (clear) = "getDepartment()"
+                        (open) = "getDepartment()">
+                     </ng-select>
+                      </div>
+                  </div>
+              </div>
+            </div>
+            <div class="col-sm-6">
+               <div class="form-group">
+                  <label for="name">{{'section' | translate}}</label>
+                  <div class="clearfix">
+                      <div class="multiple-plain-ngselect">
+                        <ng-select [items]="SectionStore.allItems"
+                        bindLabel="title"
+                        [readonly]="DocumentsStore.readOnlyVerification()"
+                        [placeholder]="'section' | translate"
+                        multiple="true"
+                        [closeOnSelect]="false"
+                        formControlName = "section_ids"
+                        (add) = "getSubSection()"
+                        (search) = "searchSection($event)"
+                        (clear) = "getSection()"
+                        (open) = "getSection()">
+                     </ng-select>
+                      </div>
+                  </div>
+              </div>
+            </div>
+            <div class="col-sm-6">
+               <div class="form-group">
+                  <label for="name">{{'sub_section' | translate}}</label>
+                  <div class="clearfix">
+                      <div class="multiple-plain-ngselect">
+                        <ng-select [items]="SubSectionStore.allItems"
+                        bindLabel="title"
+                        [readonly]="DocumentsStore.readOnlyVerification()"
+                        [placeholder]="'sub_section' | translate"
+                        multiple="true"
+                        [closeOnSelect]="false"
+                        formControlName = "sub_section_ids"
+                        (search) = "searchSubSection($event)"
+                        (clear) = "getSubSection()"
+                        (open) = "getSubSection()">
+                     </ng-select>
+                      </div>
+                  </div>
+              </div>
+            </div>
+            <div class="col-sm-12">
+               <div class="form-group">
+                   <label for="name">{{'user'|translate}}</label>
+
+                   <div class="clearfix">
+                       <div class="multiple-plain-ngselect">
+                           <ng-select [items]="UsersStore.usersList" bindLabel="email" multiple="true" [closeOnSelect]="false"  [readonly]="DocumentsStore.readOnlyVerification()"
+                               [placeholder]="'user'|translate" formControlName="user_ids"
+                               (clear)="getUsers()" (search)="searchUers($event)" (open)="getUsers()">
+                               <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                   <img class="ng-select-user-display" *ngIf="item.image_token" height="15"
+                                       width="15"
+                                       [attr.src]="createImageUrl('user-profile-picture',item.image_token)" />
+                                   <img class="ng-select-user-display" *ngIf="!item.image_token"
+                                       height="15" width="15" [attr.src]="getDefaultImage('user-logo')" />
+                                   <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b><span aria-hidden="true"
+                                       (click)="clear(item)" style="border:none;"
+                                       class="ng-value-icon left">×</span>
+                               </ng-template>
+                               <ng-template ng-option-tmp let-item="item" let-index="index">
+                                   <div class="user-post-department-pic">
+                                       <img class="ng-select-user-display" *ngIf="item.image_token"
+                                           height="25" width="25"
+                                           [attr.src]="createImageUrl('user-profile-picture',item.image_token)" />
+                                       <img class="ng-select-user-display" *ngIf="!item.image_token"
+                                           height="25" width="25"
+                                           [attr.src]="getDefaultImage('user-logo')" />
+                                   </div>
+                                   <div class="user-post-department-div">
+                                       <b>{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b>
+                                       <p class="user-post-department-multiple">
+                                          {{getStringsFormatted([item.designation_title,' '+item.department],50,',')}}</p>
+                                   </div>
+                               </ng-template>
+                           </ng-select>
+                       </div>
+                   </div>
+               </div>
+           </div>
+           <div class="col-sm-12">
+            <div class="form-group">
+                <label for="name">{{'designation' | translate }}</label>
+                <div class="clearfix">
+                    <div class="multiple-plain-ngselect select-new-width">
+                        <ng-select [items]="DesignationMasterStore.designations"
+                        bindLabel="title"
+                        [readonly]="DocumentsStore.readOnlyVerification()"
+                        [placeholder]="'designation' | translate"
+                        multiple="true"
+                        [closeOnSelect]="false"
+                        formControlName = "designation_ids"
+                        (search) = "searchDesignation($event)"
+                        (clear) = "getDesignation()"
+                        (open) = "getDesignation()">
+                     </ng-select>
+                    </div>
+                    <button [disabled]='DocumentsStore.readOnlyVerification()' class="btn multi-add-user" (click)="openDesignationForm()"><i
+                            class="fas fa-plus"></i></button>
+
+                </div>
+            </div>
+        </div>
+
+         </div> 
+          <div class="row">
+            <div class="col-sm-12">
+              <div class="d-block justify-content-left border-0 mt-3">
+                <button type="submit" class="btn btn-active" (click)="saveFiles()"
+                  [disabled]="quickUploadForm.invalid || AppStore.loading || checkFileStatus()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save') }}</button>
+                <button type="button" data-toggle="modal" data-target="#signal-lost" class="btn"
+                  (click)="saveFiles(true)"
+                  [disabled]="quickUploadForm.invalid || AppStore.loading || checkFileStatus()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save_close') }}</button>
+                <button type="button" data-toggle="modal" data-target="#error-message" class="btn"
+                  (click)="closeFormModal()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('cancel') }}</button>
+  
+              </div>
+            </div>
+          </div>
+         </form>
+       </div>
+       <!-- Modal footer -->
+    </div>
+ </div>
+
+ <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #designationFormModal>
+   <app-designation-modal *ngIf="openDesignationModal" ></app-designation-modal>
+</div>

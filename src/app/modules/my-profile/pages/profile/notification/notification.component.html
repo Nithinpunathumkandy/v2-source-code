@@ -1,0 +1,108 @@
+<div class="tab-pane active show" id="notifications" role="tabpanel">
+
+    <div class="line-tab">
+        <div class="clearfix">
+            <div class="left-notification-tab">
+                <ul class="nav nav-tabs float-right">
+                    <li class="nav-item"> <a class="nav-link active" data-toggle="tab" href="#all"
+                            (click)="currentSelectedTab='all'">{{'all' |
+                            translate}}</a> </li>
+                    <li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#unread"
+                            (click)="currentSelectedTab='unread'">{{'unread' |
+                            translate}}</a> </li>
+                </ul>
+            </div>
+        </div>
+        <div class="tab-content tab-content-body widg-padding-cmn">
+            <div class="tab-pane active" id="all" *ngIf="currentSelectedTab==='all'">
+                <ul class="notifications-list">
+                    <ng-container *mobxAutorun>
+                        <li *ngFor="let row of NotificationStore.allNotificationItems| paginate: {currentPage:NotificationStore.currentPageAll, itemsPerPage:NotificationStore.itemsPerPageAll,totalItems:NotificationStore.totalNotificationItems};let num=index"
+                            [ngClass]="{'indication': !row.read_at}" (click)="statusUpdate(row)">
+                            <a>
+                                <div class="d-flex align-items-center">
+                                    <div class="notification-pic" style="width: 65px; height: 55px;">
+                                        <img [attr.src]="checkCreatedUser(row,'token') ? createImageUrl(checkCreatedUser(row,'token')) : getDefaultImage()"  class="img-fluid rounded-circle" style="width: 55px; height: 55px;" onerror = "this.src='/assets/images/user-demo2.png'">
+                                        <span [className]="'pic-status-icon '+ getIcon(row)"></span>
+                                    </div>
+                                    <div class="notification-texts pt-1 w-100">
+                                        <h6 class="mb-0">{{row.data?.label_key | translate}} {{row.data?.label_message | translate}} {{checkCreatedUser(row,'name') ? translateText('db_notification_by') : ""}} {{checkCreatedUser(row,'name')}}<span class="date-and-time-not">I
+                                                {{row.created_at | date:
+                                                OrganizationGeneralSettingsStore.organizationSettings?.date_time_format}}</span>
+                                        </h6>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                    </ng-container>
+                </ul>
+                <ng-container *mobxAutorun>
+                    <div *ngIf="NotificationStore.allNotificationItems.length == 0 && (NotificationStore.notificationAllloaded == true || NotificationStore.notificationAllloaded == false)" class="notifications-md-screen">
+                        <div class="empty-notification-pic mt-4 mb-4  text-center empty-notification-pic-detail-page">
+                            <img src="/assets/images/nonotification-empty.svg" class="img-fluid">
+                        </div>
+                        <div class="text-center pb-3">
+                            <h6>{{'no_notification' | translate}}</h6>
+                            <p>{{'no_notification_msg' | translate}}</p>
+                        </div>
+                    </div>
+                </ng-container>
+                <div *ngIf="NotificationStore.totalNotificationItems>NotificationStore.itemsPerPageAll" class="col-sm-12">
+                    <ul class="pagination justify-content-center mt-3">
+                        <div class="list">
+                            <pagination-controls [previousLabel]="'previous' | translate"
+                                [nextLabel]="'next' | translate" (pageChange)="pageChange($event)"
+                                class="my-pagination"></pagination-controls>
+                        </div>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="tab-pane active" id="unread" *ngIf="currentSelectedTab==='unread'">
+                <ul class="notifications-list">
+                    <ng-container *mobxAutorun>
+                        <li *ngFor="let row of NotificationStore.unreadAllItems| paginate: {currentPage:NotificationStore.unreadCurrentPage, itemsPerPage:NotificationStore.unreadItemsPerPage,totalItems:NotificationStore.unreadTotalItems};let num=index"
+                            [ngClass]="{'indication': !row.read_at}" (click)="statusUpdate(row)">
+                            <a>
+                                <div class="d-flex align-items-center">
+                                    <div class="notification-pic" style="width: 65px; height: 55px;">
+                                        <img [attr.src]="row.created_by?.image_token ? createImageUrl(row.created_by?.image_token) : getDefaultImage()"  class="img-fluid rounded-circle" style="width: 55px; height: 55px;" onerror = "this.src='/assets/images/user-demo2.png'">
+                                        <span [className]="'pic-status-icon '+ getIcon(row)"></span>
+                                    </div>
+                                    <div class="notification-texts pt-1 w-100">
+                                        <h6 class="mb-0">{{row.data?.label_key | translate}} {{row.data?.label_message | translate}} {{checkCreatedUser(row,'name') ? translateText('db_notification_by') : ""}} {{checkCreatedUser(row,'name')}}<span class="date-and-time-not">I
+                                                {{row.created_at | date:
+                                                OrganizationGeneralSettingsStore.organizationSettings?.date_time_format}}</span>
+                                        </h6>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                    </ng-container>
+                </ul>
+                <ng-container *mobxAutorun>
+                    <div *ngIf="NotificationStore.unreadAllItems.length == 0 && (NotificationStore.unreadNotificationloaded == true || NotificationStore.unreadNotificationloaded == false)" class="notifications-md-screen">
+                        <div class="empty-notification-pic mt-4 mb-4 text-center empty-notification-pic-detail-page">
+                            <img src="/assets/images/nonotification-empty.svg" class="img-fluid">
+                        </div>
+                        <div class="text-center pb-3">
+                            <h6>{{'no_notification' | translate}}</h6>
+                            <p>{{'no_notification_unread_msg' | translate}}</p>
+                        </div>
+                    </div>
+                </ng-container>
+                <div *ngIf="NotificationStore.unreadTotalItems>NotificationStore.unreadItemsPerPage" class="col-sm-12">
+                    <ul class="pagination justify-content-center mt-3">
+                        <div class="list">
+                            <pagination-controls [previousLabel]="'previous' | translate"
+                                [nextLabel]="'next' | translate" (pageChange)="unreadPageChange($event)"
+                                class="my-pagination"></pagination-controls>
+                        </div>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>

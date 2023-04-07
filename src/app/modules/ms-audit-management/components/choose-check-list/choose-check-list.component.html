@@ -1,0 +1,163 @@
+    <!-- Choose Risk-popup Start -->
+        <button type="button" class="close" data-dismiss="modal" (click)="cancel()"><i class="lni-close"></i><span>esc</span></button>
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+           <div class="modal-content">
+              <!-- Modal Header -->
+              <div class="modal-header">
+                 <h4 class="modal-title">Choose Checklist</h4>
+                 <!-- <button type="button" class="close" data-dismiss="modal">&times;</button> -->
+                 
+              </div>
+              <!-- Modal body -->
+              <div class="modal-body form-body add-profie-org-pup">
+                 <p class="head-details">A management audit checklist is used by audit management to ensure management systems and processes are effectively addressing the objectives and goals of the business or company</p>
+                <form [formGroup]="form" *mobxAutorun>
+                 <div class="row">
+                  
+                   <div class="col-sm-12 col-lg-6">
+                     <div class="form-group">
+                        <label for="name">{{'title' | translate}}<span class="form-error">*</span></label>
+                        <div class="clearfix d-flex">
+                           <div class="multiple-plain-ngselect select-width-plus w-100">
+                              <ng-select [placeholder]=" 'ms_audit_select_title' | translate" [multiple]="false"
+                                 searchable="true" formControlName="title"
+                                 (change)="pageChange()"
+                                 (search)="searchChecklistGroup($event)"
+                                 (open)="getCheckGroupList()">
+                                 <ng-option [value]="type.id" *ngFor="let type of AuditChecklistGroupMasterStore.auditChecklistGroup">
+                                    {{type.title.length > 50 ? type.title.substring(0,50)+'...' : type.title}}
+                                 </ng-option>
+                              </ng-select>
+                              <p style="color: red;" *ngIf="formErrors && formErrors.focus_area_id">
+                                 {{formErrors.title}}</p>
+                           </div>
+                           <!-- <button class="btn multi-add-user ml-2" data-toggle="modal" 
+                              style="width: 42px;"><i class="fas fa-plus"></i></button> -->
+                        </div>
+                     </div>
+                   </div>
+                   <div class="col-sm-12 col-lg-6">
+                       <div class="form-group">
+                          <label for="name">{{'search' | translate}}</label>
+                            <form class="form-control issue-select-process-search bg-white search-popup-new">
+                              <input type="text" placeholder="Search.." (input)="searchCheckList($event)" name="search" class="search-process">
+                              <button type="submit" style="width: 40px;"><i class="fa fa-search"></i></button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-12 col-lg-6" >
+                     <div class="form-group">
+                        <label for="name"> {{'department' | translate}} <span class="form-error">*</span></label>
+                        <div class="clearfix">
+                            <div class="multiple-plain-ngselect">
+                        
+                                <ng-select [items]="DepartmentMasterStore.allItems"
+                                            [placeholder]="'select_departments' | translate" multiple="true"
+                                            formControlName="department_ids"
+                                            (clear)="getDepartment();"
+                                            (change)="pageChange()"
+                                            (search)="searchDepartment($event)" (open)="getDepartment()"
+                                             bindLabel="title">
+                                            <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                                {{item?.title?.length > 60 ? (item.title | slice:0:60)+' ...' :
+                                                item.title}}<span aria-hidden="true" (click)="clear(item)"
+                                                    style="border:none;" class="ng-value-icon left">×</span>
+                                            </ng-template>
+                                            <ng-template ng-option-tmp let-item="item" let-index="index">
+                                                {{item?.title?.length > 80 ? (item.title | slice:0:80)+' ...' :
+                                                item.title}}
+                                            </ng-template>
+                                            <!-- <ng-option [value]="type" *ngFor="let type of AuditItemTypeMasterStore.allItems">
+                                            {{type.title.length > 80 ? type.title.substring(0,80)+' ...' : type.title}}
+                                        </ng-option> -->
+                                        </ng-select>
+                                
+                            </div>
+                        </div>
+                    </div>
+                  </div>
+                 </div>
+
+
+                 <div class="audit-form-table w-100">
+                    <table class="table table-bordered ordinary-table audit-page-table mb-4 table-scroll">
+                <thead>
+                   <tr>
+                      <th class="border-top-0" width="8%">
+                         <label class="container2 float-left" style="margin-top: 2px; padding-left: 22px;">
+                             <input type="checkbox" [checked]='is_all' (change)="checkAll($event)">
+                             <span class="checkmark"></span>
+                          </label>#
+                      </th>
+                      <th class="border-top-0" width="37%">{{'ms_audit_question' | translate}}</th>
+                      <!-- <th class="border-top-0" width="27%">{{'process' | translate}}</th> -->
+                      <th class="border-top-0" width="10%">{{'ms_type' | translate}}</th>
+                      <th class="border-top-0" width="38%">{{'clauses' | translate}}</th>
+                      
+                      
+                   </tr>
+                </thead>
+                <tbody>
+                   <tr *ngFor="let list of MsAuditCheckListStore.msAuditChecckLists| paginate: {currentPage:MsAuditCheckListStore.currentPage, itemsPerPage:MsAuditCheckListStore.itemsPerPage,totalItems:MsAuditCheckListStore.totalItems} ;let mIndex = index">
+                      <td>
+                       <label class="container2 float-left" style="margin-top: 2px; padding-left: 22px;">
+                          <input type="checkbox" (change)="changeCheckList(list,mIndex)" [checked]="checkedItems(list.id)">
+                          <span class="checkmark"></span>
+                       </label>
+                     {{(MsAuditCheckListStore?.currentPage - 1) * MsAuditCheckListStore?.itemsPerPage +(mIndex+1)}}</td>
+                      <td>{{list.title ? list.title : AppStore.noContentText}}</td>
+                      <!-- <td>
+                        <ul class="arrowlist m-0 p-0"  *ngIf="list?.processes" >
+                           <li *ngFor="let process of list?.processes.split(',') ">{{process}}</li>
+                          </ul>
+                          <p *ngIf="!list?.processes">{{AppStore.noContentText}}</p>
+                      </td> -->
+                      <td>                      
+                         <div *ngIf="list?.ms_types">
+                        <p *ngFor="let msType of list?.ms_types.split(',')">{{msType}}</p>
+                  </div>
+                  <p *ngIf="!list?.ms_types">{{AppStore.noContentText}}</p>
+               </td>
+                      <td>
+                        <div *ngIf="list?.clause_titles">
+                           <p *ngFor="let clause of list?.clause_titles.split(',')">{{clause}}</p>
+                     </div>
+                     <p *ngIf="!list?.clause_titles">{{AppStore.noContentText}}</p>
+                      </td>
+                   </tr>
+                
+                   
+                   
+                </tbody>
+             </table>
+
+
+                 </div>
+                 <div *ngIf="MsAuditCheckListStore.totalItems>MsAuditCheckListStore.itemsPerPage"
+                  class="col-sm-12">
+                  <ul class="pagination justify-content-center mt-3">
+                      <div class="list">
+                          <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"  class="my-pagination" (pageChange)="pageChange($event)">
+                          </pagination-controls>
+                      </div>
+                  </ul>
+              </div>
+              <app-no-data *ngIf = "MsAuditCheckListStore.msAuditChecckLists.length==0" [border]='false'></app-no-data>
+
+                 <div class="d-block justify-content-left border-0 mt-5">
+                  <button [disabled]="selectedCheckListIds.length == 0 || AppStore.loading" type="submit" class="btn btn-active" (click)="save()"
+                  >{{ AppStore.loading ?
+                  getButtonText('loading') : getButtonText('save') }}</button>
+              <button type="button" data-toggle="modal" data-target="#signal-lost" class="btn"
+                  (click)="save(true)" [disabled]="selectedCheckListIds.length == 0 || AppStore.loading">{{ AppStore.loading ?
+                  getButtonText('loading') : getButtonText('save_close') }}</button>
+              <button type="button"  data-toggle="modal" data-target="#error-message" class="btn"
+                  (click)="cancel()">{{ AppStore.loading ? getButtonText('loading') :
+                  getButtonText('cancel')}}</button>
+                 </div>
+               </form>
+              </div>
+              <!-- Modal footer -->
+           </div>
+        </div>

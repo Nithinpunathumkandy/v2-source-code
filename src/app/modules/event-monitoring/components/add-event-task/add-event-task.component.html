@@ -1,0 +1,254 @@
+<button type="button" (click)="closeFormModal()" class="close" data-dismiss="modal"><i
+        class="lni-close"></i><span>esc</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+        <!-- Modal body -->
+        <div class="modal-header" *mobxAutorun>
+            <h4 *ngIf="source.type=='edit_submenu'" class="modal-title">{{'edit_task' | translate}}</h4>
+            <h4 *ngIf="source.type=='add_submenu'" class="modal-title">{{'add_task' | translate}}</h4>
+            <h4 *ngIf="source.value" class="modal-title">{{source.value | translate}}</h4>
+        </div>
+        <form class="modal-body form-body" [formGroup]="form">
+            <p class="head-details">To complete {{source.value ? source.value:'task'}} inputs, add title of the task, short description, start date, end date, duration and responsible users. Also, attach necessary file(s), if any.</p>            
+            <div class="row">
+                <div class="col-sm-12" *ngIf="source.type=='edit_submenu' || source.type=='add_submenu'">
+                    <div class="form-group">
+                       <label>{{ "event" | translate }}<span class="form-error">*</span></label>
+                       <div class="clearfix">
+                          <div class="multiple-plain-ngselect">
+                            <ng-select 
+                                [placeholder]="'select_event' | translate" 
+                                [multiple]="false"
+                                [items]="EventsStore.allEventsList"
+                                formControlName="event_id" 
+                                (open)="getEventList()"
+                                (clear)="getEventList()" 
+                                (search)="getEventList()" 
+                                bindLabel="title">
+                            <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                {{item?.title?.length > 60 ? (item.title | slice:0:60)+' ...' : item.title}}
+                            </ng-template>
+                            <ng-template ng-option-tmp let-item="item" let-index="index">
+                                {{item?.title?.length > 80 ? (item.title | slice:0:80)+' ...' : item.title}}
+                            </ng-template>
+                            </ng-select>
+                          </div>
+                       </div>
+                    </div>
+                    <div class="form-group" *mobxAutorun>
+                        <label>{{'task_phase'|translate}}<sup>*</sup></label><!---->
+                        <!-- <label>{{'document_type'|translate}}</label> -->
+                        <div class="clearfix d-flex">
+                           <div class="multiple-plain-ngselect w-100">
+                              <ng-select [items]="TaskPhaseMasterStore.allItems"
+                              bindLabel="task_phase_language_title"
+                              [placeholder]="'Select_task_phase' | translate " 
+                              [multiple]="false"
+                              formControlName = "task_phase_id"
+                              (search) = "searchTaskPhase($event)"
+                              (clear) = "getTaskPhase()"
+                              (open) = "getTaskPhase()">
+                              <ng-template ng-label-tmp let-item="item" let-clear="clear">
+    
+                                {{item.task_phase_language_title}}<span aria-hidden="true" (click)="clear(item)"
+    
+                                    style="border:none;" class="ng-value-icon left">×</span>
+    
+                            </ng-template>
+    
+                            <ng-template ng-option-tmp let-item="item" let-index="index">
+    
+                                {{item.task_phase_language_title}}
+    
+                            </ng-template>
+                           </ng-select>
+                           <p class="form-error pt-1" *ngIf="formErrors && formErrors.task_phase_id">{{formErrors.task_phase_id}}
+                          </p>
+                           </div>
+                        </div>
+                     </div>
+                </div>
+                <div class="col-sm-12">
+                    <div class="form-group">
+                        <label for="name">{{'task' | translate}}<sup>*</sup></label>
+                        <input formControlName="title" type="text" class="form-control" [placeholder]=" 'task_placeholder' | translate">
+                        <p class="form-error pt-1" *ngIf="formErrors && formErrors.title">{{formErrors.title}}</p>
+                    </div>
+                </div>
+                <div class="col-sm-12">
+                    <div class="form-group">
+                        <label for="name">{{'description' | translate}}</label>
+                        <textarea formControlName="description" class="form-control" rows="3" id="comment" [placeholder]=" 'task_description_placeholder' | translate"></textarea>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-sm-12">
+                    <div class="form-group">
+                        <label for="name">{{'start_date' | translate}}<sup>*</sup></label>
+                        <div class="input-group date-picker">
+                            <input class="form-control cal4" formControlName="start_date" placeholder="yyyy-mm-dd"
+                                (click)="startDateInput.toggle()" id="start" ngbDatepicker
+                                #startDateInput="ngbDatepicker" autocorrect="off">
+
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-secondary calendar" (click)="startDateInput.toggle()"
+                                    type="button"><i class="fas fa-calendar-alt"></i></button>
+                            </div>
+                        </div>
+                        <p class="form-error pt-1" *ngIf="formErrors && formErrors.start_date">{{formErrors.start_date}}</p>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-sm-12">
+                    <div class="form-group">
+                        <label for="name">{{'end_date' | translate}}<sup>*</sup></label>
+                        <div class="input-group date-picker">
+                            <input class="form-control cal4" formControlName="end_date" placeholder="yyyy-mm-dd"
+                            [minDate]="form.value.start_date?{year: this.form.value.start_date.year, month: this.form.value.start_date.month, day: this.form.value.start_date.day}:''"
+                                (click)="endDateInput.toggle()" id="end" ngbDatepicker #endDateInput="ngbDatepicker"
+                                autocorrect="off">
+
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-secondary calendar" (click)="endDateInput.toggle()"
+                                    type="button"><i class="fas fa-calendar-alt"></i></button>
+                            </div>
+                        </div>
+                        <p class="form-error pt-1" *ngIf="formErrors && formErrors.end_date">{{formErrors.end_date}}</p>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-sm-12">
+                    <div class="form-group">
+                        <label for="name">{{'task_duration' | translate}}</label>
+                        <input formControlName="duration" type="number" class="form-control input-number" [placeholder]="'task_duration_placeholder' | translate">
+                    </div>
+                </div>
+                <div class="col-lg-6 col-sm-12">
+                    <div class="form-group">
+                        <label for="name">{{'responsible_users' | translate}}<sup>*</sup></label>
+                        <div class="clearfix">
+                            <div class="multiple-plain-ngselect">
+                                <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                                    [placeholder]="'select_responsible_users' | translate"
+                                    formControlName="responsible_user_ids" [multiple]="true" (clear)="getUsers()"
+                                    (search)="searchUsers($event)" multiple="true" (open)="getUsers()"
+                                    [searchFn]="customSearchFn">
+                                    <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                        <img class="ng-select-user-display" *ngIf="item.image?.token||item.image_token"
+                                            height="15" width="15"
+                                            [attr.src]="item.image_token ? createImagePreview('user-profile-picture',item.image_token) : createImagePreview('user-profile-picture',item.image.token)"
+                                            onerror="this.src='/assets/images/user-demo2.png'" />
+                                        <img class="ng-select-user-display"
+                                            *ngIf="!item.image?.token && !item.image_token" height="15" width="15"
+                                            [attr.src]="getDefaultImage('user-logo')" />
+                                        <b style="padding-left: 3px;">{{item.first_name | titlecase}}
+                                            {{item.last_name | titlecase}}</b><span aria-hidden="true"
+                                            (click)="clear(item)" style="border:none;"
+                                            class="ng-value-icon left">×</span>
+                                    </ng-template>
+                                    <ng-template ng-option-tmp let-item="item" let-index="index">
+                                        <div class="user-post-department-pic">
+                                            <img class="ng-select-user-display"
+                                                *ngIf="item.image?.token || item.image_token" height="25" width="25"
+                                                [attr.src]="item.image_token ? createImagePreview('user-profile-picture',item.image_token) : createImagePreview('user-profile-picture',item.image.token)"
+                                                onerror="this.src='/assets/images/user-demo2.png'" />
+                                            <img class="ng-select-user-display"
+                                                *ngIf="!item.image?.token && !item.image_token" height="25" width="25"
+                                                [attr.src]="getDefaultImage('user-logo')" />
+                                        </div>
+                                        <div class="user-post-department-div">
+                                            <b>{{item.first_name | titlecase}}
+                                                {{item.last_name | titlecase}}</b>
+                                            <p class="user-post-department-multiple">
+                                                {{item.designation_title}}<span
+                                                    *ngIf="item.department">,{{item.department}}</span></p>
+                                        </div>
+                                    </ng-template>
+                                </ng-select>
+                            </div>
+                        </div>
+                        <p class="form-error pt-1" *ngIf="formErrors&&formErrors.responsible_user_ids">{{formErrors.responsible_user_ids}}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <label for="name" class="label-style">{{'attachments' | translate}}</label>
+                    <div #uploadArea>
+                        <div class="thumb-pics-bg thumb-pics-col-3 clearfix thumb-pics-fix-text" style="padding-top: 0;">
+                            <div class="thumb-pics">
+                                <div class="question-circle-inp" style="margin-right: 7px;">
+                                    <i class="far fa-question-circle"></i>
+                                    <div class="message-password-inp">
+                                        <p class="mb-0">{{'allowed_file_types' | translate}}{{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="form-group form-group-upload">
+                                    <div class="darag-dropifile-upload">
+                                        <div class="d-flex justify-content-center align-items-center text-center">
+                                            <div>
+                                                <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                                                <div class="drag-file-name"> Select or Upload Your File Here </div>
+                                                <div class="upload-btn-wrapper">
+                                                    <button (click)="openFileUploadModal()" type="button" class="btn">{{'browse_files' | translate}}</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <ng-container *ngFor="let docs of fileUploadPopupStore.displayFiles ;let i = index">
+                                <div class="thumb-pics">
+                                    <div class="upload-pics edit-option" data-toggle="modal">
+                                        <div *ngIf="docs.id && !docs.preview" class="browse-form-pic" [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                                        </div>
+                                        <div *ngIf="docs.preview" class="browse-form-pic" [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">
+                                        </div>
+                                        <div class="browse-form-name clearfix">
+                                            <div class="float-left">
+                                                <h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}</h6>
+                                                <span *ngIf="docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-book"></i></span>
+                                                <span *ngIf="!docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-laptop"></i></span>
+                                                <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                                            </div>
+                                            <div class="browse-logo">
+                                                <img *ngIf="checkExtension(docs.ext,'image') != -1"
+                                                    class="folder-picher" src="/assets/images/jpg-icone.png">
+                                                <img *ngIf="checkExtension(docs.ext,'doc') != -1" class="folder-picher"
+                                                    src="/assets/images/word-icone.png">
+                                                <img *ngIf="checkExtension(docs.ext,'pdf') != -1" class="folder-picher"
+                                                    src="/assets/images/pdf-icone.png">
+                                                <img *ngIf="checkExtension(docs.ext,'excel') != -1"
+                                                    class="folder-picher" src="/assets/images/excel-icone.png">
+                                                <img *ngIf="checkExtension(docs.ext,'video') != -1"
+                                                    class="folder-picher" src="/assets/images/md-video.png">
+                                                <img *ngIf="checkExtension(docs.ext,'audio') != -1"
+                                                    class="folder-picher" src="/assets/images/md-audio.png">
+                                                <img *ngIf="checkExtension(docs.ext,'ppt') != -1" class="folder-picher"
+                                                    src="/assets/images/md-ppt.png">
+                                            </div>
+                                        </div>
+                                        <div class="edit-option-show">
+                                            <a (click)="removeDocument(docs)"><i class="fas fa-trash"></i></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </ng-container>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="d-block justify-content-left border-0 mt-3">
+                        <button type="button" data-toggle="modal" (click)="save()" data-target="#signal-lost" [disabled]="form.invalid || AppStore.loading" class="btn ordinary-btn mr-3 btn-active">{{AppStore.loading ? getButtonText('loading') : getButtonText('save')}}</button>
+                        <button type="button" data-toggle="modal" data-target="#signal-lost" (click)="save(true)" [disabled]="form.invalid || AppStore.loading" class="btn ordinary-btn mr-3">{{AppStore.loading ? getButtonText('loading') : getButtonText('save_close')}}</button>
+                        <button type="button" data-toggle="modal" data-target="#error-message" (click)="cancel()" class="btn ordinary-btn mr-2"> {{AppStore.loading ? getButtonText('loading') : getButtonText('cancel')}}</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <!-- Modal footer -->
+    </div>
+</div>
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #fileUploadModal>    
+    <app-file-upload-popup *ngIf="fileUploadPopupStore.openPopup"></app-file-upload-popup> 
+</div>

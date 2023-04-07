@@ -1,0 +1,380 @@
+<button type="button" class="close" (click)="cancel()" data-dismiss="modal"><i
+        class="lni-close"></i><span>esc</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content" #testModal>
+        <!-- Modal Header -->
+        <div class="modal-header">
+            <h4 class="modal-title" *ngIf="this.testSource.type!='Edit'">{{'new_exercise_program'|translate}}</h4>
+            <h4 class="modal-title" *ngIf="this.testSource.type=='Edit'">{{'edit_exercise_program'|translate}}</h4>
+        </div>
+        <!-- Modal body -->
+        <div class="modal-body form-body" *mobxAutorun>
+            <!-- <hr class="mt-0"> -->
+            <!-- <p class="head-details">Lorem ipsum dolor sit amet, consectetur adipisicing eiatur. Excepteur sint occaecat
+                cupidatat non proident.</p> -->
+            <form action="" [formGroup]="form">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label>{{'title'|translate}} <span class="form-error">*</span> </label>
+                            <div class="clearfix">
+                                <input type="text" formControlName="title"
+                                    [placeholder]="'bcm_test_and_exercise_add_title' | translate" class="form-control">
+                                <p class="form-error" *ngIf="formErrors&&formErrors.title">{{formErrors.title}}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label>{{'exercise_type'|translate}}<span class="form-error">*</span></label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect full-width-multiple w-100">
+                                    <ng-select [items]="TestAndExerciseTypesMasterStore.allItems"
+                                        [placeholder]="'select_type' | translate" formControlName="type_id"
+                                        bindLabel="title" bindValue="id" [closeOnSelect]="true" searchable="true"
+                                        (search)="searchType($event)" (clear)="getType()" (open)="getType()"
+                                        autocomplete="new-password">
+
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            {{item.title}}<span aria-hidden="true" (click)="clear('bcp')"
+                                                style="border:none;" class="ng-value-icon left">×</span>
+                                        </ng-template>
+                                    </ng-select>
+                                    <p class="form-error" *ngIf="formErrors&&formErrors.type_id">
+                                        {{formErrors.type_id}}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label for="name">BCP's<span class="form-error">*</span></label>
+                            <div class="clearfix d-flex">
+                                <div class="multiple-plain-ngselect full-width-multiple w-100">
+                                    <ng-select [items]="BcpStore.BcpList" bindValue="id" [closeOnSelect]="true"
+                                        bindLabel="title" [placeholder]="'select_bcps' | translate" [multiple]="true"
+                                        searchable="true" [clearable]="true" formControlName="bcp_ids"
+                                        (search)="searchBcp($event)" (clear)="getBcp()" (open)="getBcp()"
+                                        (change)="getBcpCallTree();getSolutions();getScenarios()">
+                                    </ng-select>
+                                    <p class="form-error" *ngIf="formErrors&&formErrors.bcp_ids">
+                                        {{formErrors.bcp_ids[0]}}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label>{{'solutions'|translate}}</label>
+                            <div class="clearfix d-flex">
+                                <div class="multiple-plain-ngselect full-width-multiple w-100">
+                                    <ng-select [items]="TestAndExerciseStore.BcpSolutions" bindValue="id"
+                                        [closeOnSelect]="true" bindLabel="title"
+                                        [placeholder]="'select_solutions' | translate" [multiple]="true"
+                                        searchable="true" [clearable]="true" formControlName="bcp_strategy_solution_ids"
+                                        (clear)="getSolutions()" (open)="getSolutions()">
+                                    </ng-select>
+                                    <p class="form-error" *ngIf="formErrors&&formErrors.bcp_strategy_solution_ids">
+                                        {{formErrors.bcp_strategy_solution_ids[0]}}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label>{{'scenarios'|translate}}</label>
+                            <div class="clearfix d-flex">
+                                <div class="multiple-plain-ngselect full-width-multiple w-100">
+                                    <ng-select [items]="TestAndExerciseStore.BcpScenario" bindValue="id"
+                                        [closeOnSelect]="true" bindLabel="title"
+                                        [placeholder]="'select_scenarios' | translate" [multiple]="true"
+                                        searchable="true" [clearable]="true" formControlName="risk_ids"
+                                        (clear)="getScenarios()" (open)="getScenarios()">
+                                    </ng-select>
+                                    <p class="form-error" *ngIf="formErrors&&formErrors.risk_ids">
+                                        {{formErrors.risk_ids[0]}}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label>{{'scope'|translate}}</label>
+                            <div class="clearfix">
+                                <input type="text" formControlName="scope" [placeholder]="'enter_scope'|translate"
+                                    class="form-control">
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label for="name">{{'start_date'|translate}}<span class="form-error">*</span></label>
+                            <div class="input-group date-picker cal-time">
+                                <div class="input-group date-picker">
+                                    <input class="form-control" formControlName="start_date" [owlDateTime]="dt1"
+                                        [owlDateTimeTrigger]="dt1"
+                                        [placeholder]="'incident_form_date_time_placeholder'| translate">
+                                    <owl-date-time [hour12Timer]="true" #dt1></owl-date-time>
+                                    <div class="input-group-append">
+                                        <button [owlDateTimeTrigger]="dt1" class="btn btn-outline-secondary calendar"
+                                            type="button"><i class="fas fa-calendar-alt"></i></button>
+                                    </div>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors && formErrors.start_date">
+                                    {{formErrors.start_date[0]}}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label for="name">{{'revised_due_date'|translate}}<span class="form-error">*</span></label>
+                            <div class="input-group date-picker cal-time">
+                                <div class="input-group date-picker">
+                                    <input class="form-control" formControlName="end_date" [owlDateTime]="dt2"
+                                        [owlDateTimeTrigger]="dt2" [min]="MaxDate()"
+                                        [placeholder]="'incident_form_date_time_placeholder'| translate">
+                                    <owl-date-time [hour12Timer]="true" #dt2></owl-date-time>
+                                    <div class="input-group-append">
+                                        <button [owlDateTimeTrigger]="dt2" class="btn btn-outline-secondary calendar"
+                                            type="button"><i class="fas fa-calendar-alt"></i></button>
+                                    </div>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors && formErrors.end_date">
+                                    {{formErrors.end_date[0]}}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label>{{'exercise_leads' | translate}}<span class="form-error">*</span> </label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect">
+                                    <ng-select [items]="UsersStore.usersList" bindValue="id"
+                                        [placeholder]="'select_exercise_lead'|translate" [multiple]="true"
+                                        formControlName="lead_user_ids" (search)="searchUsers($event)"
+                                        (open)="getUsers()" [searchFn]="customSearchFn">
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            <img *ngIf="item.image_token" height="15" width="15"
+                                                [attr.src]="createImagePreview('user-profile-picture',item.image_token)" />
+                                            <img *ngIf="!item.image_token" height="15" width="15"
+                                                [attr.src]="getDefaultImage('user-logo')" />
+                                            <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,'
+                                                ') | titlecase}}</b><span aria-hidden="true" (click)="clear(item)"
+                                                style="border:none;" class="ng-value-icon left">×</span>
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            <div class="user-post-department-pic">
+                                                <img *ngIf="item.image_token" height="25" width="25"
+                                                    [attr.src]="createImagePreview('user-profile-picture',item.image_token)" />
+                                                <img *ngIf="!item.image_token" height="25" width="25"
+                                                    [attr.src]="getDefaultImage('user-logo')" />
+                                            </div>
+                                            <div class="user-post-department-div">
+                                                <b>{{getStringsFormatted([item.first_name,item.last_name],50,' ') |
+                                                    titlecase}}</b>
+                                                <p class="user-post-department-multiple">
+                                                    {{getStringsFormatted([item.designation_title,'
+                                                    '+item.department],40,',')}}</p>
+                                            </div>
+                                        </ng-template>
+                                    </ng-select>
+                                    <p class="form-error" *ngIf="formErrors&&formErrors.lead_user_ids">
+                                        {{formErrors.lead_user_ids}}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label>{{'exercise_teams' | translate}} </label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect">
+                                    <ng-select [items]="TestAndExerciseStore.BcpCallTree" bindValue="id"
+                                        [placeholder]="'select_exercise_teams'|translate" [multiple]="true"
+                                        formControlName="bcp_call_tree_ids" (open)="getBcpCallTree()"
+                                        [searchFn]="customSearchFn">
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            <img *ngIf="item.image_token" height="15" width="15"
+                                                [attr.src]="createImagePreview('user-profile-picture',item.image_token)" />
+                                            <img *ngIf="!item.image_token" height="15" width="15"
+                                                [attr.src]="getDefaultImage('user-logo')" />
+                                            <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name?item.first_name:item.external_user_name,item.last_name?item.last_name:''],50,'
+                                                ') | titlecase}}</b><span aria-hidden="true" (click)="clear(item)"
+                                                style="border:none;" class="ng-value-icon left">×</span>
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index" style="height: 60px;">
+                                            <div class="user-post-department-pic">
+                                                <img *ngIf="item.image_token" height="25" width="25"
+                                                    [attr.src]="createImagePreview('user-profile-picture',item.image_token)" />
+                                                <img *ngIf="!item.image_token" height="25" width="25"
+                                                    [attr.src]="getDefaultImage('user-logo')" />
+                                            </div>
+                                            <div class="user-post-department-div">
+                                                <b>{{getStringsFormatted([item.first_name?item.first_name:item.external_user_name,item.last_name?item.last_name:''],50,' ') |
+                                                    titlecase}}</b>
+                                                <p class="user-post-department-multiple">
+                                                    {{item.user_designation?item.user_designation:item.external_user_designation}}</p>
+                                            </div>
+                                        </ng-template>
+                                    </ng-select>
+                                    <p class="form-error" *ngIf="formErrors&&formErrors.bcp_call_tree_ids">
+                                        {{formErrors.bcp_call_tree_ids}}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label>{{'exercise_plan_communications'|translate}}</label>
+                            <div class="clearfix d-flex">
+                                <div class="multiple-plain-ngselect full-width-multiple w-100">
+                                    <ng-select [items]="TestAndExerciseCommunicationsMasterStore.allItems"
+                                        [placeholder]="'select_exercise_plan_communication' | translate"
+                                        formControlName="plan_communication_ids" bindLabel="title" bindValue="id"
+                                        [closeOnSelect]="true" [multiple]="true" searchable="true"
+                                        (search)="searchExcersisePlanCommunication($event)"
+                                        (clear)="getExcersisePlanCommunication()"
+                                        (open)="getExcersisePlanCommunication()" autocomplete="new-password">
+
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            {{item.title}}<span aria-hidden="true" (click)="clear('bcp')"
+                                                style="border:none;" class="ng-value-icon left">×</span>
+                                        </ng-template>
+                                    </ng-select>
+                                </div>
+                                <button class="btn multi-add-user ml-2" (click)="addNewItem()" style="width: 42px;"><i
+                                        class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-12">
+                        <div class="form-group add-kpi-textarea">
+                            <span style="float: right;" class="text-grey">{{form?.value.communication_during_exercise !=
+                                null ?
+                                getDescriptionLength('communication') : 0}} {{'characters' | translate}}</span>
+                            <label>{{'communications_during_exercise'|translate}}</label>
+                            <textarea class="form-control" rows="11" formControlName="communications" id="comment"
+                                [placeholder]="'enter_communications_exercise'|translate"></textarea>
+                            <p class="form-error pt-1" *ngIf="formErrors&&formErrors.remarks"> {{formErrors.remarks}}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-sm-12">
+                        <div class="form-group add-kpi-textarea">
+                            <span style="float: right;" class="text-grey">{{form?.value.remarks != null ?
+                                getDescriptionLength('remarks') : 0}} {{'characters' | translate}}</span>
+                            <label>{{'remarks'|translate}}</label>
+                            <textarea class="form-control" rows="11" formControlName="remarks" id="comment"
+                                [placeholder]="'write_remarks_exercise'|translate"></textarea>
+                            <p class="form-error pt-1" *ngIf="formErrors&&formErrors.remarks"> {{formErrors.remarks}}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <label for="name" class="label-style mb-0">{{'documents' | translate}}</label>
+                <!-- Common File Upload Starts Here -->
+                <div class="scroll-documents" #uploadArea>
+                    <div class="thumb-pics-bg thumb-pics-col-3 clearfix thumb-pics-fix-text" style="padding-top: 0;">
+                        <div class="thumb-pics">
+                            <div class="question-circle-inp"
+                                *ngIf="OrganizationGeneralSettingsStore.organizationSettings?.logo_allowed_types.length > 0"
+                                style="margin-right: 7px;">
+                                <i class="far fa-question-circle"></i>
+                                <div class="message-password-inp">
+                                    <p class="mb-0">{{'allowed_file_types' | translate}}
+                                        {{OrganizationGeneralSettingsStore.organizationSettings?.logo_allowed_types.toString()}}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="form-group form-group-upload">
+                                <div class="darag-dropifile-upload">
+                                    <div class="d-flex justify-content-center align-items-center text-center">
+                                        <div>
+                                            <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                                            <div class="drag-file-name"> Select or upload your file here
+                                            </div>
+                                            <div class="upload-btn-wrapper">
+                                                <button (click)="openFileUploadModal()" type="button"
+                                                    class="btn">{{'browse_files' | translate}}</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="thumb-pics" *ngFor="let docs of fileUploadPopupStore.displayFiles ;let i = index">
+                            <div class="upload-pics edit-option" data-toggle="modal">
+                                <div *ngIf="docs.id && !docs.preview" class="browse-form-pic"
+                                    [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                                </div>
+                                <div *ngIf="docs.preview" class="browse-form-pic"
+                                    [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">
+                                </div>
+                                <div class="browse-form-name clearfix">
+                                    <div class="float-left">
+                                        <h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                        </h6>
+                                        <span *ngIf="docs.is_kh_document" class="mr-2 cmn-clr"><i
+                                                class="fas fa-book"></i></span>
+                                        <span *ngIf="!docs.is_kh_document" class="mr-2 cmn-clr"><i
+                                                class="fas fa-laptop"></i></span>
+                                        <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                                    </div>
+                                    <div class="browse-logo">
+                                        <img *ngIf="checkExtension(docs.ext,'image') != -1" class="folder-picher"
+                                            src="/assets/images/jpg-icone.png">
+                                        <img *ngIf="checkExtension(docs.ext,'doc') != -1" class="folder-picher"
+                                            src="/assets/images/word-icone.png">
+                                        <img *ngIf="checkExtension(docs.ext,'pdf') != -1" class="folder-picher"
+                                            src="/assets/images/pdf-icone.png">
+                                        <img *ngIf="checkExtension(docs.ext,'excel') != -1" class="folder-picher"
+                                            src="/assets/images/excel-icone.png">
+                                        <img *ngIf="checkExtension(docs.ext,'video') != -1" class="folder-picher"
+                                            src="/assets/images/md-video.png">
+                                        <img *ngIf="checkExtension(docs.ext,'audio') != -1" class="folder-picher"
+                                            src="/assets/images/md-audio.png">
+                                        <img *ngIf="checkExtension(docs.ext,'ppt') != -1" class="folder-picher"
+                                            src="/assets/images/md-ppt.png">
+                                    </div>
+                                    <div class="edit-option-show">
+                                        <a (click)="removeBrochure(docs)"><i class="fas fa-trash"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="d-block justify-content-left border-0 mt-3">
+                            <button type="button" [disabled]="form.invalid || AppStore.loading" class="btn btn-active"
+                                (click)="save()">{{ AppStore.loading ? getButtonText('loading') : getButtonText('save')
+                                }}</button>
+                            <button type="button" [disabled]="form.invalid || AppStore.loading" class="btn"
+                                (click)="save(true)">{{ AppStore.loading ? getButtonText('loading') :
+                                getButtonText('save_close')}}</button>
+                            <button type="button" data-toggle="modal" (click)="cancel()" class="btn">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- * Documetn Attach/Upload Common Component Starts Here -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #fileUploadModal>
+
+    <app-file-upload-popup *ngIf="fileUploadPopupStore.openPopup"></app-file-upload-popup>
+
+</div>
+<!-- * Documetn Attach/Upload Common Component Ends Here -->
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+
+    <app-test-and-exercise-communications-modal *ngIf="testAndExerciseCommunicationsObject.type">
+    </app-test-and-exercise-communications-modal>
+
+</div>

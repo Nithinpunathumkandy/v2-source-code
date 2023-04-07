@@ -1,0 +1,92 @@
+<!-- <main class="mt-3 control-list-page"> -->
+    <!-- <app-filter-menu></app-filter-menu> -->
+    <div class="container-fluid">
+        <div class="audit-program-box audit-page-table-main min-height-83">
+            <div class="row" *mobxAutorun>
+                <div class="col-sm-12">
+                    <div class="full-width-table">
+
+                        <table *ngIf="EventClosureMainStore.allItems.length > 0 && EventClosureMainStore.loaded"
+                            class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                            <thead>
+                                <tr>
+                                    <!-- <th class="border-top-0" width="3%">#</th> -->
+                                    <th style="width: 4%; text-align: center;">{{'sl' | translate}}</th>
+                                    <th class="border-top-0 text-center" style="width: 8%;">{{'reference_code' | translate}}</th>
+                                    <th class="border-top-0 issue-list-org-tab-three pointer" style="width: 20%;">{{'title' | translate}}</th>
+                                    <th class="border-top-0 issue-list-org-tab-three pointer" style="width: 20%;">{{'event_title' | translate}}</th>
+                                    <th class="border-top-0 issue-list-org-tab-three text-center pointer" style="width: 15%;">{{'planned_event_completion' | translate}}</th>
+                                    <th class="border-top-0 issue-list-org-tab-three text-center pointer" style="width: 15%;">{{'actual_event_completion' | translate}}</th>
+                                    <th class="border-top-0 text-center" style="width: 10%;">{{'status' | translate}}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="pointer edit-and-delete-main" (click)="gotoDetails(row.id)"
+                                    *ngFor="let row of EventClosureMainStore.allItems| paginate: {currentPage:EventClosureMainStore.currentPage, itemsPerPage:EventClosureMainStore.itemsPerPage,totalItems:EventClosureMainStore.totalItems};let num=index ">
+                                    <td style="text-align: center;">{{(EventClosureMainStore.currentPage - 1) *
+                                        EventClosureMainStore.itemsPerPage + (num + 1)}}</td>
+                                    <!-- <td>{{row.reference_code}}</td> -->
+                                    <td class=" text-center">{{row.event_reference_code ? row.event_reference_code : AppStore.noContentText}}-{{row.id}}</td>
+                                    <td class=" text-center">{{row.title ? row.title : AppStore.noContentText}}</td>
+                                    <td [title]="row?.event_title">{{row?.event_title?.length > 180 ? row?.event_title.substring(0,180)+' ...' : row?.event_title}}</td>
+                                    <td class=" text-center">{{row.planned_event_completion | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</td>
+                                    <td class=" text-center">{{row.actual_event_completion | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</td>
+
+                                    <td class="text-center" style="padding:0.75rem;">
+                                        <div
+                                            [ngClass]="row.event_closure_status_label ? 'dot-div '+row.event_closure_status_label: ''">
+                                            {{row.event_closure_status_title}}</div>
+
+                                        <div  *ngIf = "row.event_closure_status_type == 'draft' || row.event_closure_status_type == 'send-back'"  class="edit-option-show" style="margin: 30px 0 0 0;">
+                                            <a *ngIf="AuthStore.getActivityPermission(1600,'UPDATE_EVENT_CLOSURE_CHECKLIST')"
+                                                (click)="getEventClosure(row.id,$event)"
+                                                [attr.title]="'edit' | translate"><i class="fas fa-pen"></i></a>
+                                            <a *ngIf="AuthStore.getActivityPermission(1600,'DELETE_EVENT_CLOSURE_CHECKLIST')"
+                                                (click)="delete(row.id,$event)" [attr.title]="'delete' | translate"><i
+                                                    class="fas fa-trash"></i></a>
+                                        </div>
+
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                    </div>
+                    <p class="float-right bold mb-0" *ngIf="EventClosureMainStore.loaded && EventClosureMainStore.totalItems > 0">{{'total_Items' | translate}}:{{EventClosureMainStore?.totalItems}}</p>
+                    <ng-container *mobxAutorun>
+                        <div *ngIf="!EventClosureMainStore.loaded">
+                            <app-four-column-loader></app-four-column-loader>
+                        </div>
+                        <app-no-data
+                            *ngIf="EventClosureMainStore.allItems.length == 0 && EventClosureMainStore.loaded == true">
+                        </app-no-data>
+                    </ng-container>
+
+
+                    <div *ngIf="EventClosureMainStore.totalItems>EventClosureMainStore.itemsPerPage"
+                        class="col-sm-12">
+                        <ul class="pagination justify-content-center mt-3">
+                            <div class="list">
+                                <pagination-controls class="my-pagination" [previousLabel]="'previous' | translate"
+                                    [nextLabel]="'next' | translate" (pageChange)="pageChange($event)">
+                                </pagination-controls>
+                            </div>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<!-- </main> -->
+
+<!-----------------------Form Modal--------------------------->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+    <app-add-event-closure-main *ngIf="eventClosureObject.type" [source]="eventClosureObject">
+    </app-add-event-closure-main>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>

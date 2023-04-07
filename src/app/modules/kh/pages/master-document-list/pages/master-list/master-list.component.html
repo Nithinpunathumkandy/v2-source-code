@@ -1,0 +1,231 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navBar>
+   <div class="module-name-block module-name-block-space float-left">
+      <a class="dropdown module-title">{{'documents'|translate}}</a>
+    </div>
+  <app-sub-menu></app-sub-menu>
+</nav>
+
+<main class="user-details-page user-details-special folder-page-main  mt-3" >
+
+   <!-- Filter Tag  -->
+  <!-- <app-filter-menu></app-filter-menu> -->
+
+   <div class="container-fluid">
+      <div class="widget">
+              <div class="row">
+                 <div class="col-sm-12">
+                    
+                       <div class="d-flex document-new-tabs bg-white">
+
+                          <!-- Left Side Navigation Menu Starts Here -->
+                                  <div class="folder-options pt-2 pb-2">
+                                     <ul class="folder-options-main-ul nav nav-tabs">
+                                       <li class="nav-item"><a (click)="listDocuments('public')" [ngClass]="setClass('public')"  data-toggle="tab"><i class="fas fa-globe-americas"></i> {{'master_list' | translate}}</a></li>                            
+                                         <li class="nav-item nav-with-icon"><a (click)="showDocumentTypes()" data-toggle="collapse" data-target="#demo3" class="folder-menu-link collapsed" [ngClass]="documentTypeList?'folder-menu-link active':'folder-menu-link collapsed'" aria-expanded="false"><i class="far fa-folder"></i> {{'document_type' | translate}}</a>
+                                              <ul class="folder-options-inner-ul collapse nav nav-tabs"  id="demo3" style="">
+                                                       <li *ngFor="let item of DocumentTypeMasterStore.allItems"><a *ngIf="item.is_important" (click)="listDocuments('doc_type',item.id)" [ngClass]="setClass(item.title,'multiple')" data-toggle="tab">{{item.title}}</a></li>
+                                               </ul>
+                                       </ul>
+                                   </div>
+                                                 <!-- Left Side Navigation Menu Ends Here -->
+
+                          <div class="w-100 p-3">
+                             <div class="tab-content" class="min-height-750"  *mobxAutorun>
+                                <div class="tab-pane fade active show" id="tab-one" role="tabpanel">
+                                     <!-- Document Listing Starts -->
+                                   <div class="tab-content">                                     
+                                      <!-- Grid View Starts -->
+                                      <div  [ngClass]="MasterListDocumentStore.listStyle=='grid'?'tab-pane tab-edit-class active' : 'tab-pane tab-edit-class fade'">
+                                         <div class="bg-white p-3">
+                                            <div class="clearfix d-flex">                                 
+                                               <div class="folder-section">
+                                                  <div id="maindiv" *mobxAutorun>
+                                                   <div id="dragdiv">
+                                                    <!-- Grid Loader -->
+                                                    <app-document-list-loader *ngIf="!MasterListDocumentStore.documentsLoaded"></app-document-list-loader>
+                                                    <!-- No Data Default Image -->
+                                                     <app-no-data-list [border]=false [source] = "documentEmptyList" *ngIf="MasterListDocumentStore.documentsLoaded && MasterListDocumentStore.documentsList.length == 0"></app-no-data-list>
+                                                    
+                                                     <ul *ngIf="MasterListDocumentStore.documentsLoaded" id="allItems" runat="server"  class="folder-loop  clearfix"><!-- folder sec starts -->
+                                                        <li title="{{docs.title}}" style="min-height: 250px!important" *ngFor="let docs of MasterListDocumentStore.documentsList | paginate: {currentPage: MasterListDocumentStore?.currentPage,itemsPerPage: MasterListDocumentStore?.itemsPerPage,totalItems: MasterListDocumentStore?.totalItems} ;let i = index" class="folder-box-document" id="node1" (contextmenu)="openOptions($event,i)">
+                                                           <span *ngIf="!docs.is_folder" class="document-label-folder bg-light-blue">{{docs.document_type_title?docs.document_type_title:'Document'}}</span>
+                                                          <!-- Folder Data Preview-->
+                                                          <!-- <a (click)="gotoDocument(docs.id)" *ngIf="docs.is_folder" class="folder-one">                                             
+                                                             <img  class="folder-picher" src="/assets/images/folder-icone.png">
+                                                             <button type="text" (click)="starDocument(docs.is_folder,docs.is_starred,docs.id)" [ngClass]="docs.is_starred?'btn-folder btn-stars active':'btn-folder btn-stars'"><i class="fas fa-star"></i></button>
+                                                             <span class="icon-indication-folder"><i [ngClass]="docs.document_access_type_icon_class"></i></span>
+                                                              <span class="btn-folder number-folder">{{docs.count}}</span>
+                                                          </a> -->
+              
+          
+                                                           <!-- Default Document Preview -->
+                                                           <a (click)="gotoDocument(docs.id)" *ngIf="!docs.is_folder" class="folder-one folder-documents">
+                                                              <img *ngIf="docs.token" [attr.src]="createImageUrl('document-version',docs.token,119,165)"  onerror="this.src='/assets/images/no-image-popup-icon.png'" style="height: 130px;" class="folder-picher" >
+                                                              <img *ngIf="!docs.token" style="height: 130px;" src="/assets/images/no-image-popup-icon.png" class="folder-picher" >
+                                                             <!-- <button *ngIf="MasterListDocumentStore.selectedSideMenu!='trash'" type="text" (click)="starDocument(docs.is_folder,docs.is_starred,docs.id)" [ngClass]="docs.is_starred?'btn-folder btn-stars active':'btn-folder btn-stars'"><i class="fas fa-star"></i></button> -->
+                                                             <span class="icon-indication-folder"><i [ngClass]="docs.document_access_type_icon_class"></i></span>
+                                                          </a>
+                                                           <p>
+                                                             {{docs.title?.length > 13 ? docs.title.substring(0,13)+' ...' : docs.title }}
+                                                           </p>
+                                                           <h5>{{docs.created_at | date :'MMM d, y'}}</h5>
+                                                           <div class="option-box advanced-option-document" *ngIf="i==activeIndex"[ngStyle]="{display:show?'block':'none'}" #options><!-- option-box starts -->
+                                                              <ul class="clearfix">
+                                                                 <li><a (click)="downloadDocument($event,docs,docs.is_folder)" ><i class="fas fa-download"></i> Download</a></li>                     
+                                                                 <!-- <li *ngIf="restoreFlag && AuthStore.user.id==docs.created_by"><a (click)="rightClickMenu('restore',docs.id,docs.is_folder)"><i class="fas fa-recycle"></i> Restore</a></li> -->
+                                                                 <li><a (click)="deleteConfirm(docs.id,$event)"><i class="fas fa-trash-alt"></i> Delete</a></li>    
+                                                                 <!-- <li *ngIf="docs.is_folder && MasterListDocumentStore.selectedSideMenu!='trash'"><a (click)="rightClickMenu('rename',docs.id,docs.is_folder,docs.title)"><i class="fas fa-edit"></i> Rename</a></li> -->
+                                                                 <!-- <li *ngIf="docs.is_folder"><a (click)="openFolderDetails(docs.id)"><i class="fas fa-info-circle"></i> Details</a></li> -->
+                                                              </ul>
+                                                           </div>
+                                                        </li>                                                                                                                                                                        
+                                                     </ul>
+                                                  </div>
+                                               </div>
+                                         <div class="row mt-4">
+                                             <!-- Grid View Pagination Starts Here -->
+                                      <div *ngIf="MasterListDocumentStore.totalItems > MasterListDocumentStore.itemsPerPage && MasterListDocumentStore?.documentsLoaded" class="col-sm-12 ">
+                                        <ul class="pagination justify-content-center mt-3">
+                                          <div class="list">
+                                            <pagination-controls (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+                                          </div>
+                                        </ul>
+                                      </div> 
+                                        <!--Grid View Pagination Ends Here -->
+                                     </div>                                                                                  
+                                               </div>
+                                            </div>                                                                
+                                         </div>                     
+                                      </div>
+                                       <!-- Grid View Ends -->
+                                      <!-- Table View Starts -->
+                                      <div  [ngClass]="MasterListDocumentStore.listStyle=='table'?'tab-pane tab-edit-class active' : 'tab-pane tab-edit-class fade'">
+                                         <div class="bg-white widg-padding-cmn">
+                                            <div class="clearfix d-flex">                           
+                                         <div class="folder-list-page folder-list-page-table">
+          
+                                            <div id="maindiv">
+                                                   <div id="dragdiv">
+                                                    <app-table-loader *ngIf="!MasterListDocumentStore.documentsLoaded"></app-table-loader>
+                                            <table class="table table-bordered ordinary-table audit-page-table mb-0 table-scroll" id="allItems" runat="server" *ngIf="MasterListDocumentStore.documentsLoaded && MasterListDocumentStore.documentsList.length > 0">
+                                               <thead>
+                                              <tr>
+                                                <th (click) = "setDocumentSort('documents.reference_code')" >{{'reference_code' | translate}} <img style="vertical-align: initial;" *ngIf = "MasterListDocumentStore.orderItem == 'documents.reference_code'"
+                                                   [attr.src]="MasterListDocumentStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" class="sort-down-pics"></th>                                                
+                                                <th (click) = "setDocumentSort('documents.title')" >{{'title' | translate}} <img *ngIf = "MasterListDocumentStore.orderItem == 'documents.title'"
+                                                 [attr.src]="MasterListDocumentStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" class="sort-down-pics"></th>
+                                                 <th class="text-center"(click) = "setDocumentSort('documents.version')" >{{'version' | translate}} <img *ngIf = "MasterListDocumentStore.orderItem == 'documents.version'"
+                                                  [attr.src]="MasterListDocumentStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" class="sort-down-pics"></th>                                         
+                                                  <th (click) = "setDocumentSort('documents.document_type')" >{{'document_type' | translate}} <img style="vertical-align: initial;" *ngIf = "MasterListDocumentStore.orderItem == 'documents.document_type'"
+                                                     [attr.src]="MasterListDocumentStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" class="sort-down-pics"></th>
+                                                   
+                                                  <th (click) = "setDocumentSort('documents.size')" >{{'size' | translate}} <img style="vertical-align: initial;" *ngIf = "MasterListDocumentStore.orderItem == 'documents.size'"
+                                                        [attr.src]="MasterListDocumentStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" class="sort-down-pics"></th>
+                                                <th   (click) = "setDocumentSort('documents.created_at')" >{{'created_at' | translate}} <img style="vertical-align: initial;" *ngIf = "MasterListDocumentStore.orderItem == 'documents.created_at'"
+                                                 [attr.src]="MasterListDocumentStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" class="sort-down-pics"></th>                                             
+                                                <th   (click) = "setDocumentSort('documents.title')" >{{'created_by' | translate}} <img *ngIf = "MasterListDocumentStore.orderItem == 'documents.created_by_first_name'"
+                                                 [attr.src]="MasterListDocumentStore.orderBy == 'created_by_first_name'?'assets/images/sort-down.png':'assets/images/sort-up.png'" class="sort-down-pics"></th>
+                                              </tr>
+                                           </thead>
+                                           <tbody>
+                                          
+                                                 <tr *ngFor="let docs of MasterListDocumentStore.documentsList | paginate: {currentPage: MasterListDocumentStore?.currentPage,itemsPerPage: MasterListDocumentStore?.itemsPerPage,totalItems: MasterListDocumentStore?.totalItems} ;;let i = index" class="folder-box-document pointer"  id="node101" (contextmenu)="openOptions($event,i)">                                                   
+                                                   <td class="pointer" (click)="gotoDocument(docs.id)">{{docs.reference_code?docs.reference_code:AppStore.noContentText}}</td>  
+                                                   <td class="pointer" (click)="gotoDocument(docs.id)">
+                                                      <img *ngIf="docs.is_folder"  src="/assets/images/folder-icone.png" class="folder-list-view"> 
+                                                      <img  *ngIf="!docs.is_folder" [attr.src]="createImageUrl('document-version',docs.token,13,28)" onerror="this.src='/assets/images/no-image-popup-icon.png'"  class="folder-list-view folder-list-view-document">                                     
+                                                      {{docs?.title}}
+                                                      <div class="option-box advanced-option-document" *ngIf="i==activeIndex"[ngStyle]="{display:show?'block':'none'}" #options>
+                                                        <ul class="clearfix">
+                                                           <li><a (click)="downloadDocument($event,docs,docs.is_folder)"><i class="fas fa-download"></i> Download</a></li>
+                                                           <li><a (click)="deleteConfirm(docs.id,$event)"><i class="fas fa-trash-alt"></i> Delete</a></li>                                             
+                                                        </ul>
+                                                      </div>
+                                                   </td>
+                                                   <td  class="pointer text-center" (click)="gotoDocument(docs.id)">{{docs.version}}</td>
+                                                   <td class="pointer" (click)="gotoDocument(docs.id)">{{docs.document_type_title?docs.document_type_title:'Document'}}</td>    
+                                                           
+                                                   <td (click)="gotoDocument(docs.id)">{{docs.size/1048576 | number:'0.2-2'}}MB</td>
+                                                    <td class="pointer"  (click)="gotoDocument(docs.id)">{{docs.created_at | date :'MMM d, y'}}</td>
+                                                    <td>
+                                                       <div class="d-flex flex-row user-list-sm">
+                                                          <img *ngIf="docs.created_by_image_token"
+                                                              [attr.src]="createImageUrl('user-profile-picture',docs.created_by_image_token)"
+                                                              width="30px" height="30px" class="rounded-circle" onerror = "this.src='/assets/images/user-demo2.png'">
+                                                          <img *ngIf="!docs.created_by_image_token"
+                                                              [attr.src]="getDefaultImage('user-logo')" width="30px" height="30px"
+                                                              class="rounded-circle" onerror = "this.src='/assets/images/user-demo2.png'">
+                                                          <div>
+                                                              <h6>{{docs.created_by_first_name}}&nbsp;{{docs.created_by_last_name}}
+                                                              </h6> 
+                                                              <span _ngcontent-nws-c590="" wfd-id="801">{{docs.created_by_designation}}</span>
+                                                      
+                                                          </div>
+                                                      </div>
+                                                  </tr>
+                                              
+                                           </tbody>
+                                            </table>
+                                            <!-- Grid View No Data  -->
+                                            <ng-container>
+                                              <app-no-data-list [border]=false [source] = "documentEmptyList" *ngIf="MasterListDocumentStore.documentsLoaded && MasterListDocumentStore.documentsList.length == 0"></app-no-data-list>
+                                           </ng-container>
+                                            </div>
+                                               </div>
+          
+                                        <!-- Table View Pagination Starts -->
+                                               <div class="row mt-4">
+                                                 <div *ngIf="MasterListDocumentStore.totalItems > MasterListDocumentStore.itemsPerPage && MasterListDocumentStore?.documentsLoaded" class="col-sm-12 ">
+                                                   <ul class="pagination justify-content-center mt-3">
+                                                     <div class="list">
+                                                       <pagination-controls (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+                                                     </div>
+                                                   </ul>
+                                                 </div> 
+                                                </div>
+
+                                           <!-- Table View Pagination Ends -->
+          
+                                      </div>
+          
+                                         </div>                        
+                                      </div>
+                                      </div>     
+                                      <!-- !Table View Ends -->                    
+                                   </div><!-- !Document Listing ends -->
+                                </div>
+                             </div>
+           
+
+                          </div>
+                       </div>
+
+
+
+                 </div>
+              </div>
+
+           </div>
+<!-- ! New Design Ends Here -->
+
+
+
+   </div>
+</main>
+
+   <!--  Document Add Modal  -->
+   <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #documentAddModal>
+      <app-master-add *ngIf="MasterListDocumentStore.addDocumentPopup"></app-master-add>
+    </div>
+    <!--  Document Add Modal  -->
+    <!-- Document Search Starts -->
+ <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static"  #documentSearch>
+   <app-master-document-search *ngIf="enableSearchPopup"></app-master-document-search>
+</div>
+<!-- Document Search Ends -->
+<!-- Confirmation Modal Starts -->
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp>
+   <app-delete-popup [source] = "popupObject" ></app-delete-popup>
+ </div>
+<!-- Confirmation Modal Ends -->

@@ -1,0 +1,238 @@
+<div>
+  <div #plainDev></div>
+  <nav class="edit-bar" data-toggle="affix" #navigationBar>
+    <div class="module-name-block float-left">
+      <a
+        class="nav-link current-page border-right-0"
+        [routerLink]="['/risk-management/reports/pdf-report']"
+      >
+        <i class="fas fa-chevron-left"></i
+        >{{ "executive_summary" | translate }}</a
+      >
+    </div>
+    <app-sub-menu></app-sub-menu>
+  </nav>
+  <main
+    class="organization-page mt-3"
+  >
+    <div class="container-fluid" 
+    *ngIf="ExecutiveSummaryStore?.executiveDetailsReports && ExecutiveSummaryStore.executive_details_loaded" >
+      <div class="row">
+        <div class="col-sm-12">
+           <div class="coverpage-risk-report-pdf widg-padding-cmn cmn-bdr mb-3 detailed-erm-report-cover-pic">
+              <h6 class="text-right">
+                {{
+                  ExecutiveSummaryStore?.executiveDetailsReports?.date
+                    | date
+                      : OrganizationGeneralSettingsStore.organizationSettings
+                          ?.date_format
+                }}
+              </h6>
+              <h2 class="text-center">
+                {{ AuthStore.user.organization?.title }}
+              </h2>
+              <h5>
+                {{'division' | translate }} :
+                {{
+                  ExecutiveSummaryStore?.executiveDetailsReports?.division
+                    ? ExecutiveSummaryStore?.executiveDetailsReports?.division
+                        ?.title
+                    : AppStore.noContentText
+                }}
+              </h5>
+              <h5>
+                {{'department' | translate }} :
+                {{
+                  ExecutiveSummaryStore?.executiveDetailsReports?.department
+                    ? ExecutiveSummaryStore?.executiveDetailsReports?.department
+                        ?.title
+                    : AppStore.noContentText
+                }}
+              </h5>
+              <div class="row">
+                <div class="col-xl-12">
+                 <hr class="mb-2">
+                   <!-- <div class="d-flex flex-row user-list-sm"> -->
+                     <!-- <img src="images/user-gate.jpg" width="30px" height="30px" class="rounded-circle"> -->
+                      <img
+                        *ngIf="
+                          ExecutiveSummaryStore?.executiveDetailsReports?.created_by
+                            ?.image?.token
+                        "
+                        [attr.src]="
+                          createImagePreview(
+                            'user-profile-picture',
+                            ExecutiveSummaryStore?.executiveDetailsReports
+                              ?.created_by?.image?.token
+                          )
+                        "
+                        width="30px"
+                        height="30px"
+                        class="rounded-circle"
+                        onerror="this.src='/assets/images/user-demo2.png'"
+                      />
+                      <img
+                        *ngIf="
+                          !ExecutiveSummaryStore?.executiveDetailsReports
+                            ?.created_by?.image?.token
+                        "
+                        [attr.src]="getDefaultImage('user-logo')"
+                        width="30px"
+                        height="30px"
+                        class="rounded-circle"
+                        onerror="this.src='/assets/images/user-demo2.png'"
+                      />
+                      <div>
+                        <h6
+                          title="{{
+                            ExecutiveSummaryStore?.executiveDetailsReports
+                              ?.created_by?.first_name +
+                              ExecutiveSummaryStore?.executiveDetailsReports
+                                ?.created_by?.last_name
+                          }}"
+                        >
+                        {{getStringsFormatted([ExecutiveSummaryStore?.executiveDetailsReports?.created_by?.first_name,ExecutiveSummaryStore?.executiveDetailsReports?.created_by?.last_name],50,' ') | titlecase}}    
+                        </h6>
+                        <span _ngcontent-nws-c590="" wfd-id="801"
+                          >{{
+                            ExecutiveSummaryStore?.executiveDetailsReports
+                              ?.created_by?.designation
+                          }}
+                          <!-- | {{'created_on' | translate}}
+                          {{
+                            ExecutiveSummaryStore?.executiveDetailsReports
+                              ?.created_at
+                              | date
+                                : OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format
+                          }} -->
+                        </span>
+                      </div>
+                   <!-- </div> -->
+                 </div>
+              </div>
+           </div>
+        </div>
+     </div>
+      <div class="row mb-4">
+        <div class="col-sm-12">
+          <div class="widget">
+            <div
+              class="panel-group panel-drop-sections pt-0 relative"
+              id="jd"
+              role="tablist"
+              aria-multiselectable="true"
+            >
+              <div
+                class="panel panel-default"
+                *ngFor="
+                  let row of ExecutiveSummaryStore?.executiveDetailsReports
+                    ?.executive_summary_report_details;let num = index"
+              >
+                <div
+                  [ngClass]="
+                    selectedIndex == num
+                      ? 'panel-heading active'
+                      : 'panel-heading'"
+                  role="tab"
+                  id="headingOne"
+                >
+                  <div class="panel-title">
+                    <a
+                      role="button"
+                      href=""
+                      data-toggle="collapse"
+                      [attr.aria-expanded]="
+                        selectedIndex == num ? 'true' : 'false'
+                      "
+                      aria-controls="collapseOne"
+                      [ngClass]="selectedIndex == num ? '' : 'collapsed'"
+                      (click)="selectedIndexChange(num)"
+                    >
+                      <h5 class="width96pc mt-0">
+                        {{
+                          (ExecutiveSummaryStore?.currentPage - 1) *
+                            ExecutiveSummaryStore?.itemsPerPage +
+                            (num + 1)
+                        }}
+                        - {{ row?.title }}
+                        <span class="drop-down-icone"
+                          ><i class="fas fa-chevron-down"></i
+                        ></span>
+                      </h5>
+                    </a>
+                  </div>
+                </div>
+                <div
+                  [attr.id]="'ceo' + num"
+                  [ngClass]="
+                    selectedIndex == num
+                      ? 'drop-detail-sec panel-collapse collapse show'
+                      : 'drop-detail-sec panel-collapse collapse'
+                  "
+                  role="tabpanel"
+                  aria-labelledby="headingOne"
+                  [attr.data-parent]="'#ceo' + num"
+                >
+                  <div class="panel-body bg-white pb-0 edit-and-delete-main">
+                    <div class="edit-option-show" style="margin: 32px -8px 0 0">
+                      <!-- edit-and-delete starts -->
+                      <a *ngIf="AuthStore.getActivityPermission(1000,'UPDATE_EXECUTIVE_SUMMARY_REPORT_DETAIL')"
+                      (click)="getExecuteSummary(row.id)" 
+                      data-toggle="modal" 
+                        ><i class="fas fa-pen"></i
+                      ></a>
+                      <a *ngIf="AuthStore.getActivityPermission(1000,'DELETE_EXECUTIVE_SUMMARY_REPORT_DETAIL')"
+                       (click)="delete(row.id)"
+                        ><i class="fas fa-trash"></i
+                      ></a>
+                    </div>
+                    <!-- edit-and-delete end -->
+                    <p innerHtml="{{ row?.description }}"></p>
+                  </div>
+                </div>
+              </div>
+              <span
+              *ngIf="AuthStore.getActivityPermission(1000,'CREATE_EXECUTIVE_SUMMARY_REPORT_DETAIL')"
+              (click)="openPopUp()"
+              class="user-box-big-plus d-block"
+              data-toggle="modal"
+                ><i class="fas fa-plus"></i
+              ></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <ng-container *mobxAutorun>
+      <div *ngIf="!ExecutiveSummaryStore.executive_details_loaded">
+        <app-pdf_report_detailed></app-pdf_report_detailed>
+      </div>
+    </ng-container>
+  </main>
+</div>
+
+<!------------------- Form Modal Start --------------------------->
+<div
+  class="modal modal-style-1 popup-full-width fade"
+  data-keyboard="false"
+  data-backdrop="static"
+  #formModal
+>
+  <app-add-executive-summary
+    *ngIf="executiveObject.type"
+    [source]="executiveObject"
+  ></app-add-executive-summary>
+</div>
+<!------------------- Form Modal End --------------------------->
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+<div
+  class="modal modal-style-1 fade"
+  id="delete-popup"
+  #confirmationPopUp
+  data-backdrop="static"
+  data-keyboard="false"
+>
+  <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+<!------------------- Delete Confirmation Modal End --------------------------->

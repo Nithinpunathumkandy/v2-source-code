@@ -1,0 +1,91 @@
+<div class="full-width-table mb-3">
+    <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll"
+        *ngIf="BpmSuppliersMasterStore?.loaded && BpmSuppliersMasterStore.suppliers.length > 0 && AuthStore.getActivityPermission(1100,'SUPPLIER_LIST')">
+        <tr>
+            <th style="width: 4%; text-align: center;">{{'sl' | translate}}</th>
+            <th style="width: 60%; text-align: left;" (click)="sortTitle('suppliers.title')"
+                class="border-top-0 issue-list-org-tab-three pointer">
+                <span>{{'title' | translate}}</span>
+                <img _ngcontent-twv-c17="" *ngIf="BpmSuppliersMasterStore.orderItem=='suppliers.title'"
+                    class="sort-down-pics pl-2" [attr.src]="BpmSuppliersMasterStore.orderBy=='desc' ? 
+                'assets/images/sort-up.png' : BpmSuppliersMasterStore.orderBy=='asc' ? 
+                'assets/images/sort-down.png' : 'assets/images/sort-empty.png'"
+                    onerror="this.src='/assets/images/user-demo2.png'">
+            </th>
+            <th style="width: 26%; text-align: left;">{{'contact_name' | translate}}</th>
+            <th style="width: 10%; text-align: center;">{{'status' | translate}}</th>
+        </tr>
+        <ng-container *mobxAutorun>
+            <tr class="pointer edit-and-delete-main"
+                *ngFor="let row of BpmSuppliersMasterStore?.suppliers | paginate: {currentPage:BpmSuppliersMasterStore?.currentPage, itemsPerPage:BpmSuppliersMasterStore?.itemsPerPage,totalItems:BpmSuppliersMasterStore?.totalItems}; let num = index"
+                (click)="gotoSupplierDetails(row.id)">
+                <td style="text-align: center;">{{(BpmSuppliersMasterStore?.currentPage - 1) *
+                    BpmSuppliersMasterStore?.itemsPerPage + (num + 1)}}</td>
+
+                <td>{{row.title}}</td>
+
+                <td style="padding:0.75rem;">
+                    <div>{{row.contact_name}}</div>
+                </td>
+                <td style="text-align: center;">
+                    <div [attr.class]="'dot-div '+row.status_label">{{row.status}}</div>
+
+                    <div class="edit-option-show">
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'UPDATE_SUPPLIER')"
+                            (click)=" getSuppliers(row.id)" [attr.title]="'edit' | translate"><i
+                                class="fas fa-pen pointer"></i></a>
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'DELETE_SUPPLIER')" (click)="delete(row.id)"
+                            [attr.title]="'delete' | translate"><i class="fas fa-trash pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(1100,'ACTIVATE_SUPPLIER')"
+                            (click)="activate(row.id)" [attr.title]="'activate' | translate"><i
+                                class="fas fa-check pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.activeStatusId && AuthStore.getActivityPermission(1100,'DEACTIVATE_SUPPLIER')"
+                            (click)="deactivate(row.id)" [attr.title]="'deactivate' | translate"><i
+                                class="fas fa-ban pointer"></i></a>
+                    </div>
+                </td>
+                <!-- <td>{{row.description}}</td>-->
+            </tr>
+        </ng-container>
+    </table>
+    <p class="float-right" *ngIf="BpmSuppliersMasterStore?.loaded && BpmSuppliersMasterStore.totalItems > 0">
+        <b>{{'total_Items' | translate}}:{{BpmSuppliersMasterStore?.totalItems}}</b></p>
+    <ng-container *mobxAutorun>
+        <div *ngIf="!BpmSuppliersMasterStore.loaded">
+            <app-table-loader></app-table-loader>
+        </div>
+        <app-no-data *ngIf="BpmSuppliersMasterStore.suppliers.length == 0 && BpmSuppliersMasterStore.loaded == true">
+        </app-no-data>
+
+    </ng-container>
+
+    <div *ngIf="BpmSuppliersMasterStore.totalItems>BpmSuppliersMasterStore.itemsPerPage" class="col-sm-12">
+        <ul class="pagination justify-content-center mt-3">
+            <div class="list">
+                <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+                    (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+            </div>
+        </ul>
+    </div>
+</div>
+
+<!-- Modal part -->
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+
+    <app-bpm-suppliers-modal *ngIf="suppliersObject.type" [source]="suppliersObject">
+
+    </app-bpm-suppliers-modal>
+
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+<!-- 
+<div class="modal modal-style-1 email-popup-new fade" data-backdrop="static" data-keyboard="false"
+    id="email-notification-popup" #mailConfirmationPopup>
+    <app-mail-send-popup [source]="mailConfirmationData"></app-mail-send-popup>
+</div> -->

@@ -1,0 +1,137 @@
+<button type="button" class="close" (click)="closemsModal()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title" *ngIf="source.type=='Add'">{{'new' | translate}} {{'timescale' | translate}}</h4>
+                <h4 class="modal-title" *ngIf="source.type=='Edit'">{{'edit' | translate}} {{'timescale' | translate}}</h4>
+                <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
+            </div>
+            <!-- Modal body -->
+            <div class="modal-body form-body">
+
+                <p class="head-details"></p>
+
+                <form [formGroup]="form" *mobxAutorun>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label>{{'time_scale'| translate}}<sup>*</sup></label>
+                                <div class="clearfix d-flex">
+                                    <div class="multiple-plain-ngselect w-100" style="width: 90%;">
+                                        <ng-select [readonly]="BiaScaleStore.BiaScaleDetails.length!=0"
+                                            [placeholder]="'select_time_scale'| translate"
+                                            [multiple]="false" 
+                                            formControlName="eng_time_scale"
+                                            (open)=" getBiaScale()"
+                                            (search)="searchBiaScale($event)"
+                                            (change)="getTimeScale($event)"
+                                            >
+                                            <ng-option [value]="type.id" *ngFor="let type of BiaScaleCategoryMasterStore.biaScaleCategory">
+                                                {{type.title}}
+                                            </ng-option>
+                                        </ng-select>
+                                        <p class="form-error pt-1" *ngIf="formErrors && formErrors.eng_time_scale">
+                                            {{formErrors.eng_time_scale}}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label>{{'order' | translate}}<sup>*</sup></label>
+                                <input type="text" class="form-control" formControlName="order"
+                                    [placeholder]="'enter_order' | translate">
+                                    <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.order}}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!--  -->
+                    <div class="row" *ngIf="!BiaScaleStore.BiaScaleDetails||BiaScaleStore?.BiaScaleDetails?.length==0">
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <div class="Preview-checkbox clearfix d-inline-block mr-3">
+                                    <label class="container2 float-left pl-4" style="font-size: 14px; padding-top:2px;">
+                                        <input type="checkbox"
+                                         formControlName="is_range_value" (change)="rangeChange($event)">
+                                        <span class="checkmark mt-1"></span>{{'range'|translate}}</label>
+                                </div>
+                                <p class="form-error pl-3" *ngIf="formErrors && formErrors.is_range_value">
+                                    {{formErrors.is_range_value}}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" >
+                        <div class="col-sm-6 " *ngIf="form.value.is_range_value">
+                            <div class="form-group">
+                                <label>{{'from'|translate}}<span class="form-error">*</span></label>
+                                <input type="number" class="form-control" (ngModelChange)="changeToInput()" formControlName="eng_from" [placeholder]="'enter_from'|translate">
+                                <span class="input-text-scale p-3"
+                                *ngIf="form.value.eng_time_scale">{{form.value.eng_time_scale==1 ? getButtonText('days') : getButtonText('hours')}}</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-6" *ngIf="form.value.is_range_value">
+                            <div class="form-group">
+                                <label>{{'to'|translate}}<span class="form-error">*</span></label>
+                                <input type="number" class="form-control" (ngModelChange)="changeToInput()" formControlName="eng_to" [placeholder]="'enter_to'|translate">
+                                <span class="input-text-scale p-3"
+                                *ngIf="form.value.eng_time_scale">{{form.value.eng_time_scale==1 ? getButtonText('days') : getButtonText('hours')}}</span>
+                                
+                            </div>
+                        </div>
+                        <div class="col-sm-12" *ngIf="!form.value.is_range_value">
+                            <div class="form-group mb-0">
+                                <label>{{'value'|translate}}<sup>*</sup></label>
+                                <input type="number" class="form-control" (ngModelChange)="changeToInput()" formControlName="eng_from" [placeholder]="'enter_value'|translate">
+                                <span class="input-text-scale p-3" style="bottom: -5px;"
+                                *ngIf="form.value.eng_time_scale">{{form.value.eng_time_scale==1 ? getButtonText('days') : getButtonText('hours')}}</span>
+                                
+                            </div>
+                        </div>
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                        <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.from?formErrors.from:formErrors.to?formErrors.to:formErrors.bia_scale_category_id}}</p>
+                        <p class="form-error pt-1" *ngIf="fromAndTo">To value should be greater than From value</p>
+                        <!-- <div class="col-sm-2">
+                            <button class="btn multi-add-user ml-2" (click)="addImpactScenario()" [disabled]="betweenNumberExisting"
+                                style="width: 42px; margin-top: 29px;"><i
+                                    class="fas fa-plus"></i></button>
+                        </div> -->
+                        <p class="form-error pt-1" *ngIf="itemExist">{{'item_already_added' | translate}}</p>
+                        <p class="form-error pt-1" *ngIf="betweenNumberExisting">Sorry this is day existing on your days interval</p>
+                       </div>
+                       </div>
+                        <div class="col-md-12">
+                            <ul class="arrowlist mt-0 p-0">
+                                <li class="clearfix" *ngFor="let item of intervalArray;index as i">{{item.from}}-{{item.to}} {{item.time_scale.title}}
+                                    <button (click)="deleteIncidentLessons(i);" type="button" class="btn btn-small float-right btn-small-delete" style="border: none;"><i  class="fas fa-trash"></i></button>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="clearfix"></div>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="d-block justify-content-left border-0 mt-3">
+                                <button type="submit" class="btn btn-active" (click)="saveBiaScale()"
+                                    [disabled]="form.invalid || AppStore.loading">{{  AppStore.loading  ? getButtonText('loading') : getButtonText('save') }}</button>
+                                <button type="button" data-toggle="modal" data-target="#signal-lost"
+                                    class="btn" (click)="saveBiaScale(true)"
+                                    [disabled]="form.invalid || AppStore.loading">{{  AppStore.loading  ? getButtonText('loading') : getButtonText('save_close') }}</button>
+                                <button type="button" data-toggle="modal" data-target="#error-message"
+                                    class="btn"
+                                    (click)="cancel()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('cancel') }}</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <!-- Modal footer -->
+        </div>
+    </div>

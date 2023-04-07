@@ -1,0 +1,126 @@
+<div class="tab-pane tab-edit-class assessment-tab-user" id="top-tab-left-five" *mobxAutorun>
+    <ng-container *mobxAutorun>
+        <app-am-audit-meeting-loader *ngIf="!AmAuditMeetingStore.loaded"></app-am-audit-meeting-loader>
+    </ng-container>
+    <div class="top-ten-risk-db-main " *ngIf="AmAuditMeetingStore.loaded && AmAuditMeetingStore.meetings?.length>0">
+        <app-filter-menu></app-filter-menu>
+        
+        <div class="top-ten-risk-db bg-white edit-option" *ngFor="let meeting of AmAuditMeetingStore.meetings| paginate: {currentPage:AmAuditMeetingStore?.currentPage, itemsPerPage:AmAuditMeetingStore?.itemsPerPage,totalItems:AmAuditMeetingStore?.totalItems}; let num = index">
+            <div *ngIf="AmAuditsStore.editAccessUser() && AmAuditsStore?.individualAuditDetails?.am_audit_field_work_status?.type!='completed'" class="edit-option-show" style="margin: 50px 0 0 0; ">
+                <a (click)="editMeeting(meeting.id)"><i class="fas fa-pen"></i></a>
+                <a (click)="deleteMeeting(meeting.id)"><i class="fas fa-trash"></i></a>
+            </div>
+            <div class="row">
+                <div class="col-sm-12 col-lg-12 ">
+                    <div class=" d-flex">
+
+                        <div class="float-left border-right pr-3 text-center" style="width: 50px;">
+                            <p class="mb-0">{{meeting.start| date:'EEE'}}</p>
+                            <h4 class="font-weight-bold">{{meeting.start|date:'dd'}}</h4>
+                            <p class="mb-0">{{meeting.start|date:'MMM'}}</p>
+                        </div>
+
+
+                        <div class="w-100  m-auto pl-2">
+                            <div class="row w-100 pointer align-items-center">
+                                <div class="col-lg-10 col-xl-10 col-sm-12 m-auto">
+                                    <div class="row" (click)="gotoDetails(meeting.id)">
+                                        <div class="col-lg-3 col-sm-3 m-auto padding-right-0">
+                                            <div class="middle-text-sec-risk-db pt-2 pb-2">
+                                                <h5 class="mb-0">#{{meeting.reference_code}}<br> {{meeting.title}}</h5>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-lg-9 col-sm-9 m-auto padding-right-0">
+
+                                            <div class="row sm-row align-items-center">
+                                                <div class="col-lg-4 col-sm-6 sm-col pt-2 pb-2">
+                                                    <h5>{{'end_date' | translate}}</h5>
+                                                    <p class="mb-0 ">{{meeting.end |
+                                                        date:OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                    </p>
+                                                </div>
+                                                <div class="col-lg-3 col-sm-6 sm-col pt-2 pb-2">
+                                                    <h5>{{'time' | translate}}</h5>
+                                                    <p class="mb-0 "><span class="mr-1"><i
+                                                                class="fas fa-clock"></i></span>{{meeting.start | date:
+                                                        'h:mm a'}} - {{meeting.end | date: 'h:mm a'}}</p>
+                                                </div>
+                                                <div class="col-lg-2 col-sm-6 sm-col pt-2 pb-2">
+                                                    <h5>{{'duration' | translate}}</h5>
+                                                    <p class="mb-0 "><span class="mr-1"><i
+                                                                class="fas fa-adjust"></i></span>{{meeting.duration}} hr
+                                                    </p>
+                                                </div>
+                                                <div class="col-lg-3 col-sm-6 sm-col pt-2 pb-2">
+                                                    <h5>{{'meeting_types' | translate}}</h5>
+                                                    <p class="mb-0 ">
+
+                                                        {{meeting.meeting_types?meeting.meeting_types:AppStore.noContentText}}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            
+
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-2 col-xl-2 col-sm-12 padding-right-0-pm-box">
+                                    <div class="row">
+                                        <div class="col-lg-12 col-sm-12">
+                                         
+
+                                            <app-user-popup-box [source]=" getOrganizerDetails(meeting)">
+                                            </app-user-popup-box>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+        <p class="float-right bold mb-0" *ngIf="AmAuditMeetingStore?.loaded && AmAuditMeetingStore.totalItems > 0">
+            {{'total_Items' | translate}}:{{AmAuditMeetingStore?.totalItems}}</p>
+            <div *ngIf="AmAuditMeetingStore.totalItems>AmAuditMeetingStore.itemsPerPage"
+                class="col-sm-12">
+                <ul class="pagination justify-content-center mt-3">
+                    <div class="list">
+                        <pagination-controls [previousLabel]="'previous' | translate"
+                            [nextLabel]="'next' | translate" (pageChange)="pageChange($event)"
+                            class="my-pagination"></pagination-controls>
+                    </div>
+                </ul>
+            </div>
+        
+
+    </div>
+   
+    <ng-container *ngIf="AmAuditMeetingStore.loaded && AmAuditMeetingStore.meetings?.length==0">
+
+        <app-no-data [border]="false">
+        </app-no-data>
+
+    </ng-container>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" style="overflow: hidden auto; z-index: 999999;"
+    data-keyboard="false" data-backdrop="static" #formModal *mobxAutorun>
+    <app-am-audit-meeting-modal *ngIf="meetingObject.type" [source]="meetingObject"></app-am-audit-meeting-modal>
+</div>
+
+<div class="modal modal-style-1 fade" id="delete-popup" #deletePopup data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="deleteObject"></app-delete-popup>
+</div>

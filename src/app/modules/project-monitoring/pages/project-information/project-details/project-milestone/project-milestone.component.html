@@ -1,0 +1,59 @@
+<app-project-milestone-loader *ngIf="!ProjectMilestoneStore.mileStonesLoaded"></app-project-milestone-loader>
+
+  
+  <div class="tab-pane" id="mile">
+                            <ul *ngIf="ProjectMilestoneStore.milesstones.length > 0 && AuthStore.getActivityPermission(3700, 'PROJECT_MILESTONE_LIST')" class="tmline">
+
+                                <li *ngFor="let milestone of ProjectMilestoneStore.milesstones;let num = index; let last = last" [ngClass]="isEven(num) ? 'mb-0' : 'tmline-inverted mb-0'"   class="edit-option">
+                                    <div class="tmline-badge">{{num+1}}</div>
+                                   
+                                    <div [ngClass]="isEven(num) ? 'tmline-panel  slideInLeft' : 'tmline-panel slideInRight'" >
+                                        <div *ngIf="ProjectMonitoringStore.individualDetails?.project_monitoring_status?.type =='draft' || ProjectMonitoringStore.individualDetails?.project_monitoring_status?.type =='send-back'" class="edit-option-show edit-option-show-small" style="margin: 37px -9px 0 0; ">
+                                            <!-- edit-and-delete starts -->
+                                            <a *ngIf="AuthStore.getActivityPermission(3700, 'UPDATE_PROJECT_MILESTONE')" (click)="editMileStone(milestone)"  ><i class="fas fa-pen"></i></a>
+                                            <a *ngIf="AuthStore.getActivityPermission(3700, 'DELETE_PROJECT_MILESTONE')" (click)="delete(milestone.id)" ><i class="fas fa-trash"></i></a>
+                                        </div>
+                                        <div class="tmline-heading d-flex align-items-center flex-wrap justify-content-between"> 
+                                            <div class="border-right">
+                                                <h4 class="tmline-title">{{milestone.title}}</h4>
+                                                <p><i class="far fa-calendar-alt"></i> {{milestone.due | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</p>
+                                            </div>
+                                            <div class="pl-4">
+                                                <div  [ngClass]="milestone.completion > 70 ?'progress-circle progress-green over50 p'+mileStonCompletion(milestone.completion) : milestone.completion > 50 ? 'progress-circle progress-yellow over50 p'+mileStonCompletion(milestone.completion) : 'progress-circle progress-red p'+mileStonCompletion(milestone.completion)">
+                                                    <!-- [ngClass]="milestone.completion > 50 ?'progress-circle progress-green p'+milestone.completion:'progress-circle progress-red p'+milestone.completion"> -->
+
+                                                    <span>{{milestone.completion? milestone.completion : '0'}}%</span>
+                                                    <div class="left-half-clipper">
+                                                        <div class="first50-bar"></div>
+                                                        <div class="value-bar"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </li>
+                                <li *ngIf="AuthStore.getActivityPermission(3700, 'CREATE_PROJECT_MILESTONE') && ProjectMonitoringStore.individualDetails?.project_monitoring_status?.type =='draft' || ProjectMonitoringStore.individualDetails?.project_monitoring_status?.type =='send-back'" class="add-tmlinr text-md-center">
+                                    <button  class="tmline-btn" (click)="openNewProjectModal()">+</button>
+                                </li>
+                            </ul>
+                            <ng-container *mobxAutorun>
+                                <div *ngIf="!ProjectMilestoneStore.mileStonesLoaded">
+                                   <app-project-monitoring-list-loader></app-project-monitoring-list-loader>
+                               </div>
+                                <app-no-data *ngIf = "ProjectMilestoneStore.milesstones.length == 0 && ProjectMilestoneStore.mileStonesLoaded == true"></app-no-data>
+                              </ng-container>
+                        </div>
+
+<!-- add milestone -->
+
+ <div class="modal modal-style-1 popup-full-width fade" id="add-actionplan-popup" data-keyboard="false"
+data-backdrop="static" #newMilestone>
+   <app-add-new-milestone [source] = "newMilestoneObject" *ngIf = "newMilestoneObject.type"></app-add-new-milestone>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+  </div>

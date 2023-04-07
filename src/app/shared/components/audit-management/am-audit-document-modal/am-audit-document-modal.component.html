@@ -1,0 +1,182 @@
+<button type="button" class="close" (click)="confirmCancel()"><i class="lni-close"></i><span>esc</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered" *mobxAutorun>
+    <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header">
+            <h4 class="modal-title">New Document </h4>
+          </div>
+        <!-- Modal body -->
+        <div class="modal-body form-body">
+            <p class="head-details">Create document within isorobot by choosing document type and title.
+            </p>
+            <form [formGroup]="form">
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="form-group">
+                        <label>Document Type<sup>*</sup></label>
+                        <!-- <div class="d-flex"> -->
+                            <div class="clearfix d-flex">
+                                <div class="multiple-plain-ngselect w-100">
+                                    <ng-select [placeholder]="'select_am_document_type'|translate" [multiple]="false"
+                                        [closeOnSelect]="true" searchable="true"
+                                        formControlName="am_audit_document_type_id"
+                                        (search)="searchAuditDocumentType($event)" (clear)="getAuditDocumentType()"
+                                        (open)="getAuditDocumentType()" autocomplete="new-password">
+                                        <ng-option [value]="type.id"
+                                            *ngFor="let type of AmAuditDocumentTypesMasterStore.allItems">
+                                            {{type.title}}
+                                        </ng-option>
+
+                                    </ng-select>
+                                </div>
+                            
+
+                                <button class="btn multi-add-user ml-2" style="width: 42px;" *ngIf = "AuthStore.getActivityPermission(100,'CREATE_AM_AUDIT_DOCUMENT_TYPE')" (click)="openDocumentTypeModal()"><i
+                                    class="fas fa-plus"></i></button>
+                        </div>
+                            <p class="form-error pt-1" *ngIf="formErrors&&formErrors.am_audit_document_type_id">
+                                {{formErrors.am_audit_document_type_id[0]}}</p>
+                        </div>
+                    </div>
+                
+                <div class="col-sm-12">
+                    <div class="form-group">
+                        <label>Document Name<sup>*</sup></label>
+                        <input type="text" class="form-control" formControlName = "title" [placeholder]="'am_enter_document_title'|translate">
+                        <p class="form-error pt-1" *ngIf="formErrors&&formErrors.title">
+                            {{formErrors.title[0]}}</p>
+                    </div>
+                </div>
+
+                <div class="col-sm-12">
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea class="form-control" rows="3" id="comment9" formControlName="description" [placeholder]="'am_enter_description'|translate"></textarea>
+                        <p class="form-error pt-1" *ngIf="formErrors&&formErrors.description">
+                            {{formErrors.description[0]}}</p>
+                    </div>
+                </div>
+
+                <div class="col-lg-12 col-sm-12">
+                        <div class="form-group mb-0">
+                            <label>Support Files<sup>*</sup></label>
+
+                            <div class="scroll-documents" #uploadArea>
+                                <div class="thumb-pics-bg thumb-pics-col-3 clearfix thumb-pics-fix-text" style="padding-top: 0;">
+                                   <div class="thumb-pics">
+                                    <div class="question-circle-inp" style="margin-right: 7px;">
+                                        <i class="far fa-question-circle"></i>
+                                        <div class="message-password-inp">
+                                            <p class="mb-0">{{'allowed_file_types' | translate}}
+                                                {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                                            </p>
+                                        </div>
+                                    </div>
+                 
+                                      <div class="form-group form-group-upload">
+                                         <div class="darag-dropifile-upload">
+                                            <div class="d-flex justify-content-center align-items-center text-center">
+                                               <div>
+                                                  <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                                                  <div class="drag-file-name"> Select or Upload Your File Here </div>
+                                                  <div class="upload-btn-wrapper">
+                                                     <button (click)="openFileUploadModal()" type="button" class="btn">{{'browse_files' |
+                                                        translate}}</button>
+                                                  </div>
+                                               </div>
+                                            </div>
+                                         </div>
+                                      </div>
+                                   </div>
+                 
+                                   <div class="thumb-pics" *ngFor="let docs of fileUploadPopupStore.displayFiles ;let i = index">
+                                      <div class="upload-pics edit-option" data-toggle="modal">
+                                         <div *ngIf="docs.id && !docs.preview" class="browse-form-pic"
+                                            [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                                         </div>
+                                         <div *ngIf="docs.preview" class="browse-form-pic"
+                                            [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">
+                                         </div>
+                                         <div class="browse-form-name clearfix">
+                                            <div class="float-left">
+                                               <h6>
+                                                  {{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                               </h6>
+                                               <span *ngIf="docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-book"></i></span>
+                                               <span *ngIf="!docs.is_kh_document" class="mr-2 cmn-clr"><i
+                                                     class="fas fa-laptop"></i></span>
+                                               <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                                            </div>
+                                            <div class="browse-logo">
+                                               <img *ngIf="checkExtension(docs.ext,'image') != -1" class="folder-picher"
+                                                  src="/assets/images/jpg-icone.png">
+                                               <img *ngIf="checkExtension(docs.ext,'doc') != -1" class="folder-picher"
+                                                  src="/assets/images/word-icone.png">
+                                               <img *ngIf="checkExtension(docs.ext,'pdf') != -1" class="folder-picher"
+                                                  src="/assets/images/pdf-icone.png">
+                                               <img *ngIf="checkExtension(docs.ext,'excel') != -1" class="folder-picher"
+                                                  src="/assets/images/excel-icone.png">
+                                               <img *ngIf="checkExtension(docs.ext,'video') != -1" class="folder-picher"
+                                                  src="/assets/images/md-video.png">
+                                               <img *ngIf="checkExtension(docs.ext,'audio') != -1" class="folder-picher"
+                                                  src="/assets/images/md-audio.png">
+                                               <img *ngIf="checkExtension(docs.ext,'ppt') != -1" class="folder-picher"
+                                                  src="/assets/images/md-ppt.png">
+                                            </div>
+                                            <div class="edit-option-show">
+                                                <a (click)="removeDocument(docs)"><i
+                                                        class="fas fa-trash"></i></a>
+                                            </div>
+                                         </div>
+                                      </div>
+                                   </div>
+                 
+                 
+                                </div>
+                             </div>
+                             <p class="form-error pt-1" *ngIf="formErrors&&formErrors.document">
+                                {{formErrors.document[0]}}</p>
+                        </div>
+                    </div>
+            </div>
+
+                
+
+
+            
+
+        </form>
+
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="d-block justify-content-left border-0 mt-3">
+                        <button type="button" class="btn btn-active" [disabled]="AppStore.loading || form.invalid" (click)="saveAuditDocument()">{{AppStore.loading?getButtonText('loading'):getButtonText('save')}}</button>
+                        <button type="button" class="btn" (click)="saveAuditDocument(true)" [disabled]="AppStore.loading || form.invalid">{{AppStore.loading?getButtonText('loading'):getButtonText('save_close')}}</button>
+                        <button type="button" class="btn" (click)="confirmCancel()" [disabled]="AppStore.loading">{{AppStore.loading?getButtonText('loading'):getButtonText('cancel')}}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Modal footer -->
+    </div>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup" data-keyboard="false"
+    data-backdrop="static" #documentTypeAddformModal> 
+    <button type="button" class="close"  (click) ="closeDocumentTypeMasterModal()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>  
+    <app-am-audit-document-type-model *ngIf="addDocumentTypeObject" [source]="addDocumentTypeObject">
+    </app-am-audit-document-type-model>
+</div>
+
+
+<!-- * Documetn Attach/Upload Common Component Starts Here -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #fileUploadModal>
+
+    <app-file-upload-popup *ngIf="fileUploadPopupStore.openPopup"></app-file-upload-popup>
+
+</div>
+<!-- * Documetn Attach/Upload Common Component Ends Here -->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #cancelPopup data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="confirmationObject"></app-delete-popup>
+</div>

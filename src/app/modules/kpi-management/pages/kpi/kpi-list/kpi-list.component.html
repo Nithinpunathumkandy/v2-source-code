@@ -1,0 +1,112 @@
+<div #plainDev></div>
+<div class="bg-white">
+<nav class="edit-bar" data-toggle="affix" #navBar>
+    <app-sub-menu>-</app-sub-menu>
+    <div class="module-name-block module-name-block-space float-left">
+        <a class="dropdown module-title">{{'kpis'|translate}}</a>
+    </div>
+</nav>
+</div>
+<main class="mt-3 acl-page">
+    <app-filter-menu></app-filter-menu>
+    <div class="container-fluid" *mobxAutorun>
+        <div class="audit-program-box  audit-page-table-main">
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="full-width-table">
+                    <table class="table table-bordered ordinary-table audit-page-table mb-4 table-scroll" 
+                        *ngIf="KpisStore?.loaded && KpisStore.allItems.length > 0 && AuthStore.getActivityPermission(5356,'KPI_MANAGEMENT_KPI_LIST')">
+                        <thead>
+                            <tr>
+                                <th class="border-top-0 text-center issue-list-org-tab-three" style="width:3%">#</th>
+                                <th class="border-top-0 issue-list-org-tab-three pointer" style="width:7%"  (click)="sortTitle('kpi_management_kpis.reference_code')" >
+                                    <span>{{'kpi_code' | translate}}</span>
+                                    <img _ngcontent-twv-c17="" style="margin-left: 6px;" *ngIf="KpisStore.orderItem=='kpi_management_kpis.reference_code'"
+                                        [attr.src]="KpisStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" 
+                                        class="sort-down-pics"></th>
+                                <th style="width:62%" class="border-top-0 issue-list-org-tab-three pointer" (click)="sortTitle('kpis.title')"  >
+                                    <span>{{'title' | translate}}</span>
+                                    <img _ngcontent-twv-c17="" style="margin-left: 6px;" *ngIf="KpisStore.orderItem=='kpis.title'"
+                                        [attr.src]="KpisStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" 
+                                        class="sort-down-pics">
+                                </th>
+                                <th class="border-top-0 pointer" width="20%" (click)="sortTitle('department.title')">
+                                    <span>{{'departments' | translate}}</span>
+                                    <img _ngcontent-twv-c17="" style="margin-left: 6px;" *ngIf="KpisStore.orderItem=='department.title'"
+                                        [attr.src]="KpisStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" 
+                                        class="sort-down-pics">
+                                </th>
+                                <th class="border-top-0 pointer text-center"style="width:8%" (click)="sortTitle('kpi_management_status_language.title')">
+                                    <span>{{'status' | translate}}</span>
+                                    <img _ngcontent-twv-c17="" style="margin-left: 6px;" *ngIf="KpisStore.orderItem=='kpi_management_status_language.title'"
+                                        [attr.src]="KpisStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" 
+                                        class="sort-down-pics">
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <ng-container *mobxAutorun>
+                                <tr  class="edit-and-delete-main" [class.cursor-pointer]="AuthStore.getActivityPermission(5356,'KPI_MANAGEMENT_KPI_DETAILS')"  *ngFor="
+                                    let row of KpisStore?.allItems
+                                        | paginate
+                                        : {
+                                            currentPage: KpisStore?.currentPage,
+                                            itemsPerPage: KpisStore?.itemsPerPage,
+                                            totalItems: KpisStore?.totalItems
+                                            };
+                                    let num = index
+                                    "  (click)="AuthStore.getActivityPermission(5356,'KPI_MANAGEMENT_KPI_DETAILS')? getDetails(row.id): ''"  >
+                                    <td style="text-align: center;">
+                                        {{
+                                            (KpisStore?.currentPage - 1) *
+                                            KpisStore?.itemsPerPage +
+                                            (num + 1)
+                                        }}
+                                    </td>
+                                    <td style="padding:0.75rem">{{row.reference_code}}</td>
+                                    <td style="padding: 0.75rem;">{{row.title}}</td>
+                                    <td style="padding: 0.75rem;">{{row?.departments}}</td>
+                                    <td class="text-center">
+                                        <div  [attr.class]="'dot-div '+row.kpi_management_status_label+'-dot'">
+                                            {{row.kpi_management_status_title }}
+                                        </div>
+                                        <div class="edit-option-show" *ngIf="row.kpi_management_status_type=='draft'">
+                                            <a  (click)="edit(row.id)" 
+                                                *ngIf="AuthStore.getActivityPermission(5356,'UPDATE_KPI_MANAGEMENT_KPI')"
+                                                [attr.title]="'edit'|translate">
+                                                <i class="fas fa-pen"></i></a>
+                                            <a  (click)="delete(row.id)"
+                                                *ngIf="AuthStore.getActivityPermission(5356,'DELETE_KPI_MANAGEMENT_KPI')" 
+                                                [attr.title]="'delete' | translate">
+                                                <i class="fas fa-trash pointer"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </ng-container>
+                        </tbody>
+                    </table>
+                    </div>
+                    <p class="float-right" *ngIf="KpisStore?.loaded && KpisStore.totalItems > 0"><b>{{'total_Items' | translate}}:{{KpisStore?.totalItems}}</b></p>
+                    <ng-container *mobxAutorun>
+                        <div *ngIf="!KpisStore?.loaded">
+                            <app-kpi-list-loader></app-kpi-list-loader>
+                        </div>
+                    </ng-container>
+                    <app-no-data *ngIf = "KpisStore.totalItems == 0 && KpisStore.loaded" [border]='false'></app-no-data>
+                    <div *ngIf="KpisStore.totalItems > KpisStore.itemsPerPage" class="col-sm-12">
+                        <ul class="pagination justify-content-center mt-3">
+                            <div class="list">
+                                <pagination-controls [previousLabel]="'previous' | translate"  [nextLabel]="'next' | translate" (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+                            </div>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Delete Confirmation Modal Start -->
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>

@@ -1,0 +1,110 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" scrollPoint #navBar>
+
+   <app-sub-menu></app-sub-menu>
+   <div class="module-name-block module-name-block-space float-left">
+      <a class="dropdown module-title">{{'contract_assessment'|translate}}</a>
+   </div>
+
+</nav>
+
+<main class="mt-3 acl-page" *mobxAutorun>
+   <div class="container-fluid">
+      <div class="audit-program-box audit-page-table-main">
+         <div class="row"  *ngIf="ComplainceContractStore.loaded && ComplainceContractStore?.allItems.length">
+            <div class="col-sm-12">
+               <div class=" full-width-table mb-3">
+                  <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                     <thead>
+                        <tr>
+                           <th class="border-top-0 text-center" width="4%">{{'sl' | translate}}</th>
+                           <th class="border-top-0" width="8%">{{'ref_id'| translate}}</th>
+                           <th class="border-top-0" width="38%">{{'sla_contract'| translate}}</th>
+                           <th class="border-top-0" width="20%">{{'created_at'| translate}}</th>
+                           <th class="border-top-0" width="20%">{{'created_by'| translate}}</th>
+                           <th class="border-top-0 text-center" width="10%">{{'status'| translate}}</th>
+                          
+                        </tr>
+                     </thead>
+                     <tbody>
+                        <tr (click)="gotoDetailsPage(row?.id)" class="edit-and-delete-main pointer" 
+                         *ngFor="
+                         let row of ComplainceContractStore?.allItems| paginate
+                         : {
+                             currentPage: ComplainceContractStore?.currentPage,
+                             itemsPerPage: ComplainceContractStore?.itemsPerPage,
+                             totalItems: ComplainceContractStore?.totalItems
+                           };
+                         let num = index">
+                           <td class="text-center"> {{
+                              (ComplainceContractStore?.currentPage - 1) *
+                              ComplainceContractStore?.itemsPerPage +
+                              (num + 1)
+                              }}</td>
+                           <td>{{row.reference_code ? row?.reference_code : AppStore.noContentText}}</td>
+                           <td>{{row?.document_title }}</td>
+                           <td>{{row?.created_at | date: OrganizationGeneralSettingsStore?.organizationSettings?.date_format}}</td>
+                          
+                           <td>
+                              <div class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg p-0">
+                                 <img [attr.src]="row.created_by_image_token? createImageUrl(row.created_by_image_token):'/assets/images/user-demo.png'"
+                                    class="rounded-circle rounde-hov" width="35px" height="35px"  onerror = "this.src='/assets/images/user-demo2.png'"> 
+                                    <div>
+                                       <p class="mb-0">{{row.created_by_first_name}} {{row.created_by_last_name}}  </p>
+                                       <span>{{row.created_by_designation}}</span>
+                                    </div>   
+                              </div>
+                           </td>
+                           <td class="text-center">
+                              <div [attr.class]="'dot-div '+row.sla_and_contract_assessment_status_label+'-dot'">
+                                 {{row.sla_and_contract_assessment_status_title}}
+                                 </div>
+                                 <div class="edit-option-show" >
+                                     <!-- <a (click)="edit(row.id,$event)" [attr.title]="'edit'|translate"  
+                                         ><i class="fas fa-pen pointer"></i></a>  -->
+                                     <a (click)="deleteChecklist(row.id,$event)" [attr.title]="'delete'|translate" 
+                                         ><i class="fas fa-trash pointer"></i></a>
+                           
+                                 </div>
+                           </td>
+                        </tr>
+                       
+
+
+                     </tbody>
+                  </table>
+                  <p class="float-right" *ngIf="ComplainceContractStore?.loaded && ComplainceContractStore.totalItems > 0"><b>{{'total_Items' | translate}}:{{ComplainceContractStore?.totalItems}}</b></p>
+               </div>
+            </div>
+            
+         </div>
+
+         <ng-container *mobxAutorun>
+            <div *ngIf="!ComplainceContractStore?.loaded">
+                <app-six-column-loader></app-six-column-loader>
+            </div>
+        </ng-container>
+        <app-no-data *ngIf = "ComplainceContractStore.totalItems == 0 && ComplainceContractStore.loaded" [border]='false'></app-no-data>
+        <div *ngIf="ComplainceContractStore.totalItems > ComplainceContractStore.itemsPerPage" class="col-sm-12">
+            <ul class="pagination justify-content-center mt-3">
+                <div class="list">
+                    <pagination-controls [previousLabel]="'previous' | translate"  [nextLabel]="'next' | translate" (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+                </div>
+            </ul>
+        </div>
+
+      </div>
+
+
+
+   </div>
+</main>
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+   <app-add-contract-assessment-modal *ngIf="contractObject.type" [source]="contractObject"></app-add-contract-assessment-modal>
+</div>
+
+<div class="modal modal-style-1 fade" id="delete-popup" #deletePopup data-backdrop="static" data-keyboard="false">
+   <app-delete-popup [source]="deleteObject"></app-delete-popup>
+</div>
+

@@ -1,0 +1,203 @@
+<!-- <div class="modal modal-style-1 popup-full-width fade" id="add-project-popup" data-keyboard="false" data-backdrop="static" style="overflow: hidden auto; z-index: 99999;"> -->
+    <button type="button" class="close" data-dismiss="modal" (click)="cancel()"><i class="lni-close"></i><span>esc</span></button>
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title">Project Information </h4>
+                <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
+            </div>
+            <!-- Modal body -->
+            <div class="modal-body form-body">
+                <p class="head-details">Project is any undertaking, carried out individually or collaboratively and possibly involving research or design, that is carefully planned to achieve a particular aim.
+                </p>
+                <form [formGroup]="projectInformationForm" *mobxAutorun>
+                <div class="row">
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">Project Type<span class="form-error">*</span></label>
+                            <div class="custom-control pt-2 custom-radio">
+                                <input type="radio" (change)="changebudgetType('budgeted')" [checked]="projectType=='budgeted'"  class="custom-control-input" id="customRadio1" name="example1" value="customEx">
+                                <label class="custom-control-label" for="customRadio1" style="padding-top: 2px;">Budgeted</label>
+
+                                <span class="pl-5"><input type="radio" (change)="changebudgetType('nonBudgeted')" [checked]="projectType=='nonBudgeted'"  class="custom-control-input" id="customRadio2" name="example1" value="customEx">
+                                <label class="custom-control-label" for="customRadio2" style="padding-top: 2px;">Non Budgeted</label></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label>Contract Type<span class="form-error">*</span></label>
+                            <div class="clearfix d-flex">
+                                <div class="multiple-plain-ngselect select-width-plus w-100">
+                                    <ng-select 
+                                    [placeholder]="'Select contract type' | translate" 
+                                    [multiple]="false"
+                                    searchable="true"
+                                    (open)="getContractTypes()" 
+                                    (clear)="getContractTypes()"
+                                    (search)="searchContractType($event)"
+                                    formControlName="project_contract_type_id">
+                                        <ng-option [value]="type.id"
+                                            *ngFor="let type of ProjectContractTypeMasterStore?.projectContractType">
+                                            {{type.project_contract_type_title.length > 50 ? type.project_contract_type_title.substring(0,50)+'...' : type.project_contract_type_title}}
+                                        </ng-option>
+                                    </ng-select>
+                                    <p class="form-error pt-1" *ngIf="formErrors && formErrors.project_contract_type_id">{{formErrors.project_contract_type_id}}
+                                    </p>
+                                </div>
+                                <button class="btn multi-add-user ml-2" data-toggle="modal" (click) = "addNewContractType()" style="width: 42px;"><i class="fas fa-plus"></i></button>
+                             </div>
+                        </div>
+                    </div>
+                   
+                    <div class="col-lg-12 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'project_title' | translate}}<span class="form-error">*</span></label>
+                            <input formControlName="title" type="text" class="form-control" [placeholder]="'project_title_placholder' | translate">
+                            <p class="form-error pt-1" *ngIf="formErrors && formErrors.title">{{formErrors.title}}</p>
+
+                        </div>
+                    </div>
+                    <!-- <div class="col-lg-12 col-sm-12">
+                     
+                        <div class="form-group">
+                            <a class="text-light-blue" (click)="organisationChanges()" style="border-bottom: 1px solid;">Owner Department</a>
+                        </div>
+                    </div> -->
+                    <div class="col-lg-12 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'description' | translate}}
+                          </label>
+                            <textarea  formControlName="description" class="form-control" rows="3" id="comment" [placeholder]="'project_description_placholder' | translate"></textarea>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label>{{'project_priority_title' | translate}}<span class="form-error">*</span></label>
+                            <div class="clearfix d-flex">
+                                <div class="multiple-plain-ngselect select-width-plus w-100">
+                                    <ng-select 
+                                    [placeholder]="'Select Priority' | translate" 
+                                    [multiple]="false"
+                                    searchable="true"
+                                    (open)="getPriority()" 
+                                    (clear)="getPriority()"
+                                    (search)="searchPriority($event)"
+                                    formControlName="project_priority_id">
+                                        <ng-option [value]="type.id"
+                                            *ngFor="let type of ProjectPriorityMasterStore?.projectPriority">
+                                            {{type.score.length > 50 ? type.score.substring(0,50)+'...' : type.score}}
+                                        </ng-option>
+                                    </ng-select>
+                                </div>
+                                <button class="btn multi-add-user ml-2" data-toggle="modal" (click) = "addNewPriorityType()" style="width: 42px;"><i class="fas fa-plus"></i></button>
+                             </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label>{{'projects_location' | translate}}<span class="form-error">*</span></label>
+                            <div class="clearfix d-flex">
+                                <div class="multiple-plain-ngselect select-width-plus w-100">
+                                    <ng-select 
+                                    [placeholder]="'project_select_location' | translate" 
+                                    [multiple]="false"
+                                    searchable="true"
+                                    (open)="getLocation()" 
+                                    (clear)="getLocation()"
+                                    (search)="searchLocation($event)"
+                                    formControlName="location_id">
+                                        <ng-option [value]="type.id"
+                                            *ngFor="let type of LocationMasterStore.allItems">
+                                            {{type.title.length > 50 ? type.title.substring(0,50)+'...' : type.title}}
+                                        </ng-option>
+                                    </ng-select>
+                                </div>
+                                <button class="btn multi-add-user ml-2" data-toggle="modal" (click)="addNewLocationType()" style="width: 42px;"><i class="fas fa-plus"></i></button>
+                             </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'start_date' | translate}}<span class="form-error">*</span></label>
+                            <div class="input-group">
+                             <input class="form-control" id="start_date" [placeholder]="'select_start_date' | translate"
+                                    name="start_date" ngbDatepicker #s="ngbDatepicker"  formControlName = "start_date" [minDate]="{year: 1950, month: 1, day: 1}">
+                             <div class="input-group-append">
+                               <button class="btn btn-outline-secondary calendar" (click)="s.toggle()" type="button"><i class="fas fa-calendar-alt"></i></button>
+                             </div>
+
+                           </div>
+                           <p class="form-error pt-1" *ngIf="formErrors && formErrors.start_date">{{formErrors.start_date}}</p>
+
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'end_date' | translate}}<span class="form-error">*</span></label>
+                            <div class="input-group">
+                             <input class="form-control" id="end_date" [placeholder]="'select_end_date' | translate"
+                                    name="end_date" ngbDatepicker #e="ngbDatepicker" formControlName = "target_date" [minDate]="projectInformationForm.value.start_date">
+                             <div class="input-group-append">
+                               <button class="btn btn-outline-secondary calendar" (click)="e.toggle()" type="button"><i class="fas fa-calendar-alt"></i></button>
+                             </div>
+
+                           </div>
+                           <p class="form-error pt-1" *ngIf="formErrors && formErrors.target_date">{{formErrors.target_date}}</p>
+
+                        </div>
+                    </div>
+                </div>
+
+
+
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="d-block justify-content-left border-0 mt-3">
+                            <button type="button" data-toggle="modal" 
+                               class="btn btn-active" [disabled]="projectInformationForm.invalid || AppStore.loading" (click) = "save()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save') }}</button>
+                            <button type="button" data-toggle="modal" 
+                               class="btn" [disabled]="projectInformationForm.invalid || AppStore.loading" (click) = "save(true)">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save_close') }}</button>
+                            <button type="button" data-toggle="modal" (click) = "cancel()"
+                               class="btn">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('cancel') }}</button>
+                         </div>
+                    </div>
+                </div>
+            </form>
+            </div>
+            <!-- Modal footer -->
+        </div>
+    </div>
+<!-- </div> -->
+
+                 <!-----------------------Form Modal Start--------------------------->
+                 <div  class="modal modal-style-1 popup-full-width fade"  data-keyboard="false"
+                 data-backdrop="static" #organisationChangeFormModal *mobxAutorun>
+                 <app-organisation-change-modal *ngIf = "openModelPopup" [source] = "projectInformationForm.value" 
+                 (organizationChangeEvent)="closeModal($event)"></app-organisation-change-modal>
+               </div>
+                <!-----------------------Form Modal End--------------------------->
+
+<!-- contract type master -->
+                <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+                    <button type="button" class="close"  (click) ="closeContractTypeMasteModal()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+                    <app-project-contract-type-modal *ngIf = "projectContractTypeObject.type" [source] = "projectContractTypeObject"></app-project-contract-type-modal>
+                </div>
+
+                <!-- priority -->
+    
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #priorityFormModal>
+    <button type="button" class="close" data-dismiss="modal" (click) ="closePriorityTypeMasteModal()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+    <app-project-priority-modal *ngIf = "projectPriorityObject.type" [source] = "projectPriorityObject"></app-project-priority-modal>
+    
+
+</div>
+
+<!-- location -->
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #locationFormModal>
+    <app-location-modal *ngIf="locationObject.type" [source]="locationObject">
+    </app-location-modal>
+</div>

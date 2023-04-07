@@ -1,0 +1,372 @@
+<!-- common-tab-md starts -->
+<div class="common-tab-md clearfix" *mobxAutorun>
+    <div class="tab-common-left-md"
+        *ngIf="AuditCorrectiveActionStore.loaded == true && AuditCorrectiveActionStore.allItems.length >0">
+        <div class=" issues-tab">
+            <!-- tab menu start -->
+            <ul class="nav nav-tabs nav-tabs--vertical nav-tabs--left vertical-tab" role="navigation">
+                <li class="nav-item" *ngFor="let ca of AuditCorrectiveActionStore.allItems; let i = index">
+                    <a (click)="getCorrectiveAction(ca.id)"
+                        [ngClass]="AuditCorrectiveActionStore.selectedItem == ca.id ? 'nav-link active show relative':'nav-link relative'"
+                        data-toggle="tab" role="tab" aria-controls="lorem" aria-selected="false">
+                        <div
+                            [ngClass]="'status-tag-new-two bg-'+ labelDot(ca.ms_audit_finding_corrective_action_status_label) +' text-10'">
+                            {{ca.ms_audit_finding_corrective_action_status_title}}</div>
+                        <span class="elips-2">{{ca.reference_code}}-
+                        {{ca.title?.length>10?ca.title.substring(0,10)+'...' :
+                        ca.title}}</span>
+                        
+                    </a>
+                </li>
+
+            </ul>
+        </div><!-- tab menu end -->
+    </div>
+    <div class="tab-common-left-content-m"
+        *ngIf="AuditCorrectiveActionStore.loaded == true && AuditCorrectiveActionStore.allItems.length >0">
+        <div class="tab-content">
+            <div class="tab-pane fade active show" id="tab-two-box-one" role="tabpanel">
+                <ng-container *mobxAutorun>
+                    <div *ngIf="!AuditCorrectiveActionStore.individualLoaded">
+                        <app-corrective-action-loader></app-corrective-action-loader>
+                    </div>
+                </ng-container>
+                <div class="row" *ngIf="AuditCorrectiveActionStore.individualLoaded">
+                    <div class="col-lg-8 col-sm-12 padding-right-0">
+                        <div class="widg-padding-cmn bg-white cmn-bdr">
+                            <div class="min-height-64 edit-and-delete-main">
+                                <div class="edit-option-show text-right" style="margin: 25px -15px 0 0;" wfd-id="222">
+                                    <!-- edit-and-delete starts -->
+                                    <a class="pointer" [attr.title]="'history'|translate" (click)="openHistoryModal()"
+                                        *ngIf="AuthStore.getActivityPermission(900,'EA_FINDING_CORRECTIVE_ACTION_UPDATE_LIST')">
+                                        <i class="fas fa-history"></i></a>
+
+                                    <a class="pointer" [attr.title]="'update'|translate"
+                                        (click)="updateCorrectiveAction()"
+                                        *ngIf="AuditCorrectiveActionStore?.correctiveActionDetails?.ms_audit_finding_corrective_action_status?.type!='closed' && AuthStore.getActivityPermission(900,'CREATE_EA_FINDING_CORRECTIVE_ACTION_UPDATE') && (isUser() || AuthStore.isRoleChecking('super-admin'))">
+                                        <i class="fas fa-pen-alt"></i></a>
+
+                                    <a (click)="editCorrectiveACtion()"
+                                        *ngIf="AuditCorrectiveActionStore?.correctiveActionDetails?.ms_audit_finding_corrective_action_status?.type!='closed' && AuthStore.getActivityPermission(900,'UPDATE_EA_FINDING_CORRECTIVE_ACTION')
+                                         && (checkIsAuditee() || AuthStore.isRoleChecking('super-admin'))"
+                                        [attr.title]="'edit'|translate"><i class="fas fa-pen"></i></a>
+
+                                    <a (click)="delete(AuditCorrectiveActionStore?.correctiveActionDetails.id)"
+                                        *ngIf="AuditCorrectiveActionStore?.correctiveActionDetails?.ms_audit_finding_corrective_action_status?.type!='closed' && AuthStore.getActivityPermission(900,'DELETE_EA_FINDING_CORRECTIVE_ACTION') && (checkIsAuditee() || AuthStore.isRoleChecking('super-admin'))"
+                                        [attr.title]="'delete'|translate"><i class="fas fa-trash"></i></a>
+                                </div>
+                                <div class="issue-top-sec">
+                                    <div class="clearfix">
+                                        <h5 class="d-inline-block cmn-head-style label-tag-style"><span
+                                                class="issue-smoal-head-text">#
+                                                {{AuditCorrectiveActionStore.individualLoaded &&
+                                                AuditCorrectiveActionStore?.correctiveActionDetails?.reference_code}}</span>
+                                            {{AuditCorrectiveActionStore.individualLoaded &&
+                                            AuditCorrectiveActionStore?.correctiveActionDetails?.title}}
+                                            <span
+                                                [ngClass]="'draft-tag label-tag-style-tag draft-tag-'+ labelDot(AuditCorrectiveActionStore.correctiveActionDetails?.ms_audit_finding_corrective_action_status?.label)+' label-left-arow-tag'"
+                                                style="line-height: 16px; vertical-align: middle; margin-top: -4px; display: inline-block;">
+                                                {{AuditCorrectiveActionStore.correctiveActionDetails?.ms_audit_finding_corrective_action_status?.language[0]?.pivot?.title}}</span>
+                                        </h5>
+                                    </div>
+                                    <div class="clearfix">
+                                        <p class="label-tag-style mb-2"><i
+                                                class="fas fa-calendar-alt date-pics-two"></i>
+                                            {{AuditCorrectiveActionStore.individualLoaded &&
+                                            AuditCorrectiveActionStore?.correctiveActionDetails?.start_date |
+                                            date:
+                                            OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                            To
+                                            {{AuditCorrectiveActionStore.individualLoaded &&
+                                            AuditCorrectiveActionStore?.correctiveActionDetails?.target_date |
+                                            date:
+                                            OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                            <span
+                                                *ngIf="AuditCorrectiveActionStore.correctiveActionDetails?.ms_audit_finding_corrective_action_status?.type!='resolved' && AuditCorrectiveActionStore.correctiveActionDetails?.ms_audit_finding_corrective_action_status?.type!='closed'"
+                                                class="blinking">( {{getDaysRemaining()}}
+                                                {{'days remaining' | translate}} )
+                                            </span>
+                                            <!-- <span class="ml-2 mr-2"
+                                            *ngIf="FindingCorrectiveActionStore.correctiveActionDetails?.ms_audit_finding_corrective_action_status?.type!='resolved'&&FindingCorrectiveActionStore.correctiveActionDetails?.ms_audit_finding_corrective_action_status?.type!='closed'">|</span> -->
+                                            <span class="small-text pt-1 pl-2"
+                                                *ngIf="AuditCorrectiveActionStore.correctiveActionDetails?.ms_audit_finding_corrective_action_status?.type!='resolved' && AuditCorrectiveActionStore.correctiveActionDetails?.ms_audit_finding_corrective_action_status?.type!='closed'">{{AuditCorrectiveActionStore.correctiveActionDetails?.ms_audit_finding_corrective_action_status_updates?.slice(-1)[0]?.percentage?AuditCorrectiveActionStore.correctiveActionDetails?.ms_audit_finding_corrective_action_status_updates?.slice(-1)[0]?.percentage:0}}
+                                                %
+                                                {{'completed' | translate}}
+                                            </span>
+                                        </p>
+                                    </div>
+                                    <p style="white-space: pre-line;"
+                                        *ngIf="AuditCorrectiveActionStore?.correctiveActionDetails?.description !=null">
+                                        {{AuditCorrectiveActionStore.individualLoaded &&
+                                        AuditCorrectiveActionStore?.correctiveActionDetails?.description}}</p>
+                                </div>
+                                <div *ngIf="AuditCorrectiveActionStore.individualLoaded"
+                                    class="label-and-user-pic">
+                                    <h6>{{'responsible_user' | translate}}</h6>
+                                    <app-user-popup-box
+                                        [source]="assignUserValues(AuditCorrectiveActionStore.correctiveActionDetails?.responsible_user)">
+                                    </app-user-popup-box>
+                                    <!-- <app-user-info [source]="responsibleUserObject"></app-user-info> -->
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <h6>{{'finding'|translate}}</h6>
+                                        <p>
+                                            {{AuditCorrectiveActionStore?.correctiveActionDetails?.ms_audit_findings?.title?AuditCorrectiveActionStore?.correctiveActionDetails?.ms_audit_findings?.title:AppStore.noContentText}}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="row">
+
+
+
+
+
+                                    <div class="col-sm-12">
+                                        <h6>{{'support_files' | translate}}</h6>
+                                        <p
+                                            *ngIf="AuditCorrectiveActionStore?.correctiveActionDetails?.documents?.length == 0">
+                                            {{AppStore.noContentText}}</p>
+                                        <div class="thumb-pics-bg thumb-pics-col-3 thumb-pics-fix-text clearfix"
+                                            style="padding-top: 0">
+                                            <div class="thumb-pics pointer"
+                                                *ngFor="let docs of AuditCorrectiveActionStore?.correctiveActionDetails?.documents;let i = index">
+
+                                                <!-- System Files Starts Here -->
+                                                <div class="upload-pics edit-option" *ngIf="!docs.document_id">
+                                                    <div class="browse-form-pic"
+                                                        [ngStyle]="{'background': 'url('+createImageUrl('corrective-action',docs.token)+') no-repeat'}"
+                                                        (click)="viewAttachments('corrective-action',docs)">
+                                                    </div>
+                                                    <div class="browse-form-name clearfix">
+                                                        <div class="float-left">
+                                                            <h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                                            </h6>
+                                                            <span>{{docs.size/1048576 |
+                                                                number:'0.2-2'}}MB</span><span
+                                                                class="text-blue bold pl-2">System</span>
+                                                        </div>
+                                                        <div class="browse-logo">
+                                                            <img *ngIf="checkExtension(docs.ext,'image') != -1"
+                                                                class="folder-picher"
+                                                                src="/assets/images/jpg-icone.png">
+                                                            <img *ngIf="checkExtension(docs.ext,'doc') != -1"
+                                                                class="folder-picher"
+                                                                src="/assets/images/word-icone.png">
+                                                            <img *ngIf="checkExtension(docs.ext,'pdf') != -1"
+                                                                class="folder-picher"
+                                                                src="/assets/images/pdf-icone.png">
+                                                            <img *ngIf="checkExtension(docs.ext,'excel') != -1"
+                                                                class="folder-picher"
+                                                                src="/assets/images/excel-icone.png">
+                                                            <img *ngIf="checkExtension(docs.ext,'video') != -1"
+                                                                class="folder-picher" src="/assets/images/md-video.png">
+                                                            <img *ngIf="checkExtension(docs.ext,'audio') != -1"
+                                                                class="folder-picher" src="/assets/images/md-audio.png">
+                                                            <img *ngIf="checkExtension(docs.ext,'ppt') != -1"
+                                                                class="folder-picher" src="/assets/images/md-ppt.png">
+                                                        </div>
+                                                    </div>
+                                                    <div class="edit-option-show-inner" style="margin: 0 -9px 0 0;">
+                                                        <a><i class="fas fa-download"
+                                                                (click)="downloadDocument('corrective-action',docs)"></i></a>
+                                                    </div>
+                                                </div>
+
+                                                <!-- System Files Starts Here -->
+                                                <!-- KnowledgeHub Files Starts Here -->
+                                                <div class="upload-pics edit-option" *ngIf="docs.document_id">
+
+                                                    <div *ngFor="let mainDoc of docs.kh_document.versions">
+                                                        <div *ngIf="mainDoc.is_latest">
+                                                            <div class="browse-form-pic"
+                                                                (click)="viewAttachments('document-version',docs,mainDoc)"
+                                                                [ngStyle]="{'background': 'url('+createImageUrl('document-version',mainDoc?.token)+') no-repeat'}">
+                                                            </div>
+                                                            <div class="browse-form-name clearfix">
+                                                                <div class="float-left">
+                                                                    <h6>{{mainDoc.title}}.{{mainDoc.ext}}
+                                                                    </h6>
+                                                                    <span>{{mainDoc.size/1048576 |
+                                                                        number:'0.2-2'}}MB</span><span
+                                                                        class="text-blue bold pl-2">Knowledge
+                                                                        Hub</span>
+                                                                </div>
+                                                                <div class="browse-logo">
+                                                                    <img *ngIf="checkExtension(mainDoc.ext,'image') != -1"
+                                                                        class="folder-picher"
+                                                                        src="/assets/images/jpg-icone.png">
+                                                                    <img *ngIf="checkExtension(mainDoc.ext,'doc') != -1"
+                                                                        class="folder-picher"
+                                                                        src="/assets/images/word-icone.png">
+                                                                    <img *ngIf="checkExtension(mainDoc.ext,'pdf') != -1"
+                                                                        class="folder-picher"
+                                                                        src="/assets/images/pdf-icone.png">
+                                                                    <img *ngIf="checkExtension(mainDoc.ext,'excel') != -1"
+                                                                        class="folder-picher"
+                                                                        src="/assets/images/excel-icone.png">
+                                                                    <img *ngIf="checkExtension(mainDoc.ext,'video') != -1"
+                                                                        class="folder-picher"
+                                                                        src="/assets/images/md-video.png">
+                                                                    <img *ngIf="checkExtension(mainDoc.ext,'audio') != -1"
+                                                                        class="folder-picher"
+                                                                        src="/assets/images/md-audio.png">
+                                                                    <img *ngIf="checkExtension(mainDoc.ext,'ppt') != -1"
+                                                                        class="folder-picher"
+                                                                        src="/assets/images/md-ppt.png">
+                                                                </div>
+                                                            </div>
+                                                            <div class="edit-option-show-inner"
+                                                                style="margin: 0 -9px 0 0;">
+                                                                <a><i class="fas fa-download"
+                                                                        (click)="downloadDocument('document-version',docs,mainDoc)"></i></a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!-- KnowledgeHub Files Ends Here -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="clearfix"></div>
+                              
+                                <!-- <div class="row">
+                                    <div class="col-md-12">
+                                        <h6>{{'finding_description'|translate}}</h6>
+                                        <p class="pt-1"
+                                            [innerHTML]="AuditCorrectiveActionStore?.correctiveActionDetails?.findings?.description?AuditCorrectiveActionStore?.correctiveActionDetails?.findings?.description:AppStore.noContentText">
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <h6>{{'risk_rating' | translate}}</h6>
+                                        <p
+                                            [attr.class]="'dot-div-new mb-0 dot-'+AuditCorrectiveActionStore?.correctiveActionDetails?.findings?.risk_rating?.label">
+                                            {{AuditCorrectiveActionStore?.correctiveActionDetails?.findings?.risk_rating?.language[0]?.pivot?.title}}
+                                        </p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h6>{{'finding_category' | translate}}</h6>
+                                        <p>{{AuditCorrectiveActionStore?.correctiveActionDetails?.findings?.finding_category?.title}}
+                                        </p>
+                                    </div>
+                                   
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-4 col-sm-6"
+                                        [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_department ? 'none':'block'}">
+                                        <h6>{{'departments'|translate}}</h6>
+                                        <p>{{AuditCorrectiveActionStore.correctiveActionDetails?.findings?.departments.length>0?getArrayFormatedString('title',AuditCorrectiveActionStore.correctiveActionDetails?.findings?.departments):AppStore.noContentText}}
+                                        </p>
+                                    </div>
+                                </div> -->
+                            </div>
+                            <div class="row">
+                                <div class="col-xl-12">
+                                    <hr class="mb-2">
+                                    <app-user-popup-box
+                                        [source]=" getCreatedByPopupDetails(AuditCorrectiveActionStore.correctiveActionDetails.created_by, AuditCorrectiveActionStore.correctiveActionDetails.created_at)">
+                                    </app-user-popup-box>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-sm-12">
+                        <div class="bg-white widg-padding-cmn-small cmn-bdr mb-3">
+                            <h6>{{'corrective_action'|translate}} % {{'completed' | translate}}</h6>
+                            <hr class="mt-0 mb-3">
+                            <div
+                                [ngClass]="AuditCorrectiveActionStore?.correctiveActionDetails?.ms_audit_finding_corrective_action_status_updates?.slice(-1)[0]?.percentage > 50 ?'progress-circle progress-circle-big-one over50 p'+AuditCorrectiveActionStore?.correctiveActionDetails?.ms_audit_finding_corrective_action_status_updates?.slice(-1)[0]?.percentage:'progress-circle progress-circle-big-one p'+AuditCorrectiveActionStore?.correctiveActionDetails?.ms_audit_finding_corrective_action_status_updates?.slice(-1)[0]?.percentage">
+                                <span>{{AuditCorrectiveActionStore?.correctiveActionDetails?.ms_audit_finding_corrective_action_status_updates?.slice(-1)[0]?.percentage>0?AuditCorrectiveActionStore?.correctiveActionDetails?.ms_audit_finding_corrective_action_status_updates?.slice(-1)[0]?.percentage:0}}%</span>
+                                <div class="left-half-clipper">
+                                    <div class="first50-bar"></div>
+                                    <div class="value-bar"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white widg-padding-cmn-small cmn-bdr mb-3">
+                            <h6>
+                                {{'days_remaining' | translate}}</h6>
+                            <hr class="mt-0 mb-3">
+                            <div class="clearfix">
+                                <div class="mb-3">
+                                    <p class="dot-div-new font-normal mb-0 dot-green d-block">
+                                        {{'remaining_days'|translate}}
+                                        ({{getDaysRemaining()}}{{' days'}})
+                                    </p>
+                                    <p class="dot-div-new font-normal mb-0 dot-red d-block">{{'total_days'|translate}}
+                                        ({{getTotaldays()}}{{' days'}})
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="vertical-progress-v2">
+                                <div class="progress-bg-sec">
+                                    <div class="progress-inner-color"
+                                        [style.height.%]="(getDaysRemaining()/getTotaldays())*100">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- common-tab-md end -->
+<!-- <div *ngIf="AuditCorrectiveActionStore.allItems.length == 0"
+        class="no-policy-demo-text bg-white d-flex align-items-center w-100 mt-0" style="height: 200px">
+        <div class="no-policy-demo">
+            <div class="no-file-icon">
+                <i class="far fa-file"></i>
+            </div>
+            <h6 class="bold mb-0">No Corrective Actions Added</h6>
+        </div>
+    </div> -->
+<ng-container>
+    <div *ngIf="!AuditCorrectiveActionStore?.loaded">
+        <app-finding-details-corrective-action-loader></app-finding-details-corrective-action-loader>
+    </div>
+</ng-container>
+<app-no-data
+    *ngIf="AuditCorrectiveActionStore?.loaded && AuditCorrectiveActionStore.allItems.length == 0"
+    [height]="false" [border]="false">
+</app-no-data>
+
+<!-- calling add Corrective Action modal -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #AddCAformModal>
+    <app-add-corrective-action-modal-ms-audit *ngIf="correctiveActionObject.type" [source]="correctiveActionObject">
+    </app-add-corrective-action-modal-ms-audit>
+</div>
+
+<!-- ---------File Preview-------------- -->
+<div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup" data-keyboard="false"
+    data-backdrop="static" #filePreviewModal *mobxAutorun>
+    <button type="button" class="close" (click)="closePreviewModal($event)"><i class="lni-close"></i><span>{{'esc' |
+            translate}}</span></button>
+    <app-preview *ngIf="previewObject" [source]="previewObject" (close)="closePreviewModal($event)"></app-preview>
+</div>
+
+<!-- ---------update----------- -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #UpdateCAformModal>
+    <app-update-corrective-action-modal-ms-audit *ngIf="caUpdateObject.type" [source]="caUpdateObject">
+    </app-update-corrective-action-modal-ms-audit>
+</div>
+
+<!-- ---------history--------- -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #historyPopup>
+    <app-history-corrective-action-modal-ms-audit></app-history-corrective-action-modal-ms-audit>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+
+
+<div class="modal modal-style-1 email-popup-new fade" data-backdrop="static" data-keyboard="false"
+   id="email-notification-popup" #mailConfirmationPopup>
+   <app-mail-send-popup [source]="mailConfirmationData"></app-mail-send-popup>
+</div>

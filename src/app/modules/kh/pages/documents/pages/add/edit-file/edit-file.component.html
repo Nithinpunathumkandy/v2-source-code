@@ -1,0 +1,715 @@
+<nav class="edit-bar" data-toggle="affix" #navigationBar>
+    <app-breadcrumb-menu></app-breadcrumb-menu>
+    <app-sub-menu></app-sub-menu>
+ </nav>
+ <main class="mt-3 organization-page tab-btns-five" *mobxAutorun>
+    <div class="container-fluid">
+       <div class="organization-form-page">
+          <!-- [ngClass]="selectedAccessType==1?'organization-multi-stup-form':'organization-multi-stup-form issue-multi-stup-form'" -->
+          <form [formGroup]='form' class="organization-multi-stup-form">
+       
+             <!-- Circles which indicates the steps of the form: -->
+             <div id="header-sroll-form" class="form-indicates-sec clearfix" #formSteps>
+                <span class="step pointer" (click)="changeStep(0)"><span class="multi-form-nbr">1</span>{{'info' | translate}}</span>
+                <span class="step pointer" (click)="changeStep(1)" ><span class="multi-form-nbr">2</span>{{'classification' | translate}}</span>
+                <span class="step pointer" [hidden] = "KHSettingStore?.khSettingsItems?.is_document_workflow ? false : true" (click)="changeStep(2)"><span class="multi-form-nbr">3</span>{{'workflow' | translate}}</span>
+                <span class="step pointer" (click)="changeStep(3)" ><span class="multi-form-nbr">{{KHSettingStore?.khSettingsItems?.is_document_workflow?'4':'3'}}</span>{{'preview_save' | translate}}</span>
+             </div>
+             <!-- !Intial File Upload Tab Starts here -->
+             <div class="tab">
+                <!-- tab start -->
+                <div class="row">
+                   <div class="col-sm-6">
+                      <div class="form-group">
+                         <label>{{'document_type'|translate}}<sup>*</sup></label><!---->
+                         <!-- <label>{{'document_type'|translate}}</label> -->
+                         <div class="clearfix d-flex">
+                            <div class="multiple-plain-ngselect w-100">
+                               <ng-select [items]="DocumentTypeMasterStore.allItems"
+                               bindLabel="title"
+                               [placeholder]="'kh_select_doc_type' | translate " 
+                               [multiple]="false"
+                               formControlName = "document_type_id"
+                               (search) = "searchDocTypes($event)"
+                               (change)="switchEvent($event)"
+                               (clear) = "getDocumentTypes()"
+                               (open) = "getDocumentTypes()">
+                            </ng-select>
+                            </div>
+                            <button *ngIf="AuthStore.getActivityPermission(2400,'CREATE_USER_DOCUMENT_TYPE')" class="btn multi-add-user ml-2" style="width: 42px;" (click)="addDocumentType()"><i
+                                  class="fas fa-plus"></i></button>
+                         </div>
+                         <p class="form-error pt-1" *ngIf="showWorkflowMessage && KHSettingStore?.khSettingsItems?.is_document_workflow">{{'kh_no_workflow' | translate}}</p>
+                      </div>                     
+                   </div>
+                   <div class="col-sm-6">
+                      <div class="form-group">
+                         <label>{{'document_name'|translate}}<sup>*</sup></label>
+                         <!-- <label for="name">{{'document_name' | translate}}</label> -->
+                         <div class="plain-select input-add-report">
+                            <input type="text" class="form-control" formControlName="title"
+                               [placeholder]="'kh_doc_name'| translate ">
+                            <p class="form-error pt-1"
+                               *ngIf="form.value.title && form.value.title.length>500 && !documentFormErrors">
+                               {{'maximum_500_characters'|translate}}</p>
+                            <p class="form-error pt-1" *ngIf="documentFormErrors&&documentFormErrors.title">
+                               {{documentFormErrors.title}}</p>
+                         </div>
+                      </div>
+                   </div>
+                </div>
+
+ 
+                <div class="row">
+                   <div class="col-sm-6">
+                      <div class="form-group add-kpi-textarea">
+                         <span class="text-grey"
+                            style="float: right;">{{form?.value.description != null ? form?.value.description?.length : 0}}
+                            {{'characters' | translate}}</span>
+                         <label for="name">{{'description' | translate}}</label>
+                         <textarea class="form-control" rows="11" formControlName="description"
+                            [attr.placeholder]="'document_description' | translate"></textarea>
+                      </div>
+                   </div>
+                   <div class="col-sm-6">
+                      <div class="form-group add-kpi-textarea">
+                         <span class="text-grey"
+                            style="float: right;">{{form?.value.purpose != null ? form?.value.purpose?.length : 0}}
+                            {{'characters' | translate}}</span>
+                         <label for="name">{{'purpose' | translate}}</label>
+                         <textarea class="form-control" rows="11" formControlName="purpose"
+                            [attr.placeholder]="'purpose_description' | translate"></textarea>
+                      </div>
+                   </div>
+ 
+                </div>
+
+                <!-- Document Owner -->
+                <div class="row">
+
+                
+                <div class="col-sm-6">
+                  <div class="form-group">
+                      <label for="name">{{'document_owner' | translate}}<sup>*</sup></label>
+                      <div class="clearfix">
+                        <div class="multiple-plain-ngselect">
+                            <ng-select [items]="UsersStore.usersList" bindLabel="email" [multiple]="false" [closeOnSelect]="true" 
+                                [placeholder]="'select_kh_review_user'|translate" formControlName="owner_id"
+                                (clear)="getDocumentOwners()" (search)="searchDocumentOwner($event)" (open)="getDocumentOwners()">
+                                <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                    <img class="ng-select-user-display" *ngIf="item.image_token" height="15"
+                                        width="15"
+                                        [attr.src]="createImageUrl(item.image_token,'user-profile-picture')" />
+                                    <img class="ng-select-user-display" *ngIf="!item.image_token"
+                                        height="15" width="15" [attr.src]="getDefaultImage('user-logo')" />
+                                    <b style="padding-left: 3px;">{{getStringsFormatted([item?.first_name?item.first_name:item.name,item.last_name],50,' ') | titlecase}}</b><span aria-hidden="true"
+                                        (click)="clear(item)" style="border:none;"
+                                        class="ng-value-icon left">×</span>
+                                </ng-template>
+                                <ng-template ng-option-tmp let-item="item" let-index="index">
+                                    <div class="user-post-department-pic">
+                                        <img class="ng-select-user-display" *ngIf="item.image_token"
+                                            height="25" width="25"
+                                            [attr.src]="createImageUrl(item.image_token,'user-profile-picture')" />
+                                        <img class="ng-select-user-display" *ngIf="!item.image_token"
+                                            height="25" width="25"
+                                            [attr.src]="getDefaultImage('user-logo')" />
+                                    </div>
+                                    <div class="user-post-department-div">
+                                        <b>{{getStringsFormatted([item?.first_name?item.first_name:item.name,item.last_name],50,' ') | titlecase}}</b>
+                                        <p class="user-post-department-multiple">
+                                           {{getStringsFormatted([item.designation_title,' '+item.department],50,',')}}</p>
+                                    </div>
+                                </ng-template>
+                            </ng-select>
+                        </div>
+                    </div>
+                      <p class="form-error pt-1" *ngIf="documentFormErrors&&documentFormErrors.owner_id">
+                          {{documentFormErrors.owner_id}}</p>
+                  </div>
+                </div>
+
+                <!-- Document Mapping -->
+
+                  <div class="col-sm-6">
+                     <div class="form-group">
+                         <a class="text-light-blue" data-toggle="modal" (click)="organisationChanges()" style="border-bottom: 1px solid;">{{'change_organization_unit' | translate}}</a>
+                      </div>
+                      
+
+                <!-- Document Mapping -->
+
+
+               </div>
+               </div>
+                <!-- Docuemnt owner Ends -->
+
+         
+                <div class="row">
+                   <!-- <div class="col-sm-6">
+                      <div class="form-group">
+                         <label for="name">{{'version' | translate}}</label>
+                         <div class="plain-select input-add-report">
+                            <input type="text" class="form-control" formControlName="version"
+                               placeholder="Enter Version ">
+                         </div>
+                      </div>
+                   </div> -->
+
+                  <!-- <div class="col-lg-6 col-sm-12">
+ 
+                     <div class="form-group">
+                        <label>{{'ms_type' | translate}}</label>
+                        <div class="clearfix">
+                           <div class="multiple-plain-ngselect">
+                              <ng-select 
+                              [placeholder]="'kh_select_ms_types'| translate" 
+                              [multiple]="false" 
+                              [items]="MsTypeStore.msTypeDetails"
+                              formControlName="ms_type_organization_id" 
+                              (clear)="getMsTypes()"
+                              (open)="getMsTypes()"
+                              (search)="searchMsType($event)"
+                              bindLabel="ms_type_title">
+                             
+            
+                              </ng-select>
+                            </div>
+                        </div>
+                     </div>
+
+                  </div> -->
+                  <div class="col-lg-6 col-sm-12">
+ 
+                     <div class="form-group">
+                        <label>{{'related_ms_types' | translate}}</label>
+                        <div class="clearfix">
+                           <div class="multiple-plain-ngselect">
+                              <ng-select [placeholder]="'kh_select_ms_types'| translate " multiple="true" formControlName="ms_type_organization_ids" [closeOnSelect]="false"
+                                 (clear)="getMsTypes()"
+                                (open)="getMsTypes()"
+                                (search)="searchMsType($event)">
+                                <ng-option  [value]="mstypes.id" *ngFor="let mstypes of MsTypeStore.msTypeDetails">
+                                    <label class="mb-0">{{mstypes.ms_type_title.length > 80 ? mstypes.ms_type_title.substring(0,80)+' ...' : mstypes.ms_type_title }} <span style="color: #7c7a7a;">V {{mstypes.ms_type_version_title}}</span></label>
+                                   </ng-option>
+            
+                              </ng-select>
+                            </div>
+                        </div>
+                     </div>
+
+                  </div>
+                </div>
+
+ 
+             </div>
+              <!-- !Intial File Upload Tab Ends here -->
+              <!-- !Category Classification Table Starts here -->
+             <div class="tab">
+                <div class="row">
+                   <div class="col-lg-6 col-sm-12">
+ 
+                      <div class="form-group">
+                         <label>{{'categories' | translate}}</label>
+                         <div class="clearfix d-flex">
+                            <div class="multiple-plain-ngselect w-100">
+                               <ng-select [items]="DocumentCategoryMasterStore.allItems"
+                               bindLabel="title"
+                               [placeholder]="'kh_select_categories'| translate"
+                               [multiple]="true"
+                               formControlName = "document_category_ids"
+                               (clear) = "getDocumentCategories()"
+                               [closeOnSelect]="false"
+                               (search) = "searchDocumentSubCategories($event)"
+                               (open) = "getDocumentCategories()">
+                            </ng-select>
+                            </div>
+                            <button *ngIf="AuthStore.getActivityPermission(2400,'CREATE_DOCUMENT_CATEGORY')" class="btn multi-add-user ml-2" style="width: 42px;" (click)="addDocumentCategory()"><i
+                                  class="fas fa-plus"></i></button>
+                         </div>
+                      </div>
+ 
+                   </div>
+                   <div class="col-lg-6 col-sm-12">
+                      <div class="form-group">
+                         <label>{{'sub_categories' | translate}}</label>
+                         <div class="clearfix d-flex">
+                            <div class="multiple-plain-ngselect w-100">
+                               <ng-select [items]="DocumentSubCategoryMasterStore.allItems"
+                               bindLabel="title"
+                               [placeholder]="'kh_select_sub_categories'| translate"
+                               [multiple]="true"
+                               formControlName = "document_sub_category_ids"
+                               [closeOnSelect]="false"
+                               (search) = "searchDocumentCategories($event)"
+                               (clear) = "getDocumentSubCategories()"
+                               (search) = "searchDocumentSubSubCategories($event)"
+                               (open) = "getDocumentSubCategories()">
+                            </ng-select>
+                            </div>
+                            <button *ngIf="AuthStore.getActivityPermission(2400,'CREATE_DOCUMENT_SUB_CATEGORY')" [disabled]="form?.value?.document_category_ids==null || form?.value?.document_category_ids?.length==0" class="btn multi-add-user ml-2" style="width: 42px;" (click)="addDocumentSubCategory()"><i
+                                  class="fas fa-plus"></i></button>
+                         </div>
+                      </div>
+ 
+                   </div>
+                   <div class="col-lg-6 col-sm-12">
+ 
+                      <div class="form-group">
+                         <!-- <label>Further Sub Category<sup>*</sup></label> -->
+                         <label>{{'further_sub_categories' | translate}}</label>
+                         <div class="clearfix d-flex">
+                            <div class="multiple-plain-ngselect w-100">
+                               <ng-select [items]="DocumentSubSubCategoryMasterStore.allItems"
+                               bindLabel="title"
+                               [placeholder]="'kh_select_sub_sub_categories'| translate"
+                               [multiple]="true"
+                               formControlName = "document_sub_sub_category_ids"
+                               [closeOnSelect]="false"
+                               (clear) = "getDocumentSubSubCategoires()"
+                               (open) = "getDocumentSubSubCategoires()">
+                            </ng-select>
+                            </div>
+                            <button *ngIf="AuthStore.getActivityPermission(2400,'CREATE_DOCUMENT_SUB_SUB_CATEGORY')" [disabled]="form?.value?.document_sub_category_ids==null || form?.value?.document_sub_category_ids?.length==0" class="btn multi-add-user ml-2" style="width:42px" (click)="addDocumentSubSubCategory()"><i
+                                  class="fas fa-plus"></i></button>
+                         </div>
+                      </div>
+ 
+                   </div>
+                   <div class="col-lg-6 col-sm-12">
+ 
+                      <div class="form-group">
+                         <label>{{'industries' | translate}}</label>
+                         <div class="clearfix">
+                            <div class="multiple-plain-ngselect">
+                               <ng-select [items]="IndustryMasterStore.allItems"
+                               bindLabel="title"
+                               [placeholder]="'kh_select_industries'| translate"
+                               multiple="true"
+                               [closeOnSelect]="false"
+                               formControlName = "industry_ids"
+                               (search) = "searchIndustry($event)"
+                               (clear) = "getIndustries()"
+                               (open) = "getIndustries()">
+                            </ng-select>
+                            </div>
+                         </div>
+                      </div>
+ 
+                   </div>
+                </div>
+ 
+                <div class="user-details-page mt-2">
+                   <div class="right-block p-0">
+                      <h5 class="mt-0 mb-3"> <span> {{'geo_area' | translate}}</span></h5>
+                   </div>
+                </div>
+                <div class="row">
+                   <div class="col-lg-6 col-sm-12">
+ 
+                      <div class="form-group">
+                         <label>{{'regions' | translate}}</label>
+                         <div class="clearfix">
+                            <div class="multiple-plain-ngselect">
+                               <ng-select [items]="RegionMasterStore.allItems"
+                               bindLabel="title"
+                               [placeholder]="'kh_select_regions'| translate"
+                               multiple="true"
+                               [closeOnSelect]="false"
+                               formControlName = "region_ids"
+                               (search) = "searchRegion($event)"
+                               (clear) = "getRegions()"
+                               (open) = "getRegions()">
+                            </ng-select>
+                            </div>
+                         </div>
+                      </div>
+ 
+                   </div>
+                   <div class="col-lg-6 col-sm-12">
+ 
+                      <div class="form-group">
+                         <label>{{'countries' | translate}}</label>
+                         <div class="clearfix">
+                            <div class="multiple-plain-ngselect">
+                               <ng-select [items]="CountryMasterStore.allItems"
+                               bindLabel="title"
+                               [placeholder]="'kh_select_countries'| translate"
+                               multiple="true"
+                               [closeOnSelect]="false"
+                               formControlName = "country_ids"
+                               (search) = "searchCountry($event)"
+                               (clear) = "getCountries()"
+                               (open) = "getCountries()">
+                            </ng-select>
+                            </div>
+                         </div>
+                      </div>
+ 
+                   </div>
+                </div>
+ 
+                <div class="user-details-page mt-2">
+                   <div class="right-block p-0">
+                      <h5 class="mt-0 mb-3"> <span> {{'other' | translate}} </span> </h5>
+                   </div>
+                </div>
+                <div class="row">
+                   <div class="col-lg-6 col-sm-12">
+ 
+                      <div class="form-group">
+                         <label>{{'families' | translate}}</label>
+                         <div class="clearfix d-flex">
+                            <div class="multiple-plain-ngselect w-100">
+                               <ng-select [items]="DocumentFamilyMasterStore.allItems"
+                               bindLabel="title"
+                               [placeholder]="'kh_select_families'| translate"
+                               multiple="true"
+                               [closeOnSelect]="false"
+                               formControlName = "document_family_ids"
+                               (search) = "searchDocumentFamily($event)"
+                               (clear) = "getDocumentFamilies()"
+                               (open) = "getDocumentFamilies()">
+                            </ng-select>
+                            </div>
+                            <button *ngIf="AuthStore.getActivityPermission(2400,'CREATE_DOCUMENT_FAMILY')" class="btn multi-add-user ml-2" style="width: 42px;" (click)="addDocumentFamily()"><i
+                                  class="fas fa-plus"></i></button>
+                         </div>
+                      </div>
+ 
+                   </div>
+                   
+                </div>
+                <div class="row">
+                   <div class="col-sm-12">
+ 
+                      <div class="form-group">
+                         <label>{{'tags' | translate}}</label>
+                         <div class="clearfix d-flex">
+                            <div class="multiple-plain-ngselect w-100">
+                               <ng-select [items]="DocumentTagMasterStore.allItems"
+                               bindLabel="title"
+                               [placeholder]="'kh_select_tags'| translate"
+                               multiple="true"
+                               [closeOnSelect]="false"
+                               formControlName = "tag_ids"
+                               (search) = "searchDocumentTag($event)"
+                               (clear) = "getDocumentTags()"
+                               (open) = "getDocumentTags()">
+                            </ng-select>
+                       
+                            </div>
+                            <button class="btn multi-add-user ml-2" style="width: 40px;" (click)="addDocumentTag()"><i
+                                  class="fas fa-plus"></i></button>
+                         </div>
+                      </div>
+ 
+                   </div>
+                </div>
+ 
+             </div>
+              <!-- !Category Classification Table Ends here -->
+             <!-- !Workflow Tab Starts here -->
+            <div class="tab">
+            
+               <ng-container *ngIf="KHSettingStore?.khSettingsItems?.is_document_workflow">            
+               <!-- if the access type is public -->
+               <ng-container>
+            
+                  <h5 class="pt-1" style="color: red;">{{workflowError}}</h5>
+            
+                  <main class="mt-3">
+            
+                     <ng-container *ngIf="WorkFlowStore?.workFlowDetails?.workflow_items.length > 0">
+            
+            
+                        <div class="widget bg-white">
+                           <div class="widget-body-light widg-padding-cmn" *mobxAutorun>
+                              <div class="row">
+                                 <div class="col-sm-12 col-lg-12 pt-0 pb-0">
+            
+                                    <div class="workflow-tab">
+                                       <div class="work-flow-review-approval-main"
+                                          *ngIf="WorkFlowStore.workFlowDetails && WorkFlowStore.workFlowDetails.workflow_items">
+                                          <div *ngFor="let item of WorkFlowStore.workFlowDetails.workflow_items;let i=index"
+                                             [ngClass]="assignClass(item)">
+                                             <span *ngIf="item.type == 'user'" class="label-work-flow-audit">{{'user' |
+                                                translate}}</span>
+                                             <span *ngIf="item.type == 'designation'" class="label-work-flow-audit">{{'designation'
+                                                | translate}}</span>
+                                             <span *ngIf="item.type == 'team'" class="label-work-flow-audit">{{'team' |
+                                                translate}}</span>
+                                             <span *ngIf="item.type == 'subsidiary-head'"
+                                                class="label-work-flow-audit">{{'subsidiary_head' | translate}}</span>
+                                             <span *ngIf="item.type == 'division-head'"
+                                                class="label-work-flow-audit">{{'division_head' | translate}}</span>
+                                             <span *ngIf="item.type == 'department-head'"
+                                                class="label-work-flow-audit">{{'department_head' | translate}}</span>
+                                             <span *ngIf="item.type == 'role'" class="label-work-flow-audit">{{'system_role' |
+                                                translate}}</span>
+                                             <div class="work-flow-user-box d-flex align-items-center pt-1 pb-1"
+                                                *ngIf="item.type == 'user'">
+                                                <div class="work-flow-pic">
+                                                   <app-user-popup-box [showName]="false"
+                                                      [source]=" getCreatedByPopupDetails(item.user,null,'user')">
+                                                   </app-user-popup-box>
+                                                </div>
+                                                <div class="pl-3">
+                                                   <h5>{{item.user?.first_name}} {{item.user?.last_name}}</h5>
+                                                   <p>{{item.user?.designation}}</p>
+                                                </div>
+                                             </div>
+                                             <div class="work-flow-user-box d-flex align-items-center pt-1 pb-1"
+                                                *ngIf="item.type == 'designation'">
+                                                <div class="pl-3">
+                                                   <h5>{{item.designation?.title}}</h5>
+                                                   <p>{{item.department?.title}}</p>
+                                                </div>
+                                             </div>
+                                             <div class="work-flow-user-box d-flex align-items-center pt-1 pb-1"
+                                                *ngIf="item.type == 'subsidiary-head'">
+                                                <div class="pl-3">
+                                                   <h5>{{item.organization?.title}}</h5>
+                                                </div>
+                                             </div>
+            
+                                             <div class="work-flow-user-box d-flex align-items-center pt-1 pb-1"
+                                                *ngIf="item.type == 'division-head'">
+                                                <div class="pl-3">
+                                                   <h5>{{item.division?.title}}</h5>
+                                                </div>
+                                             </div>
+                                             <div class="work-flow-user-box d-flex align-items-center pt-1 pb-1"
+                                                *ngIf="item.type == 'department-head'">
+                                                <div class="pl-3">
+                                                   <h5>{{item.department?.title}}</h5>
+                                                </div>
+                                             </div>
+                                             <div class="work-flow-user-box d-flex align-items-center pt-1 pb-1"
+                                                *ngIf="item.type == 'user-type'">
+                                                <div class="pl-3">
+                                                   <h5>{{item.user_type?.language[0]?.pivot.title}}</h5>
+                                                </div>
+                                             </div>
+                                             <ul class="arci-user-tab-dtl workflow-lst-pics-loop clearfix">
+                                                <li class="rounde-hov-bg" *ngFor="let row of item.team">
+                                                   <app-user-popup-box [showName]="false"
+                                                      [source]=" getCreatedByPopupDetails(row,null,'user')">
+                                                   </app-user-popup-box>
+                                                </li>
+                                             </ul>
+                                             <div class="work-flow-user-box d-flex align-items-center pt-1 pb-1"
+                                                *ngIf="item.type == 'role'">
+                                                <div class="pl-3">
+                                                   <h5>{{item?.role?.title}}</h5>
+                                                   <!-- <p>{{item.department?.title}}</p> -->
+                                                </div>
+                                             </div>
+                                             <span class="l-number-rounde bg-green">L{{item.level}}</span>
+                                          </div>
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+            
+            
+                     </ng-container>
+                     <ng-container *ngIf="WorkFlowStore?.workFlowDetails?.workflow_items.length==0">
+                        <p>{{'kh_no_workflow_items' | translate}}</p>
+                     </ng-container>
+            
+            
+                  </main>
+            
+               </ng-container>
+
+             </ng-container>
+
+             <p *ngIf="!KHSettingStore?.khSettingsItems?.is_document_workflow">{{'workflow_disable_message' | translate}}</p>
+
+            </div>
+         
+              <!-- !Workflow Tab Ends here -->
+             <!-- !Preview Tab Starts Here -->
+             <div class="tab">
+ 
+                <!-- tab start -->
+                <div class="row">
+                   <div class="col-lg-6 col-sm-12">
+                      <div class="pb-0" style="padding-top: 0px !important">
+                         <div class="relative">
+                          
+                            <div class="d-flex mb-2" *ngIf="DocumentsStore?.getVersionFile">                           
+                                  <div style="width: 60px; height: 75px;"  [ngStyle]="{'background': 'url(' + DocumentsStore.getVersionFile?.preview + ') no-repeat 0 0 / cover'}">
+                                  </div>
+                               <div class="ml-2">
+                                  <h5 class="d-inline-block cmn-head-style label-tag-style mr-2">#{{DocumentsStore?.documentDetails?.reference_code ? DocumentsStore?.documentDetails?.reference_code:'XXXXXX'}}<span class="draft-tag label-tag-style-tag label-left-arow-tag d-inline-block status-tag-new-one ml-3">Draft</span></h5>
+                                  <h5 class="medium-text-new">{{displayForm?.title}}</h5>
+                               </div>
+                            </div>
+                            <div class="row">
+                              <div class="col-sm-6">
+                                 <h6>{{'document_owner' | translate}}</h6>
+                                 <div>
+                                     <app-user-popup-box
+                                         [source]=" getEmployeePopupDetails(displayForm?.owner_id)">
+                                     </app-user-popup-box>
+                                 </div>
+                             </div>
+                             <div class="col-sm-6">
+                              <h6>{{'version'|translate}}</h6>                  
+                              <div class="labels pt-1" *ngIf="displayForm?.version ; else noVersion">
+                                 <label class="outline-tag">V{{displayForm?.version}}</label>
+                              </div>
+                              <ng-template #noVersion>{{AppStore.noContentText}}</ng-template>
+                             </div>
+                            </div>
+                               <!-- !Description -->
+                                  <div *ngIf = "displayForm?.description && !view_more_description" style="white-space: pre-wrap;">{{displayForm?.description.length > 650 ? getDescriptionContent(displayForm?.description) : displayForm?.description}}
+                                     <a *ngIf = "(displayForm?.description.length) > 650" (click) = "viewDescription('more','description')" class="view-more-pestel-box pointer view-more-doted">... View More</a>
+                                  </div>
+                                  <div *ngIf = "displayForm?.description && view_more_description" style="white-space: pre-wrap;">{{displayForm?.description}}
+                                     <a *ngIf = "(displayForm?.description.length) > 650" (click) = "viewDescription('less','description')" class="view-more-pestel-box pointer view-more-doted">View Less</a>
+                                  </div>
+                  
+ 
+                            <h6 class="mt-3">{{'purpose' | translate}}</h6>
+                            <div *ngIf = "displayForm?.purpose && !view_more_purpose" style="white-space: pre-wrap;">{{displayForm?.purpose.length > 650 ? getDescriptionContent(displayForm?.purpose) : displayForm?.purpose}}
+                               <a *ngIf = "(displayForm?.purpose.length) > 650" (click) = "viewDescription('more','purpose')" class="view-more-pestel-box pointer view-more-doted">... View More</a>
+                            </div>
+                            <div *ngIf = "displayForm?.purpose && view_more_purpose" style="white-space: pre-wrap;">{{displayForm?.purpose}}
+                               <a *ngIf = "(displayForm?.purpose.length) > 650" (click) = "viewDescription('less','purpose')" class="view-more-pestel-box pointer view-more-doted">View Less</a>
+                            </div>
+                            <div *ngIf="!displayForm?.purpose">
+                               <p>{{AppStore.noContentText}}</p>
+                            </div>
+          
+                      <div class="user-details-page mt-3">
+                         <div class="right-block p-0">
+                            <h5 class="bold mt-0 mb-3"> <span> {{'classification' | translate}} </span> </h5>
+                         </div>
+                      </div>
+                      <div class="row">
+                         <div class="col-md-6">
+                            <h6 class="bold">{{'category' | translate}}</h6>
+                            <p>{{getArrayFormatedString(displayForm?.document_category_ids)}}</p>
+                         </div>
+                         <div class="col-md-6">
+                            <h6 class="bold">{{'sub_categories' | translate}}</h6>
+                            <p>{{getArrayFormatedString(displayForm?.document_sub_category_ids)}}</p>
+                         </div>
+                         <div class="col-md-6">
+                            <h6 class="bold">{{'further_sub_categories' | translate}}</h6>
+                            <p>{{getArrayFormatedString(displayForm?.document_sub_sub_category_ids)}}</p>
+                         </div>
+                         <div class="col-md-6">
+                            <h6 class="bold">{{'regions' | translate}}</h6>
+                            <p>{{getArrayFormatedString(displayForm?.region_ids)}}</p>
+                         </div>
+                         <div class="col-md-6">
+                            <h6 class="bold">{{'countries' | translate}}</h6>
+                            <p>{{getArrayFormatedString(displayForm?.country_ids)}}</p>
+                         </div>
+                         <div class="col-md-6">
+                            <h6 class="bold">{{'industries' | translate}}</h6>
+                            <p>{{getArrayFormatedString(displayForm?.industry_ids)}}</p>
+                         </div>
+                         <div class="col-md-6">
+                            <h6 class="bold">{{'families' | translate}}</h6>
+                            <p>{{getArrayFormatedString(displayForm?.document_family_ids)}}</p> 
+                         </div>
+                      </div>
+                          <div class="mt-1 mb-2">
+                            <h6 class="bold">{{'tags' | translate}}</h6>
+                      <p>{{getArrayFormatedString(displayForm?.tag_ids)}}</p>
+                         </div>                 
+                         </div>
+                      </div>
+                   </div>
+
+                </div>
+                <hr class="mt-4">
+                <div class="row">
+                   <div class="col-sm-12">   
+                       <div class="d-flex flex-row user-list-sm selected">
+                       <img [attr.src]="AuthStore.user?.image_token ? createImageUrl(AuthStore.user?.image_token,'user-profile-picture') : getDefaultImage('user-logo')" width="30px" height="30px" class="rounded-circle">
+                       <div>
+                         <h6>{{AuthStore.user?.name}} {{AuthStore.user?.last_name}}</h6>
+                         <span>{{ AuthStore.user?.designation?.title }}| created at {{getDate() | date: OrganizationGeneralSettingsStore.organizationSettings?.date_time_format}}</span>
+                       </div>       
+                     </div>
+                   </div>          
+                  </div>           
+             </div><!-- tab end -->
+             <!-- !Preview Tab Ends Here -->
+             <div style="overflow:auto;">
+                <div class="form-next-page-btns" style="float:left;">
+                   <button class="btn btn-active" type="button" id="nextBtn" (click)="nextPrev(1)" [disabled]="!checkFormObject()|| AppStore.loading">{{nextButtonText}}</button>
+                   <button class="btn" type="button" id="prevBtn" (click)="nextPrev(-1)" [disabled]="form.invalid || AppStore.loading">{{previousButtonText}}</button>
+                  <button class="btn" type="button" (click) = "cancelClicked()">{{'cancel' | translate}}</button>
+                </div>
+              </div>
+ 
+          </form>
+       </div>
+    </div>
+ </main>
+ 
+ <!-- Document Type Modal Start -->
+ <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #documentTypesModal>
+    <button type="button" class="close" data-dismiss="modal" (click)="closeDocModal()"><i
+          class="lni-close"></i><span>esc</span></button>
+    <app-document-types-modal></app-document-types-modal>
+ </div>
+ 
+ <!-- Document Type Modal End-->
+ 
+ <!-- Document Category Modal Start -->
+ <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #documentCategoryModal>
+    <app-document-category-modal></app-document-category-modal>
+ </div>
+ <!-- Document Category Modal End -->
+ 
+ <!-- Document Sub Category Modal Start -->
+ <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #documentSubCategoryModal>
+    <app-document-sub-categories-modal  [documentCategorySelect]="categorySelect" ></app-document-sub-categories-modal>
+ </div>
+ <!-- Document Sub Category Modal End -->
+ 
+ <!-- Document Sub Sub Category Modal Start -->
+ <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #documentSubSubCategoryModal>
+    <app-document-sub-sub-categories-modal [documentCategorySelect]="categorySelect" ></app-document-sub-sub-categories-modal>
+ </div>
+ <!-- Document Sub Sub Category Modal End -->
+ <!-- Document Family Modal Start -->
+ <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #documentFamily>
+    <app-document-family-modal></app-document-family-modal>
+ </div>
+ <!-- Document Family Modal End -->
+ <!-- Document Tag Modal Start -->
+ <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #documentTags>
+    <app-tag-modal></app-tag-modal>
+ </div>
+ <!-- Document Tag Modal End -->
+ <!-- Confirmation Popup Starts Here -->
+ <div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopup data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source] = "confirmationObject"></app-delete-popup>
+ </div>  
+ <!-- Confirmation Poup Ends Here -->
+ 
+ <!-- Designation Form Modal Starts Here -->
+ <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #designationModal>
+    <app-designation-modal></app-designation-modal>
+ </div>
+ <!-- Designation Form Modal Ends Here -->
+ 
+
+  <!-----------------------Form Modal Start--------------------------->
+<div  class="modal modal-style-1 popup-full-width fade"  data-keyboard="false"
+data-backdrop="static" #organisationChangeFormModal *mobxAutorun>
+<app-organisation-change-modal *ngIf = "openModelPopup" [source] = "form.value" 
+(organizationChangeEvent)="closeModal($event)"></app-organisation-change-modal>
+</div>
+<!-----------------------Form Modal End--------------------------->

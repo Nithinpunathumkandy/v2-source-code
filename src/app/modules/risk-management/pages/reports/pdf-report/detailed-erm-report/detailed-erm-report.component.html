@@ -1,0 +1,196 @@
+<div class="tab-content">
+  <div class="tab-pane active show" id="top-pdf-report-one">
+    <div class="clearfix">
+      <button *ngIf="AuthStore.getActivityPermission(1000, 'CREATE_DETAILED_ERM_REPORT')"
+        type="button"
+        class="btn btn-small float-right mb-2"
+        data-toggle="modal"
+        style="margin-right: 0 !important"
+        (click)="openPopUp()"
+      >
+        <i class="fas fa-plus mr-2"></i>{{ 'new' | translate }}
+      </button>
+    </div>
+    <div
+      class="audit-program-box audit-page-table-main"
+      *ngIf="
+        ErmDetailsStore.loaded &&
+        ErmDetailsStore?.ermDetailReportList.length > 0
+      "
+    >
+      <div class="row">
+        <div class="col-sm-12">
+          <div class="full-width-table">
+          <table
+            class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll"
+          >
+            <thead>
+              <tr>
+                <th class="border-top-0 text-center" width="2%">#</th>
+                <th class="border-top-0" width="17%">{{ 'ref_no' | translate }}</th>
+                <th class="border-top-0" width="27%">{{ 'date' | translate }}</th>
+                <th class="border-top-0" width="27%">{{ 'department' | translate }}</th>
+                <th class="border-top-0" width="27%">{{ 'created_by' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr (click)="AuthStore.getActivityPermission(100,'DETAILED_ERM_REPORT_DETAILS') ? getDetails(row.id) : '' "
+              class="cursor-pointer tr-action edit-and-delete-main"
+                *ngFor="
+                  let row of ErmDetailsStore?.ermDetailReportList
+                    | paginate
+                      : {
+                          currentPage: ErmDetailsStore?.currentPage,
+                          itemsPerPage: ErmDetailsStore?.itemsPerPage,
+                          totalItems: ErmDetailsStore?.totalItems
+                        };
+                  let num = index
+                "
+              >
+                <td  class="text-center">
+                  {{
+                    (ErmDetailsStore?.currentPage - 1) *
+                      ErmDetailsStore?.itemsPerPage +
+                      (num + 1)
+                  }}
+                </td>
+                <td  class="cursor-pointer">
+                  {{ row.reference_code }}
+                  <p *ngIf="!row.reference_code">
+                    {{ AppStore.noContentText }}
+                  </p>
+                </td>
+                <td  class="cursor-pointer">
+                  {{
+                    row.start_date
+                      | date
+                        : OrganizationGeneralSettingsStore.organizationSettings
+                            ?.date_format
+                  }}
+                  <p *ngIf="!row.start_date">{{ AppStore.noContentText }}</p>
+                </td>
+                <td  class="cursor-pointer">
+                  {{ row.department }}
+                  <p *ngIf="!row.department">{{ AppStore.noContentText }}</p>
+                </td>
+                <td class="cursor-pointer">
+                  <div  class="d-flex flex-row user-list-sm">
+                    <img
+                      *ngIf="row.created_by_image_token"
+                      [attr.src]="
+                        createImagePreview(
+                          'user-profile-picture',
+                          row.created_by_image_token
+                        )
+                      "
+                      width="40px"
+                      height="40px"
+                      class="rounded-circle"
+                      onerror="this.src='/assets/images/user-demo2.png'"
+                    />
+                    <img
+                      *ngIf="!row.created_by_image_token"
+                      [attr.src]="getDefaultImage('user-logo')"
+                      width="40px"
+                      height="40px"
+                      class="rounded-circle"
+                      onerror="this.src='/assets/images/user-demo2.png'"
+                    />
+                    <div>
+                      <h6
+                        title="{{
+                          row.created_by_first_name + row.created_by_last_name
+                        }}"
+                      >
+                        {{
+                          row.created_by_first_name.length > 20
+                            ? row.created_by_first_name.substring(0, 10) +
+                              "..."
+                            : row.created_by_first_name
+                        }}&nbsp;{{
+                          row.created_by_last_name.length > 20
+                            ? row.created_by_last_name.substring(0, 10) +
+                              "..."
+                            : row.created_by_last_name
+                        }}
+                      </h6>
+                      <span _ngcontent-nws-c590="" wfd-id="801">{{
+                        row.created_by_designation
+                      }}</span>
+                    </div>
+                  </div>
+                  <div class="edit-option-show" style="margin: 33px 0 0 0">
+                    <!-- edit-and-delete starts -->
+                    <!-- <a data-toggle="modal" (click)="getErmDetailSummary(row.id)"
+                    ><i class="fas fa-pen"></i
+                  ></a> -->
+                     <a *ngIf="AuthStore.getActivityPermission(1000,'DELETE_DETAILED_ERM_REPORT')" (click)="delete(row.id)"><i class="fas fa-trash"></i></a>
+                    </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+          <div
+            *ngIf="
+              ErmDetailsStore.totalItems > ErmDetailsStore.itemsPerPage &&
+              ErmDetailsStore?.loaded
+            "
+            class="col-sm-12"
+          >
+            <ul class="pagination justify-content-center mt-3">
+              <div class="list">
+                <pagination-controls
+                  [previousLabel]="'previous' | translate"
+                  [nextLabel]="'next' | translate"
+                  (pageChange)="getItems($event)"
+                  class="my-pagination"
+                ></pagination-controls>
+              </div>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <ng-container *mobxAutorun>
+    <div *ngIf="!ErmDetailsStore.loaded">
+      <app-risk-list></app-risk-list>
+    </div>
+  </ng-container>
+  <ng-container *mobxAutorun>
+    <app-no-data
+      *ngIf="
+        ErmDetailsStore.loaded &&
+        ErmDetailsStore?.ermDetailReportList?.length == 0
+      "
+      [border]="false"
+    ></app-no-data>
+  </ng-container>
+</div>
+
+<!-----------------------Form Modal--------------------------->
+<div
+  class="modal modal-style-1 popup-full-width fade"
+  data-keyboard="false"
+  data-backdrop="static"
+  #formModal
+>
+  <app-detailed-erm-modal
+    *ngIf="ermDetObject.type"
+    [source]="ermDetObject"
+  ></app-detailed-erm-modal>
+</div>
+<!-----------------------Form Modal--------------------------->
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+<div
+  class="modal modal-style-1 fade"
+  id="delete-popup"
+  #confirmationPopUp
+  data-backdrop="static"
+  data-keyboard="false"
+>
+  <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+<!------------------- Delete Confirmation Modal End --------------------------->

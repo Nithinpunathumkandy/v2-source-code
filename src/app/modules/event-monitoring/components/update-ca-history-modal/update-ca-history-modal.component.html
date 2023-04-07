@@ -1,0 +1,113 @@
+<button type="button" class="close" (click)="cancel()" ><i class="lni-close"></i><span>{{'esc' |
+    translate}}</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered">
+<div class="modal-content">
+    <div class="modal-header">
+        <h4 class="modal-title text-center"
+        *ngIf="LessonLearntCaStore.historyLoaded && LessonLearntCaStore.historyData.length>0">
+            {{'corrective_action_update_history' | translate}}</h4>
+    </div>
+
+    <div class="modal-body form-body">
+
+        <div class="col-sm-12"
+        *ngIf="LessonLearntCaStore.historyLoaded && LessonLearntCaStore.historyData.length==0">
+        <app-no-data-list [source]="historyEmptyList" [border]=false>
+        </app-no-data-list>
+    </div>
+
+        <div class="row">
+            <div class="col-sm-12"
+                *ngIf="LessonLearntCaStore.historyLoaded && LessonLearntCaStore.historyData.length>0">
+                <div class="cmn-bdr risk-treatment-update-history mb-3"
+                    *ngFor="let history of LessonLearntCaStore.historyData| paginate: {id:'history',currentPage:LessonLearntCaStore?.historyCurrentPage, itemsPerPage:LessonLearntCaStore?.historyItemsPerPage,totalItems:LessonLearntCaStore?.historyTotalItems};let num = index">
+                    <div class="row mb-3 align-items-center">
+                        <div class="col-lg-6 col-sm-12">
+                            <div class="d-flex flex-row user-list-sm p-0">
+                                <img [attr.src]="history.created_by_image_token?createImageUrl('user',history.created_by_image_token):getDefaultImage('user-logo')"
+                                    class="rounded-circle" width="30px" height="30px">
+                                <div>
+                                    <h6>{{history.created_by_first_name}} {{history.created_by_last_name}}</h6>
+                                    <span>{{history.created_by_designation}} | Updated at
+                                        {{history.created_at|date:OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-sm-12">
+                            <p class="dot-color-p mb-0 d-inline-block"><span
+                                    [ngClass]="history.label?'dot-div '+history.label+'-dot':'dot-div green-dot'"></span>{{history.risk_treatment_status_title}}
+                            </p>
+                            <h6 class="d-inline-block text-light-blue bold mb-0 cmn-head-style ml-3">
+                                {{history.percentage?history.percentage:0}}%</h6>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <p style="white-space: pre-wrap;">{{history.comment?history.comment:''}}</p>
+                        </div>
+                    </div>
+                    <div class="row" *ngIf="history.documents.length>0">
+                        <div class="col-sm-12">
+                            <h6>{{'attachments' | translate}}</h6>
+                            <div class="thumb-pics-bg thumb-pics-col-3 clearfix">
+                                <div class="thumb-pics" *ngFor="let document of history.documents">
+                                    <div class="upload-pics upload-pics-small edit-option">
+                                        <div class="browse-form-pic"
+                                            [ngStyle]="{'background': 'url(' + createImageUrl('document',document.token) + '), url(' + getDefaultImage('no-preview') + ') no-repeat 0 0 / cover'}"
+                                            (click)="viewDocument(document,history.id)">
+                                        </div>
+                                        <div class="browse-form-name clearfix">
+                                            <div class="float-left">
+                                                <h6
+                                                    [attr.title]="document.title.length > 10 ? document.title:''">
+                                                    {{document.title.length > 10 ?
+                                                    document.title.substring(0,10)+' ...': document.title}}
+                                                </h6>
+                                                <span>{{document.size/1048576 | number:'0.2-2'}}MB</span>
+                                            </div>
+                                            <div class="browse-logo">
+                                                <img *ngIf="checkExtension(document.ext,'image') != -1"
+                                                    src="/assets/images/md-jpg.png">
+                                                <img *ngIf="checkExtension(document.ext,'doc') != -1"
+                                                    src="/assets/images/md-doc.png">
+                                                <img *ngIf="checkExtension(document.ext,'pdf') != -1"
+                                                    src="/assets/images/pdf-icone.png">
+                                                <img *ngIf="checkExtension(document.ext,'excel') != -1"
+                                                    src="/assets/images/md-xl.png">
+                                                <img *ngIf="checkExtension(document.ext,'video') != -1"
+                                                    src="/assets/images/md-video.png">
+                                                <img *ngIf="checkExtension(document.ext,'audio') != -1"
+                                                    src="/assets/images/md-audio.png">
+                                                <img *ngIf="checkExtension(document.ext,'ppt') != -1"
+                                                    src="/assets/images/md-ppt.png">
+
+                                            </div>
+                                        </div>
+                                        <div class="edit-option-show-inner">
+                                            <a [attr.title]="'download'|translate"
+                                                (click)="downloadDocument(document.event_lesson_learned_corrective_action_status_id,document.title,document.id,document)"><i
+                                                    class="fas fa-download"></i></a>
+                                        </div>
+                                    </div>
+                                </div>
+                        </div>
+                    </div>
+                </div>
+                <ul class="pagination justify-content-center mt-3"
+                    *ngIf="LessonLearntCaStore?.historyTotalItems>LessonLearntCaStore?.historyItemsPerPage">
+                </ul>
+            </div>
+        </div>
+    </div>
+
+</div>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup" data-keyboard="false"
+data-backdrop="static" #filePreviewModal *mobxAutorun>
+<button type="button" class="close"  (click)="closePreviewModal($event)"><i
+    class="lni-close"></i><span>esc</span></button>
+<app-ca-image-preview *ngIf="previewObject" [source]="previewObject" (close)="closePreviewModal($event)">
+</app-ca-image-preview>
+</div>

@@ -1,0 +1,250 @@
+<div>
+    <nav class="edit-bar" data-toggle="affix" #navBar>
+        <!-- <div class="module-name-block float-left">
+            <a class="nav-link current-page border-right-0" [routerLink]="['/jso/reports', riskcountType]">
+                <i class="fas fa-chevron-left"></i>{{'jso_report_details' | translate}}</a>
+        </div>
+        <ul class="nav nav-pills float-left d-none d-lg-block" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link nav-link-show" [routerLink]="['/jso/reports', riskcountType, id]"
+                    routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">{{'jso' | translate}}</a>
+            </li>
+        </ul> -->
+        <div class="module-name-block module-name-block-space float-left">
+            <a class="dropdown module-title">{{'jso_report_details'|translate}}</a>
+          </div>
+        <app-sub-menu></app-sub-menu>
+    </nav>
+    <main class="audit-program-details-page mt-3">
+        <div class="container-fluid">
+            <!-- <a data-toggle="modal" data-target="#custom-date-popup">Custom date popup</a> -->
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="tab-content">
+                        <!-- Profille -->
+                        <div class="tab-pane active" id="info">
+
+
+                            <div class="widget bg-white widg-padding-cmn min-height-83">
+
+                                <div class="row"
+                                    *ngIf="JsoReportStore?.listloaded && JsoReportStore.JsoReportsItemsDetails.length > 0">
+
+
+                                    <div class="col-md-12 text-center">
+
+                                        <h5>{{AuthStore.user.organization?.title}}</h5>
+                                        <h4 class="bold"> {{JsoReportStore.getJsoReportDetailsListingTableTitle |
+                                            translate}}
+                                        </h4>
+                                        <div *ngIf="filterDateObject.startDate != null">
+                                            <p class="mb-0"><i class="fas fa-calendar-alt date-pics-two"></i>{{'from' |
+                                                translate}} <i class="bold">{{filterDateObject.startDate | date:
+                                                    OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</i>
+                                                {{'to' | translate}} <i class="bold">{{filterDateObject.endDate | date:
+                                                    OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</i>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12 mt-4"
+                                        *ngIf="JsoReportStore.selectedReportObject.reportType == 'jso'">
+
+                                        <div class="row">
+                                            <div class="col-sm-12">
+                                                <div class="full-width-table mb-3 table-scroll-first-time">
+                                                <table
+                                                    class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                                                    <thead>
+                                                        <tr>
+                                                            <th class="border-top-0 text-center" width="2%">#</th>
+                                                            <th class="border-top-0 pointer" width="15%">{{'type'
+                                                                | translate}}
+                                                            </th>
+                                                            <th class="border-top-0 pointer" width="23%">
+                                                                {{'work_plant_area' |
+                                                                translate}}
+                                                            </th>
+                                                            <th class="border-top-0 pointer" width="17%">{{'observed_by'
+                                                                |
+                                                                translate}}
+                                                            </th>
+
+                                                            <th class="border-top-0 pointer" width="14%"> {{'date' |
+                                                                translate}}
+                                                            </th>
+
+                                                            <th class="border-top-0 text-center" width="11%">{{'status' |
+                                                                translate}}</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <ng-container *mobxAutorun>
+                                                        <tr class="pointer edit-and-delete-main"
+                                                            *ngFor="let row of JsoReportStore.JsoReportsItemsDetails| paginate: {currentPage:JsoReportStore.currentPage, itemsPerPage:JsoReportStore.itemsPerPage,totalItems:JsoReportStore.totalItems};let num=index "
+                                                            (click)="getRisk(row.id)">
+
+                                                            <td style="text-align: center;" class="cursor-pointer">
+                                                                {{(JsoReportStore.currentPage - 1) *
+                                                                JsoReportStore.itemsPerPage +
+                                                                (num + 1)}}
+                                                            </td>
+                                                            <td>{{row.jso_observation_type_title}}
+                                                                <p *ngIf="!row.jso_observation_type_title">
+                                                                    {{AppStore.noContentText}}</p>
+                                                            </td>
+                                                            <td>{{row.work_area}}
+                                                                <p *ngIf="!row.work_area"> {{AppStore.noContentText}}
+                                                                </p>
+                                                            </td>
+                                                            <td class="pointer">
+                                                                <div class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg"
+                                                                    *ngIf="row.created_by">
+                                                                    <img [attr.src]="row.created_by_image_token?createImagePreview('user-profile-picture',row.created_by_image_token):getDefaultImage('user-logo')"
+                                                                        width="30px" height="30px"
+                                                                        class="rounded-circle">
+
+                                                                    <div>
+                                                                        <h6>{{row.created_by_first_name}}
+                                                                            {{row.created_by_last_name}}</h6>
+                                                                        <span>{{row.created_by_designation}} </span>
+                                                                    </div>
+                                                                </div>
+                                                                <p *ngIf="!row.created_by"> {{AppStore.noContentText}}
+                                                                </p>
+                                                            </td>
+                                                            <td>{{getTimezoneFormatted(row?.created_at) | date:
+                                                                OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                                <p *ngIf="!row.created_at"> {{AppStore.noContentText}}
+                                                                </p>
+                                                            </td>
+                                                            <td class="text-center">
+                                                                <div *ngIf="row.unsafe_action_status_title"
+                                                                    [attr.class]="'dot-div '+row?.unsafe_action_status_label">
+                                                                    {{row?.unsafe_action_status_title}}</div>
+                                                                <p *ngIf="!row.unsafe_action_status_title">
+                                                                    {{AppStore.noContentText}}</p>
+                                                            </td>
+                                                        </tr>
+                                                    </ng-container>
+                                                </table>
+                                            </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12 mt-4"
+                                        *ngIf="JsoReportStore.selectedReportObject.reportType == 'jsoUnsafe'">
+
+                                        <div class="row">
+                                            <div class="col-sm-12">
+                                                <div class="full-width-table table-scroll-first-time">
+                                                <table
+                                                    class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                                                    <thead>
+
+                                                        <tr>
+                                                            <th class="border-top-0 text-center" width="2%">#</th>
+                                                            <th class="border-top-0 pointer" width="8%">{{'ref_id' |
+                                                                translate}}
+                                                            </th>
+                                                            <th class="border-top-0 pointer" width="25%">
+                                                                {{'unsafe_actions' | translate}}
+                                                            </th>
+                                                            <th class="border-top-0 pointer" width="15%">{{'category' |
+                                                                translate}}
+                                                            </th>
+                                                            <th class="border-top-0 pointer" width="16%">
+                                                                {{'car_due_date' | translate}}
+                                                            </th>
+                                                            <th class="border-top-0 pointer" width="17%">
+                                                                {{'car_responsible_by' | translate}}
+                                                            </th>
+                                                            <th class="border-top-0 text-center pointer" width="12%">{{'status' |
+                                                                translate}}
+                                                            </th>
+                                                        </tr>
+
+                                                    </thead>
+                                                    <ng-container *mobxAutorun>
+                                                        <tr class="pointer edit-and-delete-main"
+                                                            *ngFor="let row of JsoReportStore.JsoReportsItemsDetails| paginate: {currentPage:JsoReportStore.currentPage, itemsPerPage:JsoReportStore.itemsPerPage,totalItems:JsoReportStore.totalItems};let num=index "
+                                                            (click)="getRisk(row.id)">
+
+                                                            <td style="text-align: center;" class="cursor-pointer">
+                                                                {{(JsoReportStore.currentPage - 1) *
+                                                                JsoReportStore.itemsPerPage +
+                                                                (num + 1)}}
+                                                            </td>
+                                                            <td style="padding:0.75rem"> #{{row.reference_code}} </td>
+                                                            <td>{{row.description}}
+                                                                <p *ngIf="!row.description"> {{AppStore.noContentText}}
+                                                                </p>
+                                                            </td>
+                                                            <td>{{row.unsafe_action_category_title}}
+                                                                <p *ngIf="!row.unsafe_action_category_title">
+                                                                    {{AppStore.noContentText}}</p>
+                                                            </td>
+                                                            <td>{{row.corrective_action_target_date | date:
+                                                                OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                                <p *ngIf="!row.corrective_action_target_date">
+                                                                    {{AppStore.noContentText}}</p>
+                                                            </td>
+                                                            <td class="pointer">
+                                                                <div class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg"
+                                                                    *ngIf="row.corrective_action_responsible_user_id">
+                                                                    <img [attr.src]="row.corrective_action_responsible_user_image_token?createImagePreview('user-profile-picture',row.corrective_action_responsible_user_image_token):getDefaultImage('user-logo')"
+                                                                        width="30px" height="30px"
+                                                                        class="rounded-circle">
+
+                                                                    <div>
+                                                                        <h6>{{row.corrective_action_responsible_user_first_name}}
+                                                                            {{row.corrective_action_responsible_user_last_name}}
+                                                                        </h6>
+                                                                        <span>{{row.corrective_action_responsible_user_designation}}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                                <p *ngIf="!row.corrective_action_responsible_user_id">
+                                                                    {{AppStore.noContentText}}</p>
+                                                            </td>
+                                                            <td class="text-center">
+                                                                <div *ngIf="row.unsafe_action_status_title"
+                                                                    [attr.class]="'dot-div '+row.unsafe_action_status_label">
+                                                                    {{row.unsafe_action_status_title}}</div>
+                                                                <p *ngIf="!row.unsafe_action_status_title">
+                                                                    {{AppStore.noContentText}}</p>
+                                                            </td>
+                                                        </tr>
+                                                    </ng-container>
+                                                </table>
+                                            </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <ng-container *mobxAutorun>
+                                    <div *ngIf="!JsoReportStore?.listloaded">
+                                        <app-five-column-loader></app-five-column-loader>
+                                    </div>
+                                    <app-no-data
+                                        *ngIf="JsoReportStore.JsoReportsItemsDetails.length == 0 && JsoReportStore.listloaded == true">
+                                    </app-no-data>
+                                </ng-container>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <div *ngIf="JsoReportStore.totalItems>JsoReportStore.itemsPerPage" class="col-sm-12">
+        <ul class="pagination justify-content-center mt-3">
+            <div class="list">
+                <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+                    (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+            </div>
+        </ul>
+    </div>
+</div>
+
+<div class="modal modal-style-1 fade email-popup-new" id="custom-date-popup" #confirmationPopUp>
+    <app-custom-date-popup (dateEvent)="passDates($event)"></app-custom-date-popup>
+</div>

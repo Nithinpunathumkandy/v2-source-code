@@ -1,0 +1,115 @@
+<main class="mt-3 acl-page" *mobxAutorun>
+    <div class="container-fluid">
+        <app-filter-menu></app-filter-menu>
+        <div class="audit-program-box audit-page-table-main">
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="full-width-table mb-3">
+                    <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll"
+                        *ngIf="FindingCorrectiveActionStore.loaded && FindingCorrectiveActionStore.allItems?.length >0">
+                        <thead>
+                            <tr>
+                                <th class="border-top-0 text-center" width="2%">#</th>
+                                <th class="border-top-0" width="8%" (click)="setCorrectiveActionSort('finding_corrective_actions.reference_code')">{{'ref_id' | translate}}
+                                    <img *ngIf="FindingCorrectiveActionStore.orderItem == 'finding_corrective_actions.reference_code'"
+                                        [attr.src]="FindingCorrectiveActionStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                        class="sort-down-pics">
+                                </th>
+                                
+                                <th class="border-top-0" width="21%" (click)="setCorrectiveActionSort('finding_corrective_actions.title')">{{'title' | translate}}
+                                    <img *ngIf="FindingCorrectiveActionStore.orderItem == 'finding_corrective_actions.title'"
+                                        [attr.src]="FindingCorrectiveActionStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                        class="sort-down-pics">
+                                </th>
+                                <th class="border-top-0" width="18%">{{'finding' | translate}}</th>
+                                <th class="border-top-0" width="15%">{{'responsible_user' | translate}}</th>
+                                <th class="border-top-0" width="13%" (click)="setCorrectiveActionSort('finding_corrective_actions.start_date')">{{'start_date' | translate}}
+                                    <img *ngIf="FindingCorrectiveActionStore.orderItem == 'finding_corrective_actions.start_date'"
+                                        [attr.src]="FindingCorrectiveActionStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                        class="sort-down-pics">
+                                </th>
+                                <th class="border-top-0" width="13%" (click)="setCorrectiveActionSort('finding_corrective_actions.target_date')">{{'target_date' | translate}}
+                                    <img *ngIf="FindingCorrectiveActionStore.orderItem == 'finding_corrective_actions.target_date'"
+                                        [attr.src]="FindingCorrectiveActionStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                        class="sort-down-pics">
+                                </th>
+                                <!-- <th class="border-top-0" width="10%">Expiry Date</th> -->
+                                <th class="border-top-0 text-center" width="10%">{{'status' | translate}}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="edit-and-delete-main" *ngFor="let ca of FindingCorrectiveActionStore.allItems | paginate: {currentPage:FindingCorrectiveActionStore?.currentPage, itemsPerPage:FindingCorrectiveActionStore?.itemsPerPage,totalItems:FindingCorrectiveActionStore?.totalItems}; let i = index">
+                                <td class="text-center">{{(FindingCorrectiveActionStore?.currentPage -1) * FindingCorrectiveActionStore?.itemsPerPage + (i + 1)}}</td>
+                                <td class="pointer" (click)="getCorrectiveActionDetails(ca.id)"> {{ca.reference_code}}</td>
+                                <td class="pointer" (click)="getCorrectiveActionDetails(ca.id)">{{ca.title}}</td>
+                                <td class="pointer" (click)="getCorrectiveActionDetails(ca.id)">{{ca.finding_title}} </td>
+                                <td class="pointer" (click)="getCorrectiveActionDetails(ca.id)">
+                                    <div class="d-flex flex-row user-list-sm">
+                                        <img *ngIf="ca.responsible_user_image_token"
+                                            [attr.src]="createImagePreview('user-profile-picture',ca.responsible_user_image_token)"
+                                            width="30px" height="30px" class="rounded-circle" onerror = "this.src='/assets/images/user-demo2.png'">
+                                        <img *ngIf="!ca.responsible_user_image_token"
+                                            [attr.src]="getDefaultImage('user-logo')" width="30px" height="30px"
+                                            class="rounded-circle" onerror = "this.src='/assets/images/user-demo2.png'">
+                                        <div>
+                                            <h6 title="{{ca.responsible_user_first_name+ca.responsible_user_last_name }}">{{ca.responsible_user_first_name?.length > 20 ? ca.responsible_user_first_name.substring(0,10)+' ...' : ca.responsible_user_first_name }}&nbsp;{{ca.responsible_user_last_name?.length > 20 ? ca.responsible_user_last_name.substring(0,10)+' ...' : ca.responsible_user_last_name}}
+                                            </h6>
+                                            <span _ngcontent-nws-c590="" wfd-id="801">{{ca.responsible_user_designation}}</span>
+                                    
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="pointer" (click)="getCorrectiveActionDetails(ca.id)">{{ca.start_date | date:
+                                    OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</td> 
+                                <td class="pointer" (click)="getCorrectiveActionDetails(ca.id)">{{ca.target_date | date:
+                                    OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</td>
+                                <td class="text-center">
+                                    <div *ngIf="ca.finding_corrective_action_status_language_title" [attr.class]="'dot-div '+ca.finding_corrective_action_status_label">
+                                        {{ca.finding_corrective_action_status_language_title}}</div>
+                                    <p *ngIf="!ca.finding_corrective_action_status_language_title">{{AppStore.noContentText}}</p>
+                                    <div class="edit-option-show" style="margin: 30px 0 0 0; ">
+                                        <!-- edit-and-delete starts -->
+                                        <a (click)="editCorrectiveACtion(ca.id)"><i class="fas fa-pen"></i></a>
+                                        <a (click)="delete(ca)"><i class="fas fa-trash"></i></a>
+                                    </div><!-- edit-and-delete end -->
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                    <p class="float-right bold mb-0" *ngIf="FindingCorrectiveActionStore?.loaded && FindingCorrectiveActionStore.totalItems > 0">{{'total_Items' | translate}}:{{FindingCorrectiveActionStore?.totalItems}}</p>
+                    <ng-container>
+                        <div *ngIf="!FindingCorrectiveActionStore.loaded">
+                            <app-seven-column-loader></app-seven-column-loader>
+                        </div>
+                    </ng-container>
+                    <ng-container>
+                        <app-no-data *ngIf = "FindingCorrectiveActionStore.loaded && FindingCorrectiveActionStore.allItems?.length == 0"
+                            [border]=false>
+                        </app-no-data>
+                    </ng-container>
+                </div>
+                <div *ngIf="FindingCorrectiveActionStore.totalItems > FindingCorrectiveActionStore.itemsPerPage" class="col-sm-12">
+                    <ul class="pagination justify-content-center mt-3">
+                        <div class="list">
+                            <pagination-controls [previousLabel]="'previous' | translate"
+                                [nextLabel]="'next' | translate" (pageChange)="getCorrectiveActions($event)" class="my-pagination">
+                            </pagination-controls>
+                        </div>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #AddCAformModal>
+    <app-add-finding-corrective-action  *ngIf="correctiveActionObject.type" [source]="correctiveActionObject">
+    </app-add-finding-corrective-action>
+</div>
+
+ <!------------------- Delete Confirmation Modal Start --------------------------->
+ <div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+ </div>

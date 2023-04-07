@@ -1,0 +1,285 @@
+<ng-container *mobxAutorun>
+   <app-five-column-loader *ngIf = "!BusinessCustomersStore.loaded"></app-five-column-loader>
+</ng-container>
+<ng-container *mobxAutorun>
+   <!-- BUSINESS_PROFILE_CUSTOMER_LIST  && AuthStore.getActivityPermission(1900,'CUSTOMER_LIST' -->
+   <div class="row" *ngIf = "BusinessCustomersStore.loaded && BusinessCustomersStore.customerDetails.length > 0">
+      <div class="col-sm-12">
+         <div>
+            <div class="row">
+               <div class="col-sm-12">
+                  <div class="org-customer-tbl-bg org-customer-tbl-new">
+                  <table
+                     class="table table-bordered ordinary-table customer-listing-table table-hover mb-4 org-customer-tbl">
+                     <thead>
+                        <tr>
+                           <th class="border-top-0 text-center" style="width:3%">#</th>
+                           <th class="border-top-0" style="width:53%">{{'customer' | translate}}</th>
+                           <th class="border-top-0" style="width:22%">{{'contact_person_details' | translate}}</th>
+                           <th class="border-top-0" style="width:22%">{{'address' | translate}}</th>
+                        </tr>
+                     </thead>
+                     <tbody>
+                        <tr *ngFor = "let c of BusinessCustomersStore.customerDetails | paginate: {currentPage:BusinessCustomersStore?.currentPage, itemsPerPage:BusinessCustomersStore?.itemsPerPage,totalItems:BusinessCustomersStore?.totalItems};let num = index" class="edit-and-delete-main"
+                        [ngStyle] = "{opacity: c.status_id == AppStore.inActiveStatusId ? '0.5' : '1' }">
+                          <td class="text-center">
+                           {{(BusinessCustomersStore?.currentPage - 1) * BusinessCustomersStore?.itemsPerPage + (num + 1)}}
+                          </td>
+                           <td>
+                              <div class="row d-flex align-items-center">
+                                <div class="col-sm-4 col-4 d-flex align-items-center"> 
+                                   <div class="w-100 cmn-bdr bg-white" *ngIf="c.image_token">
+                                      <img [attr.src]="c.image_token ? createImageUrl(c.image_token) : getDefaultImage()" 
+                                      onerror="this.src='/assets/images/placeholder.png'" 
+                                      class="img-fluid"/>
+                                   </div>
+                                   <div class="cmn-bdr w-100 bg-white" *ngIf="!c.image_token">
+                                    <app-no-image-data ></app-no-image-data>
+                                   </div>
+                                    
+                          
+                                </div>
+                                 <div class="col-sm-8 col-8">
+                                    <h6>{{c.title ? c.title : AppStore.noContentText}}</h6>
+                                    <div class="row">
+                                       <div class="col-sm-12 clearfix"> <i class="fas fa-phone fas-icon"></i>
+                                          <p>{{c.mobile ? c.mobile : AppStore.noContentText}}</p>
+                                       </div>
+                                       <div class="col-sm-12 clearfix"><i class="fas fa-envelope fas-icon"></i>
+                                         <a *ngIf = "c.email" target="_blank" class="tablelink-text cmn-clr" [attr.href] = "'mailto:'+c.email">{{c.email}}</a>
+                                         <p *ngIf = "!c.email">{{AppStore.noContentText}}</p>
+                                       </div>
+                                       <div class="col-sm-12 clearfix"><i class="fas fa-globe-asia fas-icon"></i>
+                                         <a *ngIf = "c.website" target="_blank" class="tablelink-text cmn-clr" [attr.href] = "c.website">{{c.website}}</a>
+                                         <p *ngIf = "!c.website">{{AppStore.noContentText}}</p>
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+                           </td>
+                           <td>
+                              <div class="row">
+                                 <div class="col-sm-12 clearfix"><i class="fas fa-user-circle fas-icon"></i>
+                                    <p *ngIf = "c.contact_person">{{c.contact_person }} - {{ c.contact_person_role }}</p>
+                                    <p *ngIf = "!c.contact_person">{{AppStore.noContentText}}</p>
+                                 </div>
+                                 <div class="col-sm-12 clearfix"><i class="fas fa-phone fas-icon"></i>
+                                    <p>{{c.contact_person_number ? c.contact_person_number : AppStore.noContentText}}</p>
+                                 </div>
+                                 <div class="col-sm-12 clearfix"><i class="fas fa-envelope fas-icon"></i>
+                                   <a *ngIf = "c.contact_person_email" target="_blank" class="tablelink-text cmn-clr" [attr.href] = "'mailto:'+c.contact_person_email">{{c.contact_person_email}}</a>
+                                   <p *ngIf = "!c.contact_person_email">{{AppStore.noContentText}}</p>
+                                 </div>
+                              </div>
+                           </td>
+                           <td>
+                              <div class="row">
+                                <div class="edit-option-show"><!-- edit-and-delete starts -->
+                                   <a *ngIf = "AuthStore.getActivityPermission(300,'UPDATE_CUSTOMER')" (click) = "editCustomer(c.id)" [attr.title]="'edit' | translate"><i class="fas fa-pen pointer"></i></a>
+                                   <a *ngIf = "AuthStore.getActivityPermission(300,'DELETE_CUSTOMER')" (click) = "deleteCustomer(c.id)" [attr.title]="'delete' | translate"><i class="fas fa-trash pointer"></i></a>
+                                   <a *ngIf = "c.status_id == AppStore.activeStatusId && AuthStore.getActivityPermission(300,'DEACTIVATE_CUSTOMER')" (click) = "deactivate(c.id)" [attr.title]="'deactivate' | translate"><i class="fas fa-ban pointer"></i></a>
+                                   <a *ngIf = "c.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(300,'ACTIVATE_CUSTOMER')" (click) = "activate(c.id)" [attr.title]="'activate' | translate"><i class="fas fa-check pointer"></i></a>
+                                 </div> 
+                                 <div class="col-sm-12 clearfix"><i class="fas fa-map-marker-alt fas-icon"></i>
+                                    <p style="white-space: pre-wrap;">{{c.address ? c.address : AppStore.noContentText}}</p>
+                                 </div>
+                              </div>
+                           </td>
+                        </tr>
+                     </tbody>
+                  </table>
+               </div>
+               <p class="float-right bold mb-0" *ngIf="BusinessCustomersStore.customerDetails.length>0 && BusinessCustomersStore.loaded">
+                  {{'total_Items' | translate}}:{{BusinessCustomersStore?.totalItems}}</p>
+               </div>
+              <div class="col-sm-12" *ngIf = "BusinessCustomersStore?.totalItems > BusinessCustomersStore?.itemsPerPage">
+                 <ul class="pagination justify-content-center mt-3">
+                    <div class="list">
+                       <pagination-controls [previousLabel]="'previous' | translate"  [nextLabel]="'next' | translate" (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+                    </div>
+                 </ul>
+              </div>
+            </div>
+         </div>
+      </div>
+   </div>
+</ng-container>
+<ng-container *mobxAutorun>
+   <app-no-data *ngIf = "BusinessCustomersStore.customerDetails.length == 0 && BusinessCustomersStore.loaded"></app-no-data>
+</ng-container>
+    <!-- add-user-btn-popup Start -->
+   <div class="modal modal-style-1 popup-full-width fade" id="add-ten-popup" data-keyboard="false"
+   data-backdrop="static" #formModal>
+   <button type="button" class="close" data-dismiss="modal"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+   <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+         <!-- Modal Header -->
+         <div class="modal-header">
+            <h4 class="modal-title" *ngIf = "!BusinessCustomersStore.addOrEditFlag">{{'add_customer' | translate}}</h4>
+            <h4 class="modal-title" *ngIf = "BusinessCustomersStore.addOrEditFlag">{{'edit_customer' | translate}}</h4>
+         </div>
+         <!-- Modal body -->
+         <div class="modal-body form-body">
+            <p class="head-details">{{'customer_form_message' | translate}}
+            </p>
+            <label class="label-style mb-0">{{'customer_logo' | translate}}</label>
+            <div class="row m-0 upload-section" style="padding-top: 0">
+               <div class="col-sm-4 costmz-logo-new mt-2">
+                  <div class="question-circle-inp" *ngIf = "OrganizationGeneralSettingsStore.organizationSettings?.logo_allowed_types.length > 0" style="margin-right: 7px;">
+                     <i class="far fa-question-circle"></i>
+                     <div class="message-password-inp">
+                         <p class="mb-0">{{'allowed_file_types' | translate}} {{OrganizationGeneralSettingsStore.organizationSettings?.logo_allowed_types.toString()}}</p>
+                     </div>
+                  </div>
+                  <div class="form-group form-group-upload">
+                     <div class="darag-dropifile-upload">
+                        <div class="d-flex justify-content-center align-items-center text-center">
+                           <div>
+                              <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                              <div class="drag-file-name"> {{'select_or_upload_your_file_here' | translate}} </div>
+                              <div class="upload-btn-wrapper">
+                                 <input [disabled] = "BusinessCustomersStore.logo_preview_available" type="file" id="file" (change)="onFileChange($event,'logo')" [accept]="checkAcceptFileTypes('logo')" >
+                                 <button class="btn">{{'browse_files' | translate}}</button>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+               <div class="col-sm-4 up-pic-cf mt-2" *ngIf = "BusinessCustomersStore.logo_preview_available">
+                  <div class="upload-pics edit-option file-upload-loader">
+                     <circle-progress  class="browse-form-pic"
+                        [percent] = fileUploadProgress
+                        [title] = fileUploadProgress
+                     ></circle-progress>
+                  </div>
+               </div> 
+               <div [ngClass]="BusinessCustomersStore.getFileDetailsByType('logo')?.is_deleted ? 'col-sm-4 up-pic-cf mt-2 image_deleted':'col-sm-4 up-pic-cf mt-2'" *ngIf = "BusinessCustomersStore.getFileDetailsByType('logo')">
+                  <div class="upload-pics edit-option">
+                     <div class="browse-form-pic" [ngStyle]="{'background': 'url(' + BusinessCustomersStore.getFileDetailsByType('logo')?.preview + ') no-repeat 0 0 / cover'}">
+                     </div>
+                      <div class="browse-form-name clearfix">
+                       <div class="float-left">
+                        <h6 [attr.title] = "BusinessCustomersStore.getFileDetailsByType('logo')?.name">{{BusinessCustomersStore.getFileDetailsByType('logo')?.name.length > 20 ? BusinessCustomersStore.getFileDetailsByType('logo')?.name.substring(0,20)+' ...' : BusinessCustomersStore.getFileDetailsByType('logo')?.name}}</h6>
+                        <span>{{BusinessCustomersStore.getFileDetailsByType('logo')?.size/1048576 | number:'0.2-2'}}MB</span>
+                       </div>
+                       <div class="browse-logo">
+                         <img *ngIf = "checkExtension(BusinessCustomersStore.getFileDetailsByType('logo')?.ext,'excel') != -1" src="/assets/images/md-xl.png">
+                         <img *ngIf = "checkExtension(BusinessCustomersStore.getFileDetailsByType('logo')?.ext,'image') != -1" src="/assets/images/md-jpg.png">
+                         <img *ngIf = "checkExtension(BusinessCustomersStore.getFileDetailsByType('logo')?.ext,'doc') != -1" src="/assets/images/md-doc.png">
+                         <img *ngIf = "checkExtension(BusinessCustomersStore.getFileDetailsByType('logo')?.ext,'pdf') != -1" src="/assets/images/md-pdf.png">
+                       </div>
+                      </div>
+                      <div class="edit-option-show">
+                       <a (click) = "BusinessCustomersStore.unsetFileDetails('logo')"><i class="fas fa-trash"></i></a>
+                     </div>
+                  </div>
+               </div>
+            </div>
+            <form [formGroup]="form" *mobxAutorun>
+               <div class="row">
+                  <div class="col-sm-6">
+                     <div class="form-group">
+                        <label for="title">{{'title' | translate}}<sup>*</sup></label>
+                        <input type="text" id="title" class="form-control" formControlName = "title" [attr.placeholder]="'title_of_the_customer' | translate">
+                        <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.title}}</p>
+                        <p class="form-error pt-1" *ngIf = "!formErrors && form.get('title').invalid && (form.controls.title.dirty || form.controls.title.touched)">{{ form.hasError('required', ['title']) ? 'Title required' : 'Maximum 500 characters allowed' }}</p>
+                     </div>
+                  </div>
+                  <div class="col-sm-6">
+                     <div class="form-group">
+                        <label for="mobile">{{'contact_number' | translate}}</label>
+                        <input type="text" id="mobile" class="form-control" formControlName = "mobile" [attr.placeholder]="'write_customer_contact_number' | translate">
+                        <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.mobile}}</p>
+                        <p class="form-error pt-1" *ngIf = "!formErrors && form.get('mobile').invalid && (form.controls.mobile.dirty || form.controls.mobile.touched)">Enter a valid contact number</p>
+                     </div>
+                  </div>
+                  <div class="col-sm-6">
+                     <div class="form-group">
+                        <label for="email">{{'email_id' | translate}}</label>
+                        <input type="text" id="email" class="form-control" formControlName = "email" [attr.placeholder]="'write_customer_email_adderss' | translate">
+                        <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.email}}</p>
+                        <p class="form-error pt-1" *ngIf = "!formErrors && form.get('email').invalid && (form.controls.email.dirty || form.controls.email.touched)">Enter a valid email</p>
+                     </div>
+                  </div>
+                  <div class="col-sm-6">
+                     <div class="form-group">
+                        <label for="website">{{'website' | translate}}</label>
+                        <input type="text" id="website" class="form-control" formControlName = "website" [attr.placeholder]="'write_customer_website' | translate">
+                        <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.website}}</p>
+                        <p class="form-error pt-1" *ngIf = "!formErrors && form.get('website').invalid && (form.controls.website.dirty || form.controls.website.touched)">Enter a valid url</p>
+                     </div>
+                  </div>
+               </div>
+               <label class="contact-sec-form">{{'contact_person_details' | translate}}</label>
+               <div class="row">
+                  <div class="col-sm-6">
+                     <div class="form-group">
+                        <label for="contact_person">{{'contact_person_details' | translate }}</label>
+                        <input type="text" class="form-control" formControlName = "contact_person" id="contact_person" [attr.placeholder]="'write_contact_person_name' | translate">
+                        <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.contact_person}}</p>
+                     </div>
+                  </div>
+                  <div class="col-sm-6">
+                     <div class="form-group">
+                        <label for="contact_person_role">{{'role' | translate}}</label>
+                        <input type="text" class="form-control" formControlName = "contact_person_role" id="contact_person_role" [attr.placeholder]="'write_contact_person_role' | translate">
+                        <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.contact_person_role}}</p>
+                     </div>
+                  </div>
+                  <div class="col-sm-6">
+                     <div class="form-group">
+                        <label for="contact_person_number">{{'mobile' | translate}}</label>
+                        <input type="text" class="form-control" formControlName = "contact_person_number" id="contact_person_number"  [attr.placeholder]="'write_contact_person_mobile_number' | translate">
+                        <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.contact_person_number}}</p>
+                        <p class="form-error pt-1" *ngIf = "!formErrors && form.get('contact_person_number').invalid && (form.controls.contact_person_number.dirty || form.controls.contact_person_number.touched)">Enter valid mobile number</p>
+                     </div>
+                  </div>
+                  <div class="col-sm-6">
+                     <div class="form-group">
+                        <label>{{'contact_email' | translate}}</label>
+                        <input type="text" class="form-control" id="contact_person_email" formControlName = "contact_person_email" [attr.placeholder]="'write_contact_person_email' | translate">
+                        <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.contact_person_email}}</p>
+                        <p class="form-error pt-1" *ngIf = "!formErrors && form.get('contact_person_email').invalid && (form.controls.contact_person_email.dirty || form.controls.contact_person_email.touched)">Enter valid email</p>
+                     </div>
+                  </div>
+                  <div class="col-sm-12">
+                     <div class="form-group add-kpi-textarea">
+                        <span style="float: right;" class="text-grey">{{form?.value.address != null ? form?.value.address?.length : 0}} {{'characters' | translate}}</span>
+                        <label for="address">{{'address' | translate}}</label>
+                        <textarea class="form-control" rows="11" id="address" formControlName = "address" [attr.placeholder]="'write_contact_person_address' | translate"></textarea>
+                     </div>
+                  </div>
+               </div>
+               <div class="row">
+                  <div class="col-sm-12">
+                     <div class="d-block justify-content-left border-0 mt-3">
+                        <button type="button" data-toggle="modal" data-target="#signal-lost"
+                           class="btn  btn-active" (click)="save()"
+                           [disabled]="form.invalid || AppStore.loading || (fileUploadProgress != 0 && fileUploadProgress != 100)">
+                           {{ AppStore.loading  ? getButtonText('loading') : getButtonText('save') }}</button>
+                        <button type="button" data-toggle="modal" data-target="#signal-lost"
+                           class="btn " (click)="save(true)"
+                           [disabled]="form.invalid || AppStore.loading || (fileUploadProgress != 0 && fileUploadProgress != 100)">
+                           {{ AppStore.loading  ? getButtonText('loading') : getButtonText('save_close') }}</button>
+                        <button type="button" data-toggle="modal" data-target="#error-message"
+                           class="btn " (click)="cancel()">
+                           {{ AppStore.loading  ? getButtonText('loading') : getButtonText('cancel') }}</button>
+                     </div>
+                  </div>
+               </div>
+            </form>
+         </div>
+         <!-- Modal footer -->
+      </div>
+   </div>
+</div>
+<!-- add-user-btn-popup End -->
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #deletePopup  data-backdrop="static" data-keyboard="false">
+   <app-delete-popup [source] = "deleteObject"></app-delete-popup>
+</div>
+
+<!------------------- Delete Confirmation Modal End --------------------------->

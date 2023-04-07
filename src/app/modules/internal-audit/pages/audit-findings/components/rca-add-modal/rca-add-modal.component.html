@@ -1,0 +1,140 @@
+<button type="button" class="close" (click)="cancel()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+
+
+<div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header">
+            <h4 class="modal-title">{{'root_cause_analysis' | translate}}</h4>
+            <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
+        </div>
+
+        <!-- Modal body -->
+        <div class="modal-body form-body pt-0">
+            <hr class="cmn-line mt-1">
+            <form [formGroup]="rcaForm" *mobxAutorun>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label for="name">{{'root_cause_category' | translate}}<span class="form-error">*</span></label>
+                            <div class="clearfix d-flex">
+                                <div class="multiple-plain-ngselect w-100">
+                                    <ng-select [placeholder]="'select_root_cause_categoryy' | translate"  [multiple]="false"
+                                        formControlName="root_cause_category_id"
+                                        (search)="searchRootCauseCategory($event)"
+                                        (change)="eventChange('root_cause_category')" (open)="getRootCauseCategory()">
+                                        <ng-option [value]="root.id"
+                                            *ngFor="let root of RootCauseCategoryMasterStore.allItems">
+                                            {{root.title.length > 80 ? root.title.substring(0,80)+' ...' : root.title }}
+                                        </ng-option>
+                                    </ng-select>
+                                    
+
+                                    <p style="color: red;" *ngIf="formErrors"> {{formErrors.root_cause_category_ids}}
+                                    </p>
+                                </div>
+                                <button class="btn multi-add-user ml-2" style="width:38px;" 
+                                *ngIf = "AuthStore.getActivityPermission(1000,'CREATE_ROOT_CAUSE_CATEGORY')"(click)="addRootCauseCategory()" ><i
+                                    class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="col-sm-6">
+
+
+                        <div class="form-group">
+                            <label for="name">{{'root_cause_sub_category' | translate}}<span class="form-error">*</span></label>
+                            <div class="clearfix d-flex">
+                                <div class="multiple-plain-ngselect  w-100">
+                                    <ng-select [placeholder]="'select_root_cause_category' | translate" [multiple]="false"
+                                        formControlName="root_cause_sub_category_id"
+                                        (search)="searchRootCauseSubCategory($event)">
+                                        <ng-option [value]="root.id"
+                                            *ngFor="let root of RootCauseSubCategoryMasterStore.allItems">
+                                            {{root.title.length > 80 ? root.title.substring(0,80)+' ...' : root.title }}
+                                        </ng-option>
+                                    </ng-select>
+                                    <p style="color: red;" *ngIf="formErrors"> {{formErrors.root_cause_sub_category_id}}
+                                    </p>
+                                </div>
+                                <button class="btn multi-add-user ml-2" style="width:38px;" 
+                                *ngIf = "AuthStore.getActivityPermission(1000,'CREATE_ROOT_CAUSE_SUB_CATEGORY')" (click)="addRootCauseSubCategory()" ><i
+                                    class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+
+
+
+                    </div>
+
+                    <div class="col-sm-12">
+                        <div class="form-group" *ngIf="!rcaForm.value.id">
+                            <label class="question-head-text"><span class="question-icon pulse-effect"><i
+                                        class="fas fa-question-circle"></i></span> Why {{whyValue}} <span class="form-error">*</span></label>
+                            
+                            <p style="color: red;" *ngIf="formErrors"> {{formErrors.why}}</p>
+                        </div>
+
+                        <div class="form-group" *ngIf="rcaForm.value.id">
+                            <label class="question-head-text"><span class="question-icon pulse-effect"><i
+                                        class="fas fa-question-circle"></i></span> {{rcaForm.value.why}} <span class="form-error">*</span></label>
+                            
+                            <p style="color: red;" *ngIf="formErrors"> {{formErrors.why}}</p>
+                        </div>
+                    </div>
+
+
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <div class="clearfix">
+                            
+                                <label class="float-left">{{'description' | translate}}<span class="form-error">*</span>
+                                </label>
+                                <span class="float-right"><p class="text-grey mb-0">{{rcaForm?.value.description != null ? rcaForm?.value.description?.length : 0}}
+                                    {{'characters' | translate}}</p></span>
+                            </div>
+                            
+                            <!-- <input type="text" class="form-control"> -->
+                            <textarea class="form-control" formControlName="description" rows="3" id="comment12"
+                                placeholder="Description"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="d-block justify-content-left border-0 mt-3">
+                            <button type="submit" class="btn btn-active" (click)="save()"
+                                [disabled]="rcaForm.invalid || AppStore.loading">{{ AppStore.loading  ? 'Loading...' : 'Save & Next' }}</button>
+                            <button type="button" data-toggle="modal" data-target="#signal-lost"
+                                class="btn" (click)="save(true)"
+                                [disabled]="rcaForm.invalid || AppStore.loading">{{ AppStore.loading  ? 'Loading...' : 'Save & Finish' }}</button>
+                            <button type="button" data-toggle="modal" data-target="#error-message"
+                                class="btn"
+                                (click)="cancel()">{{ AppStore.loading  ? 'Loading...' : 'Cancel' }}</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <!-- Modal footer -->
+    </div>
+</div>
+
+
+
+<!-- Add Root Cause Category Pop Begin -->
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #rootCauseCategoryformModal>
+    <app-root-cause-categories-modal *ngIf = "rootCauseCtaegoryObject" [source] = "rootCauseCtaegoryObject">
+
+    </app-root-cause-categories-modal>
+ </div>
+
+ <!-- Modal part -->
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #rootCauseSubCategoryformModal>
+    <app-root-cause-sub-categories-modal *ngIf="rootCauseSubCategoryObject" [source]="rootCauseSubCategoryObject">
+    </app-root-cause-sub-categories-modal>
+</div>

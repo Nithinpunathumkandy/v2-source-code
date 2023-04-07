@@ -1,0 +1,98 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navBar>
+    <app-sub-menu>-</app-sub-menu>
+    <div class="module-name-block module-name-block-space float-left">
+      <a class="dropdown module-title">{{'business_continuity_plans'|translate}}</a>
+    </div>
+
+</nav>
+<main class="mt-3 acl-page">
+   <div class="container-fluid">
+      <app-filter-menu></app-filter-menu>
+     <div class="audit-program-box audit-page-table-main">
+      <div class="row mb-2">
+         <div class="col-sm-12">
+            <div class="bg-white top-left-tab-new oc-tab-menu-bg clearfix">
+               <ul class="nav oc-tab-menu clearfix">
+                  <li > <a data-toggle="pill" [ngClass]="BcpStore.selectedStatusCategory == 'all' ? 'active show': ''" (click)="sortedStatusItems('all',1,true)">{{'all' | translate}}</a> </li>
+                  <li > <a data-toggle="pill" [ngClass]="BcpStore.selectedStatusCategory == 'archived' ? 'active show': ''" (click)="sortedStatusItems('archived',1,true)">{{'archived' | translate}}</a> </li>
+               </ul>
+            </div>
+         </div>
+      </div>
+       <div class="row" *mobxAutorun>
+          <div class="col-sm-12">
+             <div class="full-width-table mb-3">
+             <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll" 
+                    *ngIf="BcpStore.loaded && BcpStore.BcpList.length!=0 && AuthStore.getActivityPermission(100,'BUSINESS_CONTINUITY_PLAN_LIST')">
+                <thead>
+                   <tr>
+                      <th class="border-top-0 text-center" width="2%">#</th>
+                      <th class="border-top-0 pointer" width="6%" (click)="setSort('business_continuity_plans.reference_code')">{{'ref_id'|translate}}
+                        <img *ngIf="BcpStore.orderItem == 'business_continuity_plans.reference_code'"
+                        [attr.src]="BcpStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                        class="sort-down-pics">
+                      </th>
+                      <th class="border-top-0 pointer" width="38%" (click)="setSort('business_continuity_plans.title')">{{'bcp_title' | translate}}
+                        <img *ngIf="BcpStore.orderItem == 'business_continuity_plans.title'"
+                        [attr.src]="BcpStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                        class="sort-down-pics">
+                      </th>
+                      <th class="border-top-0" width="24%">{{'departments' | translate}}</th>
+                      <th class="border-top-0" width="8%">{{'version' | translate}}</th>
+     
+                      <th class="border-top-0 text-center" width="8%">{{'bcp_list_status' | translate}}</th>
+                   </tr>
+                </thead>
+                <tbody>
+                   <tr [attr.title] = "'View '+bcp.title" (click)="AuthStore.getActivityPermission(100,'BUSINESS_CONTINUITY_PLAN_DETAIL') ? gotoBcpDetails(bcp.id) : ''" class="edit-and-delete-main" *ngFor="let bcp of BcpStore.BcpList| paginate: {currentPage:BcpStore?.currentPage, itemsPerPage:BcpStore?.itemsPerPage,totalItems:BcpStore?.totalItems};let ind=index">
+                      <td class="pointer text-center">{{(BcpStore?.currentPage - 1) * BcpStore?.itemsPerPage + (ind + 1)}}</td>
+                      <td class="pointer">{{bcp.reference_code}}</td>
+                      <td class="pointer">{{bcp.title}}</td>
+                      <td class="pointer">{{bcp.departments}}</td>
+                      <td class="pointer">{{bcp.version}}</td>
+
+                      <td class="text-center pointer"><div [attr.class]="'dot-div '+bcp.business_continuity_plan_status_label+'-dot'">{{bcp.business_continuity_plan_status_title}}</div>
+
+                       <div class="edit-option-show" style="margin: 30px 0 0 0; " *ngIf = "bcp.business_continuity_plan_status_type == 'draft'">
+                          <a *ngIf = "bcp.business_continuity_plan_status_type == 'draft' && AuthStore.getActivityPermission(100,'UPDATE_BUSINESS_CONTINUITY_PLAN')" (click)="editBcp(bcp.id)" [attr.title] = "'edit' | translate"><i class="fas fa-pen"></i></a>
+                          <a *ngIf = "bcp.business_continuity_plan_status_type == 'draft' && AuthStore.getActivityPermission(100,'DELETE_BUSINESS_CONTINUITY_PLAN')" (click)="deleteConfirm(bcp.id)" [attr.title] = "'delete' | translate"><i class="fas fa-trash"></i></a>
+                      </div>
+
+                      </td>
+                   </tr>
+                </tbody>
+             </table>
+            </div>
+            <p class="float-right bold mb-0" *ngIf="BcpStore.loaded && BcpStore.totalItems > 0">{{'total_Items' | translate}}:{{BcpStore.totalItems}}</p>
+             <div *ngIf="BcpStore.loaded && BcpStore.totalItems>BcpStore.itemsPerPage" class="col-sm-12">
+              <ul class="pagination justify-content-center mt-3">
+                  <div class="list">
+                      <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate" (pageChange)="sortedStatusItems(BcpStore.selectedStatusCategory,$event)" class="my-pagination"></pagination-controls> 
+                  </div>
+              </ul>
+          </div>
+          </div>
+       </div>
+       <ng-container *mobxAutorun>
+        <app-no-data *ngIf="BcpStore.loaded && BcpStore.BcpList.length==0"></app-no-data>
+    </ng-container>
+    <ng-container *mobxAutorun>
+       <app-bcm-table-loader *ngIf="!BcpStore.loaded"></app-bcm-table-loader>
+    </ng-container>
+     </div>
+   </div>
+ </main>
+
+  <div class="modal modal-style-1 popup-full-width fade" id="new-bcp" data-keyboard="false" data-backdrop="static" #formModal>
+    <app-add-bcp *ngIf = "bcpObject.type" [source] = "bcpObject"></app-add-bcp>
+  </div>
+
+  <div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source] = "popupObject"></app-delete-popup>
+  </div>
+
+  <div class="modal modal-style-1 email-popup-new fade" data-backdrop="static" data-keyboard="false"
+  id="email-notification-popup" #mailConfirmationPopup>
+  <app-mail-send-popup [source] = "mailConfirmationData"></app-mail-send-popup>
+</div>

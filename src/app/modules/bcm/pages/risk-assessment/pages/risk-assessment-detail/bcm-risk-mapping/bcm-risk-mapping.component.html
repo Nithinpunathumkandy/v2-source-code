@@ -1,0 +1,728 @@
+<ng-container *mobxAutorun>
+    <div class="tab-pane tab-edit-class" id="risk-mapping"
+        *ngIf="AuthStore.getActivityPermission(2800,'RISK_MAPPING_LIST') && BcmRiskMappingStore.loaded">
+
+        <!-- common-tab-md starts -->
+        <div class="common-tab-md tab-same-height clearfix">
+            <div class="tab-common-left-md">
+                <div class=" issues-tab">
+                    <!-- tab menu start -->
+                    <ul class="nav nav-tabs nav-tabs--vertical nav-tabs--left vertical-tab" role="navigation">
+                        <li class="nav-item"> <a (click)="gotoSection('control')" href="#tab-one" class="nav-link active"
+                            data-toggle="tab" role="tab" aria-controls="ipsum" aria-selected="false"> {{'controls' |
+                            translate}}</a>
+                    </li>
+                        <li class="nav-item"> <a (click)="gotoSection('issue')" href="#tab-one" class="nav-link"
+                                data-toggle="tab" role="tab" aria-controls="ipsum" aria-selected="false"> {{'issues' |
+                                translate}}</a>
+                        </li>
+                        <li class="nav-item"> <a (click)="gotoSection('process')" class="nav-link" data-toggle="tab"
+                                role="tab" aria-controls="lorem" aria-selected="false">{{'processes' | translate}}</a>
+                        </li>
+
+                        <li class="nav-item" *ngIf="OrganizationModulesStore.checkOrganizationSubModulesPermission(300,4101)"> <a (click)="gotoSection('customer')" class="nav-link" data-toggle="tab"
+                                role="tab" aria-controls="lorem" aria-selected="false">{{'customers' | translate}}</a>
+                        </li>
+                        <li class="nav-item"> <a (click)="gotoSection('service')" class="nav-link" data-toggle="tab"
+                                role="tab" aria-controls="lorem" aria-selected="false">{{'service' | translate}}</a>
+                        </li>
+                        <!-- <li class="nav-item"> <a (click)="gotoSection('objective')" class="nav-link" data-toggle="tab"
+                            role="tab" aria-controls="lorem" aria-selected="false">{{'strategic_objectives' | translate}}</a>
+                        </li> -->
+                        <li class="nav-item"> <a (click)="gotoSection('assets')" class="nav-link" data-toggle="tab"
+                                role="tab" aria-controls="lorem" aria-selected="false">{{'assets' | translate}}</a>
+                        </li>
+                        <!-- <li class="nav-item"> <a (click)="gotoSection('focus-area')" class="nav-link" data-toggle="tab"
+                                role="tab" aria-controls="lorem" aria-selected="false">{{'strategic_focusarea' |
+                                translate}}</a>
+                        </li> -->
+                    </ul>
+                </div>
+                <!-- tab menu end -->
+            </div>
+
+
+            <div class="tab-common-left-content-m bg-white cmn-bdr p-3 min-height-83">
+                <div class="tab-content">
+
+                    <div *ngIf="selectedSection=='issue'" class="tab-pane fade active show" id="tab-one"
+                        role="tabpanel">
+                        <div class="cmn-bdr p-3 d-flex mb-3 align-items-center" *ngIf="AuthStore.getActivityPermission(2800,'ISSUE_RISK_MAPPING_CREATE')">
+                            <h6 class="mb-0 w-100">{{chooseButtonTitle}}</h6>
+                            <div class="text-right ml-2"  style="width: 100px;">
+                                <button type="button" class="btn btn-small mr-0" (click)="selectIssues()"
+                                *ngIf="BcmRiskMappingStore.loaded && issues?.length>0 && BcmRiskAssessmentStore.isProperEditUser()">Add</button>                            </div>
+                            </div>
+                    
+                        <div
+                            [ngClass]="BcmRiskMappingStore.loaded && issues?.length == 0?'audit-form-table w-100 not-fixed-table mb-3':'audit-form-table w-100 not-fixed-table mb-3 tab-inner-table-scroll'">
+                            <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll"
+                                *ngIf="BcmRiskMappingStore.loaded && issues?.length>0">
+                                <thead>
+                                <tr>
+                                    <th class="border-top-0" style="width: 2%;" >#</th>
+                                    <th class="border-top-0" style="width: 9%;" >{{'ref_id' | translate}}</th>
+                                    <th class="border-top-0" style="width: 23%;">{{'issue' | translate}}</th>
+                                    <th class="border-top-0" style="width: 14%;">{{'issue_types' | translate}}</th>
+                                    <th class="border-top-0" style="width: 15%;">{{'issue_category' | translate}}</th>
+                                    <th class="border-top-0" style="width: 16%;">{{'issue_domains' | translate}}</th>
+                                    <th class="border-top-0" style="width: 21%;">{{'departments' | translate}}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="edit-and-delete-main" *ngFor="let selected of issues; let list=index">
+                                    <td>{{list+1}}</td>
+                                    <td>#{{selected.reference_code}}</td>
+                                    <td>{{selected.issues_title?selected.issues_title:selected.title}}</td>
+                                    <td> <span *ngFor="let types of selected.issue_types_list"
+                                            class="risk-type-bx risk-type-bx-drop">
+                                            <i><img
+                                                    [attr.src]="types == 'Internal' ? 'assets/images/risk-type-icon.png' : 'assets/images/risk-type-icon-two.png'"></i>&nbsp;{{types}}
+                                        </span>
+                                    </td>
+                                    <td [attr.title]="selected.issue_categories">
+                                        <!-- {{selected.issue_categories}} -->
+                                        {{ selected.issue_categories?.length > 25 ? selected.issue_categories.substring(0,25)+'...' : selected.issue_categories}}
+                                    </td>
+                                    <td *ngIf="selected.issue_domains" [attr.title]="selected.issue_domains">
+                                        {{ selected.issue_domains?.length > 25 ? selected.issue_domains.substring(0,25)+'...' : selected.issue_domains }}
+                                    </td>
+                                    <td *ngIf="!selected.issue_domains">
+                                        {{ AppStore.noContentText }}
+                                    </td>
+                                    <td>
+                                        <div class="edit-option-show pointer" style="margin:6px 0 0 0">
+
+                                            <a [attr.title]="'delete'|translate"
+                                                (click)="deleteIssueMapping(selected.id)"><i
+                                                    class="fas fa-trash"></i></a>
+                                        </div>
+                                        {{selected.departments}}
+
+                                    </td>
+                                </tr>
+                            </tbody>
+
+
+                            </table>
+                            <ng-container *mobxAutorun>
+                                <app-no-data *ngIf="BcmRiskMappingStore.loaded && issues?.length == 0" [border]=false>
+                                </app-no-data>
+                            </ng-container>
+                        </div>
+
+                    </div>
+
+                    <div *ngIf="selectedSection=='control'" class="tab-pane fade active show" id="tab-two"
+                        role="tabpanel">
+                        <!-- <div class="no-fixed-table"> -->
+                        <div class="cmn-bdr p-3 d-flex mb-3 align-items-center" *ngIf="AuthStore.getActivityPermission(2800,'CONTROL_RISK_MAPPING_CREATE')">
+                            <h6 class="mb-0 w-100">{{chooseButtonTitle}}</h6>
+                            <div class="text-right ml-2"  style="width: 100px;">
+                                <button type="button" class="btn btn-small mr-0" (click)="selectControls()"
+                                *ngIf="BcmRiskMappingStore.loaded && issues?.length>0 && BcmRiskAssessmentStore.isProperEditUser()">Add</button>                            </div>
+                            </div>
+                        <div
+                            [ngClass]="BcmRiskMappingStore.loaded && controls?.length == 0?'audit-form-table w-100 risk-form-mapping-table form-table-scroll':'audit-form-table w-100 risk-form-mapping-table form-table-scroll table-scroll-small-device'">
+                            <table class="table table-bordered ordinary-table cmn-table-style mb-4"
+                                *ngIf="BcmRiskMappingStore.loaded && controls?.length>0">
+                                <tr>
+                                    <th class="border-top-0" width="2%">#</th>
+                                    <th class="border-top-0" width="10%">{{'ref_id' |
+                                        translate}}
+                                    </th>
+                                    <th class="border-top-0" width="88%">{{'title' | translate}}
+                                    </th>
+                            
+                                </tr>
+                                <tr class="edit-and-delete-main"
+                                *ngFor="let cntrl of controls; let list=index">
+                                    <td>{{list+1}}</td>
+                                    <td>{{cntrl.reference_code}}</td>
+                                    <td>
+                                        <div class="edit-option-show pointer" style="margin:6px 0 0 0">
+
+                                            <a [attr.title]="'delete'|translate"
+                                                (click)="deleteControlMapping(cntrl.id)"><i class="fas fa-trash"></i></a>
+                                        </div>
+                                        {{cntrl.issues_title?cntrl.issues_title:cntrl.title}}
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <ng-container *mobxAutorun>
+                                <app-no-data *ngIf="BcmRiskMappingStore.loaded && controls?.length == 0"
+                                    [border]=false>
+                                </app-no-data>
+                            </ng-container>
+
+                        </div>
+                    </div>
+
+                    <div *ngIf="selectedSection=='process'" class="tab-pane fade active show" id="tab-two"
+                        role="tabpanel">
+                        <!-- <div class="no-fixed-table"> -->
+                        <div
+                            [ngClass]="BcmRiskMappingStore.loaded && processes?.length == 0?'audit-form-table w-100 risk-form-mapping-table form-table-scroll':'audit-form-table w-100 risk-form-mapping-table form-table-scroll table-scroll-small-device'">
+
+                            <table class="table table-bordered ordinary-table cmn-table-style mb-4"
+                                *ngIf="BcmRiskMappingStore.loaded && processes?.length>0">
+                                <tr>
+                                    <th class="border-top-0" width="2%">#</th>
+                                    <th class="border-top-0" width="9%">{{'ref_id' | translate}}</th>
+                                    <th class="border-top-0" width="25%">{{'process_group' | translate}}</th>
+                                    <th class="border-top-0" width="35%">{{'process' | translate}}</th>
+                                    <th class="border-top-0" width="20%">{{'process_category' | translate}}</th>
+                                    <th class="border-top-0" width="24%">{{'departments' | translate}}</th>
+                                    <!-- <th class="border-top-0" width="19%">{{'risk_rating' | translate}}</th> -->
+                                    <!-- <th class="border-top-0" width="33%">Status</th> -->
+                                </tr>
+                                <tr class="edit-and-delete-main" *ngFor="let selected of processes; let list=index">
+                                    <td>{{list+1}}</td>
+                                    <td>#{{selected.reference_code}}</td>
+                                    <td>{{selected.process_group_title}}</td>
+                                    <td> {{selected.title}}
+                                    </td>
+                                    <td>{{selected.process_category.title}}</td>
+                                    <td>{{selected.department}}
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <ng-container *mobxAutorun>
+                                <app-no-data *ngIf="BcmRiskMappingStore.loaded && processes?.length == 0"
+                                    [border]=false>
+                                </app-no-data>
+                            </ng-container>
+
+                        </div>
+                    </div>
+                    <div *ngIf="selectedSection=='location'" class="tab-pane fade active show" id="tab-one"
+                        role="tabpanel">
+
+                        <div class="cmn-bdr p-3 d-flex mb-3 align-items-center">
+                            <h6 class="mb-0 w-100">{{chooseButtonTitle}}</h6>
+                            <div class="text-right ml-2"  style="width: 100px;">
+                                <button type="button" class="btn btn-small mr-0" (click)="selectLocations()"
+                                *ngIf="BcmRiskMappingStore.loaded && BcmRiskMappingStore.locations?.length>0 && BcmRiskAssessmentStore.isProperEditUser()">Add</button>                            </div>
+                            </div>
+                        <div
+                            [ngClass]="BcmRiskMappingStore.loaded && BcmRiskMappingStore.locations?.length == 0?'audit-form-table w-100 risk-form-mapping-table form-table-scroll':'audit-form-table w-100 risk-form-mapping-table form-table-scroll table-scroll-small-device'">
+                            <table class="table table-bordered ordinary-table cmn-table-style mb-4"
+                                *ngIf="BcmRiskMappingStore.loaded && BcmRiskMappingStore.locations?.length>0">
+                                <tr>
+
+                                    <th class="border-top-0" width="3%">#
+                                    </th>
+                                    <th class="border-top-0" width="97%">{{'title' |
+                                        translate}}</th>
+                                    <!-- <th class="border-top-0" width="32%">{{'status' |
+                                        translate}}
+                                    </th> -->
+
+                                </tr>
+                                <tr class="edit-and-delete-main"
+                                    *ngFor="let loc of BcmRiskMappingStore?.locations; let list=index">
+                                    <td>{{list+1}}</td>
+                                    <td>
+                                        <div class="edit-option-show pointer" style="margin:6px 0 0 0">
+
+                                            <a [attr.title]="'delete'|translate"
+                                                (click)="deleteLocationMapping(loc.id)"><i class="fas fa-trash"></i></a>
+                                        </div>
+                                        {{loc.title}}
+                                    </td>
+                                    <!-- <td>{{loc.status}}</td> -->
+
+
+                                </tr>
+
+
+
+                            </table>
+                            <ng-container *mobxAutorun>
+                                <app-no-data
+                                    *ngIf="BcmRiskMappingStore.loaded && BcmRiskMappingStore.locations?.length == 0"
+                                    [border]=false></app-no-data>
+                            </ng-container>
+                        </div>
+
+                    </div>
+
+                    <div *ngIf="selectedSection=='project'" class="tab-pane fade active show" id="tab-one"
+                        role="tabpanel">
+                      
+                        <div class="cmn-bdr p-3 d-flex mb-3 align-items-center">
+                            <h6 class="mb-0 w-100">{{chooseButtonTitle}}</h6>
+                            <div class="text-right ml-2"  style="width: 100px;">
+                                <button type="button" class="btn btn-small float-right mb-2" (click)="selectProjects()"
+                                *ngIf="BcmRiskMappingStore.loaded && BcmRiskMappingStore.projects?.length>0 && BcmRiskAssessmentStore.isProperEditUser()">Add</button>                         
+                             </div>
+                            </div>
+                        <div
+                            [ngClass]="BcmRiskMappingStore.loaded && BcmRiskMappingStore.projects?.length == 0?'audit-form-table w-100 risk-form-mapping-table form-table-scroll':'audit-form-table w-100 risk-form-mapping-table form-table-scroll table-scroll-small-device'">
+                            <table class="table table-bordered ordinary-table cmn-table-style mb-4"
+                                *ngIf="BcmRiskMappingStore.loaded && BcmRiskMappingStore.projects?.length>0">
+                                <tr>
+
+                                    <th class="border-top-0" width="3%">#
+                                    </th>
+                                    <th class="border-top-0" width="31%">{{'title' |
+                                        translate}}</th>
+                                    <th class="border-top-0" width="32%">{{'manager_name' |
+                                        translate}}
+                                    </th>
+                                    <th class="border-top-0" width="9%">{{'member_count' |
+                                        translate}}</th>
+                                    <th class="border-top-0" width="9%">{{'location' | translate}}
+                                    </th>
+
+                                </tr>
+                                <tr class="edit-and-delete-main"
+                                    *ngFor="let proj of BcmRiskMappingStore?.projects; let list=index">
+                                    <td>{{list+1}}</td>
+                                    <td> {{proj.title}}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg"
+                                            *ngIf="proj.project_manager_first_name">
+                                            <img [attr.src]="proj.project_manager_image_token?createImageUrl(proj.project_manager_image_token):getDefaultImage('user-logo')"
+                                                width="30px" height="30px" class="rounded-circle">
+
+                                            <div>
+                                                <h6>{{proj.project_manager_first_name}}
+                                                    {{proj.project_manager_last_name}}</h6>
+                                                <span>{{proj.project_manager_designation?proj.project_manager_designation:AppStore.noContentText}}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <p *ngIf="!proj.project_manager_first_name">{{AppStore.noContentText}}</p>
+                                    </td>
+                                    <td>{{proj.member_count}}</td>
+                                    <td>
+                                        <div class="edit-option-show pointer" style="margin:6px 0 0 0">
+
+                                            <a [attr.title]="'delete'|translate"
+                                                (click)="deleteProjectMapping(proj.id)"><i class="fas fa-trash"></i></a>
+                                        </div>{{proj.location_title?proj.location_title:AppStore.noContentText}}
+                                    </td>
+
+                                </tr>
+
+                            </table>
+                            <ng-container *mobxAutorun>
+                                <app-no-data
+                                    *ngIf="BcmRiskMappingStore.loaded && BcmRiskMappingStore.projects?.length == 0"
+                                    [border]=false></app-no-data>
+                            </ng-container>
+                        </div>
+
+                    </div>
+
+                    <div *ngIf="selectedSection=='product'" class="tab-pane fade active show" id="tab-one"
+                        role="tabpanel">
+                      
+                        <div class="cmn-bdr p-3 d-flex mb-3 align-items-center">
+                            <h6 class="mb-0 w-100">{{chooseButtonTitle}}</h6>
+                            <div class="text-right ml-2"  style="width: 100px;">
+                                <button type="button" class="btn btn-small float-right mb-2" (click)="selectProducts()"
+                                *ngIf="BcmRiskMappingStore.loaded && BcmRiskMappingStore.products?.length>0 && BcmRiskAssessmentStore.isProperEditUser()">Add</button>                        
+                             </div>
+                            </div>
+                        <div
+                            [ngClass]="BcmRiskMappingStore.loaded && BcmRiskMappingStore.products?.length == 0?'audit-form-table w-100 risk-form-mapping-table form-table-scroll':'audit-form-table w-100 risk-form-mapping-table form-table-scroll table-scroll-small-device'">
+                            <table class="table table-bordered ordinary-table cmn-table-style mb-4"
+                                *ngIf="BcmRiskMappingStore.loaded && BcmRiskMappingStore.products?.length>0">
+                                <tr>
+
+                                    <th class="border-top-0" width="3%">#
+                                    </th>
+                                    <th class="border-top-0" width="31%">{{'title' |
+                                        translate}}</th>
+                                    <th class="border-top-0" width="32%">{{'description' |
+                                        translate}}
+                                    </th>
+                                    <!-- <th class="border-top-0" width="9%">{{'member_count' |
+                                        translate}}</th>
+                                    <th class="border-top-0" width="9%">{{'location' | translate}}
+                                    </th> -->
+
+                                </tr>
+                                <tr class="edit-and-delete-main"
+                                    *ngFor="let prod of BcmRiskMappingStore?.products; let list=index">
+                                    <td>{{list+1}}</td>
+                                    <td> {{prod.title}}
+                                    </td>
+                                    <td>
+                                        <div class="edit-option-show pointer" style="margin:6px 0 0 0">
+
+                                            <a [attr.title]="'delete'|translate"
+                                                (click)="deleteProductMapping(prod.id)"><i class="fas fa-trash"></i></a>
+                                        </div>{{prod.description?prod.description:AppStore.noContentText}}
+                                    </td>
+                                    <!-- <td>{{prod.member_count}}</td>
+                                    <td>{{prod.location_title?prod.location_title:AppStore.noContentText}}
+                                    </td> -->
+
+                                </tr>
+
+                            </table>
+                            <ng-container *mobxAutorun>
+                                <app-no-data
+                                    *ngIf="BcmRiskMappingStore.loaded && BcmRiskMappingStore.products?.length == 0"
+                                    [border]=false></app-no-data>
+                            </ng-container>
+                        </div>
+
+                    </div>
+
+                    <div *ngIf="selectedSection=='customer'" class="tab-pane fade active show" id="tab-one"
+                        role="tabpanel">
+                        
+                        <div class="cmn-bdr p-3 d-flex mb-3 align-items-center">
+                            <h6 class="mb-0 w-100">{{chooseButtonTitle}}</h6>
+                            <div class="text-right ml-2"  style="width: 100px;">
+                                <button type="button" class="btn btn-small float-right mb-2" (click)="selectCustomers()"
+                                *ngIf="BcmRiskMappingStore.loaded && BcmRiskMappingStore.customers?.length>0 && BcmRiskAssessmentStore.isProperEditUser()">Add</button>                        
+                             </div>
+                            </div>
+                        <div
+                            [ngClass]="BcmRiskMappingStore.loaded && BcmRiskMappingStore.customers?.length == 0?'audit-form-table w-100 risk-form-mapping-table form-table-scroll':'audit-form-table w-100 risk-form-mapping-table form-table-scroll table-scroll-small-device'">
+                            <table class="table table-bordered ordinary-table cmn-table-style mb-4"
+                                *ngIf="BcmRiskMappingStore.loaded && BcmRiskMappingStore.customers?.length>0">
+                                <tr>
+
+                                    <th class="border-top-0" width="3%">#
+                                    </th>
+                                    <th class="border-top-0" width="31%">{{'title' |
+                                        translate}}</th>
+                                    <th class="border-top-0" width="32%">{{'contact_person' |
+                                        translate}}
+                                    </th>
+                                    <th class="border-top-0" width="9%">{{'address' |
+                                        translate}}</th>
+                                    <!-- <th class="border-top-0" width="9%">{{'location' | translate}}
+                                    </th> -->
+
+                                </tr>
+                                <tr class="edit-and-delete-main"
+                                    *ngFor="let cust of BcmRiskMappingStore?.customers; let list=index">
+                                    <td>{{list+1}}</td>
+                                    <td> {{cust.title}}
+                                    </td>
+                                    <td>{{cust.contact_person?cust.contact_person:AppStore.noContentText}}
+                                    </td>
+                                    <td>
+                                        <div class="edit-option-show pointer" style="margin:6px 0 0 0">
+
+                                            <a [attr.title]="'delete'|translate"
+                                                (click)="deleteCustomerMapping(cust.id)"><i
+                                                    class="fas fa-trash"></i></a>
+                                        </div>{{cust.address?cust.address:AppStore.noContentText}}
+                                    </td>
+                                    <!-- <td>{{cust.location_title?cust.location_title:AppStore.noContentText}}
+                                    </td> -->
+
+                                </tr>
+
+                            </table>
+                            <ng-container *mobxAutorun>
+                                <app-no-data
+                                    *ngIf="BcmRiskMappingStore.loaded && BcmRiskMappingStore.customers?.length == 0"
+                                    [border]=false></app-no-data>
+                            </ng-container>
+                        </div>
+
+                    </div>
+
+                    <div *ngIf="selectedSection=='objective'" class="tab-pane fade active show" id="tab-one"
+                        role="tabpanel">
+                      
+
+                        <div class="cmn-bdr p-3 d-flex mb-3 align-items-center">
+                            <h6 class="mb-0 w-100">{{chooseButtonTitle}}</h6>
+                            <div class="text-right ml-2"  style="width: 100px;">
+                                <button type="button" class="btn btn-small float-right mb-2" (click)="selectObjectives()"
+                                *ngIf="BcmRiskMappingStore.loaded && BcmRiskMappingStore.objectives?.length>0 && BcmRiskAssessmentStore.isProperEditUser()">Add</button>                       
+                             </div>
+                            </div>
+                        <div
+                            [ngClass]="BcmRiskMappingStore.loaded && BcmRiskMappingStore.objectives?.length == 0?'audit-form-table w-100 risk-form-mapping-table form-table-scroll':'audit-form-table w-100 risk-form-mapping-table form-table-scroll table-scroll-small-device'">
+                            <table class="table table-bordered ordinary-table cmn-table-style mb-4"
+                                *ngIf="BcmRiskMappingStore.loaded && BcmRiskMappingStore.objectives?.length>0">
+                                <tr>
+
+                                    <th class="border-top-0" width="10%">#
+                                    </th>
+                                    <th class="border-top-0" width="90%">{{'title' |
+                                        translate}}</th>
+
+                                </tr>
+                                <tr class="edit-and-delete-main"
+                                    *ngFor="let obj of BcmRiskMappingStore?.objectives; let list=index">
+                                    <td>{{list+1}}</td>
+                                    <td>
+                                        <div class="edit-option-show pointer" style="margin:6px 0 0 0">
+
+                                            <a [attr.title]="'delete'|translate"
+                                                (click)="deleteObjectiveMapping(obj.id)"><i
+                                                    class="fas fa-trash"></i></a>
+                                        </div>
+                                        {{obj.title}}
+                                    </td>
+
+
+
+                                </tr>
+
+                            </table>
+                            <ng-container *mobxAutorun>
+                                <app-no-data
+                                    *ngIf="BcmRiskMappingStore.loaded && BcmRiskMappingStore.objectives?.length == 0"
+                                    [border]=false></app-no-data>
+                            </ng-container>
+                        </div>
+
+                    </div>
+
+                    <div *ngIf="selectedSection=='assets'" class="tab-pane fade active show" id="tab-one"
+                        role="tabpanel">
+                        
+
+                        <div class="cmn-bdr p-3 d-flex mb-3 align-items-center">
+                            <h6 class="mb-0 w-100">{{chooseButtonTitle}}</h6>
+                            <div class="text-right ml-2"  style="width: 100px;">
+                                <button type="button" class="btn btn-small float-right mb-2" (click)="selectAssets()"
+                                *ngIf="BcmRiskMappingStore.loaded && BcmRiskMappingStore.assets?.length>0 && BcmRiskAssessmentStore.isProperEditUser()">Add</button>                       
+                             </div>
+                            </div>
+                        <div
+                            [ngClass]="BcmRiskMappingStore.loaded && BcmRiskMappingStore.assets?.length == 0?'audit-form-table w-100 risk-form-mapping-table form-table-scroll':'audit-form-table w-100 risk-form-mapping-table form-table-scroll table-scroll-small-device'">
+                            <table class="table table-bordered ordinary-table cmn-table-style mb-4"
+                                *ngIf="BcmRiskMappingStore.loaded && BcmRiskMappingStore.assets?.length>0">
+                                <tr>
+
+                                    <th class="border-top-0" width="10%">#
+                                    </th>
+                                    <th class="border-top-0" width="90%">{{'title' |
+                                        translate}}</th>
+
+                                </tr>
+                                <tr class="edit-and-delete-main"
+                                    *ngFor="let obj of BcmRiskMappingStore?.assets; let list=index">
+                                    <td>{{list+1}}</td>
+                                    <td>
+                                        <div class="edit-option-show pointer" style="margin:6px 0 0 0">
+
+                                            <a [attr.title]="'delete'|translate" (click)="deleteAssets(obj.id)"><i
+                                                    class="fas fa-trash"></i></a>
+                                        </div>
+                                        {{obj.title}}
+                                    </td>
+
+
+
+                                </tr>
+
+                            </table>
+                            <ng-container *mobxAutorun>
+                                <app-no-data
+                                    *ngIf="BcmRiskMappingStore.loaded && BcmRiskMappingStore.assets?.length == 0"
+                                    [border]=false></app-no-data>
+                            </ng-container>
+                        </div>
+
+                    </div>
+
+                    <div *ngIf="selectedSection=='focus-area'" class="tab-pane fade active show" id="tab-one"
+                        role="tabpanel">
+
+                        <div class="cmn-bdr p-3 d-flex mb-3 align-items-center">
+                            <h6 class="mb-0 w-100">{{chooseButtonTitle}}</h6>
+                            <div class="text-right ml-2"  style="width: 100px;">
+                                <button type="button" class="btn btn-small float-right mb-2" (click)="selectFocusArea()"
+                                *ngIf="BcmRiskMappingStore.loaded && BcmRiskMappingStore.focusAreas?.length>0 && BcmRiskAssessmentStore.isProperEditUser()">Add</button>                       
+                             </div>
+                            </div>
+                        <div
+                            [ngClass]="BcmRiskMappingStore.loaded && BcmRiskMappingStore.focusAreas?.length == 0?'audit-form-table w-100 risk-form-mapping-table form-table-scroll':'audit-form-table w-100 risk-form-mapping-table form-table-scroll table-scroll-small-device'">
+                            <table class="table table-bordered ordinary-table cmn-table-style mb-4"
+                                *ngIf="BcmRiskMappingStore.loaded && BcmRiskMappingStore.focusAreas?.length>0">
+                                <tr>
+
+                                    <th class="border-top-0" width="10%">#
+                                    </th>
+                                    <th class="border-top-0" width="90%">{{'title' |
+                                        translate}}</th>
+
+                                </tr>
+                                <tr class="edit-and-delete-main"
+                                    *ngFor="let obj of BcmRiskMappingStore?.focusAreas; let list=index">
+                                    <td>{{list+1}}</td>
+                                    <td>
+                                        <div class="edit-option-show pointer" style="margin:6px 0 0 0">
+
+                                            <a [attr.title]="'delete'|translate" (click)="deleteFocusArea(obj.id)"><i
+                                                    class="fas fa-trash"></i></a>
+                                        </div>
+                                        {{obj.title}}
+                                    </td>
+
+
+
+                                </tr>
+
+                            </table>
+                            <ng-container *mobxAutorun>
+                                <app-no-data
+                                    *ngIf="BcmRiskMappingStore.loaded && BcmRiskMappingStore.focusAreas.length == 0"
+                                    [border]=false></app-no-data>
+                            </ng-container>
+                        </div>
+
+                    </div>
+                    <div *ngIf="selectedSection=='service'" class="tab-pane fade active show" id="tab-one"
+                        role="tabpanel">
+                       
+
+                        <div class="cmn-bdr p-3 d-flex mb-3 align-items-center">
+                            <h6 class="mb-0 w-100">{{chooseButtonTitle}}</h6>
+                            <div class="text-right ml-2"  style="width: 100px;">
+                                <button type="button" class="btn btn-small float-right mb-2" (click)="selectServices()"
+                                *ngIf="BcmRiskMappingStore.loaded && services?.length>0">Add</button>                      
+                             </div>
+                            </div>
+                        <div
+                            [ngClass]="BcmRiskMappingStore.loaded && services?.length == 0?'audit-form-table w-100 risk-form-mapping-table form-table-scroll':'audit-form-table w-100 risk-form-mapping-table form-table-scroll table-scroll-small-device'">
+                            <table class="table table-bordered ordinary-table cmn-table-style mb-4"
+                                *ngIf="BcmRiskMappingStore.loaded && services?.length>0">
+                                <tr>
+                                    <th class="border-top-0" width="2%">#</th>
+                                    <th class="border-top-0" width="37%">{{'title' | translate}}</th>
+                                    <!-- <th class="border-top-0" width="20%">{{'service_category' | translate}}</th>  -->
+                                    <th class="border-top-0" width="61%">{{'description' | translate}}</th>
+                                </tr>
+
+                                <tr class="edit-and-delete-main" *ngFor="let selected of services; let list=index">
+                                    <td>{{list+1}}</td>
+                                    <td>{{selected.title}}</td>
+                                    <!-- <td>{{selected.service_category?.title}}</td>            -->
+                                    <td>
+                                        <div class="edit-option-show pointer" style="margin:6px 0 0 0">
+
+                                            <a [attr.title]="'delete'|translate"
+                                                (click)="deleteServiceMapping(selected.id)"><i
+                                                    class="fas fa-trash"></i></a>
+                                        </div>
+                                        {{selected?.description ? selected?.description : AppStore.noContentText}}
+
+                                    </td>
+                                </tr>
+
+                            </table>
+                            <ng-container *mobxAutorun>
+                                <app-no-data *ngIf="BcmRiskMappingStore.loaded && services?.length == 0" [border]=false>
+                                </app-no-data>
+                            </ng-container>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <!-- common-tab-md end -->
+
+    </div>
+</ng-container>
+
+<ng-container *mobxAutorun>
+    <div *ngIf="!BcmRiskMappingStore.loaded">
+        <app-risk-mapping-loader></app-risk-mapping-loader>
+    </div>
+</ng-container>
+<div class="modal modal-style-1 popup-full-width fade" id="process-popup" data-keyboard="false" data-backdrop="static"
+    #processFormModal *mobxAutorun>
+    <app-addprocess *ngIf="IssueListStore.processes_form_modal" [processModalTitle]="modalObject">
+    </app-addprocess>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="issue-popup" data-keyboard="false" data-backdrop="static"
+    #issueFormModal *mobxAutorun>
+    <app-issues-modal *ngIf="IssueListStore.issue_select_form_modal" [issuesModalTitle]="modalObject">
+    </app-issues-modal>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" data-backdrop="static" data-keyboard="false" #deletePopup>
+    <app-delete-popup [source]="deleteObject"></app-delete-popup>
+</div>
+
+<!------------------- Delete Confirmation Modal End --------------------------->
+
+<div class="modal modal-style-1 popup-full-width fade" id="location-popup" data-keyboard="false" data-backdrop="static"
+    #locationFormModal *mobxAutorun>
+    <app-location-list-modal *ngIf="LocationMasterStore.location_select_form_modal"
+        [locationModalTitle]="modalObject"></app-location-list-modal>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="project-popup" data-keyboard="false" data-backdrop="static"
+    #projectFormModal *mobxAutorun>
+    <app-projects-modal *ngIf="BusinessProjectsStore.project_select_form_modal"
+        [projectsModalTitle]="modalObject"></app-projects-modal>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="project-popup" data-keyboard="false" data-backdrop="static"
+    #productFormModal *mobxAutorun>
+    <app-product-modal *ngIf="BusinessProductsStore.product_select_form_modal" [productModalTitle]="modalObject">
+    </app-product-modal>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="project-popup" data-keyboard="false" data-backdrop="static"
+    #customerFormModal *mobxAutorun>
+    <app-customer-modal *ngIf="BusinessCustomersStore.customer_select_form_modal"
+        [customerModalTitle]="modalObject"></app-customer-modal>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="project-popup" data-keyboard="false" data-backdrop="static"
+    #objectiveFormModal *mobxAutorun>
+    <app-strategic-objective-mapping *ngIf="StrategicObjectiveMasterStore?.objective_select_form_modal"
+        [strategicModalTitle]="modalObject"></app-strategic-objective-mapping>
+</div>
+
+<!-- -------Control Choose Popup -->
+<div class="modal modal-style-1 popup-full-width fade" id="process-popup" data-keyboard="false" data-backdrop="static"
+    #controlFormModal *mobxAutorun>
+    <app-control-popup *ngIf=" ControlStore.control_select_form_modal" [controlsModalTitle]="modalObject">
+    </app-control-popup>
+</div>
+<!-- -------Control Choose Popup -->
+
+<div class="modal modal-style-1 popup-full-width fade" id="project-popup" data-keyboard="false" data-backdrop="static"
+    #strategicFocusAreaModal *mobxAutorun>
+    <app-strategic-focus-area-mapping *ngIf="FocusAreaMasterStore?.objective_select_form_modal"
+        [strategicFocusAreaTitle]="modalObject"></app-strategic-focus-area-mapping>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="issue-popup" data-keyboard="false" data-backdrop="static"
+    #serviceFormModal *mobxAutorun>
+    <app-service-modal *ngIf="BusinessServiceStore.service_select_form_modal" [serviceModalTitle]="modalObject">
+    </app-service-modal>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="process-popup" data-keyboard="false" data-backdrop="static"
+    #assetsFormModal *mobxAutorun>
+    <app-asset-mapping *ngIf="AssetRegisterStore?.assets_select_form_modal" [assetModalTitle]="modalObject">
+    </app-asset-mapping>
+</div>
+
+
+<!-- 
+<th class="border-top-0" style="width: ;"  width="2%">#</th>
+<th class="border-top-0" style="width: ;" width="9%">{{'ref_id' | translate}}</th>
+<th class="border-top-0" style="width: ;" width="23%">{{'issue' | translate}}</th>
+<th class="border-top-0" style="width: ;" width="14%">{{'issue_types' | translate}}</th>
+<th class="border-top-0" style="width: ;" width="15%">{{'issue_category' | translate}}</th>
+<th class="border-top-0" style="width: ;" width="16%">{{'issue_domains' | translate}}</th>
+<th class="border-top-0" style="width: ;" width="21%">{{'departments' | translate}}</th> -->

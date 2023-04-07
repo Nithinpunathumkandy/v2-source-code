@@ -1,0 +1,472 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #editBar>
+    <app-breadcrumb-menu></app-breadcrumb-menu>
+    <app-sub-menu></app-sub-menu>
+</nav>
+<main class="mt-3 organization-page tab-btns-five">
+    <div class="container-fluid">
+      <div class="organization-form-page" *mobxAutorun>
+         <div [ngStyle] = "{'display':!showForm ? 'none' : 'block'}" >
+            <form id="regForm"  class="organization-multi-stup-form issue-multi-stup-form multi-stup-form-common">
+               <!-- Circles which indicates the steps of the form: -->
+              <div id="header-sroll-form" class="form-indicates-sec clearfix" #formSteps>
+                <span class="step pointer" (click) = "changeStep(0)" *ngIf="is_duration" ><span class="multi-form-nbr">{{is_duration ? '1' : '0'}}</span>{{'Duration' | translate}}</span>
+                <span class="step pointer" (click) = "changeStep(1)" *ngIf="is_teams" ><span class="multi-form-nbr">{{is_duration && is_teams? '2' : '1'}}</span>{{'Team' | translate}}</span>
+                <span class="step pointer"  (click) = "changeStep(2)" *ngIf="is_scopeofwork" ><span class="multi-form-nbr">{{getTabNumerScope()}}</span>{{'Scope Of Work' | translate}}</span>
+                <span class="step pointer" (click) = "changeStep(3)" *ngIf="is_budget" ><span class="multi-form-nbr">{{getTabNumberOfBudget()}}</span>{{'Budget' | translate}}</span>
+                <span class="step pointer" (click) = "changeStep(4)" *ngIf="is_delivarables" ><span class="multi-form-nbr">{{getTabNumberOfDelivarables()}}</span>{{'Deliverables' | translate}}</span>
+              </div>
+              <!-- One "tab" for each step in the form: -->
+              <div class="tab" id="duration" *ngIf="is_duration" ><!-- tab start -->
+                <div class="mb-5">
+                                
+                    <div class="row">
+                       <div class="col-lg-5 col-sm-12">
+                          <h6>Existing Date</h6>
+                          <hr class="mt-0">
+
+                          <div class="row">
+                             <div class="col-sm-6">
+                                <div class="form-group">
+                                   <label for="name">Start Date</label>
+                                   <p>{{ProjectMonitoringStore.individualDetails?.start_date | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</p>
+                               </div>
+                             </div>
+                             <div class="col-sm-6">
+                                <div class="form-group">
+                                   <label for="name">End Date</label>
+                                   <p>{{ProjectMonitoringStore.individualDetails?.target_date | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</p>
+                               </div>
+                             </div>
+                          </div>
+
+                       </div>
+                       <div class="col-lg-5 col-sm-12">
+                          <h6>New Date</h6>
+                          <hr class="mt-0">
+
+                          <div class="row">
+                             <div class="col-sm-6">
+                                <div class="form-group">
+                                   <label for="name">Start Date</label>
+                                   <div class="input-group">
+                                       <input class="form-control" id="establish_date"  [placeholder]="'Select start date' | translate"
+                                              name="dp" [(ngModel)]="startDate" [ngModelOptions]="{standalone: true}" ngbDatepicker #c="ngbDatepicker">
+                                       <div class="input-group-append">
+                                         <button class="btn btn-outline-secondary calendar" (click)="c.toggle()" type="button"><i class="fas fa-calendar-alt"></i></button>
+                                       </div>
+     
+                                     </div>
+                                 </div>
+                             </div>
+                             <div class="col-sm-6">
+                                <div class="form-group">
+                                   <label for="name">End Date</label>
+                                   <div class="input-group">
+                                       <input class="form-control" id="establish_date"  [placeholder]="'Select end date' | translate"
+                                              name="dp" [(ngModel)]="endDate" [minDate]="startDate" [ngModelOptions]="{standalone: true}" ngbDatepicker #d="ngbDatepicker">
+                                       <div class="input-group-append">
+                                         <button class="btn btn-outline-secondary calendar" (click)="d.toggle()" type="button"><i class="fas fa-calendar-alt"></i></button>
+                                       </div>
+     
+                                     </div>
+                                 </div>
+                             </div>
+                          </div>
+
+                       </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="name">Justification<span class="form-error">*</span></label>
+                        <textarea class="form-control" [(ngModel)]="durationJustification" [ngModelOptions]="{standalone: true}" rows="3" id="comment" placeholder="Write short justification of duration"></textarea>
+                     </div>
+                       
+
+
+
+
+                   </div>
+              </div><!-- tab end -->
+              <div class="tab" id="teams" *ngIf="is_teams"><!-- tab start -->
+                <div class="mb-5">
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label for="name">{{'project_manager' | translate}}<span class="form-error">*</span></label>
+                                <div class="clearfix">
+                                   <div class="multiple-plain-ngselect">
+                                      <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                                      [placeholder]="'select_user' | translate " [(ngModel)]="project_manager_id" 
+                                      [ngModelOptions]="{standalone: true}" 
+                                      (clear)="getUsers()" (search)="searchUers($event)" [multiple]="false"
+                                      (open)="getUsers()"  [searchFn]="customSearchFn">
+                                      <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                         <img *ngIf = "item?.image_token" class="ng-select-user-display" height="15" width="15" [attr.src]="createImagePreview('user-profile-picture',item.image_token)" onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                         <img *ngIf = "!item?.image_token" class="ng-select-user-display" height="15" width="15" [attr.src]="getDefaultImage('user-logo')"/>
+                                         <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b><span aria-hidden="true" (click) = "clear(item)" style="border:none;" class="ng-value-icon left">×</span>
+                                      </ng-template>
+                                      <ng-template ng-option-tmp let-item="item" let-index="index">
+                                         <div class="user-post-department-pic">
+                                            <img *ngIf = "item?.image_token" class="ng-select-user-display" height="25" width="25" [attr.src]="createImagePreview('user-profile-picture',item.image_token)" onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                            <img *ngIf = "!item?.image_token" class="ng-select-user-display" height="25" width="25" [attr.src]="getDefaultImage('user-logo')"/>
+                                         </div>
+                                         <div class="user-post-department-div">
+                                            <b>{{getStringsFormatted([item.first_name,item.last_name],35,' ') | titlecase}}</b>
+                                            <p class="user-post-department-multiple">{{getStringsFormatted([item.designation_title,' '+item.department],35,',')}}</p>
+                                         </div>
+                                      </ng-template>
+                                      </ng-select>
+                                   </div>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors && formErrors.project_manager_id">
+                                   {{formErrors.project_manager_id}}
+                                </p>
+                             </div>
+                        </div>
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label for="name">{{'assitant_project_managers' | translate}}<span class="form-error">*</span></label>
+                                <div class="clearfix">
+                                   <div class="multiple-plain-ngselect">
+                                      <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                                      [placeholder]="'select_users' | translate " [(ngModel)]="assistant_manager_ids" 
+                                      [ngModelOptions]="{standalone: true}"
+                                      (clear)="getUsers()" (search)="searchUers($event)" multiple="true"
+                                      (open)="getUsers()"  [searchFn]="customSearchFn">
+                                      <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                         <img *ngIf = "item?.image_token" class="ng-select-user-display" height="15" width="15" [attr.src]="createImagePreview('user-profile-picture',item.image_token)" onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                         <img *ngIf = "!item?.image_token" class="ng-select-user-display" height="15" width="15" [attr.src]="getDefaultImage('user-logo')"/>
+                                         <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b><span aria-hidden="true" (click) = "clear(item)" style="border:none;" class="ng-value-icon left">×</span>
+                                      </ng-template>
+                                      <ng-template ng-option-tmp let-item="item" let-index="index">
+                                         <div class="user-post-department-pic">
+                                            <img *ngIf = "item?.image_token" class="ng-select-user-display" height="25" width="25" [attr.src]="createImagePreview('user-profile-picture',item.image_token)" onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                            <img *ngIf = "!item?.image_token" class="ng-select-user-display" height="25" width="25" [attr.src]="getDefaultImage('user-logo')"/>
+                                         </div>
+                                         <div class="user-post-department-div">
+                                            <b>{{getStringsFormatted([item.first_name,item.last_name],35,' ') | titlecase}}</b>
+                                            <p class="user-post-department-multiple">{{getStringsFormatted([item.designation_title,' '+item.department],35,',')}}</p>
+                                         </div>
+                                      </ng-template>
+                                      </ng-select>
+                                   </div>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors && formErrors.assistant_project_managers_ids">
+                                   {{formErrors.assistant_project_managers_ids}}
+                                </p>
+                             </div>
+                        </div>
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label for="name">{{'project_members' | translate}}<span class="form-error">*</span></label>
+                                <div class="clearfix">
+                                   <div class="multiple-plain-ngselect">
+                                      <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                                      [placeholder]="'select_users' | translate " [(ngModel)]="member_ids"
+                                      [ngModelOptions]="{standalone: true}" 
+                                      (clear)="getUsers()" (search)="searchUers($event)" multiple="true"
+                                      (open)="getUsers()"  [searchFn]="customSearchFn">
+                                      <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                         <img *ngIf = "item?.image_token" class="ng-select-user-display" height="15" width="15" [attr.src]="createImagePreview('user-profile-picture',item.image_token)" onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                         <img *ngIf = "!item?.image_token" class="ng-select-user-display" height="15" width="15" [attr.src]="getDefaultImage('user-logo')"/>
+                                         <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b><span aria-hidden="true" (click) = "clear(item)" style="border:none;" class="ng-value-icon left">×</span>
+                                      </ng-template>
+                                      <ng-template ng-option-tmp let-item="item" let-index="index">
+                                         <div class="user-post-department-pic">
+                                            <img *ngIf = "item?.image_token" class="ng-select-user-display" height="25" width="25" [attr.src]="createImagePreview('user-profile-picture',item.image_token)" onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                            <img *ngIf = "!item?.image_token" class="ng-select-user-display" height="25" width="25" [attr.src]="getDefaultImage('user-logo')"/>
+                                         </div>
+                                         <div class="user-post-department-div">
+                                            <b>{{getStringsFormatted([item.first_name,item.last_name],35,' ') | titlecase}}</b>
+                                            <p class="user-post-department-multiple">{{getStringsFormatted([item.designation_title,' '+item.department],35,',')}}</p>
+                                         </div>
+                                      </ng-template>
+                                      </ng-select>
+                                   </div>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors && formErrors.project_members_ids">
+                                   {{formErrors.project_members_ids}}
+                                </p>
+                             </div>
+                        </div> 
+                       <!-- <div class="col-sm-12">
+                          <div class="form-group">
+                             <label>External User </label>
+                             <button type="button" class="btn btn-small ml-3"  >Add</button>
+
+                             <div class="audit-form-table w-100 not-fixed-table mt-1">
+                                <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                                  <thead>
+                                     <tr>
+                                        <th class="border-top-0" width="4%">#</th>
+                                        <th class="border-top-0" width="20%">Name</th>
+                                        <th class="border-top-0" width="20%">Designation</th>
+                                        <th class="border-top-0" width="21%">Company Name</th>
+                                        <th class="border-top-0" width="15%">Age</th>
+                                        <th class="border-top-0" width="20%">Mobile Number</th>
+                                     </tr>
+                                  </thead>
+                                  <tbody>
+                                   <tr>
+                                      <td class="text-center">1</td>
+                                      <td>Rahul Nath</td>
+                                      <td>UI Developer</td>
+                                      <td>Excelledia</td>
+                                      <td class="text-center">25</td>
+                                      <td>8086552033</td>
+                                   </tr>
+                                   <tr>
+                                      <td class="text-center">2</td>
+                                      <td>Melvin Thomas</td>
+                                      <td>Manager</td>
+                                      <td>Excelledia</td>
+                                      <td class="text-center">30</td>
+                                      <td>8256554200</td>
+                                   </tr>
+                                  </tbody>
+                               </table>
+
+                             </div>
+
+                          </div>
+
+                       </div> -->
+                       <div class="col-sm-12">
+                          <div class="form-group">
+                              <label for="name">Justification<span class="form-error">*</span></label>
+                              <textarea [(ngModel)]="teamsJustification" [ngModelOptions]="{standalone: true}" class="form-control" rows="3" id="comment" placeholder="Write short justification of teams"></textarea>
+                           </div>
+                       </div>
+                    </div>
+
+
+
+                </div>
+    
+              </div><!-- tab end -->
+              <div class="tab" id="scope" *ngIf="is_scopeofwork"><!-- tab start -->
+                <div class="mb-5">
+
+                    <div class="row">
+                       <div class="col-sm-12">
+                          <div class="form-group">
+                             <label>In scope</label>
+                             <div class="clearfix d-flex">
+                                <input type="text" [(ngModel)]="inScope" [ngModelOptions]="{standalone: true}" class="form-control w-100" placeholder="Title of the in scope">
+                                <button (click)="addInscope()" type="button" class="btn multi-add-user ml-2" style="width: 42px;"><i class="fas fa-plus"></i></button> 
+                              </div>
+                              <ul class="arrowlist mt-1 p-0">
+                                <li *ngFor="let inscope of inScopes"><span *ngIf="inscope.type != 'deleted'">{{inscope.title}}</span>
+                                    <button  (click)="deleteIn(inscope)" type="button" 
+                                    class="btn btn-small float-right btn-small-delete"
+                                    style="border: none;"><i
+                                        class="fas fa-trash"></i></button></li>
+                              </ul>
+
+                              <div class="col-md-6 text-left">
+                                <ng-container *mobxAutorun>
+                                    <app-context-no-data *ngIf="inScopes.length == 0" [sourceData]="noDataSourceInscope"></app-context-no-data>
+                                  </ng-container>
+                              </div>
+
+                         </div>
+                       </div>
+                       <div class="col-sm-12">
+                          <div class="form-group">
+                             <label>Out of scope</label>
+                             <div class="clearfix d-flex">
+                                <input type="text" [(ngModel)]="outScope" [ngModelOptions]="{standalone: true}" class="form-control w-100" placeholder="Title of the out scope">
+                                <button (click)="addOutScope()" type="button" class="btn multi-add-user ml-2" style="width: 42px;"><i class="fas fa-plus"></i></button> 
+                              </div>
+                              <ul class="arrowlist mt-1 p-0">
+                                <li *ngFor="let outscope of outScopes"><span *ngIf="outscope.type != 'deleted'">{{outscope.title}}</span>
+                                    <button  (click)="deleteOut(outscope)" type="button" 
+                                    class="btn btn-small float-right btn-small-delete"
+                                    style="border: none;"><i
+                                        class="fas fa-trash"></i></button></li>
+                              </ul>
+                              <div class="col-md-6 text-left">
+                                <ng-container *mobxAutorun>
+                                    <app-context-no-data *ngIf="outScopes.length == 0" [sourceData]="noDataSourceOutScope"></app-context-no-data>
+                                  </ng-container>
+                              </div>
+                         </div>
+                       </div>
+                       <div class="col-sm-12">
+                          <div class="form-group">
+                             <label>Assumptions</label>
+                             <div class="clearfix d-flex">
+                                <input type="text" [(ngModel)]="assumption" [ngModelOptions]="{standalone: true}" class="form-control w-100" placeholder="Title of assumption">
+                                <button (click)="addAssumption()" type="button" class="btn multi-add-user ml-2" style="width: 42px;"><i class="fas fa-plus"></i></button> 
+                              </div>
+                              <ul class="arrowlist mt-1 p-0">
+                                <li *ngFor="let assumption of assumptions"><span *ngIf="assumption.type != 'deleted'">{{assumption.title}}
+                                    <button  (click)="deleteAssumption(assumption)" type="button" 
+                                    class="btn btn-small float-right btn-small-delete"
+                                    style="border: none;"><i
+                                        class="fas fa-trash"></i></button>
+                                </span></li>
+                              </ul>
+                              <div class="col-md-6 text-left">
+                                <ng-container *mobxAutorun>
+                                    <app-context-no-data *ngIf="assumptions.length == 0" [sourceData]="noDataSourceAssumption"></app-context-no-data>
+                                  </ng-container>
+                              </div>
+                         </div>
+                       </div>
+                       <div class="col-sm-12">
+                          <div class="form-group">
+                              <label for="name">Justification<span class="form-error">*</span></label>
+                              <textarea class="form-control" [(ngModel)]="scopeJustification" [ngModelOptions]="{standalone: true}" rows="3" id="comment" placeholder="Write short justification of scope"></textarea>
+                           </div>
+                       </div>
+                    </div>
+
+
+
+
+                </div>
+              </div><!-- tab end -->
+              <div class="tab" id="budget" *ngIf="is_budget"><!-- tab start -->
+                <h2 class="fs-title mb-2">Budget <button type="button" class="btn btn-small ml-2" data-toggle="modal" (click)="addBudgets()">Add</button></h2>
+                            <!-- <p class="mb-4">Lorem ipsum is a dummy text of printing and type setting industry ever since 1500.</p> -->
+                <div class="mb-5">
+                                
+
+                                
+                    <div class="row">
+                       <div class="col-sm-12">
+                          <div class="table-w-70 not-fixed-table mb-3">
+                                   <table class="table table-bordered ordinary-table audit-page-table mb-1 text-center">
+                                     <thead>
+                                        <tr>
+                                           <th class="border-top-0" width="4%">#</th>
+                                           <th class="border-top-0" width="16%">Year</th>
+                                           <th class="border-top-0" width="40%">Existing Budget</th>
+                                           <th class="border-top-0" width="40%">New Budget</th>
+                                        </tr>
+                                     </thead>
+                                     <tbody>
+                                      <tr class="edit-and-delete-main" *ngFor="let amt of ProjectChangeRequestStore.budgets;let num = index">
+                                         <td [ngStyle]="{color: amt.type=='deleted'? 'red' : ''}">{{num+1}}</td>
+                                         <td [ngStyle]="{color: amt.type=='deleted'? 'red' : ''}">{{amt.year}}</td>
+                                         <td [ngStyle]="{color: amt.type=='deleted'? 'red' : ''}">{{amt.amount}}
+
+                                         </td>
+                                         <td>
+                                            <div class="form-group mb-0"><input [readOnly]="amt.type=='deleted'" type="text" [(ngModel)]="amt.newAmount" [ngModelOptions]="{standalone: true}" class="form-control ng-pristine ng-valid ng-touched"></div>  
+                                            <div *ngIf="amt.type !='deleted'" class="edit-option-show">
+                                             <!-- edit-and-delete starts -->
+                                             <a  (click)="delete(amt)"><i class="fas fa-trash"></i></a>
+                                         </div>                                       </td>
+                                      </tr>
+                                     </tbody>
+                                  </table>
+
+                                </div>
+                       </div>
+
+
+
+
+
+                       <div class="col-sm-12">
+                             <div class="form-group">
+                                 <label for="name">Justification<span class="form-error">*</span></label>
+                                 <textarea [(ngModel)]="budgetJustification" [ngModelOptions]="{standalone: true}" class="form-control" rows="3" id="comment" placeholder="Write short justification of budgets"></textarea>
+                              </div>
+                          </div>
+                    </div>
+
+
+                   </div>
+    
+              </div><!-- tab end -->
+              <div class="tab" id="deliverables" *ngIf="is_delivarables"><!-- tab start -->
+                <div class="mb-5">
+                                
+
+                    <div class="row">
+                     <div class="col-sm-12">
+                        <div class="form-group">
+                              <label>Tilte</label>
+                              <div class="clearfix d-flex">
+                                 <input [(ngModel)]="deliverable" [ngModelOptions]="{standalone: true}" type="text" class="form-control w-100" placeholder="Title of the deliverable">
+                                 <button (click)="addNewDeliverables()" type="button" class="btn multi-add-user ml-2" style="width: 42px;"><i class="fas fa-plus"></i></button> 
+                               </div>
+                               <ul class="arrowlist mt-1 p-0">
+                                 <li *ngFor="let del of deliverables"><span>{{del}} <button  (click)="deleteDelivarables(del)" type="button" 
+                                    class="btn btn-small float-right btn-small-delete"
+                                    style="border: none;"><i
+                                        class="fas fa-trash"></i></button></span> </li>
+                               </ul>
+                               <div class="col-md-6 text-left">
+                                <ng-container *mobxAutorun>
+                                    <app-context-no-data *ngIf="deliverables.length == 0" [sourceData]="noDataSourceDeliverables"></app-context-no-data>
+                                  </ng-container>
+                              </div>
+                          </div>
+                     </div>
+                     <div class="col-sm-12">
+                        <div class="form-group">
+                               <label for="name">Justification<span class="form-error">*</span></label>
+                               <textarea [(ngModel)]="deliverableJustification" [ngModelOptions]="{standalone: true}" class="form-control" rows="3" id="comment" placeholder="Write short justification of deliverables"></textarea>
+                            </div>
+                     </div>
+                    </div>
+
+
+
+                 </div>
+    
+    
+    
+    
+    
+              </div><!-- tab end -->
+              <div style="overflow:auto;">
+                <div class="form-next-page-btns" style="float:left;">
+                  <button class="btn btn-active" type="button" id="nextBtn" (click)="nextPrev(1)" [disabled]="AppStore.loading || validateItems() ">{{getButtonText(nextButtonText)}}</button>
+                  <button class="btn" type="button" id="prevBtn" (click)="nextPrev(-1)" [disabled]="AppStore.loading">{{getButtonText(previousButtonText)}}</button>
+                  <button class="btn" type="button" (click)="cancelClicked()" >{{getButtonText('cancel')}}</button>
+                </div>
+              </div>
+              
+            </form>
+         </div>
+        
+         <div [ngStyle] = "{'display':!showForm ? 'block' : 'none'}">
+            <app-table-loader></app-table-loader>
+         </div>
+
+
+
+      </div>
+
+
+
+
+
+
+      
+    </div>
+    <!-- <div class="modal modal-style-1 popup-full-width fade" id="add-four-popup" data-keyboard="false"
+      data-backdrop="static" #issueFormModal *mobxAutorun>
+      <button type="button" class="close" data-dismiss="modal"><i class="lni-close"></i><span>esc</span></button>
+      <app-issue *ngIf = "IssueListStore.issue_form_modal"></app-issue>
+   </div> -->
+  </main>
+
+  <div class="modal modal-style-1 popup-full-width fade" id="add-actionplan-popup" data-keyboard="false"
+data-backdrop="static" #budget>
+   <app-change-request-budget-modal [source] = "budgetObject" *ngIf = "budgetObject.type"></app-change-request-budget-modal>
+
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+   <app-delete-popup [source]="popupObject"></app-delete-popup>
+ </div>

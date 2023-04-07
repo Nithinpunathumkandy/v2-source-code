@@ -1,0 +1,784 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navigationBar>
+
+    <app-breadcrumb-menu></app-breadcrumb-menu>
+    <app-sub-menu></app-sub-menu>
+
+</nav>
+
+<main class="mt-3 organization-page">
+    <div class="container-fluid">
+        <div class="organization-form-page master-form-page" *mobxAutorun>
+
+            <form id="regForm" [formGroup]="form" class="organization-multi-stup-form multi-stup-form-common"
+                action="/action_page.php">
+                <!-- Circles which indicates the steps of the form: -->
+                <div id="header-sroll-form" class="form-indicates-sec clearfix" #formSteps>
+                    <span class="step pointer" (click)="changeStep(0)"><span class="multi-form-nbr">1</span>{{'info' |
+                        translate}}</span>
+                    <span class="step pointer" (click)="changeStep(1)"><span
+                            class="multi-form-nbr">2</span>{{'auditable_items' | translate}}</span>
+                    <span class="step pointer" (click)="changeStep(2)"><span
+                            class="multi-form-nbr">3</span>{{'checklist' | translate}}</span>
+                    <span class="step pointer" (click)="changeStep(3)"><span
+                            class="multi-form-nbr">4</span>{{'preview_save' | translate}}</span>
+
+                </div>
+                <!-- One "tab" for each step in the form: -->
+                <div class="tab">
+                    <!-- tab start -->
+
+                    <div class="row">
+
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="name">{{ 'audit_schedule' | translate }} <span
+                                        class="form-error">*</span></label>
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect ">
+                                        <ng-select [placeholder]="'select_audit_schedule'| translate" [multiple]="false"
+                                            formControlName="audit_schedule_id" (search)="searchAuditSchedule($event)"
+                                            (open)="getAuditSchedule()" (change)="getAuditScheduleID($event)">
+                                            <ng-container *ngFor="let schedulef of  AuditSchedulesStore.allItems">
+                                                <ng-option [value]="schedulef.id" *ngIf="schedulef?.is_audited==1">
+                                                    <span title="{{schedulef.audit_plan}}">{{schedulef.audit_plan.length
+                                                        >
+                                                        20 ? schedulef.audit_plan.substring(0,50)+' ...' :
+                                                        schedulef.audit_plan}}</span>
+                                                    <span
+                                                        title="{{schedulef.department}}">({{schedulef.department.length
+                                                        >
+                                                        20 ? schedulef.department.substring(0,10)+' ...' :
+                                                        schedulef.department}})</span>
+                                                </ng-option>
+                                            </ng-container>
+                                        </ng-select>
+                                        <p style="color: red;" *ngIf="formErrors"> {{formErrors.audit_schedule_id}}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="name">{{'finding_category' | translate}} <span
+                                        class="form-error">*</span></label>
+                                <!-- <div class="clearfix">
+                                    <div class="multiple-plain-ngselect ">
+                                        <ng-select [placeholder]="'select_finding_category'| translate" [multiple]="false"
+                                            formControlName="finding_category_id" bindLabel="title"
+                                            (search)="searchFindingCategory($event)" (open)="getFindingCategory()">
+                                            <ng-option [value]="type"
+                                                *ngFor="let type of AuditFindingCategoryMasterStore.allItems">
+                                                {{type.title.length > 80 ? type.title.substring(0,80)+' ...' :
+                                                type.title}}
+                                            </ng-option>
+                                        </ng-select>
+                                        <p style="color: red;" *ngIf="formErrors"> {{formErrors.finding_category_id}}
+                                        </p>
+                                    </div>
+                                </div> -->
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect">
+                                        <ng-select 
+                                            [placeholder]="'select_finding_category' | translate" 
+                                            [multiple]="false"
+                                            [items]="AuditFindingCategoryMasterStore.allItems" 
+                                            formControlName="finding_category_id"
+                                            bindLabel="title"  
+                                            (search)="searchFindingCategory($event)" 
+                                            (open)="getFindingCategory()">
+                                            <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                                {{item?.title?.length > 60 ? (item.title | slice:0:60)+' ...' : item.title}}
+                                            </ng-template>
+                                            <ng-template ng-option-tmp let-item="item" let-index="index">
+                                                {{item?.title?.length > 80 ? (item.title | slice:0:80)+' ...' : item.title}}
+                                            </ng-template>
+                                        </ng-select>
+                                        <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.finding_category_id">
+                                            {{formErrors.finding_category_id}}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="name">{{'finding' | translate}} <span class="form-error">*</span></label>
+                                <input type="text" class="form-control" formControlName="title"
+                                    [placeholder]="'title_for_the_finding'| translate">
+                                <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.title ">
+                                    {{formErrors.title}}</p>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="name">{{'risk_rating' | translate}} <span
+                                        class="form-error">*</span></label>
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect ">
+                                        <ng-select [items]="RiskRatingMasterStore.allItems" bindLabel="title"
+                                            bindValue="id" [placeholder]="'select_risk_rating'| translate"
+                                            formControlName="risk_rating_id">
+                                            <ng-template ng-label-tmp let-item="item">
+                                                <div
+                                                    [ngClass]="item.label == 'orange'?'dot-div orange-dot':item.label == 'red'?'dot-div red-dot':item.label == 'yellow'?'dot-div yellow-dot':'dot-div green-dot'">
+                                                    {{item.title}}
+                                                </div>
+                                            </ng-template>
+                                            <ng-template ng-option-tmp let-item="item" let-index="index">
+                                                <div
+                                                    [ngClass]="item.label == 'orange'?'dot-div orange-dot':item.label == 'red'?'dot-div red-dot':item.label == 'yellow'?'dot-div yellow-dot':'dot-div green-dot'">
+                                                    {{item.title}}
+                                                </div>
+                                            </ng-template>
+                                        </ng-select>
+                                        <p class="pt-1" style="color: red;"
+                                            *ngIf="formErrors && formErrors.risk_rating_id ">
+                                            {{formErrors.risk_rating_id}}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+      
+
+                    </div>
+
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group add-kpi-textarea">
+                                <span style="float: right;" class="text-grey">{{form?.value.description != null ?
+                                    getDescriptionLength() : 0}}
+                                    Characters</span>
+
+                                <label for="name">{{'description' | translate}}</label>
+                                <ckeditor id="description" (change)="descriptionValueChange($event)" [editor]="Editor" formControlName="description"></ckeditor>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <div class="clearfix">
+
+                                    <label class="float-left">{{'recommendation' | translate}}
+                                    </label>
+                                    <span class="float-right">
+                                        <p class="text-grey mb-0">{{form?.value.recommendation != null ?
+                                            form?.value.recommendation?.length : 0}}
+                                            Characters</p>
+                                    </span>
+                                </div>
+
+                                <textarea class="form-control" formControlName="recommendation" rows="3" id="comment"
+                                    [placeholder]="'write_a_recommendation_for_the_finding'| translate"></textarea>
+                                <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.recommendation ">
+                                    {{formErrors.recommendation}}</p>
+
+
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <div class="clearfix">
+
+                                    <label class="float-left">{{'evidence' | translate}}
+                                    </label>
+                                    <span class="float-right">
+                                        <p class="text-grey mb-0">{{form?.value.evidence != null ?
+                                            form?.value.evidence?.length : 0}}
+                                            Characters</p>
+                                    </span>
+                                </div>
+
+                                <textarea class="form-control" formControlName="evidence" rows="3" id="comment"
+                                    [placeholder]="'write_evidence_for_the_finding'| translate"></textarea>
+                                <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.evidence ">
+                                    {{formErrors.evidence}}</p>
+
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <label for="name" class="label-style mb-0">{{'attachments' | translate}}</label>
+                    <!-- <div class="scroll-documents" #uploadArea>
+                        <div class="row m-0 upload-section">
+                            <div class="col-sm-3 costmz-logo-new mt-2">
+
+                                <div class="question-circle-inp" style="margin-right: 7px;">
+                                    <i class="far fa-question-circle"></i>
+                                    <div class="message-password-inp">
+                                        <p class="mb-0">{{'allowed_file_types' | translate}}
+                                            {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="form-group form-group-upload">
+                                    <div class="darag-dropifile-upload">
+                                        <div class="d-flex justify-content-center align-items-center text-center">
+                                            <div>
+                                                <img src="assets/images/drag-pic.png" class="drag-pic-files">
+                                                <div class="drag-file-name"> Drag &amp; Drop Your File Here </div>
+                                                <div class="upload-btn-wrapper">
+                                                    <input type="file" multiple name="myfile"
+                                                        (change)="onFileChange($event,'support-file')"
+                                                        [accept]="checkAcceptFileTypes('support-file')" />
+                                                    <button class="btn">Browse Files</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div [ngClass]="files.success? 'col-sm-3 up-pic-cf mt-2 hide_loader' : 'col-sm-3 up-pic-cf mt-2'"
+                                *ngFor="let files of fileUploadsArray">
+                                <div class="upload-pics edit-option file-upload-loader">
+                                    <circle-progress class="browse-form-pic" [percent]=files.uploadProgress
+                                        [title]=files.uploadProgress>
+                                    </circle-progress>
+                                </div>
+                            </div>
+
+                            <div [ngClass]="doc.is_deleted ? 'col-sm-3 up-pic-cf mt-2 image_deleted':'col-sm-3 up-pic-cf mt-2'"
+                                *ngFor="let doc of AuditFindingsStore.docDetails">
+                                <div class="upload-pics edit-option">
+                                    <div *ngIf="doc.preview" class="browse-form-pic"
+                                        [ngStyle]="{'background': 'url(' + doc.preview + ') , url(' + getDefaultImage('no-preview') + ') no-repeat 0 0 / cover '}">
+                                    </div>
+                                    <div class="browse-form-name clearfix">
+                                        <div class="float-left">
+                                            <h6>{{doc.name.length>15?doc.name.substring(0,15)+' ...':doc.name}}</h6>
+                                            <span>{{doc.size/1048576 | number:'0.2-2'}}MB</span>
+                                        </div>
+                                        <div class="browse-logo">
+                                            <img *ngIf="checkExtension(doc.ext,'excel') != -1"
+                                                src="/assets/images/md-xl.png">
+                                            <img *ngIf="checkExtension(doc.ext,'image') != -1"
+                                                src="/assets/images/md-jpg.png">
+                                            <img *ngIf="checkExtension(doc.ext,'doc') != -1"
+                                                src="/assets/images/md-doc.png">
+                                            <img *ngIf="checkExtension(doc.ext,'pdf') != -1"
+                                                src="/assets/images/md-pdf.png">
+                                        </div>
+                                    </div>
+                                    <div class="edit-option-show">
+                                        <a (click)="removeDocument(doc.token)"><i class="fas fa-trash"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div> -->
+            <!-- Common File Upload Starts Here -->
+            <div class="scroll-documents" #uploadArea>
+                <div class="thumb-pics-bg thumb-pics-col-4 clearfix thumb-pics-fix-text" style="padding-top: 0;">
+                   <div class="thumb-pics">
+                    <div class="question-circle-inp" style="margin-right: 7px;">
+                        <i class="far fa-question-circle"></i>
+                        <div class="message-password-inp">
+                            <p class="mb-0">{{'allowed_file_types' | translate}}
+                                {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                            </p>
+                        </div>
+                    </div>
+
+                      <div class="form-group form-group-upload">
+                         <div class="darag-dropifile-upload">
+                            <div class="d-flex justify-content-center align-items-center text-center">
+                               <div>
+                                  <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                                  <div class="drag-file-name"> Select or Upload Your File Here </div>
+                                  <div class="upload-btn-wrapper">                  
+                                     <button (click)="openFileUploadModal()" type="button" class="btn">{{'browse_files' | translate}}</button>
+                                  </div>
+                               </div>
+                            </div>
+                         </div>
+                      </div>
+                   </div>
+
+                      <div class="thumb-pics"  *ngFor="let docs of fileUploadPopupStore.displayFiles ;let i = index">
+                          <div class="upload-pics edit-option" data-toggle="modal">
+                            <div *ngIf="docs.id && !docs.preview" class="browse-form-pic"  [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                            </div>
+                              <div  *ngIf="docs.preview" class="browse-form-pic" [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">              
+                            </div>
+                             <div class="browse-form-name clearfix">
+                              <div class="float-left">
+                                <h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                </h6>
+                                <span *ngIf="docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-book"></i></span>
+                                <span  *ngIf="!docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-laptop"></i></span>
+                                <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                              </div>
+                              <div class="browse-logo">
+                                <img *ngIf="checkExtension(docs.ext,'image') != -1"
+                                    class="folder-picher" src="/assets/images/jpg-icone.png">
+                                <img *ngIf="checkExtension(docs.ext,'doc') != -1"
+                                    class="folder-picher" src="/assets/images/word-icone.png">
+                                <img *ngIf="checkExtension(docs.ext,'pdf') != -1"
+                                    class="folder-picher" src="/assets/images/pdf-icone.png">
+                                <img *ngIf="checkExtension(docs.ext,'excel') != -1"
+                                    class="folder-picher" src="/assets/images/excel-icone.png">
+                                <img *ngIf="checkExtension(docs.ext,'video') != -1"
+                                    class="folder-picher" src="/assets/images/md-video.png">
+                                <img *ngIf="checkExtension(docs.ext,'audio') != -1"
+                                    class="folder-picher" src="/assets/images/md-audio.png">
+                                <img *ngIf="checkExtension(docs.ext,'ppt') != -1"
+                                    class="folder-picher" src="/assets/images/md-ppt.png">
+                            </div>
+                             </div>
+                          </div>
+                       </div>
+
+          
+                </div>
+             </div>
+                        <!-- Common File Upload Ends Here -->
+               
+
+
+
+                </div><!-- tab end -->
+                <div class="tab">
+                    <!-- tab start -->
+                    <div class="row">
+                        <div class="col-sm-12">
+
+                            <div class="processes-issue audit-processes-issue clearfix">
+                                <h5><img src="/assets/images/controls-icon.png">{{ 'add_auditable_item' | translate }}
+                                </h5>
+
+                                <div class="float-right">
+
+                                    <a (click)="openAuditableItemModal()" class="btn">{{ 'map_auditable_items_with_finding' |
+                                        translate }}</a>
+                                </div>
+                            </div>
+                            <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.auditable_item_ids ">
+                                {{formErrors.auditable_item_ids}}</p>
+
+                            <div class="audit-form-table w-100 mb-4"
+                                *ngIf="AuditFindingsStore.auditableItemToDisplay.length > 0">
+                                <table class="table table-bordered ordinary-table cmn-table-style mb-2">
+                                    <thead>
+                                        <tr>
+                                            <th class="border-top-0 text text-center" width="3%">
+
+                                                #
+                                            </th>
+                                            <th class="border-top-0" width="8%">{{ 'ref_no' | translate}}</th>
+                                            <th class="border-top-0" width="50%">{{'title' | translate}}</th>
+
+                                            <th class="border-top-0" width="15%">{{'auditable_item_types' | translate}}
+                                            </th>
+                                            <th class="border-top-0" width="12%">{{'auditable_item_categories' |
+                                                translate}}</th>
+                                            <th class="border-top-0" width="14%">{{'risk_rating' | translate}}</th>
+
+
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="edit-and-delete-main"
+                                            *ngFor="let items of AuditFindingsStore.auditableItemToDisplay;let num=index">
+                                            <td class="text-center">
+
+                                                {{num+1}}</td>
+                                            <td>#{{items.reference_code}}</td>
+                                            <td>{{items.title}}</td>
+                                            <td>{{items.type ? items.type : AppStore.noContentText}}</td>
+                                            <td> {{items.category ? items.category : AppStore.noContentText}}</td>
+
+                                            <td *ngIf="items.risk_rating!=null">
+
+                                                <div class="edit-option-show" style="margin: 30px 0 0 0; ">
+
+                                                    <a (click)="deleteAuditableItem(items)"><i
+                                                            class="fas fa-trash"></i></a>
+                                                </div>
+                                                <div
+                                                    [ngClass]="items.risk_rating=='High'?'dot-div red-dot': items.risk_rating=='Medium'?'dot-div yellow-dot':items.risk_rating=='Low'?'dot-div green-dot':'dot-div red-dot'">
+                                                    {{items.risk_rating}}</div>
+                                            </td>
+                                            <td class="cursor-pointer" *ngIf="items.risk_rating==null">
+                                                <div class="edit-option-show" style="margin: 30px 0 0 0; ">
+
+                                                    <a (click)="deleteAuditableItem(items)"><i
+                                                            class="fas fa-trash"></i></a>
+                                                </div>
+                                                {{ AppStore.noContentText}}
+                                            </td>
+
+                                        </tr>
+
+
+
+                                    </tbody>
+                                </table>
+
+
+                            </div>
+
+
+                            <div class="mb-3">
+                                <app-no-data-list [source]="auditableItemEmptyList"
+                                    *ngIf="AuditFindingsStore.auditableItemToDisplay.length == 0"></app-no-data-list>
+                            </div>
+
+
+
+
+                        </div>
+
+
+
+
+                    </div>
+
+                </div><!-- tab end -->
+                <div class="tab">
+                    <!-- tab start -->
+                    <div class="row">
+
+                    <div class="col-sm-12">
+
+                        <div class="processes-issue audit-processes-issue clearfix">
+                            <h5><img src="/assets/images/controls-icon.png">{{ 'add_checklist' | translate }}</h5>
+
+                            <div class="float-right">
+
+                                <a (click)="openChecklistModal()" class="btn">{{ 'map_checklist_with_finding' | translate }}</a>
+                            </div>
+                        </div>
+                        <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.checklist_answer_ids ">
+                            {{formErrors.checklist_answer_ids}}</p>
+
+
+                        <div class="audit-form-table w-100 mb-4"
+                            *ngIf="AuditFindingsStore.ChecklistToDisplay.length > 0">
+                            <table class="table table-bordered ordinary-table cmn-table-style mb-2">
+                                <tr>
+                                    <th class="border-top-0 text-center" width="5%">#</th>
+                                    <th class="border-top-0" width="20%">{{ 'auditable_items' | translate }}</th>
+
+                                    <th class="border-top-0" width="55%">{{ 'question' | translate }}</th>
+                                    <th class="border-top-0" width="20%">{{'answer' | translate }}</th>
+                                </tr>
+                                <tr class="edit-and-delete-main"
+                                    *ngFor="let item of AuditFindingsStore.ChecklistToDisplay;let num=index">
+                                    <td class="text-center">{{num+1}}</td>
+                                    <td>{{item.auditable_item?.title ? item.auditable_item?.title :
+                                        AppStore.noContentText}}</td>
+                                    <td>{{item.checklist.title}}
+
+                                    </td>
+
+                                    <td *ngFor="let qst of item?.audit_checklist_answer_key?.language">
+
+                                        <div *ngIf="qst.pivot?.audit_checklist_answer_key_id==4"
+                                            class="dot-div orange-dot">{{qst.pivot?.title}}</div>
+                                        <div *ngIf="qst.pivot?.audit_checklist_answer_key_id==2"
+                                            class="dot-div green-dot">{{qst.pivot?.title}}</div>
+                                        <div *ngIf="qst.pivot?.audit_checklist_answer_key_id==3"
+                                            class="dot-div red-dot">{{qst.pivot?.title}}</div>
+                                        <div *ngIf="qst.pivot?.audit_checklist_answer_key_id==1"
+                                            class="dot-div yellow-dot">{{qst.pivot?.title}}</div>
+
+                                        <div class="edit-option-show" style="margin: 30px 0 0 0; ">
+
+                                            <a (click)="deleteChecklists(item)"><i class="fas fa-trash"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+
+
+                            </table>
+
+
+                        </div>
+
+
+                        <div class="mb-3">
+                            <app-no-data-list [source]="checklistEmptyList"
+                                *ngIf="AuditFindingsStore.ChecklistToDisplay.length == 0"></app-no-data-list>
+                        </div>
+                    </div>
+                </div>
+                </div><!-- tab end -->
+                <div class="tab">
+                    <!-- tab start -->
+                    <div class="row">
+                        <div class="col-sm-12 col-lg-12 audit-program-details-page-cnt pdg-mdl-line pt-0 pb-0">
+                            <div class="issue-top-sec">
+                                <div class="clearfix">
+                                    <h5 class="d-inline-block cmn-head-style label-tag-style">
+                                        <!-- <span
+                                            class="issue-smoal-head-text"></span> -->
+                                        {{form.value.title?form.value.title:AppStore.noContentText}}
+                                        <span class="draft-tag label-tag-style-tag label-left-arow-tag ml-3"
+                                            style="line-height: 16px; vertical-align: middle; margin-top: -5px;">
+                                            Draft</span>
+                                    </h5>
+                                </div>
+                                <div class="text-editor-content bullet-point-list" [innerHTML]="form.value.description | safeHtml">
+                                </div>
+                                <p *ngIf="form.value.description==null">{{AppStore.noContentText}}</p>
+                            </div>
+                            <br>
+                            <div class="row">
+                                <div class="col-lg-12 col-sm-12">
+                                    <h6>{{'recommendation' | translate}}</h6>
+                                    <p style="white-space: pre-wrap;">
+                                        {{form.value.recommendation?form.value.recommendation:AppStore.noContentText}}
+                                    </p>
+                                </div>
+
+                                <div class="col-lg-12 col-sm-12">
+                                    <h6>{{'evidence' | translate}}</h6>
+                                    <p style="white-space: pre-wrap;">
+                                        {{form.value.evidence?form.value.evidence:AppStore.noContentText}}</p>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-lg-4 col-sm-6">
+                                    <h6>{{ 'audit_schedule' | translate }}</h6>
+                                    <p *ngIf="form.value.audit_schedule_id!=null">{{auditScheduleTitle}}
+                                    </p>
+
+                                    <p *ngIf="form.value.audit_schedule_id==null">{{AppStore.noContentText}}</p>
+                                </div>
+
+                                <div class="col-lg-4 col-sm-6">
+                                    <h6>{{ 'finding_category' | translate }}</h6>
+                                    <p *ngIf="form.value.finding_category_id!=null">
+                                        {{form.value.finding_category_id.title}}
+                                    </p>
+
+                                    <p *ngIf="form.value.finding_category_id==null">{{AppStore.noContentText}}</p>
+                                </div>
+                                <div class="col-lg-4 col-sm-6">
+
+                                    <div>
+                                        <h6>{{'risk_rating' | translate}}</h6>
+                                        <p>{{RiskRatingMasterStore?.singleRiskDetails?.title}}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+                            <h6>{{ 'attachments' | translate }}</h6>
+                            <p *ngIf="fileUploadPopupStore.displayFiles.length==0">{{AppStore.noContentText}}</p>
+                            <div class="scroll-documents" #previewUploadArea>
+                            <div class="thumb-pics-bg thumb-pics-col-4 clearfix thumb-pics-fix-text" *ngIf="fileUploadPopupStore.displayFiles.length > 0">
+                            <div class="thumb-pics"  *ngFor="let docs of fileUploadPopupStore.displayFiles ;let i = index">
+                                <div class="upload-pics edit-option" data-toggle="modal">
+                                  <div *ngIf="docs.id && !docs.preview" class="browse-form-pic"  [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                                  </div>
+                                    <div  *ngIf="docs.preview" class="browse-form-pic" [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">              
+                                  </div>
+                                   <div class="browse-form-name clearfix">
+                                    <div class="float-left">
+                                      <h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                      </h6>
+                                      <span *ngIf="docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-book"></i></span>
+                                      <span  *ngIf="!docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-laptop"></i></span>
+                                      <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                                    </div>
+                                    <div class="browse-logo">
+                                      <img *ngIf="checkExtension(docs.ext,'image') != -1"
+                                          class="folder-picher" src="/assets/images/jpg-icone.png">
+                                      <img *ngIf="checkExtension(docs.ext,'doc') != -1"
+                                          class="folder-picher" src="/assets/images/word-icone.png">
+                                      <img *ngIf="checkExtension(docs.ext,'pdf') != -1"
+                                          class="folder-picher" src="/assets/images/pdf-icone.png">
+                                      <img *ngIf="checkExtension(docs.ext,'excel') != -1"
+                                          class="folder-picher" src="/assets/images/excel-icone.png">
+                                      <img *ngIf="checkExtension(docs.ext,'video') != -1"
+                                          class="folder-picher" src="/assets/images/md-video.png">
+                                      <img *ngIf="checkExtension(docs.ext,'audio') != -1"
+                                          class="folder-picher" src="/assets/images/md-audio.png">
+                                      <img *ngIf="checkExtension(docs.ext,'ppt') != -1"
+                                          class="folder-picher" src="/assets/images/md-ppt.png">
+                                  </div>
+                                   </div>
+                                </div>
+                             </div>
+                            </div>
+                        </div>
+                        </div>
+
+                        <div class="col-sm-12 col-lg-12 audit-program-details-page-cnt pdg-mdl-line pt-0 pb-0">
+                            <div class="row">
+
+                                <div class="col-sm-12 col-lg-12">
+                                    <h6>{{'auditable_items' | translate}}</h6>
+                                    <p *ngIf="AuditFindingsStore.auditableItemToDisplay.length==0">
+                                        {{AppStore.noContentText}}</p>
+                                    <div class="audit-form-table w-100 mt-3"
+                                        *ngIf="AuditFindingsStore.auditableItemToDisplay.length>0">
+                                        <table
+                                            class="table table-bordered ordinary-table audit-page-table mb-4 table-scroll">
+                                            <thead>
+                                                <tr>
+                                                    <th class="border-top-0 text text-center" width="3%">
+
+                                                        #
+                                                    </th>
+                                                    <th class="border-top-0" width="8%">{{ 'risk_rating' | translate }}</th>
+                                                    <th class="border-top-0" width="47%">{{'title' | translate }}</th>
+
+                                                    <th class="border-top-0" width="15%">{{'type' | translate }}</th>
+                                                    <th class="border-top-0" width="15%">{{'category' | translate }}</th>
+                                                    <th class="border-top-0" width="14%">{{ 'risk_rating' | translate }}</th>
+
+
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr class="edit-and-delete-main"
+                                                    *ngFor="let items of AuditFindingsStore.auditableItemToDisplay;let num=index">
+                                                    <td class="text-center">
+
+                                                        {{num+1}}</td>
+                                                    <td>#{{items.reference_code}}</td>
+                                                    <td>{{items.title}}</td>
+                                                    <td>{{items.type ? items.type : AppStore.noContentText}}</td>
+                                                    <td> {{items.category ? items.category : AppStore.noContentText}}
+                                                    </td>
+
+                                                    <td *ngIf="items.risk_rating!=null">
+
+
+                                                        <div
+                                                            [ngClass]="items.risk_rating=='High'?'dot-div red-dot': items.risk_rating=='Medium'?'dot-div yellow-dot':items.risk_rating=='Low'?'dot-div green-dot':'dot-div red-dot'">
+                                                            {{items.risk_rating}}</div>
+                                                    </td>
+                                                    <td class="cursor-pointer" *ngIf="items.risk_rating==null">
+
+                                                        {{ AppStore.noContentText}}
+                                                    </td>
+
+                                                </tr>
+
+
+
+                                            </tbody>
+                                        </table>
+
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-12 col-lg-12">
+                                    <h6>{{'checklist' | translate}}</h6>
+                                    <p *ngIf="AuditFindingsStore.ChecklistToDisplay.length==0">
+                                        {{AppStore.noContentText}}</p>
+                                    <div class="audit-form-table w-100 mb-4"
+                                        *ngIf="AuditFindingsStore.ChecklistToDisplay.length > 0">
+                                        <table class="table table-bordered ordinary-table cmn-table-style mb-2">
+                                            <tr>
+                                                <th class="border-top-0 text-center" width="5%">#</th>
+                                                <th class="border-top-0" width="20%">{{ 'auditable_items' | translate }}
+                                                </th>
+
+                                                <th class="border-top-0" width="55%">{{ 'title' | translate }}</th>
+                                                <th class="border-top-0" width="20%">{{'answer' | translate}}</th>
+                                            </tr>
+                                            <tr class="edit-and-delete-main"
+                                                *ngFor="let item of AuditFindingsStore.ChecklistToDisplay;let num=index">
+                                                <td class="text-center">{{num+1}}</td>
+                                                <td>{{item.auditable_item?.title ? item.auditable_item?.title :
+                                                    AppStore.noContentText}}</td>
+                                                <td>{{item.checklist.title}}
+
+                                                </td>
+
+                                                <td *ngFor="let qst of item?.audit_checklist_answer_key?.language">
+
+                                                    <div *ngIf="qst.pivot?.audit_checklist_answer_key_id==4"
+                                                        class="dot-div orange-dot">{{qst.pivot?.title}}</div>
+                                                    <div *ngIf="qst.pivot?.audit_checklist_answer_key_id==2"
+                                                        class="dot-div green-dot">{{qst.pivot?.title}}</div>
+                                                    <div *ngIf="qst.pivot?.audit_checklist_answer_key_id==3"
+                                                        class="dot-div red-dot">{{qst.pivot?.title}}</div>
+                                                    <div *ngIf="qst.pivot?.audit_checklist_answer_key_id==1"
+                                                        class="dot-div yellow-dot">{{qst.pivot?.title}}</div>
+
+
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+
+
+
+
+                </div><!-- tab end -->
+                <div style="overflow:auto;">
+                    <div class="form-next-page-btns" style="float:left;">
+                        
+                        <button class="btn btn-active" type="button" id="nextBtn" (click)="nextPrev(1)"
+                        [disabled]="AppStore.loading || !checkFormObject()">{{getButtonText(nextButtonText)}}</button>
+                        <button class="btn" type="button" id="prevBtn" (click)="nextPrev(-1)"
+                            [disabled]="AppStore.loading">{{getButtonText(previousButtonText)}}</button>
+                        <button class="btn" type="button" (click)="confirmCancel()">{{getButtonText('cancel')}}</button>
+                       
+                    </div>
+                </div>
+
+            </form>
+
+
+
+
+
+        </div>
+
+
+
+
+
+
+    </div>
+</main>
+
+<!-- Modal part  auditable Items-->
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+    <app-auditable-item-for-findings *ngIf="auditableItemObject.type" [source]="auditableItemObject">
+    </app-auditable-item-for-findings>
+</div>
+
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #cancelPopup data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="confirmationObject"></app-delete-popup>
+</div>
+
+
+<!-- Modal part  checklist Answers Items-->
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #checklistModal>
+    <app-checklist-answer-modal *ngIf="checklistObject.type" [source]="checklistObject">
+    </app-checklist-answer-modal>
+</div>
+<!-- * Documetn Attach/Upload Common Component Starts Here -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #fileUploadModal>
+ 
+    <app-file-upload-popup *ngIf = "fileUploadPopupStore.openPopup" ></app-file-upload-popup>
+  
+  </div>
+  <!-- * Documetn Attach/Upload Common Component Ends Here -->

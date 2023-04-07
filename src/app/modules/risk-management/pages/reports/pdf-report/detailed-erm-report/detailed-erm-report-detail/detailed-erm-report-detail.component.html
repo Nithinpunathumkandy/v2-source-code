@@ -1,0 +1,639 @@
+<div>
+  <div #plainDev></div>
+  <nav class="edit-bar" data-toggle="affix" #navigationBar>
+    <div class="module-name-block float-left">
+      <a
+        class="nav-link current-page border-right-0"
+        [routerLink]="[
+          '/risk-management/reports/pdf-report/detailed-erm-report'
+        ]"
+      >
+        <i class="fas fa-chevron-left"></i>{{ 'detailed_erm_report' | translate }}</a
+      >
+    </div>
+    <app-sub-menu></app-sub-menu>
+  </nav>
+
+  <main
+    class="organization-page mt-3"
+  >
+    <div class="container-fluid"
+    *ngIf="ErmDetailsStore?.ermDetailsReports && ErmDetailsStore.erm_details_loaded">
+      <div class="row">
+        <div class="col-sm-12">
+           <div class="coverpage-risk-report-pdf widg-padding-cmn cmn-bdr detailed-erm-report-cover-pic">
+              <h6 class="text-right">
+                {{
+                  ErmDetailsStore?.ermDetailsReports?.end_date
+                    | date
+                      : OrganizationGeneralSettingsStore?.organizationSettings
+                          ?.date_format
+                }}
+              </h6>
+              <h2 class="text-center mb-3" style="margin: 0;">Detailed ERM Report</h2>
+              <h3 class="text-center" style="margin: 0 0 100px 0;">{{ AuthStore.user.organization?.title }}</h3>
+              <h5>              {{'division' | translate }} :
+                {{
+                  ErmDetailsStore?.ermDetailsReports?.division
+                    ? ErmDetailsStore?.ermDetailsReports?.division?.title
+                    : AppStore.noContentText
+                }}</h5>
+              <h5>
+                {{'department' | translate }} :
+                {{
+                  ErmDetailsStore?.ermDetailsReports?.department
+                    ? ErmDetailsStore?.ermDetailsReports?.department?.title
+                    : AppStore.noContentText
+                }}
+              </h5>
+              <div class="row">
+                <div class="col-xl-12">
+                  <hr class="mb-2">
+                    <img
+                      *ngIf="
+                        ErmDetailsStore?.ermDetailsReports?.created_by?.image
+                          ?.token
+                      "
+                      [attr.src]="
+                        createImagePreview(
+                          'user-profile-picture',
+                          ErmDetailsStore?.ermDetailsReports?.created_by?.image
+                            ?.token
+                        )
+                      "
+                      width="40px"
+                      height="40px"
+                      class="rounded-circle"
+                      onerror="this.src='/assets/images/user-demo2.png'"
+                    />
+                    <img
+                      *ngIf="
+                        !ErmDetailsStore?.ermDetailsReports?.created_by?.image
+                          ?.token
+                      "
+                      [attr.src]="getDefaultImage('user-logo')"
+                      width="40px"
+                      height="40px"
+                      class="rounded-circle"
+                      onerror="this.src='/assets/images/user-demo2.png'"
+                    />
+                    <div>
+                      <h6
+                        title="{{
+                          ErmDetailsStore?.ermDetailsReports?.created_by
+                            ?.first_name +
+                            ErmDetailsStore?.ermDetailsReports?.created_by
+                              ?.last_name
+                        }}"
+                      >
+                      {{getStringsFormatted([ErmDetailsStore?.ermDetailsReports?.created_by?.first_name,ErmDetailsStore?.ermDetailsReports?.created_by?.last_name],50,' ') | titlecase}}                    </h6>
+                      <span _ngcontent-nws-c590="" wfd-id="801"
+                        >{{
+                          ErmDetailsStore?.ermDetailsReports?.created_by
+                            ?.designation
+                        }}
+                        <!-- | {{'created_on' | translate}}
+                        {{
+                          ErmDetailsStore?.ermDetailsReports?.created_at
+                            | date
+                              : OrganizationGeneralSettingsStore
+                                  ?.organizationSettings?.date_time_format
+                        }} -->
+                      </span>
+                    </div>
+                </div>
+              </div>
+           </div>
+        </div>
+     </div>
+      <div class="row">
+        <div class="col-sm-12">
+          <div class="widget">
+            <div class="bg-white widg-padding-cmn mb-3"  *ngIf="ErmDetailsStore?.ermDetailsReports
+            ?.detailed_erm_report_risks.length > 0">
+              <h6>{{ 'risk_assessment_details' | translate}}</h6>
+
+              <div class="audit-form-table table-scroll-first-time">
+                <table
+                  class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll"
+                  style="width: 2000px"
+                >
+                  <tr>
+                    <th class="border-top-0 text-center" width="2%">#</th>
+                    <th class="border-top-0" width="10%">{{ 'risk_id' |translate }}</th>
+                    <th class="border-top-0" width="10%">
+                      {{ 'risk_title_and _description' | translate }}
+                    </th>
+                    <th class="border-top-0" width="8%">{{'risk_observations' | translate }}</th>
+                    <th class="border-top-0" width="8%">{{'risk_cause' | translate }}</th>
+                    <th class="border-top-0" width="8%">{{ 'risk_impact' | translate }}</th>
+                    <th class="border-top-0" width="8%">{{ 'risk_likelihood' | translate }}</th>
+                    <th class="border-top-0" width="8%">{{ 'risk_impact' | translate }}</th>
+                    <th class="border-top-0" width="8%">{{ 'risk_score' | translate }}</th>
+                    <th class="border-top-0" width="10%">{{ 'risk_zone' | translate }}</th>
+                    <th class="border-top-0" width="10%">	{{'risk_category' | translate}}</th>
+                    <th class="border-top-0" width="10%">{{'risk_status' | translate}}</th>
+                  </tr>
+
+                  <tr
+                    class="edit-and-delete-main"
+                    *ngFor="
+                      let row of ErmDetailsStore?.ermDetailsReports
+                        ?.detailed_erm_report_risks
+                        | paginate
+                          : {
+                              currentPage: ErmDetailsStore?.currentPage,
+                              itemsPerPage: ErmDetailsStore?.itemsPerPage,
+                              totalItems: ErmDetailsStore?.totalItems
+                            };
+                      let num = index
+                    "
+                  >
+                    <td class="text-center">
+                      {{
+                        (ErmDetailsStore?.currentPage - 1) *
+                          ErmDetailsStore?.itemsPerPage +
+                          (num + 1)
+                      }}
+                    </td>
+                    <td>
+                      {{ row?.risk_reference_code }}
+                      <p *ngIf="!row?.risk_reference_code">{{ AppStore.noContentText }}</p>
+                    </td>
+                    <td>
+                      {{ row?.title }} <span innerHtml="{{ row?.description }}"></span> 
+                      <p *ngIf="!row?.title || !row?.description">{{ AppStore.noContentText }}</p>
+                    </td>
+                    <td>
+                      <p innerHtml="{{ row?.observation }}"></p>
+                      <p *ngIf="!row?.observation">
+                        {{ AppStore.noContentText }}
+                      </p>
+                    </td>
+                    <td>
+                      <ul class="arrowlist pl-0 mt-2" *ngIf="row?.detailed_erm_report_risk_causes?.length>0">
+                        <li class="clearfix" *ngFor="let cause of row?.detailed_erm_report_risk_causes;let j=index">
+                          {{cause.title?.length > 25 ?
+                            cause.title.substring(0,25) + '...' : cause.title}}
+                        </li>
+                    </ul>
+                    <p *ngIf="row?.detailed_erm_report_risk_causes?.length === 0">
+                      {{ AppStore.noContentText }}
+                    </p>
+                    </td>
+                    <td>
+                      <ul class="arrowlist pl-0 mt-2" *ngIf="row?.detailed_erm_report_risk_impacts?.length>0">
+                        <li class="clearfix" *ngFor="let impact of row?.detailed_erm_report_risk_impacts;let j=index">
+                          {{impact.title?.length > 25 ?
+                            impact.title.substring(0,25) + '...' : impact.title}}
+                        </li>
+                    </ul>
+                    <p *ngIf="row?.detailed_erm_report_risk_impacts?.length === 0">
+                      {{ AppStore.noContentText }}
+                    </p>
+                    </td>
+                    <td>
+                      {{
+                        row?.risk_matrix_likelihood?.language[0]?.pivot?.title
+                      }}
+                      <p
+                        *ngIf="
+                          !row?.risk_matrix_likelihood?.language[0]?.pivot
+                            ?.title
+                        "
+                      >
+                        {{ AppStore.noContentText }}
+                      </p>
+                    </td>
+                    <td>
+                      <!-- <ul class="arrowlist pl-0 mt-2" *ngIf="row?.detailed_erm_report_risk_impacts?.length>0">
+                        <li class="clearfix" *ngFor="let impact of row?.detailed_erm_report_risk_impacts;let j=index">
+                          {{impact.title?.length > 25 ?
+                            impact.title.substring(0,25) + '...' : impact.title}}
+                        </li>
+                    </ul>
+                    <p *ngIf="row?.detailed_erm_report_risk_impacts?.length === 0">
+                      {{ AppStore.noContentText }}
+                    </p> -->
+                    {{row?.risk_matrix_impact?.language[0]?.
+                      pivot?.title ? row?.risk_matrix_impact?.language[0]?.
+                      pivot?.title : AppStore.noContentText}}
+                    </td>
+                    <td>
+                      {{ row?.score }}
+                      <p *ngIf="!row?.score">{{ AppStore.noContentText }}</p>
+                    </td>
+                    <td>
+                      {{
+                        row.risk_rating
+                          ? row.risk_rating?.language[0]?.pivot?.title
+                          : AppStore.noContentText
+                      }}
+                    </td>
+                    <td>
+                      {{
+                        row.risk_category
+                          ? row.risk_category?.title
+                          : AppStore.noContentText
+                      }}
+                    </td>
+                    <td>
+                      <div [ngClass]="'dot-div '+row.risk_status?.label+'-dot'">{{row.risk_status?.language[0]?.pivot?.title}}</div>
+                      <!-- <p>
+                        {{
+                          row.risk_statusrisk_status
+                            ? row.risk_status?.language[0]?.pivot?.title
+                            : AppStore.noContentText
+                        }}
+                      </p> -->
+                      <div class="edit-option-show" style="margin: 33px 0 0 0">
+                        <!-- edit-and-delete starts -->
+                        <a *ngIf="AuthStore.getActivityPermission(1000,'UPDATE_DETAILED_ERM_REPORT_RISK')" (click)="getERmSummary(row.id)" data-toggle="modal"
+                        ><i class="fas fa-pen"></i
+                      ></a>
+                         <a *ngIf="AuthStore.getActivityPermission(1000,'DELETE_DETAILED_ERM_REPORT_RISK')" (click)="deleteRisk(row.id)"><i class="fas fa-trash"></i></a>
+                        </div>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+
+            <div class="bg-white widg-padding-cmn mb-3"  *ngIf="ErmDetailsStore?.ermDetailsReports
+            ?.detailed_erm_report_risks.length > 0">
+              <h6>{{ 'risk_mitigation_action_plan'| translate }}</h6>
+              <div class="audit-form-table table-scroll-first-time">
+                <table
+                  class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll"
+                  style="width: 2500px">
+                  <tr>
+                    <th class="border-top-0 text-center" width="2%">#</th>
+                    <th class="border-top-0" width="6%">{{ 'risk_id' |translate }}</th>
+                    <th class="border-top-0" width="10%">
+                      {{ 'risk_title_and _description' | translate }}
+                    </th>
+                    <th class="border-top-0" width="8%">{{'risk_observations' | translate }}</th>
+                    <th class="border-top-0" width="9%">
+                      {{ 'risk_scoring_inherent score' | translate }}
+                    </th>
+                    <th class="border-top-0" width="8%">{{ 'risk_area' | translate}}</th>
+                    <th class="border-top-0" width="8%">{{ 'risk_owner' | translate }}</th>
+                    <th class="border-top-0" width="12%">
+                      {{ 'risk_treatment_action_plan' | translate }}
+                    </th>
+                    <th class="border-top-0" width="12%">
+                      {{ 'risk_treatment _completion_target _date' | translate }}
+                    </th>
+                    <!-- <th class="border-top-0" width="8%">Department</th> -->
+                    <th class="border-top-0" width="9%">
+                      {{ 'risk_treatment_owner' | translate }}
+                    </th>
+                    <th class="border-top-0" width="7%">
+                    {{ 'risk_treatment_status' | translate }}
+                    </th>
+                    <th class="border-top-0" width="9%">
+                    {{ 'risk_treatment_dependency' | translate }}
+                    </th>
+                  </tr>
+
+                  <ng-container
+                  *ngFor="
+                    let row of ErmDetailsStore?.ermDetailsReports
+                      ?.detailed_erm_report_risks; let ind = index;
+                  "
+                >
+                <ng-container *ngIf="row?.detailed_erm_report_risk_treatments.length == 0">
+                  <tr class="edit-and-delete-main">
+                    <td
+                      class="text-center"
+                    >
+                      {{ ind + 1}}
+                    </td>
+                    <td
+                    >
+                      {{ row?.risk_reference_code }}
+                      <p *ngIf="!row?.risk_reference_code">
+                        {{ AppStore.noContentText }}
+                      </p>
+                    </td>
+                    <td
+                    >
+                      {{ row?.title }} <span innerHtml="{{ row?.description }}"></span>
+                      <p *ngIf="!row?.title || !row?.description">
+                        {{ AppStore.noContentText }}
+                      </p>
+                    </td>
+                    <td
+                    >
+                    <p innerHtml="{{ row?.observation }}"></p>
+                    <p *ngIf="!row?.observation">
+                      {{ AppStore.noContentText }}
+                    </p>
+                    </td>
+                    <td
+                    >
+                      {{ row?.score }}
+                      <p *ngIf="!row?.score">
+                        {{ AppStore.noContentText }}
+                      </p>
+                    </td>
+                    <td
+                    >
+                    <ul class="arrowlist pl-0 mt-2" *ngIf="row?.risk_areas.length>0">
+                      <li class="clearfix" *ngFor="let area of row?.risk_areas;let j=index">
+                        {{area.title?.length > 25 ?
+                          area.title.substring(0,25) + '...' : area.title}}
+                      </li>
+                  </ul>
+                  <p *ngIf="row?.risk_areas?.length === 0">
+                    {{ AppStore.noContentText }}
+                  </p>
+                    </td>
+                    <td>
+                      <div
+                      class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg align-items-center"
+                      *ngIf="row.risk_owner_id"
+                    >
+                      <img
+                        [attr.src]="
+                          row.risk_owner?.image_token
+                            ? createImagePreview(
+                                'user-profile-picture',
+                                row.risk_owner?.image_token
+                              )
+                            : getDefaultImage('user-logo')
+                        "
+                        width="40px"
+                        height="40px"
+                        class="rounded-circle"
+                      />
+
+                      <div>
+                        <h6>
+                          {{ row.risk_owner?.first_name }}
+                          {{ row.risk_owner?.last_name }}
+                        </h6>
+                      </div>
+                    </div>
+                    <p *ngIf="row.risk_owner_id == null">
+                      {{ AppStore.noContentText }}
+                    </p>
+                    </td>
+                    <td>NA</td>
+                    <td>NA</td>
+                    <td>NA</td>
+                    <td>NA</td>
+                    <td>NA</td>
+                  </tr>
+                </ng-container>
+                  <ng-container
+                    *ngFor="
+                      let treatments of row?.detailed_erm_report_risk_treatments;
+                      let $index = index
+                    "
+                  >                
+                     <tr class="edit-and-delete-main" *ngIf="row?.detailed_erm_report_risk_treatments.length">
+                      <td
+                        class="text-center"
+                        *ngIf="$index === 0"
+                        [attr.rowspan]="
+                          row?.detailed_erm_report_risk_treatments.length
+                        "
+                      >
+                        {{ ind + 1}}
+                      </td>
+                      <td
+                        *ngIf="$index === 0"
+                        [attr.rowspan]="
+                          row?.detailed_erm_report_risk_treatments.length
+                        "
+                      >
+                        {{ row?.risk_reference_code }}
+                        <p *ngIf="!row?.risk_reference_code">
+                          {{ AppStore.noContentText }}
+                        </p>
+                      </td>
+                      <td
+                        *ngIf="$index === 0"
+                        [attr.rowspan]="
+                          row?.detailed_erm_report_risk_treatments.length
+                        "
+                      >
+                        {{ row?.title }} <span innerHtml="{{ row?.description }}"></span>
+                        <p *ngIf="!row?.title || !row?.description">
+                          {{ AppStore.noContentText }}
+                        </p>
+                      </td>
+                      <td
+                        *ngIf="$index === 0"
+                        [attr.rowspan]="
+                          row?.detailed_erm_report_risk_treatments.length
+                        "
+                      >
+                      <p innerHtml="{{ row?.observation }}"></p>
+                      <p *ngIf="!row?.observation">
+                        {{ AppStore.noContentText }}
+                      </p>
+                      </td>
+                      <td
+                        *ngIf="$index === 0"
+                        [attr.rowspan]="
+                          row?.detailed_erm_report_risk_treatments.length
+                        "
+                      >
+                        {{ row?.score }}
+                        <p *ngIf="!row?.score">
+                          {{ AppStore.noContentText }}
+                        </p>
+                      </td>
+                      <td
+                        *ngIf="$index === 0"
+                        [attr.rowspan]="
+                          row?.detailed_erm_report_risk_treatments.length
+                        "
+                      >
+                      <ul class="arrowlist pl-0 mt-2" *ngIf="row?.risk_areas.length>0">
+                        <li class="clearfix" *ngFor="let area of row?.risk_areas;let j=index">
+                          {{area.title?.length > 25 ?
+                            area.title.substring(0,25) + '...' : area.title}}
+                        </li>
+                    </ul>
+                    <p *ngIf="row?.risk_areas?.length === 0">
+                      {{ AppStore.noContentText }}
+                    </p>
+                      </td>
+                      <td
+                        *ngIf="$index === 0"
+                        [attr.rowspan]="
+                          row?.detailed_erm_report_risk_treatments.length
+                        "
+                      >
+                        <div
+                          class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg align-items-center"
+                          *ngIf="row.risk_owner_id"
+                        >
+                          <img
+                            [attr.src]="
+                              row.risk_owner?.image_token
+                                ? createImagePreview(
+                                    'user-profile-picture',
+                                    row.risk_owner?.image_token
+                                  )
+                                : getDefaultImage('user-logo')
+                            "
+                            width="40px"
+                            height="40px"
+                            class="rounded-circle"
+                          />
+
+                          <div>
+                            <h6>
+                              {{ row.risk_owner?.first_name }}
+                              {{ row.risk_owner?.last_name }}
+                            </h6>
+                          </div>
+                        </div>
+                        <p *ngIf="row.risk_owner_id == null">
+                          {{ AppStore.noContentText }}
+                        </p>
+                      </td>
+                      <td>
+                        {{ treatments.title }}
+                      </td>
+                      <td>
+                        {{
+                          treatments.target_date
+                            | date
+                              : OrganizationGeneralSettingsStore
+                                  .organizationSettings?.date_format
+                        }}
+                      </td>
+                      <td>
+                        <div class="labels">
+                          <span>
+                            <div
+                              class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg align-items-center"
+                              *ngIf="treatments.responsible_user_id"
+                            >
+                              <img
+                                *ngIf="
+                                  treatments.responsible_user?.image_token
+                                "
+                                [attr.src]="
+                                  createImagePreview(
+                                    'user-profile-picture',
+                                    treatments.responsible_user?.image_token
+                                  )
+                                "
+                                width="40px"
+                                height="40px"
+                                class="rounded-circle"
+                              />
+
+                              <img
+                                *ngIf="
+                                  !treatments.responsible_user?.image_token
+                                "
+                                [attr.src]="getDefaultImage('user-logo')"
+                                width="40px"
+                                height="40px"
+                                class="rounded-circle"
+                              />
+                              <div>
+                                <h6>
+                                  {{
+                                    treatments.responsible_user?.first_name
+                                  }}
+                                  {{ treatments.responsible_user?.last_name }}
+                                </h6>
+                                <span
+                                  >{{
+                                    treatments.responsible_user?.designation
+                                      ?.title
+                                  }}
+                                </span>
+                              </div>
+                            </div>
+                            <p *ngIf="treatments.responsible_user_id == null">
+                              {{ AppStore.noContentText }}
+                            </p>
+                          </span>
+                        </div>
+                      </td>
+                      <td>
+                        {{
+                          treatments.risk_treatment_status?.language[0]?.pivot
+                            ?.title
+                        }}
+                      </td>
+                      <td>
+                        <p innerHtml="{{ treatments?.dependency }}"></p>
+                        <p *ngIf="!treatments?.dependency">
+                          {{ AppStore.noContentText }}
+                        </p>
+                        <div class="edit-option-show" style="margin: 33px 0 0 0">
+                          <a *ngIf="AuthStore.getActivityPermission(1000,'UPDATE_DETAILED_ERM_REPORT_RISK_TREATMENT')"
+                          (click)="getERmRiskTreatmentSummary(treatments.id,ind)"
+                          data-toggle="modal" 
+                          ><i class="fas fa-pen"></i
+                        ></a>
+                           <!-- <a *ngIf="AuthStore.getActivityPermission(1000,'DELETE_DETAILED_ERM_REPORT_RISK_TREATMENT')" (click)="deleteTreatment(treatments.id)"><i class="fas fa-trash"></i></a> -->
+                          </div>
+                      </td>
+                    </tr> 
+                  </ng-container>
+                </ng-container>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <ng-container *mobxAutorun>
+      <div *ngIf="!ErmDetailsStore.erm_details_loaded">
+        <app-erm_detailed></app-erm_detailed>
+      </div>
+    </ng-container>
+  </main>
+</div>
+
+<!-----------------------Form Modal start--------------------------->
+<div
+  class="modal modal-style-1 popup-full-width fade"
+  data-keyboard="false"
+  data-backdrop="static"
+  #formModal
+>
+  <app-edit-erm-details-risk
+    *ngIf="editErmDetailRiskObject.type"
+    [source]="editErmDetailRiskObject"
+  ></app-edit-erm-details-risk>
+</div>
+<!-----------------------Form Modal End--------------------------->
+
+<!-----------------------Form Modal Start--------------------------->
+<div
+  class="modal modal-style-1 popup-full-width fade"
+  data-keyboard="false"
+  data-backdrop="static"
+  #treatmentFormModal
+>
+  <app-edit-erm-detail-risk-treatment
+    *ngIf="editErmDetailRiskTreatmentObject.type"
+    [source]="editErmDetailRiskTreatmentObject"
+  ></app-edit-erm-detail-risk-treatment>
+</div>
+<!-----------------------Form Modal End--------------------------->
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+<div
+  class="modal modal-style-1 fade"
+  id="delete-popup"
+  #confirmationPopUp
+  data-backdrop="static"
+  data-keyboard="false"
+>
+  <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+<!------------------- Delete Confirmation Modal End --------------------------->

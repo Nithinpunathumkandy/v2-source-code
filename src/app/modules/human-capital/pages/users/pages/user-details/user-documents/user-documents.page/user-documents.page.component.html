@@ -1,0 +1,811 @@
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" data-backdrop="static" data-keyboard="false" #deletePopup>
+  <app-delete-popup [source]="deleteObject"></app-delete-popup>
+</div>
+
+<!------------------- Delete Confirmation Modal End --------------------------->
+<ng-container *mobxAutorun>
+<div class="row" *ngIf = "UserDocumentStore.loaded && UserDocumentStore.userDocumentDetails.length > 0">
+  <div class="col-md-12" *ngIf="AuthStore.getActivityPermission(200,'USER_DOCUMENTS')">
+
+    <div class="panel-group panel-drop-sections panel-drop-white" id="jd" role="tablist" aria-multiselectable="true">
+      <div class="panel panel-default"
+        *ngFor="let type of UserDocumentStore.userDocumentDetails|paginate: {id:'document', itemsPerPage: 5, currentPage: documentPage };let t=index">
+        <div class="pointer" [ngClass]="type.is_accordion_active == true ? 'panel-heading active' : 'panel-heading'" role="tab" id="headingOne">
+          <div class="panel-title">
+            <a role="button" data-toggle="collapse" (click)="getDoc(t,false)" aria-expanded="false" aria-controls="collapseOne"
+              class="collapsed">
+              <h5 [attr.title]="type.user_document_type.length>50?type.user_document_type:''" class="width96pc mt-0">
+                {{type.user_document_type.length>50?type.user_document_type.substring(0,50)+' ...':type.user_document_type}}
+                <span class="drop-down-icone"><i class="fas fa-chevron-down"></i></span> </h5>
+            </a>
+          </div>
+        </div>
+        <div id="ceo904" [ngClass]="type.is_accordion_active == true ? 'drop-detail-sec panel-collapse collapse show' : 'drop-detail-sec panel-collapse collapse'" role="tabpanel"
+          aria-labelledby="headingOne" data-parent="#ceo904" >
+          <div class="panel-body bg-white pb-0">
+
+            <div class="licence-row clearfix">
+              <div class="licence-col" *ngFor="let file of type.documents; let ind=index;">
+                <div class="license-box-bg-main edit-and-delete-main">
+                  <div class="edit-option-show" style="margin: 40px 0 0 0;">
+                    <a class="pointer" [attr.title]="'edit'|translate" (click)="editDocument(file.id,'edit',t)"
+                      *ngIf="AuthStore.getActivityPermission(200,'UPDATE_USER_DOCUMENT')"><i class="fas fa-pen"></i></a>
+                    <a class="pointer" [attr.title]="'delete'|translate" (click)="delete(file.id,ind,t)"
+                      *ngIf="AuthStore.getActivityPermission(200,'DELETE_USER_DOCUMENT')"><i
+                        class="fas fa-trash"></i></a>
+                    <a class="pointer" [attr.title]="'download'"
+                      (click)="downloadDocument(file.id,file.user_document_title,file)"
+                      *ngIf="AuthStore.getActivityPermission(200,'DOWNLOAD_USER_DOCUMENT')"><i
+                        class="fas fa-download"></i></a>
+                  </div>
+                  <div class="license-box-bg blue-shadow pointer" data-toggle="modal" (click)="editDocument(file.id,null,t)">
+                    <span class="document-label-folder cerficate-page bg-red" *ngIf="file.is_expired!=0">{{'expired'|translate}}</span>
+                    <div class="license-box"
+                      [ngStyle]="{'background': 'url('+createImageUrl('document',file.user_document_file_token)+') no-repeat'}">
+
+                      <div class="license-blur-div"></div>
+                      <div class="license-blur-info-div clearfix" *ngIf="!(file.expiry_date==null)">
+                        <small class="expiry-day float-left w-50" *ngIf="(file.days>0)">{{'expires_in'|translate}}
+                          {{createDaysString(file.days)}}</small>
+                        <small class="expiry-day float-left" *ngIf="!(file.days>0)">{{'expired'|translate}}</small>
+                        <small
+                          class="float-right w-50 text-right">{{file.expiry_date|date : OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</small>
+                      </div>
+                    </div>
+                    <div class="progress" *ngIf="!(file.expiry_date==null)">
+                      <div *ngIf="!(file.days>5)" class="progress-bar bg-danger progress-bar-animation"
+                        role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"
+                        [style.max-width.%]="file.remaining_days_percentage">
+
+                      </div>
+
+
+                      <div *ngIf="(file.days>5) && !(file.days>10)"
+                        class="progress-bar bg-warning progress-bar-animation" role="progressbar" aria-valuenow="50"
+                        aria-valuemin="0" aria-valuemax="100" [style.max-width.%]="file.remaining_days_percentage">
+                      </div>
+
+
+                      <div *ngIf="(file.days>10)" class="progress-bar bg-success progress-bar-animation"
+                        role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"
+                        [style.max-width.%]="file.remaining_days_percentage">
+                      </div>
+                    </div>
+                    <div class="license-name-sec">
+                      <div class="d-flex flex-row user-list-sm user-box-smol-round">
+
+                        
+
+
+                        <div class="pointer new-size-text w-100">
+                          <h6 class="big-name"
+                            [attr.title]="file.user_document_title.length>25?file.user_document_title:''">
+                            {{file.user_document_title.length>25?file.user_document_title.substring(0,25)+' ...':file.user_document_title}}
+                          </h6>
+                          <span>{{file.year}}</span>
+                        </div>
+                        <img class="ml-2 mr-0" src="/assets/images/md-cmn.png" width="30px" height="30px">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+
+
+    </div>
+
+
+  </div>
+</div>
+</ng-container>
+<ng-container *mobxAutorun>
+  <app-no-data *ngIf = "UserDocumentStore.loaded && UserDocumentStore.userDocumentDetails.length == 0"></app-no-data>
+</ng-container>
+<ng-container *mobxAutorun>
+  <app-user-document-loader *ngIf="!UserDocumentStore.loaded"></app-user-document-loader>
+</ng-container>
+<!-- <div class="row">
+  <div class="col-sm-12" *ngIf="AuthStore.getActivityPermission(200,'USER_DOCUMENTS')">
+    <div class="widget body-color line-tab" *mobxAutorun>
+      
+      <div class="widget-body-light right-block body-color document-tab" style="padding-bottom: 0 !important;"
+        *ngFor="let type of UserDocumentStore.userDocumentDetails|paginate: {id:'document', itemsPerPage: 2, currentPage: documentPage };let t=index">
+        <h5 class="mt-0" [attr.title]="type.user_document_type.length>50?type.user_document_type:''"> <span
+            class="body-color">
+            {{type.user_document_type.length>50?type.user_document_type.substring(0,50)+' ...':type.user_document_type}}
+          </span> </h5>
+        <div class="licence-row clearfix">
+
+
+          <div class="licence-col" *ngFor="let file of type.documents; let ind=index;">
+            <div class="license-box-bg-main edit-and-delete-main">
+              <div class="edit-option-show">
+                <a class="pointer" [attr.title]="'edit'|translate" (click)="editDocument(file.id,'edit')"
+                  *ngIf="AuthStore.getActivityPermission(200,'UPDATE_USER_DOCUMENT')"><i class="fas fa-pen"></i></a>
+                <a class="pointer" [attr.title]="'delete'|translate" (click)="delete(file.id,ind)"
+                  *ngIf="AuthStore.getActivityPermission(200,'DELETE_USER_DOCUMENT')"><i class="fas fa-trash"></i></a>
+                <a class="pointer" [attr.title]="'download'"
+                  (click)="downloadDocument(file.id,file.user_document_title,file)"
+                  *ngIf="AuthStore.getActivityPermission(200,'DOWNLOAD_USER_DOCUMENT')"><i
+                    class="fas fa-download"></i></a>
+              </div>
+              <div class="license-box-bg blue-shadow pointer" data-toggle="modal" (click)="editDocument(file.id)">
+                <span class="document-label-folder cerficate-page bg-red" *ngIf="file.is_expired!=0">Expired</span>
+                <div class="license-box"
+                  [ngStyle]="{'background': 'url('+createImageUrl('document',file.user_document_file_token)+') no-repeat'}">
+
+                  <div class="license-blur-div"></div>
+                  <div class="license-blur-info-div clearfix" *ngIf="!(file.expiry_date==null)">
+                    <small class="expiry-day float-left" *ngIf="(file.days>0)">Expires in
+                      {{createDaysString(file.days)}}</small>
+                    <small class="expiry-day float-left" *ngIf="!(file.days>0)">Expired</small>
+                    <small
+                      class="float-right">{{file.expiry_date|date : OrganizationGeneralSettingsStore.organizationSettings.date_format}}</small>
+                  </div>
+                </div>
+                <div class="progress" *ngIf="!(file.expiry_date==null)">
+                  <div *ngIf="!(file.days>5)" class="progress-bar bg-danger progress-bar-animation" role="progressbar"
+                    aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"
+                    [style.max-width.%]="file.remaining_days_percentage">
+
+                  </div>
+
+
+                  <div *ngIf="(file.days>5) && !(file.days>10)" class="progress-bar bg-warning progress-bar-animation"
+                    role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"
+                    [style.max-width.%]="file.remaining_days_percentage">
+                  </div>
+
+
+                  <div *ngIf="(file.days>10)" class="progress-bar bg-success progress-bar-animation" role="progressbar"
+                    aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"
+                    [style.max-width.%]="file.remaining_days_percentage">
+                  </div>
+                </div>
+                <div class="license-name-sec">
+                  <div class="d-flex flex-row user-list-sm user-box-smol-round">
+                   
+                    <img src="/assets/images/md-cmn.png" width="30px" height="30px">
+                
+
+                    <div class="pointer new-size-text">
+                      <h6 class="big-name"
+                        [attr.title]="file.user_document_title.length>25?file.user_document_title:''">
+                        {{file.user_document_title.length>25?file.user_document_title.substring(0,25)+' ...':file.user_document_title}}
+                      </h6>
+                      <span>{{file.year}}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> -->
+<div class="col-sm-12" *ngIf="UserDocumentStore.userDocumentDetails.length>5">
+  <ul class="pagination justify-content-center mt-3 pl-0">
+    <pagination-controls [previousLabel]="'previous' | translate"  [nextLabel]="'next' | translate" id='document' (pageChange)="documentPage = $event"></pagination-controls>
+  </ul>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+  <button type="button" class="close" (click)="closeFormModal()"><i class="lni-close"></i><span>{{'esc'|translate}}</span></button>
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content" *mobxAutorun>
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <h4 class="modal-title">{{'document'|translate}}</h4>
+
+      </div>
+      <!-- Modal body -->
+      <div class="modal-body form-body">
+        <p class="head-details">{{'user_document_description'|translate}}
+        <form [formGroup]="form" *mobxAutorun>
+          <div class="row">
+            <div class="col-sm-12">
+              <div class="form-group">
+                <label>{{'document_types'|translate}}<sup>*</sup></label>
+                <div class="clearfix">
+                  <div class="multiple-plain-ngselect select-new-width">
+                    <ng-select [placeholder]="'select_document'|translate" [multiple]="false" searchable="true"
+                      formControlName="user_document_type_id" (search)="searchDocumentTypes($event)"
+                      (clear)="getDocumentTypes()" (open)="getDocumentTypes()">
+                      <ng-option [value]="type.id" [attr.title]="type.title.length>50?type.title:''"
+                        *ngFor="let type of UserDocumentTypeMasterStore.userDocumentTypes">
+                        {{type.title.length>50?type.title.substring(0,50)+' ...':type.title}}
+                      </ng-option>
+                    </ng-select>
+
+                  </div>
+                  <button class="btn multi-add-user" (click)="openDocumentModal()"><i class="fas fa-plus"></i></button>
+                  <p style="color: red;" *ngIf="formErrors&&formErrors.user_document_type_id">
+                    {{formErrors.user_document_type_id}}</p>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>{{'title'|translate}}<sup>*</sup></label>
+                <input formControlName="title" id="doc-title" name='title' type="text" class="form-control"
+                  [placeholder]="'enter_document_name'|translate">
+                <p class="form-error pt-1" *ngIf="form?.value?.title && form?.value?.title.length>500 && !formErrors">
+                  {{'maximum_500_characters'|translate}}</p>
+                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.title">
+                  {{formErrors.title}}</p>
+              </div>
+              <div class="row">
+                <div class="col-sm-6">
+                  <div class="form-group">
+                    <label>{{'issue_date'|translate}}<sup>*</sup></label>
+                    <div class="input-group">
+                      <input [readonly]="true"  (click)="startInput.toggle()" formControlName="issue_date" class="form-control bg-white" placeholder="yyyy-mm-dd" id="issue_date"
+                        [maxDate]="{year: UserDocumentStore.currentDate.getFullYear(), month: UserDocumentStore.currentDate.getMonth()+1, day: UserDocumentStore.currentDate.getDate()}"
+                        ngbDatepicker #startInput="ngbDatepicker">
+
+                      <div class="input-group-append">
+                        <button class="btn btn-outline-secondary calendar" (click)="startInput.toggle()"
+                          type="button"><i class="fas fa-calendar-alt"></i></button>
+                      </div>
+
+
+
+                    </div>
+                  </div>
+                  <p style="color: red;" *ngIf="formErrors&&formErrors.issue_date">
+                    {{formErrors.issue_date}}</p>
+
+                </div>
+
+                <div class="col-sm-6">
+
+                  <div class="form-group">
+                    <label>{{'expiry_date'|translate}}</label>
+                    <div class="input-group">
+                      <input  [readonly]="true" (click)="endInput.toggle()" formControlName="expiry_date" class="form-control bg-white" placeholder="yyyy-mm-dd"
+                        id="expiry_date" ngbDatepicker
+                        [minDate]="{year: this.form.value.issue_date?.year, month: this.form.value.issue_date?.month, day: this.form.value.issue_date?.day+1}"
+                        #endInput="ngbDatepicker">
+                      <div class="input-group-append">
+                        <button class="btn btn-outline-secondary calendar" (click)="endInput.toggle()" type="button"><i
+                            class="fas fa-calendar-alt"></i></button>
+                      </div>
+                    </div>
+                  </div>
+                  <p style="color: red;" *ngIf="formErrors&&formErrors.expiry_date">
+                    {{formErrors.expiry_date}}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <label class="label-style mb-0">{{'documents'|translate}}<sup class="red">*</sup></label>
+          <div class="scroll-documents" #uploadArea>
+            <div class="row m-0 upload-section" style="padding-top: 0">
+              <div class="col-sm-4 costmz-logo-new mt-2">
+                <div class="question-circle-inp" *ngIf = "OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.length > 0" style="margin-right: 7px;">
+                  <i class="far fa-question-circle"></i>
+                  <div class="message-password-inp">
+                      <p class="mb-0">{{'allowed_file_types' | translate}} {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}</p>
+                  </div>
+               </div>
+                <div class="form-group form-group-upload">
+                  <div class="darag-dropifile-upload">
+                    <div class="d-flex justify-content-center align-items-center text-center">
+                      <div>
+                        <img src="assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                        <div class="drag-file-name"> {{'select_upload_your_file_here'|translate}} </div>
+                        <div class="upload-btn-wrapper">
+                          <input type="file" id="file" multiple name="myfile" (change)="onFileChange($event,'support-file')"
+                            [accept]="checkAcceptFileTypes('support-file')" />
+                          <button class="btn">{{'browse_files'|translate}}</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div [ngClass]="files.success? 'col-sm-4 up-pic-cf mt-2 hide_loader' : 'col-sm-4 up-pic-cf mt-2'"
+                *ngFor="let files of fileUploadsArray">
+                <div class="upload-pics edit-option file-upload-loader">
+                  <circle-progress class="browse-form-pic" [percent]=fileUploadProgress [title]=fileUploadProgress>
+                  </circle-progress>
+                </div>
+              </div>
+
+
+              <div [ngClass]="doc.is_deleted ? 'col-sm-4 up-pic-cf mt-2 image_deleted':'col-sm-4 up-pic-cf mt-2'"
+                *ngFor="let doc of UserDocumentStore.getDocumentDetails">
+                <div class="upload-pics edit-option">
+                  <div *ngIf="doc.preview" class="browse-form-pic"
+                    [ngStyle]="{'background': 'url(' + doc.preview + ') no-repeat 0 0 / cover'}">
+                  </div>
+                  <div class="browse-form-name clearfix">
+                    <div class="float-left">
+                      <h6 [attr.title]="doc.name.length>15?doc.name:''">
+                        {{doc.name.length>15?doc.name.substring(0,15)+' ...':doc.name}}</h6>
+                      <span>{{doc.size/1048576 | number:'0.2-2'}}MB</span>
+                    </div>
+                    <div class="browse-logo">
+                      <img *ngIf="checkExtension(doc.ext,'excel') != -1" src="/assets/images/md-xl.png">
+                      <img *ngIf="checkExtension(doc.ext,'image') != -1" src="/assets/images/md-jpg.png">
+                      <img *ngIf="checkExtension(doc.ext,'doc') != -1" src="/assets/images/md-doc.png">
+                      <img *ngIf="checkExtension(doc.ext,'pdf') != -1" src="/assets/images/md-pdf.png">
+                      <img *ngIf="checkExtension(doc.ext,'video') != -1" src="/assets/images/md-video.png">
+                      <img *ngIf="checkExtension(doc.ext,'audio') != -1" src="/assets/images/md-audio.png">
+                      <img *ngIf="checkExtension(doc.ext,'ppt') != -1" src="/assets/images/md-ppt.png">
+
+                    </div>
+                  </div>
+                  <div class="edit-option-show">
+                    <a (click)="removeDocument(doc.token)"><i class="fas fa-trash"></i></a>
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+          <p style="color: red;" *ngIf="formErrors&&formErrors.documents">
+            {{formErrors.documents[0]}}</p>
+          <div class="row">
+            <div class="col-sm-12">
+              <div class="d-block justify-content-left border-0 mt-3">
+                <button type="submit" class="btn mr-3 btn-active" (click)="save()"
+                  [disabled]="form.invalid || checkDocPresent() || AppStore.loading||checkFileIsUploading()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save') }}</button>
+                <button type="button" data-toggle="modal" class="btn mr-3" (click)="save(true)"
+                  [disabled]="form.invalid || checkDocPresent() || AppStore.loading || checkFileIsUploading()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save_close') }}</button>
+                <button type="button" data-toggle="modal" class="btn mr-2"
+                  (click)="closeFormModal()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('cancel') }}</button>
+              </div>
+            </div>
+          </div>
+        </form>
+
+      </div>
+      <!-- Modal footer -->
+    </div>
+  </div>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #renewModal>
+  <button type="button" class="close" (click)="closeRenewModal()" data-dismiss="modal"><i
+      class="lni-close"></i><span>{{'esc'|translate}}</span></button>
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+
+    <div class="modal-content">
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <h4 class="modal-title mb-2">{{'document_renew'|translate}}</h4>
+
+      </div>
+      <!-- Modal body -->
+
+      <div class="modal-body form-body">
+
+        <form [formGroup]="form" *mobxAutorun>
+          <div class="row">
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label>{{'issue_date'|translate}}<sup>*</sup></label>
+                <div class="input-group">
+                  <input  [readonly]="true" (click)="startInput.toggle()" formControlName="issue_date" class="form-control bg-white" placeholder="yyyy-mm-dd" id="start"
+                    [maxDate]="{year: UserDocumentStore.currentDate.getFullYear(), month: UserDocumentStore.currentDate.getMonth()+1, day: UserDocumentStore.currentDate.getDate()}"
+                    ngbDatepicker #startInput="ngbDatepicker">
+
+                  <div class="input-group-append">
+                    <button class="btn btn-outline-secondary calendar" (click)="startInput.toggle()" type="button"><i
+                        class="fas fa-calendar-alt"></i></button>
+                  </div>
+                </div>
+              </div>
+              <p style="color: red;" *ngIf="formErrors&&formErrors.issue_date">
+                {{formErrors.issue_date}}</p>
+            </div>
+
+            <div class="col-sm-6">
+
+              <div class="form-group">
+                <label>{{'expiry_date'|translate}}</label>
+                <div class="input-group">
+                  <input [readonly]="true" (click)="endInput.toggle()" formControlName="expiry_date" class="form-control bg-white" placeholder="yyyy-mm-dd" id="end"
+                    ngbDatepicker
+                    [minDate]="{year: this.form.value.issue_date?.year, month: this.form.value.issue_date?.month, day: this.form.value.issue_date?.day+1}"
+                    #endInput="ngbDatepicker">
+                  <div class="input-group-append">
+                    <button class="btn btn-outline-secondary calendar" (click)="endInput.toggle()" type="button"><i
+                        class="fas fa-calendar-alt"></i></button>
+                  </div>
+                </div>
+              </div>
+              <p style="color: red;" *ngIf="formErrors&&formErrors.expiry_date">
+                {{formErrors.expiry_date}}</p>
+            </div>
+          </div>
+          <label class="label-style mb-0">{{'documents'|translate}}<sup class="red">*</sup></label>
+          <p style="color: red;" *ngIf="formErrors&&formErrors.documents">
+            {{formErrors.documents[0]}}</p>
+          <div class="scroll-documents" #uploadArea>
+            <div class="row m-0 upload-section">
+              <div class="col-sm-4 costmz-logo-new mt-2">
+                <div class="question-circle-inp" *ngIf = "OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.length > 0" style="margin-right: 7px;">
+                  <i class="far fa-question-circle"></i>
+                  <div class="message-password-inp">
+                      <p class="mb-0">{{'allowed_file_types' | translate}} {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}</p>
+                  </div>
+               </div>
+                <div class="form-group form-group-upload">
+                  <div class="darag-dropifile-upload">
+                    <div class="d-flex justify-content-center align-items-center text-center">
+                      <div>
+                        <img src="assets/images/drag-pic.png" class="drag-pic-files">
+                        <div class="drag-file-name"> {{'select_upload_your_file_here'|translate}} </div>
+                        <div class="upload-btn-wrapper">
+                          <input type="file" id="file" multiple name="myfile" (change)="onFileChange($event,'support-file')"
+                            accept="application/msword, application/pdf, image/* " />
+                          <button class="btn">{{'browse_files'|translate}}</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div [ngClass]="files.success? 'col-sm-4 up-pic-cf mt-2 hide_loader' : 'col-sm-4 up-pic-cf mt-2'"
+                *ngFor="let files of fileUploadsArray">
+                <div class="upload-pics edit-option">
+                  <circle-progress class="browse-form-pic" [percent]=fileUploadProgress [title]=fileUploadProgress>
+                  </circle-progress>
+                </div>
+              </div>
+
+              <div [ngClass]="doc.is_deleted ? 'col-sm-4 up-pic-cf mt-2 image_deleted':'col-sm-4 up-pic-cf mt-2'"
+                *ngFor="let doc of UserDocumentStore.getDocumentDetails">
+                <div class="upload-pics edit-option">
+                  <div *ngIf="doc.preview" class="browse-form-pic"
+                    [ngStyle]="{'background': 'url(' + doc.preview + ') no-repeat 0 0 / cover'}">
+                  </div>
+                  <div class="browse-form-name clearfix">
+                    <div class="float-left">
+                      <h6 [attr.title]="doc.name.length>15?doc.name:''">
+                        {{doc.name.length>15?doc.name.substring(0,15)+' ...':doc.name}}</h6>
+                      <span>{{doc.size/1048576 | number:'0.2-2'}}MB</span>
+                    </div>
+                    <div class="browse-logo">
+                      <img *ngIf="checkExtension(doc.ext,'excel') != -1" src="/assets/images/md-xl.png">
+                      <img *ngIf="checkExtension(doc.ext,'image') != -1" src="/assets/images/md-jpg.png">
+                      <img *ngIf="checkExtension(doc.ext,'doc') != -1" src="/assets/images/md-doc.png">
+                      <img *ngIf="checkExtension(doc.ext,'pdf') != -1" src="/assets/images/md-pdf.png">
+                      <img *ngIf="checkExtension(doc.ext,'video') != -1" src="/assets/images/md-video.png">
+                      <img *ngIf="checkExtension(doc.ext,'audio') != -1" src="/assets/images/md-audio.png">
+                      <img *ngIf="checkExtension(doc.ext,'ppt') != -1" src="/assets/images/md-ppt.png">
+
+                    </div>
+                  </div>
+                  <div class="edit-option-show">
+                    <a (click)="removeDocument(doc.token)"><i class="fas fa-trash"></i></a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="clearfix"></div>
+          <div class="row">
+            <div class="col-sm-12">
+              <div class="d-block justify-content-left border-0 mt-3">
+                <!-- <button type="submit" class="btn ordinary-btn mr-3 btn-active" (click)="save(false,'renew')"
+                  [disabled]="form.invalid || AppStore.loading||checkFileIsUploading()">{{ AppStore.loading  ? 'Loading...' : 'Save' }}</button> -->
+                <button type="button" data-toggle="modal" class="btn"
+                  (click)="save(true,'renew')"
+                  [disabled]="form.invalid || AppStore.loading||checkFileIsUploading() || UserDocumentStore.getDocumentDetails?.length==0">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save_close') }}</button>
+                <button type="button" data-toggle="modal" class="btn"
+                  (click)="closeRenewModal()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('cancel') }}</button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <!-- Modal footer -->
+    </div>
+
+  </div>
+</div>
+
+<div class="modal modal-style-1 share-popup fade popup-full-width" id="document-popup" data-keyboard="false"
+  data-backdrop="static" #detailsModal>
+  <button type="button" class="close" (click)="closeDetailsModal()" data-dismiss="modal"><i
+      class="lni-close"></i><span>{{'esc'|translate}}</span></button>
+  <div class="modal-dialog modal-xl modal-dialog-centered" *mobxAutorun>
+    <div class="modal-content" *ngIf="UserDocumentStore.individual_document_loaded">
+      <!-- Modal Header -->
+      <div class="modal-header" style="padding: 0 0 10px 15px !important;">
+        <h4 class="modal-title">
+          {{UserDocumentStore.individualDocumentDetails.user_document_type.title.length>30?UserDocumentStore.individualDocumentDetails.user_document_type.title.substring(0,30)+' ...':UserDocumentStore.individualDocumentDetails.user_document_type.title}}
+        </h4>
+
+      </div>
+
+      <div class="modal-body pt-0 pb-0 ">
+        <div class="row">
+          <div class="col-sm-7">
+            <div class="header-new-popup-bg bg-main">
+              <div class="header-new-popup clearfix">
+                <div class="d-flex flex-row user-list-sm user-list-no-hov user-box-smol-round p-0">
+
+                  <img
+                    *ngIf="checkExtension(UserDocumentStore.individualDocumentDetails.files[current_index]?.ext,'excel') != -1"
+                    src="/assets/images/md-xl.png" width="30px" height="30px">
+                  <img
+                    *ngIf="checkExtension(UserDocumentStore.individualDocumentDetails.files[current_index]?.ext,'image') != -1"
+                    src="/assets/images/md-jpg.png" width="30px" height="30px">
+                  <img
+                    *ngIf="checkExtension(UserDocumentStore.individualDocumentDetails.files[current_index]?.ext,'doc') != -1"
+                    src="/assets/images/md-doc.png" width="30px" height="30px">
+                  <img
+                    *ngIf="checkExtension(UserDocumentStore.individualDocumentDetails.files[current_index]?.ext,'pdf') != -1"
+                    src="/assets/images/md-pdf.png" width="30px" height="30px">
+                  <img
+                    *ngIf="checkExtension(UserDocumentStore.individualDocumentDetails.files[current_index]?.ext,'video') != -1"
+                    src="/assets/images/md-video.png">
+                  <img
+                    *ngIf="checkExtension(UserDocumentStore.individualDocumentDetails.files[current_index]?.ext,'audio') != -1"
+                    src="/assets/images/md-audio.png">
+                  <img
+                    *ngIf="checkExtension(UserDocumentStore.individualDocumentDetails.files[current_index]?.ext,'ppt') != -1"
+                    src="/assets/images/md-ppt.png">
+
+
+                  <div class="pointer new-size-text">
+                    <h6 class="big-name"
+                      [attr.title]="UserDocumentStore.individualDocumentDetails.files[current_index]?.title.length>35?UserDocumentStore.individualDocumentDetails.files[current_index]?.title:''">
+                      {{UserDocumentStore.individualDocumentDetails.files[current_index]?.title.length>35?UserDocumentStore.individualDocumentDetails.files[current_index]?.title.substring(0,35)+' ...':UserDocumentStore.individualDocumentDetails.files[current_index]?.title}}
+                    </h6>
+                    <span>{{UserDocumentStore.individualDocumentDetails.files[current_index]?.size/1048576 | number:'0.2-2'}}MB</span>
+                  </div>
+                </div>
+                <div class="popup-link-icon">
+
+                  <a class="pointer" [attr.title]="'download'|translate"
+                    (click)="downloadDocument(UserDocumentStore.individualDocumentDetails.id,UserDocumentStore.individualDocumentDetails.files[current_index]?.title,UserDocumentStore.individualDocumentDetails.files[current_index],UserDocumentStore.individualDocumentDetails.files[current_index]?.id)"><i
+                      class="fas fa-download"></i></a>
+                </div>
+              </div>
+            </div>
+            <div class="bg-light-grey p-3" style="border-right: none;">
+              <div class="popup-new-type relative">
+                <div class="bg-white height-popup-new d-flex align-items-center">
+
+                  <iframe
+                    *ngIf="UserDocumentStore.individualDocumentDetails?.files[current_index] && checkExtension(UserDocumentStore.individualDocumentDetails.files[current_index]?.ext,'image') == -1"
+                    [attr.src]="UserDocumentStore.individualDocumentDetails?.files[current_index]['preview_src']"
+                    frameborder="0" height="500px" width="100%"></iframe>
+                  <div
+                    *ngIf="UserDocumentStore.individualDocumentDetails?.files[current_index] && checkExtension(UserDocumentStore.individualDocumentDetails.files[current_index]?.ext,'image') != -1"
+                    class="popup-pic-img-new">
+                    <img width="100%"
+                      [attr.src]="UserDocumentStore.individualDocumentDetails?.files[current_index]['preview_src']"
+                      onerror = "this.src='/assets/images/user-demo2.png'">
+                  </div>
+                  <!-- <div class="uploaded-files" *ngIf="preview_src.length>1"> 
+                      
+                      <a *ngFor="let ind of UserDocumentStore.individualDocumentDetails.files;let i=index" [ngClass]="current_index==i?'active':''"> {{i+1}} </a></div>
+                  -->
+                  <div class="popup-slider-control clearfix"
+                    *ngIf="UserDocumentStore.individualDocumentDetails.files.length>1">
+                    <a *ngIf="current_index!=0" class="popup-slider-control-left"><i class="fas fa-chevron-left"
+                        (click)="addIndex(-1)"></i></a>
+                    <a *ngIf="current_index!=UserDocumentStore.individualDocumentDetails.files.length-1"
+                      class="popup-slider-control-right"><i class="fas fa-chevron-right" (click)="addIndex(1)"></i></a>
+                  </div>
+                </div>
+
+              </div>
+
+              <div class="uploaded-files margin-left-15"
+                *ngIf="UserDocumentStore.individualDocumentDetails.files.length>1">
+                <a *ngIf="UserDocumentStore.individualDocumentDetails.files.length>3 && current_index>0" class="pointer"
+                  (click)="addIndex(-1)"><i class="fas fa-angle-up"></i></a>
+                <a class="pointer" *ngFor="let ind of documentArray()" [ngClass]="current_index==ind?'active':''"
+                  (click)="setCurrentIndex(ind)"> {{ind+1}} </a>
+                <a *ngIf="UserDocumentStore.individualDocumentDetails.files.length>3 && current_index!=UserDocumentStore.individualDocumentDetails.files.length-1"
+                  class="pointer" (click)="addIndex(1)"><i class="fas fa-angle-down"></i></a> </div>
+
+
+            </div>
+
+
+            <div class="row">
+              <div class="col-xl-12">
+                <div class="d-flex flex-row user-list-sm bg-white pt-2" *ngIf="UsersStore.individual_user_loaded">
+                  <img *ngIf="!UserDocumentStore.individualDocumentDetails.created_by.image.token"
+                    src="/assets/images/user-demo2.png" width="40px" height="40px" class="rounded-circle">
+                  <img *ngIf="UserDocumentStore.individualDocumentDetails.created_by.image.token"
+                    [attr.src]="createImageUrl('user',UserDocumentStore.individualDocumentDetails.created_by.image.token)"
+                    onerror = "this.src='/assets/images/user-demo2.png'"
+                    width="40px" height="40px" 
+                    class="rounded-circle">
+                  <div>
+                    <h6>
+                      {{UserDocumentStore.individualDocumentDetails.created_by.first_name}} {{UserDocumentStore.individualDocumentDetails.created_by.last_name}}
+                    </h6>
+                    <span>{{UserDocumentStore.individualDocumentDetails.created_by.designation}} | {{'created_on'|translate}}
+                      {{UserDocumentStore.individualDocumentDetails.created_at|date : OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-5 pl-0 pr-0">
+            <div class="left-block pt-0">
+              <div class="row">
+                <div class="widget bg-white compliace-reg-right-new expired w-100 pl-2">
+                  <div class="row">
+                    <div class="col-sm-12">
+                      <div class="d-inline-block align-top mr-3">
+                        <img class="img-fluid"
+                          *ngIf="getDocType()&&checkExtension(UserDocumentStore.individualDocumentDetails.files[0].ext,'excel') != -1"
+                          src="/assets/images/md-xl.png">
+                        <img class="img-fluid"
+                          *ngIf="getDocType()&&checkExtension(UserDocumentStore.individualDocumentDetails.files[0].ext,'image') != -1"
+                          src="/assets/images/md-jpg.png">
+                        <img class="img-fluid"
+                          *ngIf="getDocType()&&checkExtension(UserDocumentStore.individualDocumentDetails.files[0].ext,'doc') != -1"
+                          src="/assets/images/md-doc.png">
+                        <img class="img-fluid"
+                          *ngIf="getDocType()&&checkExtension(UserDocumentStore.individualDocumentDetails.files[0].ext,'pdf') != -1"
+                          src="/assets/images/md-pdf.png">
+                        <img
+                          *ngIf="getDocType()&&checkExtension(UserDocumentStore.individualDocumentDetails.files[0].ext,'video') != -1"
+                          src="/assets/images/md-video.png">
+                        <img
+                          *ngIf="getDocType()&&checkExtension(UserDocumentStore.individualDocumentDetails.files[0].ext,'audio') != -1"
+                          src="/assets/images/md-audio.png">
+                        <img
+                          *ngIf="getDocType()&&checkExtension(UserDocumentStore.individualDocumentDetails.files[0].ext,'ppt') != -1"
+                          src="/assets/images/md-ppt.png">
+
+                        <img *ngIf="!getDocType()" src="/assets/images/md-cmn.png">
+                      </div>
+                      <div class="d-inline-block">
+                        <h5 class="mb-0"
+                          [attr.title]="UserDocumentStore.individualDocumentDetails.user_document_type.title.length>30?UserDocumentStore.individualDocumentDetails.user_document_type.title:''">
+                          {{UserDocumentStore.individualDocumentDetails.user_document_type.title.length>30?UserDocumentStore.individualDocumentDetails.user_document_type.title.substring(0,30)+' ...':UserDocumentStore.individualDocumentDetails.user_document_type.title}}
+                          -
+                          V{{UserDocumentStore.individualDocumentDetails.version}}</h5>
+                        <p class="mb-0" *ngIf="UserDocumentStore.individualDocumentDetails.expiry_date && UserDocumentStore.individualDocumentDetails.is_expired"><span
+                            class="blinking">{{'expired'|translate}}</span></p>
+                        <p class="mb-0" *ngIf="!UserDocumentStore.individualDocumentDetails.is_expired"><span
+                            [ngClass]="UserDocumentStore.individualDocumentDetails.total_days-UserDocumentStore.individualDocumentDetails.days>30?'':'blinking'">{{'expires_in'|translate}}
+                            {{createDaysString(UserDocumentStore.individualDocumentDetails.total_days-UserDocumentStore.individualDocumentDetails.days)}}</span>
+                        </p>
+                        <p><i class="mr-2"> <img src="/assets/images/date-icon.png"> </i> <span>
+                            {{UserDocumentStore.individualDocumentDetails.issue_date|date : OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                            <span *ngIf="UserDocumentStore?.individualDocumentDetails?.expiry_date"> - {{UserDocumentStore.individualDocumentDetails.expiry_date|date : OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</span>
+                          </span></p>
+                        <div class="button-group">
+                          <a (click)="downloadDocument(UserDocumentStore.individualDocumentDetails.id,UserDocumentStore.individualDocumentDetails.user_document_type.title,UserDocumentStore.individualDocumentDetails)"
+                            class="btn"
+                            *ngIf="AuthStore.getActivityPermission(200,'DOWNLOAD_USER_DOCUMENT')">{{loader ? getButtonText('loading') : getButtonText('download')}}</a>
+                          <a data-toggle="modal"
+                            (click)="openRenewModal(UserDocumentStore.individualDocumentDetails.id)" class="btn"
+                            *ngIf="AuthStore.getActivityPermission(200,'RENEW_USER_DOCUMENT')">{{renewLoader ? getButtonText('loading') : getButtonText('renew')}}</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row">
+                   
+                    <div class="col-xl-12">
+                      <div *ngIf="(UserDocumentStore.individualDocumentDetails.history?.length>0)">
+                        <hr>
+                        <h6 class="mt-3">{{'history'|translate}}</h6>
+                        <div class="history-box  d-flex justify-content-between align-items-center"
+                          *ngFor="let history of UserDocumentStore.individualDocumentDetails.history|paginate: { itemsPerPage: 5, currentPage: historyPage }">
+                          <div class="d-flex flex-row">
+                            <i class="mr-3"> <img src="/assets/images/md-cmn.png" width="30"> </i>
+                            <div class="history-content">
+                              <h6 class="mb-0"
+                                [attr.title]="UserDocumentStore.individualDocumentDetails.user_document_type.title.length>30?UserDocumentStore.individualDocumentDetails.user_document_type.title:''">
+                                {{UserDocumentStore.individualDocumentDetails.user_document_type.title.length>30?UserDocumentStore.individualDocumentDetails.user_document_type.title.substring(0,30)+' ...':UserDocumentStore.individualDocumentDetails.user_document_type.title}}
+                                -
+                                V{{history.version}}</h6>
+                              <p>
+                                {{history.issue_date|date : OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                {{history.expiry_date ? '-' : ''}}
+                                {{history.expiry_date|date : OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                              </p>
+                            </div>
+                          </div>
+                          <div class="button-group ml-3 "><a
+                              (click)="downloadHistory(history.user_document_id,UserDocumentStore.individualDocumentDetails.user_document_type.title+history.expiry_date,history.version)"
+                              class="btn">{{'download'|translate}}</a> </div>
+                        </div>
+
+                        <div class="col-sm-12" *ngIf="(UserDocumentStore.individualDocumentDetails.history?.length>5)">
+                          <ul class="pagination justify-content-center mt-3 pl-0 mb-1">
+                            <pagination-controls [previousLabel]="'previous' | translate"  [nextLabel]="'next' | translate" (pageChange)="historyPage = $event"></pagination-controls>
+                          </ul>
+                        </div>
+
+                      </div>
+                      <!-- <h6 class="mt-3"> {{'activity_log'|translate}} </h6>
+                      <ul class="activity-log-small">
+                        <li>Document Uploaded by Muhammed shihabudeen - 2 days ago</li>
+                        <li>Document Updated by Ahammed Fayaz - 1 day ago</li>
+                      </ul> -->
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #documentModal>
+  <app-user-new-document-modal></app-user-new-document-modal>
+  <!-- <button type="button" class="close" (click)="closeDocModal()"><i class="lni-close"></i><span>esc</span></button>
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">{{'user_document_types'|translate}}</h4>
+      
+      </div>
+      <div class="modal-body form-body">
+
+        <p class="head-details"></p>
+
+        <form [formGroup]="docForm" *mobxAutorun>
+
+          <div class="row">
+            <div class="col-sm-12">
+              <div class="form-group">
+                <label>{{'title'|translate}}<sup>*</sup></label>
+                <input type="text" formControlName="title" class="form-control" [attr.placeholder]="'title'|translate"
+                  id="title" #titleInput>
+                <p style="color: red;" *ngIf="formErrors"> {{formErrors.title}}</p>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-12">
+              <div class="form-group add-kpi-textarea">
+                <label>{{'description'|translate}}</label>
+                <textarea class="form-control" rows="11" id="comment11" [attr.placeholder]="'description'|translate"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="clearfix"></div>
+
+          <div class="row">
+            <div class="col-sm-12">
+              <div class="d-block justify-content-left border-0 mt-3">
+                <button type="submit" class="btn ordinary-btn mr-3 btn-active" (click)="saveDoc()"
+                  [disabled]="docForm.invalid || AppStore.loading">{{ AppStore.loading  ? 'Loading...' : 'Save' }}</button>
+                <button type="button" data-toggle="modal" data-target="#signal-lost" class="btn ordinary-btn mr-3"
+                  (click)="saveDoc(true)"
+                  [disabled]="docForm.invalid || AppStore.loading">{{ AppStore.loading  ? 'Loading...' : 'Save & Close' }}</button>
+                <button type="button" data-toggle="modal" class="btn ordinary-btn mr-2"
+                  (click)="closeDocModal()">{{ AppStore.loading  ? 'Loading...' : 'Cancel' }}</button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div> -->
+</div>

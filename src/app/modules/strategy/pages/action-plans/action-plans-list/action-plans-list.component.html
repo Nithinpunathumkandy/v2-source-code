@@ -1,0 +1,99 @@
+<nav class="edit-bar" data-toggle="affix" #navBar>
+    <app-sub-menu>-</app-sub-menu>
+    <ul class="nav nav-pills float-left d-none d-lg-block" role="tablist">
+       <li class="nav-item">
+          <a class="nav-link nav-link-show" [routerLink]="['/strategy-management/strategy-action-plans']"
+          routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">{{'action_plans' | translate }}</a>
+       </li>
+    </ul>
+ </nav>
+<main class="mt-3 acl-page">
+    <div class="container-fluid">
+        <app-filter-menu></app-filter-menu>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="tab-content">
+                    <!-- Profille -->
+                    <div class="tab-pane active" id="info">
+                        <div class="audit-program-box audit-page-table-main">
+                            <div class="row">
+                                <div class="col-sm-12 full-width-table">
+                                    <table *ngIf=" ActionPlansStore.loaded && ActionPlansStore.allItems.length > 0" class="
+                      table table-bordered
+                      ordinary-table
+                      audit-page-table
+                      mb-4
+                      table-scroll
+                    ">
+                                        <thead>
+                                            <tr>
+                                                <th class="border-top-0" width="2%">#</th>
+                                                <th class="border-top-0" width="30%">{{'title' | translate }}</th>
+                                                <th class="border-top-0" width="18%">{{'milestone' | translate }}</th>
+                                                <th class="border-top-0" width="13%">{{'initiatives' | translate }}</th>
+                                                <th class="border-top-0" width="10%">{{'objective' | translate }}</th>
+                                                <th class="border-top-0" width="6%">
+                                                    {{'achieved_value' | translate }}
+                                                </th>
+                                                <th class="border-top-0" width="10%">
+                                                    {{'sm_actual_end_date' | translate }}
+                                                </th>
+                                                <th class="border-top-0" width="8%">{{'sm_cost' | translate }}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr (click)='gotoDetails(data)' *ngFor="let data of ActionPlansStore.allItems| paginate: {currentPage:ActionPlansStore.currentPage, itemsPerPage:ActionPlansStore.itemsPerPage,totalItems:ActionPlansStore.totalItems};let num = index" class="pointer edit-and-delete-main">
+                                                <td>{{(ActionPlansStore.currentPage - 1) * ActionPlansStore.itemsPerPage + (num + 1)}}</td>
+
+                                                <td>{{data.title}}</td>
+
+                                                <td>{{data.strategy_initiative_milestone_title ? data.strategy_initiative_milestone_title : AppStore.noContentText}}</td>
+                                                <td>{{data.strategy_initiative_title}}</td>
+                                                <td>{{data.objective_title ? data.objective_title : AppStore.noContentText}}</td>
+
+                                                <td>{{data.actual_value ? data.actual_value : AppStore.noContentText}}</td>
+                                                <td>{{data.actual_end_date ? (data.actual_end_date | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format) : AppStore.noContentText}}</td>
+                                                <td>
+                                                    {{data.cost ? data.cost : AppStore.noContentText}} {{ data.cost ? OrganizationGeneralSettingsStore?.organizationSettings?.currency : ''}}
+
+                                                    <div class="edit-option-show" style="margin: 30px 0 0 0">
+                                                        <!-- edit-and-delete starts -->
+                                                        <a (click)="openPlanMesureModal(data)"><i class="fas fa-pen"></i></a>
+                                                        <!-- <a href="strategy-action-plan-details.html"><i class="fas fa-trash"></i></a> -->
+                                                    </div>
+                                                    <!-- edit-and-delete end -->
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <ng-container *mobxAutorun>
+                                        <div *ngIf="!ActionPlansStore.loaded">
+                                           <app-profile-list-loader></app-profile-list-loader>
+                                       </div>
+                                        <app-no-data *ngIf = "ActionPlansStore.allItems.length == 0 && ActionPlansStore.loaded == true"></app-no-data>
+                                      </ng-container>
+                                </div>
+                                <div *ngIf="ActionPlansStore.totalItems>ActionPlansStore.itemsPerPage"
+                                    class="col-sm-12">
+                                    <ul class="pagination justify-content-center mt-3">
+                                        <div class="list">
+                                            <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"  class="my-pagination" (pageChange)="pageChange($event)">
+                                            </pagination-controls>
+                                        </div>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Profille -->
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div class="modal modal-style-1 popup-full-width fade" id="add-new-notes-popup" data-keyboard="false"
+data-backdrop="static" #planMesure>
+<app-add-plans-measure *ngIf="planMesureObject.type" [source]="planMesureObject" ></app-add-plans-measure>
+</div>

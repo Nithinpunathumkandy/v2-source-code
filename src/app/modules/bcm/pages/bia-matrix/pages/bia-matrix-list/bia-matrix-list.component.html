@@ -1,0 +1,167 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navBar>
+   <app-sub-menu>-</app-sub-menu>
+   <div class="module-name-block module-name-block-space float-left">
+      <a class="dropdown module-title">{{'bia_matrix'|translate}}</a>
+   </div>
+   <!-- <ul class="nav nav-pills float-left d-none d-lg-block" role="tablist">
+      <li class="nav-item">
+         <a class="nav-link nav-link-show" [routerLink]="['/bcm/bia-matrix']" routerLinkActive="active"
+            [routerLinkActiveOptions]="{exact: true}"> {{'bia_matrix' | translate}}</a>
+   </ul> -->
+</nav>
+<main class="mt-3 acl-page">
+   <div class="audit-program-box audit-page-table-main" *mobxAutorun>
+      <div class="row"
+         *ngIf="BiamatrixListStore.BiaMatrix.length!=0 && BiaSettingStore.loaded&&BiamatrixListStore.loaded&&AuthStore.getActivityPermission(100,'BIA_MATRIX_LIST')">
+         <div class="col-sm-12">
+            <div class="full-width-table mb-3">
+               <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                  <thead>
+                     <tr>
+                        <th class="border-top-0" width="6%">{{'rating' | translate}}</th>
+                        <th class="border-top-0" width="10%">{{'impact_level' | translate}}</th>
+                        <th class="border-top-0" width="13%">{{'impact_categotry'|translate}}</th>
+                        <!-- Based on configuration on settings-->
+                        <th class="border-top-0" *ngIf="BiaSettingStore?.BiaSettingsItems?.is_impact_scenario"
+                           width="21%">{{'impact_scenario'|translate}}</th>
+                        <th class="border-top-0" *ngIf="BiaSettingStore?.BiaSettingsItems?.is_impact_area" width="50%">
+                           {{'impact_area'|translate}}</th>
+                        <!-- Configuration End -->
+                     </tr>
+                  </thead>
+                  <tbody>
+                     <ng-container *ngFor="let bia of BiamatrixListStore.BiaMatrix">
+                        <ng-container *ngIf="bia.bia_impact_categories.length==0">
+                           <tr class="edit-and-delete-main">
+                              <td>{{bia.rating}}</td>
+                              <td><span class="left-color-line mr-1"
+                                    [style.background]="bia?.color_code"></span>{{bia.level}}</td>
+                              <td>{{AppStore.noContentText}}</td>
+                              <!-- Based on configuration on settings-->
+                              <td *ngIf="BiaSettingStore?.BiaSettingsItems?.is_impact_scenario">
+                                 {{AppStore.noContentText}}</td>
+                              <td *ngIf="BiaSettingStore?.BiaSettingsItems?.is_impact_area">{{AppStore.noContentText}}
+                              </td>
+                              <!-- Configuration End -->
+                           </tr>
+                        </ng-container>
+                        <ng-container *ngIf="bia.bia_impact_categories.length!=0">
+                           <ng-container *ngFor="let category of bia.bia_impact_categories;let $index = index">
+                              <ng-container
+                                 *ngIf="category.bia_impact_scenarios&&category.bia_impact_scenarios?.length!=0">
+                                 <ng-container *ngFor="let scenario of category.bia_impact_scenarios;let $num = index">
+                                    <ng-container
+                                       *ngIf="scenario.bia_impact_areas&&scenario.bia_impact_areas?.length!=0">
+                                       <ng-container *ngFor="let area of scenario.bia_impact_areas;let $ind = index">
+                                          <ng-container *ngIf="scenario.bia_impact_areas.length==1">
+                                             <tr class="edit-and-delete-main">
+                                                <td *ngIf="$index===0 && $num === 0 && $ind===0"
+                                                   [attr.rowspan]="calculateRow(bia.bia_impact_categories.length,bia)">
+                                                   {{bia.rating}}</td>
+                                                <td *ngIf="$index===0 && $num === 0 && $ind===0"
+                                                   [attr.rowspan]="calculateRow(bia.bia_impact_categories.length,bia)">
+                                                   <span class="left-color-line mr-1"
+                                                      [style.background]="bia?.color_code"></span>{{bia.level}}
+                                                </td>
+                                                <td *ngIf="$num === 0"
+                                                   [attr.rowspan]="category.bia_impact_scenarios?.length+calculateRowSpan(null,null,scenario.bia_impact_areas.length)">
+                                                   {{category.title}}</td>
+                                                <td *ngIf="$ind === 0"
+                                                   [attr.rowspan]="scenario.bia_impact_areas.length">
+                                                   {{scenario.title}}</td>
+                                                <td>{{area.title}}</td>
+                                             </tr>
+                                          </ng-container>
+                                          <ng-container *ngIf="scenario.bia_impact_areas.length>1">
+                                             <tr class="edit-and-delete-main">
+                                                <td *ngIf="$index===0&&$num === 0 && $ind === 0"
+                                                   [attr.rowspan]="calculateRow(bia.bia_impact_categories.length,bia)">
+                                                   {{bia.rating}}</td>
+                                                <td *ngIf="$index===0&&$num === 0 && $ind === 0"
+                                                   [attr.rowspan]="calculateRow(bia.bia_impact_categories.length,bia)">
+                                                   <span class="left-color-line mr-1"
+                                                      [style.background]="bia?.color_code"></span>{{bia.level}}
+                                                </td>
+                                                <td *ngIf="$num === 0 && $ind === 0"
+                                                   [attr.rowspan]="calculateRow(category.bia_impact_scenarios?.length,category)">
+                                                   {{category.title}}</td>
+                                                <td *ngIf="$ind === 0"
+                                                   [attr.rowspan]="scenario.bia_impact_areas.length">
+                                                   {{scenario.title}}</td>
+                                                <td>{{area.title}}</td>
+                                             </tr>
+                                          </ng-container>
+                                       </ng-container>
+                                    </ng-container>
+                                    <ng-container
+                                       *ngIf="!scenario.bia_impact_areas||scenario.bia_impact_areas?.length==0">
+                                       <!-- <ng-container *ngIf="category.bia_impact_scenarios.length>1">
+                                       <tr class="edit-and-delete-main">
+                                          <td *ngIf="$num === 0"
+                                             [attr.rowspan]="calculateRow(bia.bia_impact_categories.length,bia)">{{bia.rating}}</td>
+                                          <td *ngIf="$num === 0"
+                                             [attr.rowspan]="calculateRow(bia.bia_impact_categories.length,bia)">{{bia.level}}</td>
+                                          <td *ngIf="$num === 0"
+                                             [attr.rowspan]="category.bia_impact_scenarios.length">{{category.title}}</td>
+                                          <td>{{scenario.title}}</td>
+                                          <td>{{AppStore.noContentText}}</td>
+                                       </tr>
+                                    </ng-container> -->
+                                       <ng-container>
+                                          <tr class="edit-and-delete-main">
+                                             <td *ngIf="$index === 0 && $num===0"
+                                                [attr.rowspan]="calculateRow(bia.bia_impact_categories.length,bia)">
+                                                {{bia.rating}}</td>
+                                             <td *ngIf="$index === 0 && $num===0"
+                                                [attr.rowspan]="calculateRow(bia.bia_impact_categories.length,bia)">
+                                                <span class="left-color-line mr-1"
+                                                   [style.background]="bia?.color_code"></span>{{bia.level}}
+                                             </td>
+                                             <td *ngIf="$num === 0"
+                                                [attr.rowspan]="category.bia_impact_scenarios?.length">
+                                                {{category.title}}</td>
+                                             <td>{{scenario.title}}</td>
+                                             <td *ngIf="BiaSettingStore?.BiaSettingsItems?.is_impact_area">
+                                                {{AppStore.noContentText}}</td>
+                                          </tr>
+                                       </ng-container>
+                                    </ng-container>
+                                 </ng-container>
+                              </ng-container>
+                              <ng-container
+                                 *ngIf="!category.bia_impact_scenarios||category.bia_impact_scenarios?.length==0">
+                                 <tr class="edit-and-delete-main">
+                                    <td *ngIf="$index == 0"
+                                       [attr.rowspan]="calculateRow(bia.bia_impact_categories.length,bia)">
+                                       {{bia.rating}}</td>
+                                    <td *ngIf="$index == 0"
+                                       [attr.rowspan]="calculateRow(bia.bia_impact_categories.length,bia)">
+                                       <span class="left-color-line mr-1"
+                                          [style.background]="bia?.color_code"></span>{{bia.level}}
+                                    </td>
+                                    <td>{{category.title}}</td>
+                                    <td *ngIf="BiaSettingStore?.BiaSettingsItems?.is_impact_scenario">
+                                       {{AppStore.noContentText}}</td>
+                                    <td *ngIf="BiaSettingStore?.BiaSettingsItems?.is_impact_area">
+                                       {{AppStore.noContentText}}</td>
+                                 </tr>
+                              </ng-container>
+                           </ng-container>
+                        </ng-container>
+                     </ng-container>
+                  </tbody>
+               </table>
+            </div>
+         </div>
+      </div>
+      <ng-container *mobxAutorun>
+         <app-bcm-table-loader *ngIf="!BiamatrixListStore.loaded"></app-bcm-table-loader>
+      </ng-container>
+
+      <ng-container *mobxAutorun>
+         <app-no-data *ngIf="BiamatrixListStore.BiaMatrix.length==0&&BiamatrixListStore.loaded"></app-no-data>
+      </ng-container>
+
+   </div>
+</main>

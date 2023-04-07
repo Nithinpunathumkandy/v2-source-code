@@ -1,0 +1,91 @@
+<div #plainDev></div>
+<div class="bg-white">
+    <nav class="edit-bar" data-toggle="affix" #navBar>
+        <app-sub-menu>-</app-sub-menu>
+        <div class="module-name-block module-name-block-space float-left">
+            <a class="dropdown module-title">{{'template'|translate}}</a>
+        </div>
+    </nav>
+</div>
+    <main class="mt-3" >
+        <div class="container-fluid" *mobxAutorun>
+            <div class="row">
+                <div class="col-sm-12">
+                        <div class="row"  *ngIf="MeetingReportTemeplates?.loaded && MeetingReportTemeplates.allItems.length > 0 && AuthStore.getActivityPermission(1600,'MEETING_REPORT_TEMPLATE_LIST')">
+                            <div class="col-xl-3 col-lg-4 col-sm-6"  *ngFor="
+                            let row of MeetingReportTemeplates?.allItems
+                            | paginate
+                                : {
+                                    currentPage: MeetingReportTemeplates?.currentPage,
+                                    itemsPerPage: MeetingReportTemeplates?.itemsPerPage,
+                                    totalItems: MeetingReportTemeplates?.totalItems
+                                };
+                            let num = index" (click)="getDetails(row.id)">
+                                <div class="workflow-lst-box template-list edit-and-delete-main">
+                                    <div class="edit-option-show" style="margin: 27px -13px 0px 0;">
+                                        <a [attr.title]="'edit'|translate" (click) = "edit(row.id)" 
+                                            *ngIf = "AuthStore.getActivityPermission(1600,'UPDATE_MEETING_REPORT_TEMPLATE')"><i class="fas fa-pen pointer"></i></a> 
+                                        <a [attr.title]="'delete'|translate" (click) = "deleteConfirm(row.id,row.status)"
+                                            *ngIf = "AuthStore.getActivityPermission(1600,'DELETE_MEETING_REPORT_TEMPLATE')"><i class="fas fa-trash pointer"></i></a>
+                                        <a [attr.title]="'activate'|translate" (click) = "activateConfirm(row.id)" 
+                                            *ngIf="row.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(1600,'ACTIVATE_MEETING_REPORT_TEMPLATE')"><i class="fas fa-check pointer"></i></a> 
+                                        <a [attr.title]="'deactivate'|translate" (click) = "deactivateConfirm(row.id)" 
+                                            *ngIf="row.status_id == AppStore.activeStatusId && AuthStore.getActivityPermission(1600,'DEACTIVATE_MEETING_REPORT_TEMPLATE')"><i class="fas fa-ban pointer"></i></a>
+                                    </div>
+                                    <h6 class="workflow-lst-box-head bg-main pointer div-middle" title="{{row.title}}">#TR-{{ row.reference_code }}
+                                        <!-- {{row.title.length > 15 ? row.title.substring(0,15)+' ...' : row.title}} -->
+                                    </h6>
+                                    <div class="workflow-lst-content pointer p-0">
+                                        <div class="box-inner-overflow">
+                                            <div class="template-pic-box" 
+                                            [ngStyle]="{'background': 'url(' + createPrevImageUrl('report-tempate-document',row.token) + '), url(../../../../../../../assets/images/template_empty.png) no-repeat '}">
+                                                <div class="box-light-shadow"></div>
+                                            </div>
+                                        </div>
+                                        <div class="box-cnt-one mt-2 pl-2 pr-2">
+                                            <p class="mb-0">{{row.title.length > 50 ? row.title.substring(0,50)+' ...' : row.title}} </p>
+                                        </div>
+                                        <div class="row mb-1 pl-2 pr-2">
+                                            <div class="col-xl-12">
+                                                <hr class="mb-2 mt-2">
+                                                <div class="d-flex flex-row user-list-sm align-items-center">
+                                                    <app-user-popup-box [source]=" getEmployeePopupDetails( row, row?.created_at)"></app-user-popup-box>
+                                                </div>
+                                            </div>
+                                           
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    
+                        <ng-container *mobxAutorun>
+                            <div *ngIf="!MeetingReportTemeplates?.loaded">
+                                <app-template-list-loader></app-template-list-loader>
+                            </div>
+                        </ng-container>
+
+                        <app-no-data *ngIf = "MeetingReportTemeplates.totalItems == 0 && MeetingReportTemeplates.loaded == true" [border]='false'></app-no-data>
+
+                        <div *ngIf="MeetingReportTemeplates.totalItems > MeetingReportTemeplates.itemsPerPage && MeetingReportTemeplates?.loaded" class="col-sm-12">
+                            <ul class="pagination justify-content-center mt-3">
+                                <div class="list">
+                                    <pagination-controls [previousLabel]="'previous' | translate"  [nextLabel]="'next' | translate" (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+                                </div>
+                            </ul>
+                        </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+<!-----------------------Form Modal--------------------------->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+    <app-meeting-report-templates-add *ngIf = "reportObject.type" [source]="reportObject"></app-meeting-report-templates-add> 
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp>
+    <app-delete-popup [source] = "popupObject"></app-delete-popup>
+</div>

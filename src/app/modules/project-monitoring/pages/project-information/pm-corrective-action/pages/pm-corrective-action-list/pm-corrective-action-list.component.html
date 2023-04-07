@@ -1,0 +1,121 @@
+<div #plainDev></div>
+<div class="widget">
+
+    <nav *ngIf="CaStore.hideSubMenu == false" class="edit-bar" data-toggle="affix" #navBar>
+        <div class="module-name-block module-name-block-space float-left">
+            <a class="dropdown module-title">{{'corrective_actions'|translate}}</a>
+          </div>
+        <app-sub-menu>-</app-sub-menu>
+    </nav>
+    <main class="mt-3 acl-page" *mobxAutorun>
+    <div class="container-fluid">
+        <app-filter-menu></app-filter-menu>
+        <div class="audit-program-box audit-page-table-main">
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="full-width-table mb-3">
+                    <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll"
+                        *ngIf="CaStore.loaded && CaStore.allItems.length > 0">
+                        <thead>
+                            <tr>
+                                <th class="border-top-0 text-center" width="2%">#</th>
+                                <th class="border-top-0" width="8%" (click)="sortTitle('project_issue_ca.reference_code')">{{'ref_no' | translate}} 
+                                    <img *ngIf="CaStore.orderItem=='project_issue_ca.reference_code'"
+                                    [attr.src]="CaStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" 
+                                    class="sort-down-pics"></th>
+                                <th class="border-top-0" width="22%" (click)="sortTitle('project_issue_ca.title')">{{'title' | translate}}
+                                    <img *ngIf="CaStore.orderItem=='project_issue_ca.title'"
+                                    [attr.src]="CaStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" 
+                                    class="sort-down-pics">
+                                </th>
+                                <th class="border-top-0" width="15%">{{'responsible_user' | translate}}</th>
+                                <th class="border-top-0" width="13%" (click)="sortTitle('project_issue_ca.start_date')">{{'start_date' | translate}}
+                                    <img *ngIf="CaStore.orderItem=='project_issue_ca.start_date'"
+                                    [attr.src]="CaStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" 
+                                    class="sort-down-pics">
+                                </th>
+                                <th class="border-top-0" width="13%" (click)="sortTitle('project_issue_ca.target_date')">{{'target_date' | translate}}
+                                    <img *ngIf="CaStore.orderItem=='project_issue_ca.target_date'"
+                                    [attr.src]="CaStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" 
+                                    class="sort-down-pics">
+                                </th>
+                                <th class="border-top-0 text-center" width="9%">{{'status' | translate}}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr [ngClass]="AuthStore.getActivityPermission(1900,'PROJECT_ISSUE_CORRECTIVE_ACTION_DETAILS') ? 'pointer edit-and-delete-main' : 'edit-and-delete-main'" (click)="gotoCorrectiveActionDetails(items.id)" *ngFor="let items of CaStore.allItems | paginate: {currentPage:CaStore.currentPage, itemsPerPage:CaStore.itemsPerPage,totalItems:CaStore.totalItems};let num=index" >
+                                <td class="text-center">{{(CaStore.currentPage - 1) * CaStore.itemsPerPage + (num + 1)}}</td>
+                                <td class="pointer"> {{items.project_corrective_action_reference_code? items.project_corrective_action_reference_code : 'NA'}}</td>
+                                <td class="pointer"> {{items.title? items.title : 'NA'}} </td>
+                                <td class="pointer">
+                                    <div class="d-flex flex-row user-list-sm">
+                                        <img *ngIf="items.responsible_user_image_token"
+                                            [attr.src]="createImagePreview('user-profile-picture',items.responsible_user_image_token)"
+                                            width="30px" height="30px" class="rounded-circle" onerror = "this.src='/assets/images/user-demo2.png'">
+                                        <img *ngIf="!items.responsible_user_image_token"
+                                            [attr.src]="getDefaultImage('user-logo')" width="30px" height="30px"
+                                            class="rounded-circle" onerror = "this.src='/assets/images/user-demo2.png'">
+                                        <div>
+                                            <h6 title="{{items.responsible_user_first_name+items.responsible_user_last_name }}">{{items.responsible_user_first_name?.length > 20 ? items.responsible_user_first_name.substring(0,10)+' ...' : items.responsible_user_first_name }}&nbsp;{{items.responsible_user_last_name?.length > 20 ? items.responsible_user_last_name.substring(0,10)+' ...' : items.responsible_user_last_name}}
+                                            </h6>
+                                            <span _ngcontent-nws-c590="" wfd-id="801">{{items.responsible_user_designation}}</span>
+                                    
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="pointer">{{items.start_date | date:
+                                    OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</td> 
+                                <td class="pointer">{{items.target_date | date:
+                                    OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</td>
+                                <td class="text-center">
+                                    <div *ngIf="items.project_issue_corrective_action_status_title" [attr.class]="'dot-div '+items.label">
+                                        {{items.project_issue_corrective_action_status_title}}</div>
+                                    <p *ngIf="!items.project_issue_corrective_action_status_title">{{AppStore.noContentText}}</p>
+                                    <div class="edit-option-show" style="margin: 30px 0 0 0; ">
+                                        <!-- edit-and-delete starts -->
+                                        <a (click)="editCa(items)"><i class="fas fa-pen"></i></a>
+                                        <a (click)="delete(items.id)"><i class="fas fa-trash"></i></a>
+                                    </div><!-- edit-and-delete end -->
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p class="float-right bold" *ngIf="CaStore?.loaded && CaStore.totalItems > 0">Total Items:{{CaStore?.totalItems}}</p>
+
+                    <ng-container *mobxAutorun>
+                        <div *ngIf="!CaStore.loaded">
+                            <app-project-monitoring-list-loader></app-project-monitoring-list-loader>
+                       </div>
+                        <app-no-data *ngIf = "CaStore.allItems.length == 0 && CaStore.loaded == true"></app-no-data>
+                    </ng-container>
+                </div>
+            </div>
+        </div>
+        <div *ngIf="CaStore.totalItems>CaStore.itemsPerPage"
+            class="col-sm-12">
+            <ul class="pagination justify-content-center mt-3">
+                <div class="list">
+                    <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"  class="my-pagination" (pageChange)="pageChange($event)">
+                    </pagination-controls>
+                </div>
+            </ul>
+        </div> 
+    </div>
+  </div>
+</main>
+
+ <!------------------- start add issue ca modal --------------------------->
+<div class="modal modal-style-1 popup-full-width fade"  data-keyboard="false"
+data-backdrop="static" #newCa>
+   <app-add-issue-ca [source] ="newCaObject" *ngIf="newCaObject.type">
+   </app-add-issue-ca>
+</div>
+
+ <!------------------- end add issue ca modal --------------------------->
+
+
+ <!------------------- Delete Confirmation Modal Start --------------------------->
+ <div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+ <!------------------- Delete Confirmation Modal End --------------------------->

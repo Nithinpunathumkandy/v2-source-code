@@ -1,0 +1,122 @@
+
+
+<app-filter-menu></app-filter-menu>
+<ng-container *mobxAutorun>
+    <app-am-audit-info-request-loader *ngIf="!AmAuditInformationRequestStore.loaded"></app-am-audit-info-request-loader>
+</ng-container>
+<div class="tab-pane tab-edit-class assessment-tab-user" id="top-tab-left-four" *mobxAutorun>
+    
+    <!-- common-tab-md starts -->
+    <div class="common-tab-md clearfix mb-3 tab-same-height"
+        *ngIf="AmAuditInformationRequestStore.loaded && AmAuditInformationRequestStore?.requests?.length>0">
+        <div class="tab-common-left-md">
+            <div class=" issues-tab">
+                <!-- tab menu start -->
+                <ul class="nav nav-tabs nav-tabs--vertical nav-tabs--left vertical-tab" role="navigation">
+                    <li class="nav-item"
+                        *ngFor="let department of AmAuditsStore.individualAuditDetails?.am_individual_audit_plan?.departments">
+                        <a href="#information-tab-one" class="nav-link active" data-toggle="tab" role="tab"
+                            aria-controls="lorem" aria-selected="false">{{department.title}}</a>
+                    </li>
+
+                </ul>
+            </div><!-- tab menu end -->
+        </div>
+
+
+        <div class="tab-common-left-content-m">
+            <div class="tab-content widg-padding-cmn-small bg-white cmn-bdr min-height-83">
+                <div class="tab-pane fade active show" id="information-tab-one" role="tabpanel">
+                    <div class="audit-form-table w-100">
+                        <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                            <thead>
+                                <tr>
+                                    <th class="border-top-0 text-center" width="4%">#</th>
+                                    <th class="border-top-0" width="10%">{{'ref_id'|translate}}</th>
+                                    <th class="border-top-0" width="10%" *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_division">{{'division'|translate}}</th>
+                                    <th class="border-top-0" [style.width.%]="OrganizationLevelSettingsStore.organizationLevelSettings?.is_division?20:35">{{'request_for_information' | translate}}</th>
+                                    <th class="border-top-0" width="18%">{{'requested_by' | translate}}</th>
+                                    <th class="border-top-0" width="15%">{{'requested_to' | translate}}</th>
+                                    <th class="border-top-0" width="15%">{{'requested_date' | translate}}</th>
+                                    <!-- am_audit_information_requests.created_at -->
+                                    
+                                    <th class="border-top-0 text-center" width="15%">{{'status'|translate}}</th>
+                                    <!-- am_audit_information_request_status_language.title -->
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="pointer edit-and-delete-main"
+                                    *ngFor="let row of AmAuditInformationRequestStore.requests | paginate: {currentPage:AmAuditInformationRequestStore?.currentPage, itemsPerPage:AmAuditInformationRequestStore?.itemsPerPage,totalItems:AmAuditInformationRequestStore?.totalItems}; let num = index">
+                                    <td class="text-center" (click)="gotoDetails(row.id)">
+                                        {{(AmAuditInformationRequestStore?.currentPage -1) *
+                                        AmAuditInformationRequestStore?.itemsPerPage + (num +
+                                        1)}}</td>
+                                    <td (click)="gotoDetails(row.id)">#{{row.reference_code}}</td>
+                                    <td (click)="gotoDetails(row.id)" *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_division">{{row.division}}</td>
+                                    <td (click)="gotoDetails(row.id)">
+                                        <div class="paragraph-texts-loop" [attr.title]="replaceHtmlTag(row.description)" [innerHTML] = "row.description?.length>200?row.description?.substring(0,200) + '...':row.description"></div>
+                                    </td>
+                                    <td>
+                                        <app-user-popup-box [source]=" getPopupDetails(row)"></app-user-popup-box>
+                                    </td>
+                                    <td>
+                                        <app-user-popup-box [source]=" getToPopupDetails(row)"></app-user-popup-box>
+                                    </td>
+                                    <td (click)="gotoDetails(row.id)">{{row.created_at|date:OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</td>
+                                    
+                                    <td class="text-center">
+                                        <div [ngClass]="'dot-div '+row.label+'-dot'">{{row.information_request_status}}
+                                        </div>
+                                        <div *ngIf="AmAuditsStore.editAccessUser() && AmAuditsStore?.individualAuditDetails?.am_audit_field_work_status?.type!='completed'" class="edit-option-show" style="margin: 30px 0 0 0; ">
+                                            <!-- edit-and-delete starts -->
+                                            <a *ngIf="row.status_type != 'closed'" (click)="editInformationRequest(row.id)"><i class="fas fa-pen"></i></a>
+                                            <a (click)="deleteInformationRequest(row.id)"><i
+                                                    class="fas fa-trash"></i></a>
+                                        </div><!-- edit-and-delete end -->
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <p class="float-right bold mb-0"
+                            *ngIf="AmAuditInformationRequestStore?.loaded && AmAuditInformationRequestStore.totalItems > 0">
+                            {{'total_Items' | translate}}:{{AmAuditInformationRequestStore?.totalItems}}</p>
+
+                    </div>
+
+                    <div *ngIf="AmAuditInformationRequestStore.totalItems>AmAuditInformationRequestStore.itemsPerPage"
+                        class="col-sm-12">
+                        <ul class="pagination justify-content-center mt-3">
+                            <div class="list">
+                                <pagination-controls [previousLabel]="'previous' | translate"
+                                    [nextLabel]="'next' | translate" (pageChange)="pageChange($event)"
+                                    class="my-pagination"></pagination-controls>
+                            </div>
+                        </ul>
+                    </div>
+
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+    <ng-container *ngIf="AmAuditInformationRequestStore.loaded && AmAuditInformationRequestStore?.requests?.length==0">
+
+        <app-no-data [border]="false">
+        </app-no-data>
+
+    </ng-container>
+    <!-- common-tab-md end -->
+
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" style="overflow: hidden auto; z-index: 999999;"
+    data-keyboard="false" data-backdrop="static" #formModal *mobxAutorun>
+    <app-information-request-add-modal *ngIf="requestObject.type" [source]="requestObject">
+    </app-information-request-add-modal>
+</div>
+
+<div class="modal modal-style-1 fade" id="delete-popup" #deletePopup data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="deleteObject"></app-delete-popup>
+</div>

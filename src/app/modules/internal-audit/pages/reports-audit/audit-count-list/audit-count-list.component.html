@@ -1,0 +1,323 @@
+<div>
+    <nav class="edit-bar" data-toggle="affix" #navBar>
+        <div class="module-name-block module-name-block-space float-left">
+            <a class="dropdown module-title">{{'audit_report_details'|translate}}</a>
+          </div>
+        <!-- <div class="module-name-block float-left">
+            <a class="nav-link current-page border-right-0" [routerLink]="['/internal-audit/reports', riskcountType]">
+                <i class="fas fa-chevron-left"></i>{{'audit_report_details' | translate}}</a>
+        </div>
+        <ul class="nav nav-pills float-left d-none d-lg-block" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link nav-link-show" [routerLink]="['/internal-audit/reports', riskcountType, id]"
+                    routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">{{'audits' | translate}}</a>
+            </li>
+        </ul> -->
+        <app-sub-menu></app-sub-menu>
+        <!-- <app-sub-menu-drop-down></app-sub-menu-drop-down> -->
+    </nav>
+    <main class="audit-program-details-page mt-3">
+        <div class="container-fluid">
+            <!-- <a data-toggle="modal" data-target="#custom-date-popup">Custom date popup</a> -->
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="tab-content">
+                        <!-- Profille -->
+                        <div class="tab-pane active" id="info">
+
+
+                            <div class="widget bg-white widg-padding-cmn">
+
+                                <div class="row"
+                                    *ngIf="AuditReportStore?.listloaded && AuditReportStore.AuditRiskItemsDetails.length > 0">
+
+
+                                    <div class="col-md-12 text-center">
+
+                                        <h5>{{AuthStore.user.organization?.title}}</h5>
+                                        <h4 class="bold"> {{AuditReportStore.auditRiskListingTableTitle | translate}}
+                                        </h4>
+                                        <div *ngIf="filterDateObject.startDate != null">
+                                            <p class="mb-0"><i class="fas fa-calendar-alt date-pics-two"></i>{{'from' |
+                                                translate}} <i class="bold">{{filterDateObject.startDate | date:
+                                                    OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</i>
+                                                {{'to' | translate}} <i class="bold">{{filterDateObject.endDate | date:
+                                                    OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</i>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12 mt-4" *ngIf="AuditReportStore.selectedReportObject.reportType == 'auditProgram'">
+
+                                        <div class="row">
+                                            <div class="col-sm-12">
+                                                <div class="full-width-table table-scroll-first-time">
+                                                <table
+                                                    class="table table-bordered ordinary-table audit-page-table mb-4 table-scroll">
+                                                    <thead>
+
+                                                        <th class="border-top-0" width="3%">{{'sl' | translate}}</th>
+                                                        <th style="width: 8%;"
+                                                            class="border-top-0 issue-list-org-tab-three pointer">
+                                                            {{'ref_id' | translate}}
+                                                        </th>
+                                                        <th class="border-top-0 issue-list-org-tab-three pointer"
+                                                            style="width: 38%;">
+                                                            {{'title' | translate}}
+                                                        </th>
+
+                                                        <th style="width: 14%;">
+
+                                                            {{'created_by' | translate}}
+                                                        </th>
+                                                        <th style="width: 14%;"
+                                                            class="border-top-0 issue-list-org-tab-three pointer">
+                                                            {{'from_date' | translate}}
+                                                        </th>
+                                                        <th style="width: 14%;"
+                                                            class="border-top-0 issue-list-org-tab-three pointer">
+                                                            {{'to_date' | translate}}
+                                                        </th>
+                                                        <th style="width: 11%;" class="text-center">{{'status' | translate}}</th>
+                                                    </thead>
+                                                    <ng-container *mobxAutorun>
+                                                        <tr class="pointer edit-and-delete-main"
+                                                            *ngFor="let row of AuditReportStore.AuditRiskItemsDetails| paginate: {currentPage:AuditReportStore.currentPage, itemsPerPage:AuditReportStore.itemsPerPage,totalItems:AuditReportStore.totalItems};let num=index "
+                                                            (click)="getRisk(row.id)">
+
+                                                            <td style="text-align: center;" class="cursor-pointer">
+                                                                {{(AuditReportStore.currentPage - 1) *
+                                                                AuditReportStore.itemsPerPage +
+                                                                (num + 1)}}
+                                                            </td>
+                                                            <td class="cursor-pointer">
+                                                                #{{row.reference_code}}
+                                                            </td>
+                                                            <td class="cursor-pointer">{{row.title}}
+                                                            </td>
+                                                            <td class="cursor-pointer">
+                                                                <div class="d-flex flex-row user-list-sm">
+                                                                    <img *ngIf="row.created_by_image_token"
+                                                                        [attr.src]="createImagePreview('user-profile-picture',row.created_by_image_token)"
+                                                                        width="30px" height="30px"
+                                                                        class="rounded-circle"
+                                                                        onerror="this.src='/assets/images/user-demo2.png'">
+                                                                    <img *ngIf="!row.created_by_image_token"
+                                                                        [attr.src]="getDefaultImage('user-logo')"
+                                                                        width="30px" height="30px"
+                                                                        class="rounded-circle"
+                                                                        onerror="this.src='/assets/images/user-demo2.png'">
+                                                                    <div>
+                                                                        <h6
+                                                                            title="{{row.created_by_first_name+row.created_by_last_name }}">
+                                                                            {{row.created_by_first_name.length > 20 ?
+                                                                            row.created_by_first_name.substring(0,10)+'
+                                                                            ...' : row.created_by_first_name
+                                                                            }}&nbsp;{{row.created_by_last_name.length >
+                                                                            20 ?
+                                                                            row.created_by_last_name.substring(0,10)+'
+                                                                            ...' : row.created_by_last_name}}
+                                                                        </h6>
+                                                                        <span _ngcontent-nws-c590=""
+                                                                            wfd-id="801">{{row.created_by_designation}}</span>
+
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td class="cursor-pointer">
+                                                                {{row.from | date:
+                                                                OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                            </td>
+                                                            <td class="cursor-pointer">
+                                                                {{row.to | date:
+                                                                OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                            </td>
+                                                            <td class="text-center">{{row.audit_program_status}}
+                                                            </td>
+                                                        </tr>
+                                                    </ng-container>
+                                                </table>
+                                            </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12 mt-4"
+                                        *ngIf="AuditReportStore.selectedReportObject.reportType == 'audit'">
+
+                                        <div class="row">
+                                            <div class="col-sm-12">
+                                                <div class="full-width-table table-scroll-first-time">
+                                                <table
+                                                    class="table table-bordered ordinary-table audit-page-table mb-4 table-scroll">
+                                                    <thead>
+
+                                                        <th style="width: 3%; text-align: center;">{{'sl' | translate}}
+                                                        </th>
+                                                        <th style="width: 10%;"
+                                                            class="border-top-0 issue-list-org-tab-three pointer">
+                                                            {{'ref_id' | translate}}
+                                                        </th>
+                                                        <th class="border-top-0 issue-list-org-tab-three pointer"
+                                                            style="width: 27%;">
+                                                            {{'audit_title' | translate}}
+                                                        </th>
+                                                        <th style="width: 15%;">
+                                                            {{'audit_leader' | translate}}
+                                                        </th>
+                                                        <th style="width: 13%;">
+                                                            {{'from_date' | translate}}
+                                                        </th>
+                                                        <th style="width: 13%;">
+                                                            {{'to_date' | translate}}
+                                                        </th>
+                                                        <th style="width: 10%;" class="text-center">{{'status' | translate}}</th>
+                                                    </thead>
+                                                    <ng-container *mobxAutorun>
+                                                        <tr class="pointer edit-and-delete-main"
+                                                            *ngFor="let row of AuditReportStore.AuditRiskItemsDetails| paginate: {currentPage:AuditReportStore.currentPage, itemsPerPage:AuditReportStore.itemsPerPage,totalItems:AuditReportStore.totalItems};let num=index "
+                                                            (click)="getRisk(row.id)">
+
+                                                            <td style="text-align: center;" class="cursor-pointer">
+                                                                {{(AuditReportStore.currentPage - 1) *
+                                                                AuditReportStore.itemsPerPage +
+                                                                (num + 1)}}
+                                                            </td>
+                                                            <td class="cursor-pointer">
+                                                                #{{row.reference_code}}
+                                                            </td>
+                                                            <td class="cursor-pointer">
+                                                                {{row.audit_title}}
+                                                            </td>
+                                                            <td class="cursor-pointer">
+                                                                <div class="d-flex flex-row user-list-sm">
+                                                                    <img *ngIf="row.audit_leader_image_token"
+                                                                        [attr.src]="createImagePreview('user-profile-picture',row.audit_leader_image_token)"
+                                                                        width="30px" height="30px"
+                                                                        class="rounded-circle"
+                                                                        onerror="this.src='/assets/images/user-demo2.png'">
+                                                                    <img *ngIf="!row.audit_leader_image_token"
+                                                                        [attr.src]="getDefaultImage('user-logo')"
+                                                                        width="30px" height="30px"
+                                                                        class="rounded-circle"
+                                                                        onerror="this.src='/assets/images/user-demo2.png'">
+                                                                    <div>
+                                                                        <h6>{{row.audit_leader_first_name}}&nbsp;{{row.audit_leader_last_name}}
+                                                                        </h6>
+                                                                        <span _ngcontent-nws-c590=""
+                                                                            wfd-id="801">{{row.audit_leader_designation}}</span>
+
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td class="cursor-pointer">
+                                                                {{row.start_date | date:
+                                                                OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                            </td>
+                                                            <td class="cursor-pointer">
+                                                                {{row.end_date | date:
+                                                                OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                            </td>
+                                                            <td class="text-center">
+                                                                {{row.audit_status_title}}
+                                                            </td>
+                                                        </tr>
+                                                    </ng-container>
+                                                </table>
+                                            </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12 mt-4"
+                                        *ngIf="AuditReportStore.selectedReportObject.reportType == 'auditFinding'">
+
+                                        <div class="row">
+                                            <div class="col-sm-12">
+                                                <div class="full-width-table table-scroll-first-time">
+                                                <table
+                                                    class="table table-bordered ordinary-table audit-page-table mb-4 table-scroll">
+                                                    <thead>
+
+                                                        <th style="width: 3%; text-align: center;">{{'sl' | translate}}
+                                                        </th>
+                                                        <th style="width: 10%;"
+                                                            class="border-top-0 issue-list-org-tab-three pointer">
+                                                            {{'ref_id' | translate}}
+                                                        </th>
+                                                        <th class="border-top-0 issue-list-org-tab-three pointer"
+                                                            style="width: 27%;">
+                                                            {{'title' | translate}}
+                                                        </th>
+                                                        <th style="width: 15%;">
+                                                            {{'audit_category' | translate}}
+                                                        </th>
+                                                        <th style="width: 13%;">
+                                                            {{'risk' | translate}}
+                                                        </th>
+                                                        <th style="width: 13%;" class="text-center">
+                                                            {{'status' | translate}}
+                                                        </th>
+                                                        
+                                                    </thead>
+                                                    <ng-container *mobxAutorun>
+                                                        <tr class="pointer edit-and-delete-main"
+                                                            *ngFor="let row of AuditReportStore.AuditRiskItemsDetails| paginate: {currentPage:AuditReportStore.currentPage, itemsPerPage:AuditReportStore.itemsPerPage,totalItems:AuditReportStore.totalItems};let num=index "
+                                                            (click)="getRisk(row.id)">
+
+                                                            <td style="text-align: center;" class="cursor-pointer">
+                                                                {{(AuditReportStore.currentPage - 1) *
+                                                                AuditReportStore.itemsPerPage +
+                                                                (num + 1)}}
+                                                            </td>
+                                                            <td class="cursor-pointer">
+                                                                #{{row.reference_code}}
+                                                            </td>
+                                                            <td class="cursor-pointer">
+                                                                {{row.title}}
+                                                            </td>
+                                                            <td title="{{row.finding_category}}">{{row.finding_category ? (row.finding_category.length > 20 ? row.finding_category.substring(0,20)+' ...' : row.finding_category) : AppStore.noContentText}}</td>
+                                                            <td>
+                                                                <!-- {{row.risk_rating}}  -->
+                                                                <div [ngClass]="row.label ? 'dot-div '+row.label+'-dot' : ''">{{row.risk_rating}} </div>
+                                                               <!--  <div *ngIf="row.risk_rating_id==3" class="dot-div yellow-dot">{{row.risk_ratings}} </div>
+                                                                <div *ngIf="row.risk_rating_id==4" class="dot-div green-dot">{{row.risk_ratings}} </div>
+                                                                <div *ngIf="row.risk_rating_id==1" class="dot-div red-dot">{{row.risk_ratings}} </div>     -->
+                                                            </td>
+                                                            <td class="text-center">
+                                                                <div [ngClass]="row.finding_status_label ? 'dot-div '+row.finding_status_label : ''">{{row.finding_status_title}}</div>
+                                                                <!-- <div *ngIf="row.finding_status_id==2" class="dot-div grey-dot">{{row.finding_status_title}}</div> -->
+                                                            </td>
+                                                        </tr>
+                                                    </ng-container>
+                                                </table>
+                                            </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <ng-container *mobxAutorun>
+                                    <div *ngIf="!AuditReportStore?.listloaded">
+                                        <app-table-loader></app-table-loader>
+                                    </div>
+                                    <app-no-data
+                                        *ngIf="AuditReportStore.AuditRiskItemsDetails.length == 0 && AuditReportStore.listloaded == true">
+                                    </app-no-data>
+                                </ng-container>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <div *ngIf="AuditReportStore.totalItems>AuditReportStore.itemsPerPage" class="col-sm-12">
+        <ul class="pagination justify-content-center mt-3">
+            <div class="list">
+                <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+                    (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+            </div>
+        </ul>
+    </div>
+</div>
+
+<div class="modal modal-style-1 fade email-popup-new" id="custom-date-popup" #confirmationPopUp>
+    <app-custom-date-popup (dateEvent)="passDates($event)"></app-custom-date-popup>
+</div>

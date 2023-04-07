@@ -1,0 +1,120 @@
+<nav class="navbar navbar-expand navbar-dark bg-dark top-bar" (click)="headerClicked($event)">
+    <div class="iso-logo" *mobxAutorun>
+        <img class="side-menu-lg-logo mx-auto" width="100" [attr.src]="ThemeStructureSettingStore.themeStructureObject.header_logo ? ThemeStructureSettingStore.themeStructureObject.header_logo : ''" onerror="this.src=''">
+    </div>
+    <div class="navbar-collapse collapse w-100 order-3 dual-collapse2" *mobxAutorun>
+        <ul class="navbar-nav ml-auto notification">
+            <!-- <li class="mr-2" *ngIf = "AppStore.showTutorial">
+                <a data-toggle="modal" class="user-help-toggle d-block" style="padding: 7px 7px 5px 10px;" (click) = "introButtonClicked()">
+                    <i class="far fa-question-circle line-icone mt-2"></i>
+                </a> 
+            </li> -->
+            <li *ngIf = "getNonPrimaryLanguageCount()">
+                <div class="dropdown language-head">
+                    <button type="button" class="btn btn-primary language-btn btn-sm mr-2" data-toggle="dropdown"> {{getLanguageDetails('primary')?.code.toUpperCase()}}
+                        <i *ngIf = "getNonPrimaryLanguageCount()" class="fas fa-chevron-down" style="font-size:12px;"></i>
+                    </button>
+                    <div *ngFor="let lang2 of getLanguageDetails('non_primary')" class="dropdown-menu notification-menu"> <a class="dropdown-item pointer" (click) = "changeUserPrimaryLanguage(lang2.id)">{{lang2.title}}</a> </div>
+                </div>
+            </li>
+            <li *ngIf = "OrganizationGeneralSettingsStore.organizationSettings?.is_chatbot">
+                <div id="message-toggle" class="robo-chat-header" (click)="roboHeadClicked($event)">
+                    <img src="/assets/images/robo-head.png" style="width: 24px;">
+                    <!-- <span class="msg-nbr">2</span> -->
+                </div>
+            </li>
+
+            <li class="nav-item dropdown notification-menu-hdr">
+                <a class="nav-link dropdown-toggle" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-bell"></i> <span
+                 class="badge badge-pill badge-danger">{{NotificationStore.notificationcount}}</span></a>
+                <div class="dropdown-menu dropdown-menu-right p-0 m-0 mt-0 mb-0 animated flipInY" aria-labelledby="dropdown01">
+                    <div class="clearfix notifications-head">
+                        <h6 class="notification-head float-left">{{'notifications' | translate}}</h6>
+                        <button type="button" class="btn btn-small float-left" (click)="readAll()">{{'read_all' | translate }}</button>
+                        <button type="button" class="btn btn-small float-right" (click)="listNotification()">{{'view_all' | translate}}</button>
+                        <!-- <a href="#" class="notifi-close" style="width: 20px;"><i class="lni-close"></i></a> -->
+                    </div>
+                        <ul class="card-body list-unstyled dropdown-list-group mCustomScrollbar" #scroll>
+                            <ng-container *mobxAutorun>
+                                <div *ngIf="NotificationStore.allItems.length == 0 && (NotificationStore.notificationloaded == true || NotificationStore.notificationloaded == false)" class="notifications-md-screen">
+                                    <div class="empty-notification-pic mt-4 mb-4 text-center">
+                                        <img src="/assets/images/nonotification-empty.svg" class="img-fluid">
+                                    </div>
+                                    <div class="text-center pb-3">
+                                        <h6>{{'no_notification' | translate}}</h6>
+                                        <p>{{'common_no_notification_msg' | translate}}</p>
+                                    </div>
+                                </div>
+                            </ng-container>
+                            <ng-container *mobxAutorun>
+                                <li *ngFor="let row of NotificationStore.allItems;let num=index " [ngClass]="{'indication': (!row.read_at && row.data?.label_message)}" (click)="statusUpdate(row)">
+                                    <a *ngIf = "row.data?.label_message">
+                                        <div class="d-flex">
+                                            <div class="notification-pic" style="width: 65px; height: 55px;">
+                                                <img [attr.src]="checkCreatedUser(row,'token') ? createImageUrl(checkCreatedUser(row,'token')) : getDefaultImage()"  class="img-fluid rounded-circle" style="width: 55px; height: 55px;" onerror = "this.src='/assets/images/user-demo2.png'">
+                                                <span [ngClass]="getIcon(row) ? 'pic-status-icon '+getIcon(row) : 'pic-status-icon'"></span>
+                                            </div>
+                                            <div class="notification-texts pt-1 w-100">
+                                                <!-- <h6>{{row.activity.title}}</h6> -->
+                                                <h6>{{row.data?.label_key | translate}} {{row.data?.label_message | translate}} {{checkCreatedUser(row,'name') ? translateText('db_notification_by') : ""}} {{checkCreatedUser(row,'name')}}</h6>
+                                                <p class="date-and-time mb-0">{{row.created_at | date:
+                                                    OrganizationGeneralSettingsStore.organizationSettings?.date_time_format}}</p>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+                            </ng-container>  
+                        </ul>
+                </div>
+            </li>
+            <li class="nav-item dropdown user-box-header">
+                <a class="nav-link dropdown-toggle" href="#" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <img [attr.src]="AuthStore.user?.image_token ? createImageUrl(AuthStore.user?.image_token) : getDefaultImage()" width="30px" height="30px" class="rounded-circle" onerror="this.src = '/assets/images/user-demo2.png'" /></a>
+                <div class="dropdown-menu dropdown-menu-right user-drop-down animated flipInY" aria-labelledby="dropdown01">
+                    <div class="user-pic-and-details">
+                        <div class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol  align-items-center user-list-big">
+                             <img  [attr.src]="AuthStore.user?.image_token ? createImageUrl(AuthStore.user?.image_token) : getDefaultImage()" onerror = "this.src='/assets/images/user-demo2.png'" width="50px" height="50px" class="rounded-circle">
+                             <div class="new-size-text w-100">
+                                <h6 class="bold" style="word-break: break-word;">{{getCharactersTrimmed([AuthStore.user?.name,AuthStore.user?.last_name],50,' ')}}</h6>
+                                <span class="d-block">{{getCharactersTrimmed([AuthStore.user?.designation?.title],26,' ')}}</span>
+                                <span class="pt-0" style="word-break: break-word;">{{AuthStore.user?.email}}</span>
+                             </div>
+                          </div>
+                    </div>
+                    <ul class="list-unstyled card-body">
+                        <li ><a [routerLink]="['/my-account']"><span class="align-middle">{{'manage_profile' | translate}}</span></a> </li>
+                        <li *ngIf="AuthStore.getActivityPermission(null,'UPDATE_USER_ME_CHANGE_PASSWORD')"><a [routerLink]="['/my-account/profile/settings/security']"><span class="align-middle">{{'change_password' | translate}}</span></a> </li>
+                        <!-- <li><a href="javascript:void(0);"><span class="align-middle">{{'check_inbox' | translate}}</span></a> </li> -->
+                    </ul>
+                    <div class="user-sign-out">
+                        <a (click)="logout()">{{'signout' | translate}}</a>
+                    </div>
+                </div>
+            </li>
+
+        </ul>
+    </div>
+</nav>
+
+<div [ngClass] = "enableSideMenu ? 'side-menu-toggles-main active' : 'side-menu-toggles-main'" *mobxAutorun>
+    <span class="left-arow-side-toggle"><i class="fa fa-arrow-left" aria-hidden="true" (click)="sideMenuLayout()"></i></span>
+    <div class="side-menu-toggles">
+        <a *ngIf="RightSidebarLayoutStore.showFilter == true" id="menu-toggle"
+            class="user-toggle-cmn loop-filter-toggle loop-filter-toggle-new" (click)="rightSidebarButtonClicked($event)">
+            <!-- <img alt="filter" src="assets/images/filter-icon.png"> -->
+            <i class="fas fa-sliders-h line-icone"></i>
+        </a>
+        <a data-toggle="modal" data-target="#access-configuration-popup" class="user-toggle-cmn user-help-exclamation">
+            <i class="fas fa-exclamation-circle line-icone"></i>
+        </a>
+        <!-- <a data-toggle="modal" class="user-toggle-cmn user-help-toggle" (click) = "introButtonClicked()">
+            <i class="far fa-question-circle line-icone"></i>
+        </a> -->
+        <a *ngIf = "OrganizationGeneralSettingsStore.organizationSettings?.is_feedback" data-toggle="modal" data-target="#user-feedback-popup" class="user-toggle-cmn user-feedback-toggle">
+            <i class="far fa-smile line-icone"></i>
+        </a>
+        <a *ngIf = "OrganizationGeneralSettingsStore.organizationSettings?.is_faq" data-toggle="modal" data-target="#help-popup" class="user-toggle-cmn user-help-toggle">
+            <i class="far fa-question-circle line-icone"></i>
+        </a>
+    </div>
+</div>

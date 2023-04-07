@@ -1,0 +1,98 @@
+<div class="widget bg-white">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item pointer" [routerLink]="['/masters/internal-audit']"><a>{{'internal_audit' | translate}}</a></li>
+            <li class="breadcrumb-item active">{{'root_cause_sub_category' | translate}}</li>
+        </ol>
+    </nav>
+
+    <table class="table-master table" *ngIf="RootCauseSubCategoryStore?.loaded && RootCauseSubCategoryStore.allItems.length > 0">
+
+
+        <tr>
+            <th style="width: 5%; text-align: center;" >{{'sl' | translate}}</th>
+            <th (click)="sortTitle('root_cause_sub_categories.title')" class="border-top-0 issue-list-org-tab-three pointer" style="width: 43%;"><span>{{'root_cause_sub_category' | translate}}</span>
+                <img _ngcontent-twv-c17="" *ngIf="RootCauseSubCategoryStore.orderItem=='root_cause_sub_categories.title'" class="sort-down-pics pl-2" 
+                [attr.src]="RootCauseSubCategoryStore.orderBy=='desc' ? 
+                'assets/images/sort-up.png' : RootCauseSubCategoryStore.orderBy=='asc' ? 
+                'assets/images/sort-down.png' : 'assets/images/sort-empty.png'">
+            </th>
+
+            <th style="width: 40%;">{{'root_cause_category' | translate}}</th>
+
+
+            <th style="width: 12%;text-align: center;" >{{'status' | translate}}</th>
+
+        </tr>
+        <ng-container *mobxAutorun>
+
+
+
+            <tr class="edit-and-delete-main"
+                *ngFor="let row of RootCauseSubCategoryStore.allItems| paginate: {currentPage:RootCauseSubCategoryStore.currentPage, itemsPerPage:RootCauseSubCategoryStore.itemsPerPage,totalItems:RootCauseSubCategoryStore.totalItems};let num=index ">
+                <td style="text-align: center;">{{(RootCauseSubCategoryStore.currentPage - 1) * RootCauseSubCategoryStore.itemsPerPage + (num + 1)}}</td>
+                <td><a (click)=" getRootCauseSubCategory(row.id)" [ngStyle] = "{ 'pointer-events' : AuthStore.getActivityPermission(1100,'UPDATE_ROOT_CAUSE_SUB_CATEGORY') ? '' : 'none'}">{{row.title}}</a></td>
+                <td><a (click)=" getRootCauseSubCategory(row.id)" [ngStyle] = "{ 'pointer-events' : AuthStore.getActivityPermission(1100,'UPDATE_ROOT_CAUSE_SUB_CATEGORY') ? '' : 'none'}">{{row.root_cause_category_title}}</a></td>
+                <td style="padding:0.75rem;text-align: center;" >
+                    <div [attr.class]="'dot-div '+row.status_label">{{row.status}}</div>
+                    <div class="edit-option-show">
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'UPDATE_ROOT_CAUSE_SUB_CATEGORY')" (click)=" getRootCauseSubCategory(row.id)" [attr.title]="'edit' | translate"><i class="fas fa-pen pointer"></i></a>
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'DELETE_ROOT_CAUSE_SUB_CATEGORY')" (click)="delete(row.id)" [attr.title]="'delete' | translate"><i class="fas fa-trash pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(1100,'ACTIVATE_ROOT_CAUSE_SUB_CATEGORY')" (click)="activate(row.id)" [attr.title]="'activate' | translate"><i
+                                class="fas fa-check pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.activeStatusId && AuthStore.getActivityPermission(1100,'DEACTIVATE_ROOT_CAUSE_SUB_CATEGORY')" (click)="deactivate(row.id)" [attr.title]="'deactivate' | translate"><i
+                                class="fas fa-ban pointer"></i></a>
+                    </div>
+                </td>
+
+
+            </tr>
+        </ng-container>
+    </table>
+    <p class="float-right" *ngIf="RootCauseSubCategoryStore?.loaded && RootCauseSubCategoryStore.totalItems > 0"><b>{{'total_Items' | translate}}:{{RootCauseSubCategoryStore?.totalItems}}</b></p>
+
+    <ng-container *mobxAutorun>
+        <div *ngIf="!RootCauseSubCategoryStore.loaded">
+            <app-table-loader></app-table-loader>
+        </div>
+        <app-no-data *ngIf = "RootCauseSubCategoryStore.allItems.length == 0 && RootCauseSubCategoryStore.loaded == true"></app-no-data>
+   
+    </ng-container>
+
+
+    <!-- <div *ngIf = "RootCauseSubCategoryStore.totalItems == 0 && RootCauseSubCategoryStore.loaded == true" class="no-policy-demo-text bg-white d-flex align-items-center w-100 mt-2" style="height: 200px">
+        <div class="no-policy-demo">
+           <div class="no-file-icon">
+             <i class="far fa-file"></i>
+           </div>
+           <h6 class="bold mb-0">Nothing To Show</h6>
+        </div>
+     </div> -->
+
+    <div *ngIf="RootCauseSubCategoryStore.totalItems>RootCauseSubCategoryStore.itemsPerPage" class="col-sm-12">
+        <ul class="pagination justify-content-center mt-3">
+            <div class="list">
+                <pagination-controls [previousLabel]="'previous' | translate"  [nextLabel]="'next' | translate" (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls> 
+            </div>
+        </ul>
+    </div>
+</div>
+
+
+<!-- Modal part -->
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #rootCauseCategoryformModal>
+    <app-root-cause-sub-categories-modal *ngIf="rootCauseSubCategoryObject.type" [source]="rootCauseSubCategoryObject">
+    </app-root-cause-sub-categories-modal>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+
+<div class="modal modal-style-1 email-popup-new fade" data-backdrop="static" data-keyboard="false"
+  id="email-notification-popup" #mailConfirmationPopup>
+  <app-mail-send-popup [source] = "mailConfirmationData"></app-mail-send-popup>
+</div>

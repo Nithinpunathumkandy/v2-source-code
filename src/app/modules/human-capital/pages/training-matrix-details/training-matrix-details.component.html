@@ -1,0 +1,207 @@
+ 
+ 
+
+
+
+ <!-- <div class="modal modal-style-1 fade popup-full-width" id="recommended-training-popup" data-keyboard="false"  data-backdrop="static"> -->
+   <button type="button" class="close" data-dismiss="modal" (click)="cancel()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+   <div class="modal-dialog modal-xl modal-dialog-centered" *ngIf="TrainingMatrixDetailsStore.trainingDetailsLoaded">
+     <div class="modal-content">
+       <!-- Modal body -->
+       <div class="modal-body form-body">
+         <h4 class="modal-title bold">{{'recommended_trainings' | translate}}</h4>
+         <p class="head-details">{{'recommended_training_content_message' | translate}}</p>
+         <div *ngIf="TrainingMatrixDetailsStore.trainingMatrixDetails?.recommended_trainings && TrainingMatrixDetailsStore.trainingDetailsLoaded">
+
+         <div class="row" >
+           
+           <div class="col-xl-6 col-lg-6 col-sm-12"
+           *ngFor="let row of TrainingMatrixDetailsStore.trainingMatrixDetails?.recommended_trainings; let index=index">
+           
+         
+            <div class="cmn-bdr mb-3 border-radius hover-shadow">
+             <div class="widg-padding-cmn-small">
+                 <div class="recommended-trainings-box-height">
+                  <div class="d-flex">
+                     <div class="w-100 d-flex user-list-sm pb-0">
+                        <!-- <img src="images/user-gate.jpg" width="30px" height="30px" class="rounded-circle"> -->
+                        <img *ngIf="row?.created_by_image_token"
+                        [attr.src]="createImagePreview('user-profile-picture',row?.created_by_image_token)"
+                        width="40px" height="40px" 
+                        class="rounded-circle"
+                        onerror = "this.src='/assets/images/user-demo2.png'">
+                     <img *ngIf="!row?.created_by_image_token" [attr.src]="getDefaultImage('user-logo')"
+                        width="40px" height="40px" 
+                        class="rounded-circle"
+                        onerror = "this.src='/assets/images/user-demo2.png'">
+                        <div>
+                          <h6>{{row.trainer | titlecase}}</h6>
+                          <span class="elips-1" [title]="row.trainer_description">{{row.trainer_description}}</span>
+                        </div>
+                     </div>
+
+                        
+                      
+                     </div>
+                     <hr class="mt-2 mb-2">
+                     <div class="matrix-shedule-box-height">
+                    <h5 class="mb-0 cmn-head-style" [title]="row.title?.length>40?row.title:''">{{row.title.length > 40 ? row.title.substring(0,40) + '...' : row.title}}</h5>
+                    <div class="d-flex pt-1 pb-2">
+                       <p style="width: 26px;" class="d-inline-block mb-0"><i class="fas fa-calendar-alt"></i></p>
+                       <div class="w-100">
+                          <p class="mb-0">{{row.start_date | date:
+                           OrganizationGeneralSettingsStore.organizationSettings?.date_time_format}}-{{row.start_date | date:
+                               OrganizationGeneralSettingsStore.organizationSettings?.date_time_format}}</p>
+                       </div>
+                    </div>
+                    <div class="pt-1 pb-2"*ngIf="row.venue!=null || row.web_url != null">
+                      
+                       <h6 class="mb-1 elips-1"  [title]="row.venue?'Venue':'Web URL'">{{row.venue?'Venue':'Web URL'}}</h6>
+                       <p class="mb-0 elips-1"  [title]="row.venue== null ? row.web_url : row.venue">{{row.venue== null ? row.web_url : row.venue}}</p>
+                    </div>
+                    
+                    <div class=" pt-1 pb-2">
+                     
+                       <h6 class="mb-1">{{'competancies' | translate}}</h6>
+                       <ng-container *ngFor="let competency of row.training_competencies;let c=index">
+                        <span *ngIf="!(c>7) && showMore==false"
+                        class="mb-0"><span [ngClass]="competency.id==matrixTrainingObject?.competency_id?'bold':''">{{competency.title | titlecase}}{{row.training_competencies?.length>0&&c!=row.training_competencies?.length-1?',':''}}</span></span>
+                     </ng-container>
+                     <span *ngIf="row.training_competencies?.length>8 && showMore == false"><a class="view-more-pestel-box pointer view-more-doted" (click)="setMoreView('more')" >{{'view_more'|translate}}</a></span>
+                     <ng-container *ngFor="let competency of row.training_competencies;let c=index">
+                        <span *ngIf="showMore==true"
+                        class="mb-0"><span [ngClass]="competency.id==matrixTrainingObject?.competency_id?'bold':''">{{competency.title | titlecase}}{{row.training_competencies?.length>0&&c!=row.training_competencies?.length-1?',':''}}</span></span>
+                     </ng-container>
+                     <span *ngIf="row.training_competencies?.length>8 && showMore == true"><a class="view-more-pestel-box pointer view-more-doted" (click)="setMoreView('less')" >...{{'view_less'|translate}}</a></span>
+                    
+                       <!-- <p class="mb-0">PHP, UX Design, UI Research</p> -->
+                    </div>
+                  </div>
+                    <hr class="mt-2 mb-3">
+                   
+                     <div class="mt-0">
+                        <button type="button" class="btn btn-small" (click)="confirm(row.id)" >{{ AppStore.loading ? getButtonText('loading') : getButtonText('add')}}</button>
+                       </div>
+
+                    
+                     
+                 </div>
+                 
+              </div>
+            </div>
+           </div>
+           <div class="col-sm-12">
+           <div class="no-policy-demo-text-small" *ngIf="TrainingMatrixDetailsStore.trainingMatrixDetails?.recommended_trainings?.length == 0 && TrainingMatrixDetailsStore.trainingDetailsLoaded">
+            <app-no-data-list [source]="emptyRecommendedTrainingData" [height]=true [border]=false>
+
+            </app-no-data-list>
+         </div>
+      </div>
+         </div>
+      </div>
+
+
+         <h4 class="modal-title bold mt-3">{{'scheduled_trainings' | translate}}</h4>
+         <p class="head-details">{{'scheduled_training_content_message' | translate}}</p>
+         <div *ngIf="TrainingMatrixDetailsStore.trainingMatrixDetails?.scheduled_trainings && TrainingMatrixDetailsStore.trainingDetailsLoaded">
+         <div class="row">
+           <div class="col-xl-6 col-lg-6 col-sm-12"
+           *ngFor="let row of TrainingMatrixDetailsStore.trainingMatrixDetails?.scheduled_trainings; let index=index">
+             <div class="cmn-bdr mb-3 border-radius hover-shadow">
+               <div class="widg-padding-cmn-small">
+                   <div class="recommended-trainings-box-height">
+                     <div class="d-flex">
+                        <div class="w-100 d-flex user-list-sm pb-0">
+                           <img *ngIf="row?.created_by_image_token"
+                           [attr.src]="createImagePreview('user-profile-picture',row?.created_by_image_token)"
+                           width="40px" height="40px" 
+                           class="rounded-circle"
+                           onerror = "this.src='/assets/images/user-demo2.png'">
+                           <img *ngIf="!row?.created_by_image_token" [attr.src]="getDefaultImage('user-logo')"
+                           width="40px" height="40px" 
+                           class="rounded-circle"
+                           onerror = "this.src='/assets/images/user-demo2.png'">
+                           <div>
+                             <h6>{{row.trainer | titlecase}}</h6>
+                             <span class="elips-1" [title]="row.trainer_description">{{row.trainer_description}}</span>
+                           </div>
+                        </div>
+                        </div>
+                        <hr class="mt-2 mb-2"> 
+                        <div class="matrix-shedule-box-height">
+                      <h5 class="mb-0 cmn-head-style" [title]="row.title?.length>40?row.title:''">{{row.title.length > 40 ? row.title.substring(0,40) + '...' : row.title}}</h5>
+                      <div class="d-flex pt-1 pb-2">
+                         <p style="width: 26px;" class="d-inline-block mb-0"><i class="fas fa-calendar-alt"></i></p>
+                         <div class="w-100">
+                            <p class="mb-0">{{row.start_date | date:
+                              OrganizationGeneralSettingsStore.organizationSettings?.date_time_format}}-{{row.start_date | date:
+                                  OrganizationGeneralSettingsStore.organizationSettings?.date_time_format}}</p>
+                         </div>
+                      </div>
+                      <div class="pt-1 pb-2"*ngIf="row.venue!=null || row.web_url != null">
+                        
+                         <h6 class="mb-1 elips-1"  [title]="row.venue?'Venue':'Web URL'">{{row.venue?'Venue':'Web URL'}}</h6>
+                         <p class="mb-0 elips-1"  [title]="row.venue== null ? row.web_url : row.venue">{{row.venue== null ? row.web_url : row.venue}}</p>
+                         <!-- <a href="incident-report-book.html" class="view-more-pestel-box pt-0">http://www.computerhopecentreducation.com</a> -->
+                      </div>
+                      
+                      <div class=" pt-1 pb-2">
+                        
+                         <h6 class="mb-1">{{'competancies' | translate}}</h6>
+                         <!-- <p class="mb-0">PHP, UX Design, UI Research</p> -->
+                         <ng-container *ngFor="let comp of row.training_competencies;let cp=index">
+                           <span *ngIf="!(cp>7) && showMore==false"
+                           class="mb-0"><span [ngClass]="comp.id==matrixTrainingObject?.competency_id?'bold':''">{{comp.title | titlecase}}{{row.training_competencies?.length>0&&cp!=row.training_competencies?.length-1?',':''}}</span></span>
+                        </ng-container>
+                        <span *ngIf="row.training_competencies?.length>8 && showMore == false"><a (click)="setMoreView('more')"class="view-more-pestel-box pointer view-more-doted" >{{'view_more'|translate}}</a></span>
+                     <ng-container *ngFor="let comp of row.training_competencies;let cp=index">
+                        <span *ngIf="showMore==true"
+                        class="mb-0"><span [ngClass]="comp.id==matrixTrainingObject?.competency_id?'bold':''">{{comp.title | titlecase}}{{row.training_competencies?.length>0&&cp!=row.training_competencies?.length-1?',':''}}</span></span>
+                     </ng-container>
+                     <span *ngIf="row.training_competencies?.length>8 && showMore == true"><a class="view-more-pestel-box pointer view-more-doted" (click)="setMoreView('less')" >...{{'view_less'|translate}}</a></span>
+                      </div>
+                     </div>
+                      <!-- <hr class="mt-2 mb-3"> -->
+
+                     
+                       
+                   </div>
+                   
+                </div>
+              </div>
+           </div>
+           <ng-container *ngIf="TrainingMatrixDetailsStore.trainingMatrixDetails?.scheduled_trainings?.length == 0 && TrainingMatrixDetailsStore.trainingDetailsLoaded">
+            <div class="col-sm-12">
+            <app-no-data-list [source]="emptyScheduledTrainingData" [height]=true [border]=false>
+
+            </app-no-data-list>
+         </div>  
+           </ng-container>
+         </div>
+      </div>
+
+         <!-- <div class="row">
+            <div class="col-sm-12">
+              <div class="d-block justify-content-left border-0 mt-3">
+                <button type="button" data-toggle="modal" data-dismiss="modal" class="btn" (click)="cancel()">{{'cancel' | translate}}</button>
+              </div>
+            </div>
+          </div> -->
+       </div>
+     
+       <!-- Modal footer -->
+     </div>
+     
+   </div>
+ <!-- </div> -->
+ <ng-container *mobxAutorun>
+   <div *ngIf="!TrainingMatrixDetailsStore.trainingDetailsLoaded">
+      <app-training-details-competency-loader></app-training-details-competency-loader>
+   </div>
+</ng-container>
+
+ 
+ <div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+   <app-delete-popup [source]="popupObject"></app-delete-popup>
+ </div>
+ 

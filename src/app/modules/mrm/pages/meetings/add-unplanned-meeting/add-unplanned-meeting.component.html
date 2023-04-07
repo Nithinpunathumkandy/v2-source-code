@@ -1,0 +1,948 @@
+<div #plainDev></div>
+
+<nav class="edit-bar" data-toggle="affix" #navigationBar>
+    <app-breadcrumb-menu></app-breadcrumb-menu>
+    <app-sub-menu></app-sub-menu>
+</nav>
+
+<main class="mt-3 organization-page">
+    <div class="container-fluid">
+        <div class="organization-form-page audit-plan-multi-form" *mobxAutorun>
+            <form id="regForm" [formGroup]="form" class="organization-multi-stup-form multi-stup-form-common">
+                <!-- Circles which indicates the steps of the form: -->
+                <div id="header-sroll-form" class="form-indicates-sec clearfix" #formSteps>
+                    <!-- <span class="step pointer" (click) = "changeStep(0)"><span class="multi-form-nbr">1</span>{{'plan' | translate}}</span> -->
+                    <span class="step pointer" (click)="changeStep(0)"><span class="multi-form-nbr">1</span>{{'info' |
+                        translate}}</span>
+                    <span class="step pointer" (click)="changeStep(1)"><span
+                            class="multi-form-nbr">2</span>{{'organizer' |
+                        translate}}</span>
+                    <span class="step pointer" (click)="changeStep(2)"><span class="multi-form-nbr">3</span>{{'mom' |
+                        translate}}</span>
+                    <span class="step pointer" (click)="changeStep(3)"><span
+                            class="multi-form-nbr">4</span>{{'preview_save' | translate}}</span>
+                </div>
+                <!-- One "tab" for each step in the form: -->
+                <!-- tab start -->
+                <div class="tab">
+                    <!-- tab start -->
+                    <div class="row">
+                        <div class="col-sm-12 col-lg-5">
+                            <div class="form-group">
+                                <label for="name">{{'start_date/time' | translate}}<span
+                                        class="form-error">*</span></label>
+                                <div class="input-group date-picker cal-time">
+                                    <div class="input-group date-picker">
+                                        <!-- <input class="form-control cal-time1" placeholder="MM/DD/YY"> -->
+                                        <input class="form-control" formControlName="from" [owlDateTime]="dt1"
+                                        [min]="todayDate" [owlDateTimeTrigger]="dt1" [placeholder]="'start_date/time' | translate">
+                                        <owl-date-time [hour12Timer]="OrganizationGeneralSettingsStore?.organizationSettings?.clock_format=='12-hour clock'?true:false" #dt1></owl-date-time>
+                                        <div class="input-group-append">
+                                            <button [owlDateTimeTrigger]="dt1"
+                                                class="btn btn-outline-secondary calendar" type="button"><i
+                                                    class="fas fa-calendar-alt"></i></button>
+                                        </div>
+                                    </div>
+                                    <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.start">
+                                        {{formErrors.start}}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-12 col-lg-5">
+                            <div class="form-group">
+                                <label for="name">{{'end_date/time' | translate}}<span
+                                        class="form-error">*</span></label>
+                                <div class="input-group date-picker cal-time">
+                                    <div class="input-group date-picker">
+                                        <!-- <input class="form-control cal-time2" placeholder="MM/DD/YY"> -->
+                                        <input class="form-control" [owlDateTime]="dt2" formControlName="to"
+                                            [min]="createDateTimeValidator()" [owlDateTimeTrigger]="dt2"
+                                            [placeholder]="'end_date/time' | translate">
+                                        <owl-date-time [hour12Timer]="OrganizationGeneralSettingsStore?.organizationSettings?.clock_format=='12-hour clock'?true:false" #dt2></owl-date-time>
+                                        <div class="input-group-append">
+                                            <button [owlDateTimeTrigger]="dt2"
+                                                class="btn btn-outline-secondary calendar" type="button"><i
+                                                    class="fas fa-calendar-alt"></i></button>
+                                        </div>
+                                    </div>
+                                    <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.end">
+                                        {{formErrors.end}}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-12 col-lg-2">
+                            <div class="form-group">
+                                <label for="name">{{'hours' | translate}}</label>
+                                <input type="text" class="form-control" readonly formControlName="duration"
+                                    [placeholder]="'duration' | translate">
+                            </div>
+                            <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.duration">
+                                {{formErrors.duration}}</p>
+                        </div>
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label for="name">{{'title' | translate}}<span class="form-error">*</span></label>
+                                <input type="text" class="form-control" formControlName="title"
+                                    [placeholder]="'title_of_the_meeting' | translate">
+                            </div>
+                            <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.title">
+                                {{formErrors.title}}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <label class="bold" for="name"> {{'meeting_types' | translate}}</label>
+                            <div class="Preview-block pt-0">
+                                <div class="row">
+                                    <div class="col-sm-6"
+                                        *ngFor="let data of MeetingTypeMasterStore.allItems; let i=index">
+                                        <div class="Preview-checkbox clearfix">
+                                            <label class="container2 remember-txt float-left">
+                                                <!-- <input type="checkbox" [checked]="data.checked" [value]="data.id" (change)="onCheckboxChange($event)"> -->
+                                                <!-- <span class="checkmark"></span> {{data.title}}</label> -->
+                                                <input type="checkbox" [checked]="getMeetingTypeStatus(data.id)"
+                                                    [value]="data" (change)="onCheckboxChange($event,data)">
+                                                <span class="checkmark"></span> {{data.meeting_type_language_title}}
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+    
+                            </div>
+    
+                        </div>
+
+
+                        <div class="col-sm-6" *ngIf="offlineEnable">
+                            <div class="form-group">
+                                <label for="name"> {{'venue' | translate}}<span class="form-error">*</span></label>
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect select-width-plus">
+                                        <ng-select [placeholder]="'select_venue' | translate" [multiple]="false"
+                                            [items]="venueArray" formControlName="venue_id"
+                                            (open)="getVenue()" (search)="searchVenue($event)" bindLabel="title">
+                                            
+                                            <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                                {{item?.title?.length > 60 ? (item.title | slice:0:60)+' ...' :
+                                                item.title}}
+                                            </ng-template>
+                                            <ng-template ng-option-tmp let-item="item" let-index="index">
+                                                {{item?.title?.length > 80 ? (item.title | slice:0:80)+' ...' :
+                                                item.title}}
+                                            </ng-template>
+                                        </ng-select>
+                                    </div>
+                                    <button class="btn multi-add-user" (click)="addModelVenue()"
+                                        *ngIf="AuthStore.getActivityPermission(1100,'CREATE_VENUE')"><i
+                                            class="fas fa-plus"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6" *ngIf="onlineEnable">
+                            <div class="form-group">
+                                <label for="name">{{'meeting_link' | translate}}<span class="form-error">*</span></label>
+                                <input type="text" class="form-control" formControlName="meeting_link"
+                                    [placeholder]="'meeting_link_placeholder' | translate">
+                            </div>
+                            <p  class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.meeting_link"> {{formErrors.meeting_link}}
+                            </p>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="name">{{'purpose_agenda' | translate}}</label>
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect select-width-plus">
+                                        <input type="text" class="form-control"
+                                            formControlName="meeting_unplanned_agenda" [placeholder]="'write_a_purpose_agenda_of_the_meeting' | translate">
+                                    </div>
+                                    <button class="btn multi-add-user" (click)="addAgenda()"><i
+                                            class="fas fa-plus"></i></button>
+                                </div>
+                            </div>
+                            <div class="form-group add-new-plus-round mt-3">
+                                <div *ngIf="meetingAgendas.length > 0 " style="max-height: 100px;"
+                                    class="delete-bullet-point" #agendaItemsdiv>
+                                    <ul class="arrowlist ml-0 pl-0 mt-0 mb-0">
+                                        <li *ngFor="let agenda of meetingAgendas;index as i">{{agenda.title}}
+                                            <button (click)="deleteAgenda(i);" type="button"
+                                                class="btn btn-small float-right btn-small-delete"
+                                                style="border: none;"><i class="fas fa-trash"></i></button>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="duplicateError"> {{duplicateError}}</p>
+                                <!-- <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.meeting_unplanned_agenda"> {{formErrors.meeting_unplanned_agenda}}</p> -->
+                            </div>
+                        </div>
+
+                    </div>
+                
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label for="name">{{'participants' | translate}}</label>
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect">
+                                        <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                                            [placeholder]="'select_invite_participants'|translate"
+                                            formControlName="meeting_participants" [searchFn]="customSearchFn"
+                                            (clear)="getUsers(true)" (search)="searchUsers($event,true)" multiple="true"
+                                            [closeOnSelect]="false" (open)="getUsers(true)">
+                                            <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                                <img class="ng-select-user-display"
+                                                    *ngIf="item.image?.token||item.image_token" height="15" width="15"
+                                                    [attr.src]="item.image?.token?createImageUrl('user-profile-picture',item.image?.token):createImageUrl('user-profile-picture',item.image_token)" />
+                                                <img class="ng-select-user-display"
+                                                    *ngIf="!item.image?.token && !item.image_token" height="15"
+                                                    width="15" [attr.src]="getDefaultImage('user-logo')" />
+                                                <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,'
+                                                    ') | titlecase}}</b><span aria-hidden="true" (click)="clear(item)"
+                                                    style="border:none;" class="ng-value-icon left">×</span>
+                                            </ng-template>
+                                            <ng-template ng-option-tmp let-item="item" let-index="index">
+                                                <div class="user-post-department-pic">
+                                                    <img class="ng-select-user-display"
+                                                        *ngIf="item.image?.token || item.image_token" height="25"
+                                                        width="25"
+                                                        [attr.src]="item.image?.token?createImageUrl('user-profile-picture',item.image?.token):createImageUrl('user-profile-picture',item.image_token)" />
+                                                    <img class="ng-select-user-display"
+                                                        *ngIf="!item.image?.token && !item.image_token" height="25"
+                                                        width="25" [attr.src]="getDefaultImage('user-logo')" />
+                                                </div>
+                                                <div class="user-post-department-div">
+                                                    <b>{{getStringsFormatted([item.first_name,item.last_name],50,' ') |
+                                                        titlecase}}</b>
+                                                    <p class="user-post-department-multiple">
+                                                        {{getStringsFormatted([item.designation_title,'
+                                                        '+item.department],50,',')}}</p>
+                                                </div>
+                                            </ng-template>
+                                        </ng-select>
+                                    </div>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.meeting_participants">
+                                    {{formErrors.meeting_participants}}</p>
+                            </div>
+                            <!-- <div class="form-group">
+                                <label for="name">{{'participants' | translate}}</label>
+                                <div class="cmn-bdr border-radius p-3 text-left edit-option">
+                                    <div class="edit-option-show-inner" style="margin: -40px 0 0 0;">
+                                        <a (click)="addModelParticipants()"><i class="fas fa-plus"></i></a>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-lg-4 col-sm-6"
+                                            *ngFor="let users of form.value.meeting_participants;let i=index">
+                                            <div
+                                                class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg togle-check-user">
+                                                <img *ngIf="users?.image_token"
+                                                    [attr.src]="users?.image_token?createImageUrl('user-profile-picture',users?.image_token):'/assets/images/user-demo.png'"
+                                                    width="30px" height="30px" class="rounded-circle rounde-hov">
+                                                <img *ngIf="!users?.image_token"
+                                                    [attr.src]="users?.image?.token?createImageUrl('user-profile-picture',users?.image?.token):'/assets/images/user-demo.png'"
+                                                    width="30px" height="30px" class="rounded-circle rounde-hov">
+                                                <div class="pointer new-size-text">
+                                                    <h6>{{users.first_name}} {{users.last_name}}</h6>
+                                                    <span>{{users.designation ?users.designation :
+                                                        users.designation_title}}</span>
+                                                </div>
+                                                <div class="rounded-sliders-check">
+                                                    <label class="switch-check">
+                                                        <input type="checkbox" [checked]="users.is_present"
+                                                            (change)="onChange($event,users)">
+                                                        <span class="slider round"></span>
+                                                    </label>
+                                                </div>
+                                                <div class="mr-2 text-red" style="margin: 6px 0 0 0;"
+                                                    *ngIf="checkIfPresentInMeetingPlan(users.id)">
+                                                    <a (click)="removeParticipants(users.id)"> <i
+                                                            class="far fa-times-circle"></i></a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p *ngIf="form.value.meeting_participants.length==0">{{AppStore.noContentText}}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div> -->
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group add-kpi-textarea">
+                                <label for="name">{{'discussion' | translate}}</label>
+                                <span class="float-right">
+                                    <p class="text-grey mb-0">{{form?.value.discussion != null ?
+                                        form?.value.discussion?.length : 0}}
+                                        {{'characters' | translate}}</p>
+                                </span>
+                                <textarea class="form-control" rows="11" id="comment" formControlName="discussion"
+                                    [placeholder]="'write_a_short_discussion_of_the_meeting' | translate"></textarea>
+                            </div>
+                            <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.discussion">
+                                {{formErrors.discussion}}</p>
+                        </div>
+                        <div class="col-sm-12">
+                            <div class="form-group add-kpi-textarea">
+                                <label for="name">{{'conclusion' | translate}}</label>
+                                <span class="float-right">
+                                    <p class="text-grey mb-0">{{form?.value.conclusion != null ?
+                                        form?.value.conclusion?.length : 0}}
+                                        {{'characters' | translate}}</p>
+                                </span>
+                                <textarea class="form-control" rows="11" id="comment2" formControlName="conclusion"
+                                    [placeholder]="'write_a_short_conclusion_of_the_meeting' | translate"></textarea>
+                            </div>
+                            <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.conclusion">
+                                {{formErrors.conclusion}}</p>
+                        
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label for="name" class="label-style mb-0">{{'attachments' | translate}}</label>
+
+                      
+                                <!-- Common File Upload Starts Here -->
+                                   <div class="scroll-documents" #uploadArea>
+                                    <div class="thumb-pics-bg thumb-pics-col-4 clearfix thumb-pics-fix-text"
+                                        style="padding-top: 0;">
+                                        <div class="thumb-pics">
+                                            <div class="question-circle-inp" style="margin-right: 7px;">
+                                                <i class="far fa-question-circle"></i>
+                                                <div class="message-password-inp bottom-show">
+                                                    <p class="mb-0">{{'allowed_file_types' | translate}}
+                                                        {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                                                    </p>
+                                                </div>
+                                            </div>
+            
+                                            <div class="form-group form-group-upload">
+                                                <div class="darag-dropifile-upload">
+                                                    <div class="d-flex justify-content-center align-items-center text-center">
+                                                        <div>
+                                                            <img src="/assets/images/drag-pic.png" alt="image"
+                                                                class="drag-pic-files">
+                                                            <div class="drag-file-name"> {{'select_or_upload_your_file_here' | translate}} </div>
+                                                            <div class="upload-btn-wrapper">
+                                                                <button (click)="openFileUploadModal()" type="button"
+                                                                    class="btn">{{'browse_files' | translate}}</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+            
+                                        <div class="thumb-pics"
+                                            *ngFor="let docs of fileUploadPopupStore.displayFiles ;let i = index">
+                                            <div class="upload-pics edit-option" data-toggle="modal">
+                                                <div *ngIf="docs.id && !docs.preview" class="browse-form-pic"
+                                                    [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                                                </div>
+                                                <div *ngIf="docs.preview" class="browse-form-pic"
+                                                    [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">
+                                                </div>
+                                                <div class="browse-form-name clearfix">
+                                                    <div class="float-left">
+                                                        <h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                                        </h6>
+                                                        <span *ngIf="docs.is_kh_document" class="mr-2 cmn-clr"><i
+                                                                class="fas fa-book"></i></span>
+                                                        <span *ngIf="!docs.is_kh_document" class="mr-2 cmn-clr"><i
+                                                                class="fas fa-laptop"></i></span>
+                                                        <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                                                    </div>
+                                                    <div class="browse-logo">
+                                                        <img *ngIf="checkExtension(docs.ext,'image') != -1" class="folder-picher"
+                                                            src="/assets/images/jpg-icone.png">
+                                                        <img *ngIf="checkExtension(docs.ext,'doc') != -1" class="folder-picher"
+                                                            src="/assets/images/word-icone.png">
+                                                        <img *ngIf="checkExtension(docs.ext,'pdf') != -1" class="folder-picher"
+                                                            src="/assets/images/pdf-icone.png">
+                                                        <img *ngIf="checkExtension(docs.ext,'excel') != -1" class="folder-picher"
+                                                            src="/assets/images/excel-icone.png">
+                                                        <img *ngIf="checkExtension(docs.ext,'video') != -1" class="folder-picher"
+                                                            src="/assets/images/md-video.png">
+                                                        <img *ngIf="checkExtension(docs.ext,'audio') != -1" class="folder-picher"
+                                                            src="/assets/images/md-audio.png">
+                                                        <img *ngIf="checkExtension(docs.ext,'ppt') != -1" class="folder-picher"
+                                                            src="/assets/images/md-ppt.png">
+                                                    </div>
+                                                </div>
+                                                <div class="edit-option-show">
+                                                    <a (click)="removeDocument(docs)"><i class="fas fa-trash"></i></a>
+                                                </div>
+                                            </div>
+                                        </div>
+            
+            
+                                    </div>
+                                </div>
+                                <!-- Common File Upload Ends Here -->
+                            </div>
+                        </div>
+                    </div>
+
+                </div><!-- tab end -->
+                <div class="tab">
+                    <div class="row">
+                        <div class="col-sm-6"
+                            *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_subsidiary">
+                            <div class="form-group">
+                                <label for="name">{{'organizations' | translate}}<span
+                                        class="form-error">*</span></label>
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect">
+                                        <ng-select [items]="SubsidiaryStore.subsidiaryList"
+                                            [placeholder]="'select_organizations' | translate" multiple="true"
+                                            formControlName="organization_ids" (open)="getOrganization()"
+                                            (clear)="getOrganization();resetFormSelectClose(1)"
+                                            (remove)="removeFormItemSelectRemove()"
+                                            (search)="searchOrganization($event)" bindLabel="title"
+                                            [closeOnSelect]=false>
+                                            <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                                {{item?.title?.length > 60 ? (item.title | slice:0:60)+' ...' :
+                                                item.title}}<span aria-hidden="true" (click)="clear(item)"
+                                                    style="border:none;" class="ng-value-icon left">×</span>
+                                            </ng-template>
+                                            <ng-template ng-option-tmp let-item="item" let-index="index">
+                                                {{item?.title?.length > 80 ? (item.title | slice:0:80)+' ...' :
+                                                item.title}}
+                                            </ng-template>
+                                        </ng-select>
+                                        <p class="pt-1" style="color: red;"
+                                            *ngIf="formErrors && formErrors.organization_ids">
+                                            {{formErrors.organization_ids}}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6"
+                            [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_division ? 'none':'block'}">
+                            <div class="form-group">
+                                <label for="name">{{'select_divisions' | translate}}<span class="form-error">*</span></label>
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect">
+                                        <ng-select [items]="DivisionMasterStore.allItems"
+                                            [placeholder]="'division' | translate" multiple="true"
+                                            formControlName="division_ids" (search)="searchDivision($event)"
+                                            (clear)="getDivision();resetFormSelectClose(2)" (open)="getDivision()"
+                                            (remove)="removeFormItemSelectRemove()" [closeOnSelect]=false
+                                            bindLabel="title">
+                                            <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                                {{item?.title?.length > 60 ? (item.title | slice:0:60)+' ...' :
+                                                item.title}}<span aria-hidden="true" (click)="clear(item)"
+                                                    style="border:none;" class="ng-value-icon left">×</span>
+                                            </ng-template>
+                                            <ng-template ng-option-tmp let-item="item" let-index="index">
+                                                {{item?.title?.length > 80 ? (item.title | slice:0:80)+' ...' :
+                                                item.title}}
+                                            </ng-template>
+                                        </ng-select>
+
+                                        <p class="pt-1" style="color: red;"
+                                            *ngIf="formErrors && formErrors.division_ids"> {{formErrors.division_ids}}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6"
+                            [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_department ? 'none':'block'}">
+                            <div class="form-group">
+                                <label for="name">{{'departments' | translate}}<span class="form-error">*</span></label>
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect">
+                                        <ng-select [items]="DepartmentMasterStore.allItems"
+                                            [placeholder]="'select_departments' | translate" multiple="true"
+                                            formControlName="department_ids" (add)="getSection()"
+                                            (clear)="getDepartment();resetFormSelectClose(3)"
+                                            (search)="searchDepartment($event)" (open)="getDepartment()"
+                                            (remove)="removeFormItemSelectRemove()" [closeOnSelect]=false
+                                            bindLabel="title">
+                                            <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                                {{item?.title?.length > 60 ? (item.title | slice:0:60)+' ...' :
+                                                item.title}}<span aria-hidden="true" (click)="clear(item)"
+                                                    style="border:none;" class="ng-value-icon left">×</span>
+                                            </ng-template>
+                                            <ng-template ng-option-tmp let-item="item" let-index="index">
+                                                {{item?.title?.length > 80 ? (item.title | slice:0:80)+' ...' :
+                                                item.title}}
+                                            </ng-template>
+                                        </ng-select>
+                                        <p class="pt-1" style="color: red;"
+                                            *ngIf="formErrors && formErrors.department_ids">
+                                            {{formErrors.department_ids}}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6"
+                            [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_section ? 'none':'block'}">
+                            <div class="form-group">
+                                <label for="name">{{'sections' | translate}}<span class="form-error">*</span></label>
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect">
+                                        <ng-select [items]="SectionMasterStore.allItems"
+                                            [placeholder]="'select_sections' | translate" formControlName="section_ids"
+                                            multiple="true" (add)="getSubSection()" (search)="searchSection($event)"
+                                            (clear)="getSection();resetFormSelectClose(4)" (open)="getSection()"
+                                            (remove)="removeFormItemSelectRemove()" [closeOnSelect]=false
+                                            bindLabel="title">
+                                            <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                                {{item?.title?.length > 60 ? (item.title | slice:0:60)+' ...' :
+                                                item.title}}<span aria-hidden="true" (click)="clear(item)"
+                                                    style="border:none;" class="ng-value-icon left">×</span>
+                                            </ng-template>
+                                            <ng-template ng-option-tmp let-item="item" let-index="index">
+                                                {{item?.title?.length > 80 ? (item.title | slice:0:80)+' ...' :
+                                                item.title}}
+                                            </ng-template>
+                                        </ng-select>
+                                        <p class="pt-1" style="color: red;"
+                                            *ngIf="formErrors && formErrors.section_ids"> {{formErrors.section_ids}}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-6"
+                            [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_sub_section ? 'none':'block'}">
+                            <div class="form-group">
+                                <label for="name">{{'sub_sections' | translate}}<span class="form-error">*</span></label>
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect">
+                                        <ng-select [items]="SubSectionMasterStore.allItems"
+                                            [placeholder]="'select_sub_sections' | translate" multiple="true"
+                                            formControlName="sub_section_ids"
+                                            (clear)="getSubSection();resetFormSelectClose(5)" (open)="getSubSection()"
+                                            (search)="searchSubSection($event)" (remove)="resetFormSelectClose(5)"
+                                            [closeOnSelect]=false bindLabel="title">
+                                            <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                                {{item?.title?.length > 60 ? (item.title | slice:0:60)+' ...' :
+                                                item.title}}<span aria-hidden="true" (click)="clear(item)"
+                                                    style="border:none;" class="ng-value-icon left">×</span>
+                                            </ng-template>
+                                            <ng-template ng-option-tmp let-item="item" let-index="index">
+                                                {{item?.title?.length > 80 ? (item.title | slice:0:80)+' ...' :
+                                                item.title}}
+                                            </ng-template>
+                                        </ng-select>
+                                        <p class="pt-1" style="color: red;"
+                                            *ngIf="formErrors && formErrors.sub_section_ids">
+                                            {{formErrors.sub_section_ids}}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label for="name">{{'initiated_by' | translate}}<span
+                                        class="form-error">*</span></label>
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect">
+                                        <ng-select [items]="UsersStore.usersList" [searchFn]="customSearchFn"
+                                            bindLabel="email" [placeholder]="'select_initiated_by'|translate"
+                                            formControlName="organizer_id" (clear)="getUsers()"
+                                            (search)="searchUsers($event)" (open)="getUsers()">
+                                            <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                                <img class="ng-select-user-display"
+                                                    *ngIf="item.image?.token||item.image_token" height="15" width="15"
+                                                    [attr.src]="item.image?.token?createImageUrl('user-profile-picture',item.image?.token):createImageUrl('user-profile-picture',item.image_token)" />
+                                                <img class="ng-select-user-display"
+                                                    *ngIf="!item.image?.token && !item.image_token" height="15"
+                                                    width="15" [attr.src]="getDefaultImage('user-logo')" />
+                                                <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,'
+                                                    ') | titlecase}}</b><span aria-hidden="true" (click)="clear(item)"
+                                                    style="border:none;" class="ng-value-icon left">×</span>
+                                            </ng-template>
+                                            <ng-template ng-option-tmp let-item="item" let-index="index">
+                                                <div class="user-post-department-pic">
+                                                    <img class="ng-select-user-display"
+                                                        *ngIf="item.image?.token || item.image_token" height="25"
+                                                        width="25"
+                                                        [attr.src]="item.image?.token?createImageUrl('user-profile-picture',item.image?.token):createImageUrl('user-profile-picture',item.image_token)" />
+                                                    <img class="ng-select-user-display"
+                                                        *ngIf="!item.image?.token && !item.image_token" height="25"
+                                                        width="25" [attr.src]="getDefaultImage('user-logo')" />
+                                                </div>
+                                                <div class="user-post-department-div">
+                                                    <b>{{getStringsFormatted([item.first_name,item.last_name],50,' ') |
+                                                        titlecase}}</b>
+                                                    <p class="user-post-department-multiple">
+                                                        {{getStringsFormatted([item.designation_title,'
+                                                        '+item.department],50,',')}}</p>
+                                                </div>
+                                            </ng-template>
+                                        </ng-select>
+                                    </div>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.user_ids">
+                                    {{formErrors.user_ids}}</p>
+                            </div>
+                        </div>
+
+                        <!-- <div class="col-sm-12">
+                            <div class="form-group">
+                                <label>{{'invite_participants' | translate}}</label>
+                                <div class="clearfix d-flex">
+                                    <div class="multiple-plain-ngselect w-100">
+                                        <ng-select #select
+                                        [items]="UsersStore.usersList"
+                                        bindLabel="email"
+                                        labelForId = "id"
+                                        [placeholder]="'invite_participants' | translate"
+                                        multiple="true"
+                                        formControlName = "meeting_plan_users"
+                                        [closeOnSelect]="false"
+                                        (change)="searchListclickValueClear(select)"
+                                        (clear) = "getAllUsers()"
+                                        (search)="searchParticipants($event)"
+                                        (open) = "getAllUsers()">
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            <img *ngIf = "item.image_token || item.image" class="ng-select-user-display" height="15" width="15" [attr.src]="item.image_token ? createImagePreview('user-profile-picture',item.image_token) : createImagePreview('user-profile-picture',item.image.token)" onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                            <img *ngIf = "!item.image_token && !item.image" class="ng-select-user-display" height="15" width="15" [attr.src]="getDefaultImage()"/>  
+                                            <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b><span aria-hidden="true" (click) = "clear(item)" style="border:none;" class="ng-value-icon left">×</span>
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                           <div class="user-post-department-pic">
+                                                <img *ngIf = "item.image_token || item.image" class="ng-select-user-display" height="15" width="15" [attr.src]="item.image_token ? createImagePreview('user-profile-picture',item.image_token) : createImagePreview('user-profile-picture',item.image.token)" onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                                <img *ngIf = "!item.image_token && !item.image" class="ng-select-user-display" height="15" width="15" [attr.src]="getDefaultImage()"/>
+                                           </div>
+                                           <div class="user-post-department-div">
+                                              <b>{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b>
+                                              <p class="user-post-department-multiple">{{getStringsFormatted([item.designation_title,' '+item.department],50,',')}}</p>
+                                           </div>
+                                        </ng-template>
+                                     </ng-select>
+                                        <p  class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.meeting_plan_users"> {{formErrors.meeting_plan_users}}
+                                        </p>
+                                    </div>
+                                   
+                                </div>
+                             </div>
+                        </div> -->
+
+                    </div>
+                </div>
+
+                <div class="tab">
+                    <!-- tab start -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <div class="form-group">
+                                        <label>{{'minutes_of_the_meeting' | translate}}</label>
+                                        <div class="clearfix d-flex">
+                                            <input type="text" class="form-control w-100"
+                                                [ngModelOptions]="{standalone: true}" [(ngModel)]="newMom"
+                                                [placeholder]="'write_a_minutes_of_the_meeting'|translate"
+                                                (input)="meetingMomSameDataErrorClick($event)">
+                                            <button [disabled]="!newMom" class="btn multi-add-user ml-2"
+                                                (click)="addMomTitle(newMom)" style="width: 38px;"><i
+                                                    class="fas fa-plus"></i></button>
+                                            <button *ngIf="newMom" class="btn multi-add-user ml-2" (click)="cancelMom()"
+                                                style="width: 38px;"><i class="fas fa-times"></i></button>
+                                        </div>
+                                        <p class="pt-1" style="color: red;" *ngIf="momSameDataError"> This item is
+                                            already added</p>
+                                        <div class="mt-2">
+                                            <ul class="arrowlist m-0 p-0">
+                                                <div *ngFor="let items of MeetingsStore.newMeetingsMom">
+                                                    <li
+                                                        *ngIf="!MeetingsStore.updateItem || (MeetingsStore.updateItem.id != items.id)">
+                                                        {{items.title}}
+                                                        <div class="arrowlist-edit-and-add">
+                                                            <a (click)="addMinutesClicked(items)"><i
+                                                                    class="fas fa-plus"></i></a>
+                                                            <a (click)="editValue(items)"><i class="fas fa-pen"></i></a>
+                                                            <a
+                                                                (click)="deleteMinutes(items,MeetingsStore.newMeetingsMom)"><i
+                                                                    class="fas fa-trash"></i></a>
+                                                        </div>
+                                                    </li>
+                                                    <div class="clearfix d-flex"
+                                                        *ngIf="MeetingsStore.updateItem && items.id==MeetingsStore.updateItem.id">
+                                                        <input type="text" class="form-control w-100"
+                                                            [ngModelOptions]="{standalone: true}"
+                                                            [(ngModel)]="newMomEdit" [placeholder]="'write_a_subtitle_of_minutes'|translate" >
+                                                        <button [disabled]="!newMomEdit" class="btn multi-add-user ml-2"
+                                                            (click)="addMomTitle(newMomEdit)" style="width: 38px;"><i
+                                                                class="fas fa-plus"></i></button>
+                                                        <button *ngIf="newMomEdit" class="btn multi-add-user ml-2"
+                                                            (click)="cancelMom()" style="width: 38px;"><i
+                                                                class="fas fa-times"></i></button>
+                                                    </div>
+                                                    <div class="clearfix d-flex"
+                                                        *ngIf="MeetingsStore.selectedMeeting && items.id == MeetingsStore.selectedMeeting.id">
+                                                        <input type="text" class="form-control w-100"
+                                                            [ngModelOptions]="{standalone: true}"
+                                                            [(ngModel)]="items.text_box_value"  [placeholder]="'write_a_subtitle_of_minutes'|translate"
+                                                            (keyup)="keyboardEvent($event,items)">
+                                                        <button class="btn multi-add-user ml-2"
+                                                            (click)="addToMeetingsMom(items)" style="width: 38px;"><i
+                                                                class="fas fa-plus"></i></button>
+                                                        <button class="btn multi-add-user ml-2"
+                                                            (click)="cancelMom(items)" style="width: 38px;"><i
+                                                                class="fas fa-times"></i></button>
+                                                    </div>
+                                                    <app-mom-add-repeat-modal *ngIf="items.meeting_minutes.length > 0"
+                                                        [details]="items.meeting_minutes"></app-mom-add-repeat-modal>
+                                                </div>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- tab end -->
+
+                <div class="tab">
+                    <!-- tab start -->
+                    <div class="row">
+                        <div class="col-lg-7 col-sm-12">
+                            <div class="meeting-preview-page">
+                                <div class="issue-top-sec">
+                                    <div class="clearfix">
+                                        <h5 class="d-inline-block cmn-head-style label-tag-style mr-2"><span
+                                                class="issue-smoal-head-text">#{{form.value.reference_code?form.value.reference_code:'###'}}</span>
+                                            {{form.value.title?form.value.title:AppStore.noContentText}}</h5>
+                                        <!-- <span class="draft-tag label-tag-style-tag label-left-arow-tag" style="float: left !important;"> Approval</span> -->
+                                    </div>
+                                    <div class="clearfix">
+                                        <p *ngIf="form.value.from&&form.value.to" class="label-tag-style"><i
+                                                class="fas fa-calendar-alt date-pics-two"></i>
+                                            {{form.value.from | date:
+                                            OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format}} -
+                                            {{form.value.to | date:
+                                            OrganizationGeneralSettingsStore?.organizationSettings?.date_time_format}}
+                                            <span class="blinking">( {{form.value.duration}} Hour )</span>
+                                        </p>
+                                        <p *ngIf="!form.value.from&&!form.value.to" class="label-tag-style"><i
+                                                class="fas fa-calendar-alt date-pics-two"></i>
+                                            {{AppStore.noContentText}}
+                                        </p>
+                                    </div>
+                                    <!-- <p style="white-space: pre-wrap;">
+                                        {{form.value.description?form.value.description:AppStore.noContentText}}</p> -->
+                                    <h6>{{'purpose_agenda' | translate}}</h6>
+                                    <!-- <div class="drop-detail-sec">
+                                        <ul class="arrowlist ml-0 pl-0 mt-0 mb-0">
+                                            <li *ngFor="let root of agenda;index as i">{{root.title}}                                            
+                                            <li *ngIf="agenda.length==0">{{AppStore.noContentText}}</li>
+                                        </ul>
+                                    </div> -->
+                                    <div *ngIf="meetingAgendas.length > 0 " style="max-height: 100px;"
+                                        class="delete-bullet-point" #agendapreviewItemsdiv>
+                                        <ul class="arrowlist ml-0 pl-0 mt-0 mb-0">
+                                            <li *ngFor="let agenda of meetingAgendas;index as i">{{agenda.title}}
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <h6>{{'venue' | translate}}</h6>
+                                <p>{{form?.value.venue_id ? form.value.venue_id?.title : AppStore.noContentText}}</p>
+
+                                <h6>{{'meeting_link' | translate}}</h6>
+                                <p>{{form?.value.meeting_link ? form.value.meeting_link : AppStore.noContentText}}</p>
+                                <!-- <h6>{{'meeting_types' | translate}}</h6>
+                                <p>
+                                    <span
+                                        *ngFor="let type of form?.value.meeting_type_ids; last as islast">{{type.meeting_type_language_title?type.meeting_type_language_title:type.type}}
+                                        <span *ngIf="!islast">,</span>
+                                    </span>
+                                </p>
+                                <p *ngIf="form.value.meeting_type_ids?.length==0">{{AppStore.noContentText}}</p> -->
+                                <h6>{{'meeting_types' | translate}}</h6>
+                                <p>
+                                    <span
+                                        *ngFor="let type of form?.value.meeting_type_ids; last as islast">{{type.meeting_type_language_title?type.meeting_type_language_title:type.type
+                                        | titlecase}}
+                                        <span *ngIf="!islast">,</span>
+                                    </span>
+                                </p>
+                                <p *ngIf="form.value.meeting_type_ids?.length==0">{{AppStore.noContentText}}</p>
+                                <div class="drop-detail-sec mb-3">
+                                    <h6>{{'mom' | translate}}</h6>
+                                    <div class="panel-collapse collapse show" role="tabpanel"
+                                        aria-labelledby="headingOne" data-parent="#ceo3">
+                                        <div class="panel-body bg-white">
+                                            <div class="drop-detail-sec">
+                                                <ul class="arrowlist m-0 p-0">
+                                                    <div *ngFor="let items of MeetingsStore.newMeetingsMom">
+                                                        <li
+                                                            *ngIf="!MeetingsStore.updateItem || (MeetingsStore.updateItem.id != items.id)">
+                                                            {{items.title}}
+                                                        </li>
+                                                        <app-mom-recursive-modal
+                                                            *ngIf="items.meeting_minutes.length > 0"
+                                                            [details]="items.meeting_minutes"></app-mom-recursive-modal>
+                                                    </div>
+                                                    <li *ngIf="MeetingsStore.newMeetingsMom.length==0">
+                                                        {{AppStore.noContentText}}</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <h6>{{'conclusion' | translate}}</h6>
+                                <p style="white-space: pre-wrap;">
+                                    {{form.value.conclusion?form.value.conclusion:AppStore.noContentText}}</p>
+                                <h6>{{'discussion' | translate}}</h6>
+                                <p style="white-space: pre-wrap;">
+                                    {{form.value.discussion?form.value.discussion:AppStore.noContentText}}</p>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <h6>{{'organizer' | translate}}</h6>
+                                        <div class="row">
+                                            <div class="col-sm-4 animation-pulse">
+                                                <app-user-popup-box
+                                                    [source]="getEmployeePopupDetails(form.value.organizer_id)"
+                                                    [activateButtons]="false">
+                                                </app-user-popup-box>
+                                            </div>
+                                            <!-- <div class="col-sm-1" *ngIf="form.value.organizer_id.length==0">
+                                                <p> {{AppStore.noContentText}}</p>
+                                            </div> -->
+                                            <!-- </ul> -->
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-xl-12">
+                                        <hr>
+                                        <div class="d-flex flex-row user-list-sm">
+                                            <app-user-popup-box
+                                                [source]="getEmployeePopupDetails(AuthStore.user,'auth')">
+                                            </app-user-popup-box>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-5 col-sm-12">
+                            <div class="risk-rating-box bg-white p-3 text-left">
+                                <h6 class="text-left">{{'attendees' | translate}}</h6>
+                                <hr class="mt-0 mb-3">
+                                <div class="user-right-box-loop w-100">
+                                    <ul class="arci-user-tab-dtl workflow-lst-pics-loop clearfix"
+                                        style="min-height: auto;">
+                                        <li *ngFor="let user of form.value.meeting_participants;let i=index"
+                                            class="rounde-hov-bg">
+                                            <app-user-popup-box [source]="getEmployeePopupDetails(user)"
+                                                [showName]="false" [activateButtons]="false"></app-user-popup-box>
+                                        </li>
+                                        <li *ngIf="form.value.meeting_participants.length==0">{{AppStore.noContentText}}
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="risk-rating-box bg-white mt-3 p-3 text-left">
+                                <h6 class="text-left">{{'attachments' | translate}}</h6>
+                                <hr class="mt-0 mb-3">
+                                <p *ngIf="fileUploadPopupStore.displayFiles.length==0">
+                                    {{AppStore.noContentText}}</p>
+                                <div class="" #previewUploadArea>
+                                    <div class="thumb-pics-bg thumb-pics-col-2 clearfix thumb-pics-fix-text"
+                                        *ngIf="fileUploadPopupStore.displayFiles.length > 0">
+                                        <div class="thumb-pics"
+                                            *ngFor="let docs of fileUploadPopupStore.displayFiles ;let i = index">
+                                            <div class="upload-pics edit-option" data-toggle="modal">
+                                                <div *ngIf="docs.id && !docs.preview" class="browse-form-pic"
+                                                    [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                                                </div>
+                                                <div *ngIf="docs.preview" class="browse-form-pic"
+                                                    [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">
+                                                </div>
+                                                <div class="browse-form-name clearfix">
+                                                    <div class="float-left">
+                                                        <h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                                        </h6>
+                                                        <span *ngIf="docs.is_kh_document"
+                                                            class="mr-2 cmn-clr"><i
+                                                                class="fas fa-book"></i></span>
+                                                        <span *ngIf="!docs.is_kh_document"
+                                                            class="mr-2 cmn-clr"><i
+                                                                class="fas fa-laptop"></i></span>
+                                                        <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                                                    </div>
+                                                    <div class="browse-logo">
+                                                        <img *ngIf="checkExtension(docs.ext,'image') != -1"
+                                                            class="folder-picher"
+                                                            src="/assets/images/jpg-icone.png">
+                                                        <img *ngIf="checkExtension(docs.ext,'doc') != -1"
+                                                            class="folder-picher"
+                                                            src="/assets/images/word-icone.png">
+                                                        <img *ngIf="checkExtension(docs.ext,'pdf') != -1"
+                                                            class="folder-picher"
+                                                            src="/assets/images/pdf-icone.png">
+                                                        <img *ngIf="checkExtension(docs.ext,'excel') != -1"
+                                                            class="folder-picher"
+                                                            src="/assets/images/excel-icone.png">
+                                                        <img *ngIf="checkExtension(docs.ext,'video') != -1"
+                                                            class="folder-picher"
+                                                            src="/assets/images/md-video.png">
+                                                        <img *ngIf="checkExtension(docs.ext,'audio') != -1"
+                                                            class="folder-picher"
+                                                            src="/assets/images/md-audio.png">
+                                                        <img *ngIf="checkExtension(docs.ext,'ppt') != -1"
+                                                            class="folder-picher"
+                                                            src="/assets/images/md-ppt.png">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- tab end -->
+
+                <div style="overflow:auto;">
+                    <div class="form-next-page-btns" style="float:left;">
+                        <button class="btn btn-active form-next-btn " type="button" id="nextBtn" (click)="nextPrev(1)"
+                        [disabled]="AppStore.loading || !checkFormObject()|| checkDinamicaly()">{{getButtonText(nextButtonText)}}</button>
+                        <button class="btn" type="button" id="prevBtn" (click)="nextPrev(-1)"
+                        [disabled]="AppStore.loading">{{getButtonText(previousButtonText)}}</button>
+                        <button class="btn" type="button" (click)="confirmCancel()">{{'cancel' | translate}}</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+<!-- Add Participants add Modal part -->
+<div class="modal modal-style-1 popup-full-width fade" #participantsAdd>
+    <app-meetings-add-participants-model [source]="form.value.meeting_participants">
+    </app-meetings-add-participants-model>
+</div>
+
+<!-- venue add Modal part -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #addVenue>
+    <app-venue-modal  [venuelabels]="venuelabels" >
+    </app-venue-modal>
+</div>
+
+<!-- add meetngs cancel -->
+<div class="modal modal-style-1 fade" id="delete-popup" #cancelPopup>
+    <app-delete-popup [source]="cancelObject"></app-delete-popup>
+</div>
+
+<!-- * Documetn Attach/Upload Common Component Starts Here -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #fileUploadModal>
+    <app-file-upload-popup *ngIf="fileUploadPopupStore.openPopup"></app-file-upload-popup>
+</div>

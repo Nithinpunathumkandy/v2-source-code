@@ -1,0 +1,182 @@
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" data-backdrop="static" data-keyboard="false" #deletePopup>
+    <app-delete-popup [source] = "deleteObject"></app-delete-popup>
+  </div>
+  
+  <!------------------- Delete Confirmation Modal End --------------------------->
+<div class="tab-pane" id="info" *mobxAutorun>
+    <div class="row" *ngIf="AssessmentStore.assessment_loaded && AssessmentStore.assessments.length>0 && AuthStore.getActivityPermission(200,'ASSESSMENT_LIST')" >
+        <div class="col-sm-12">
+            <div class="full-width-table">
+            <table class="table table-bordered ordinary-table assesment-list-table  mb-4 table-scroll table-list-highlight" #formSteps>
+                <thead>
+                    <tr>
+                        <th class="border-top-0 text-center" width="2%">{{'sl' | translate}}</th>
+                        <th (click)="sortTitle('assessment-date')" class="border-top-0 issue-list-org-tab-three pointer" width="15%"><span>{{'assessment_date'|translate}}</span><img _ngcontent-twv-c17="" class="sort-down-pics pl-2" 
+                            [attr.src]="AssessmentStore.orderBy=='desc' ? 
+                            'assets/images/sort-up.png' : AssessmentStore.orderBy=='asc' ? 
+                            'assets/images/sort-down.png' : 'assets/images/sort-empty.png'">
+            </th>
+                        <th class="border-top-0" width="20%">{{'employee'|translate}}</th>
+                        <th class="border-top-0" width="20%">{{'performed_by'|translate}}</th>
+                        <th (click)="sortTitle('user_competency_assessments.score')" class="border-top-0 issue-list-org-tab-three pointer text-center" width="10%"><span>{{'assessment_score'|translate}}</span>
+                            <img _ngcontent-twv-c17="" class="sort-down-pics pl-2" 
+                            [attr.src]="AssessmentStore.orderBy=='desc' ? 
+                            'assets/images/sort-up.png' : AssessmentStore.orderBy=='asc' ? 
+                            'assets/images/sort-down.png' : 'assets/images/sort-empty.png'">
+                        </th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr (click)="viewDetails(row.employee_id,row.id)" [ngClass]="row.is_latest?'pointer active  edit-and-delete-main':'pointer edit-and-delete-main'"
+                        *ngFor="let row of AssessmentStore?.assessments | paginate: {currentPage:AssessmentStore?.currentPage, itemsPerPage:AssessmentStore?.itemsPerPage,totalItems:AssessmentStore?.totalItems};let num = index">
+                        <td class="text-center">
+                            {{(AssessmentStore?.currentPage - 1) * AssessmentStore?.itemsPerPage + (num + 1)}}</td>
+                        <td valign="middle">{{row.assessment_date|date : OrganizationGeneralSettingsStore?.organizationSettings?.date_format}}</td>
+                        <td valign="middle">
+                            <div class="row">
+                                <div class="col-xl-12">
+                                    <div class="d-flex flex-row user-list-sm">
+                                        <img  [attr.src]="row.employee_image_token?createImageUrl('user-profile-picture',row.employee_image_token):getDefaultGeneralImage()"
+                                        onerror="this.src='/assets/images/placeholder.png'"
+                                        width="30px" height="30px" class="rounded-circle">
+                                        <div>
+                                            <h6>{{row.employee_first_name|titlecase}} {{row.employee_last_name|titlecase}}</h6>
+                                            <span>{{row.employee_designation}}</span>
+                                        </div>
+                                    </div>
+                                    <!-- <app-user-popup-box [source]="getEmployeePopupDetails(row,num)"></app-user-popup-box> -->
+                                    
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="row">
+                                <div class="col-xl-12">
+                                     <!-- <app-user-popup-box [source]="getPopupDetails(row,num)"></app-user-popup-box> -->
+                                    <div class="d-flex flex-row user-list-sm">
+                                        <img [attr.src]="row.performed_by_image_token?createImageUrl('user-profile-picture',row.performed_by_image_token):getDefaultGeneralImage()"
+                                        onerror="this.src='/assets/images/placeholder.png'"
+                                        width="30px" height="30px" class="rounded-circle">
+                                        <div>
+                                            <h6> {{row.performed_by_first_name|titlecase}}{{row.performed_by_last_name|titlecase}}</h6>
+                                            <span>{{row.performed_by_designation}}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td class="text-center" style="padding:0.75rem">
+                            <div>{{row.new_score}}</div>
+                            <div class="edit-option-show" style="margin:6px 0 0 0">
+                                <!-- <a [attr.title]="'view'|translate" (click)="viewDetails(row.employee_id,row.id)"><i
+                                                                class="fas fa-eye"></i></a> -->
+                                <a [attr.title]="'edit'|translate" (click)="editDetails($event,row.employee_id,row.id)"
+                                    *ngIf="row.is_latest && AuthStore.getActivityPermission(200,'UPDATE_USER_COMPETENCY_ASSESSMENT')"><i
+                                        class="fas fa-pen"></i></a>
+                                <a [attr.title]="'delete'|translate" (click)="deleteDetails($event,row.employee_id,row.id,num)"
+                                    *ngIf="AuthStore.getActivityPermission(200,'DELETE_USER_COMPETENCY_ASSESSMENT')"><i
+                                        class="fas fa-trash"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        </div>
+        <div class="col-sm-12" *ngIf="(AssessmentStore?.totalItems>AssessmentStore?.itemsPerPage)">
+            <ul class="pagination justify-content-center mt-3">
+                <pagination-controls [previousLabel]="'previous' | translate"  [nextLabel]="'next' | translate" (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls> 
+            </ul>
+        </div>
+    </div>
+</div>
+<ng-container *mobxAutorun>
+    <div *ngIf="!AssessmentStore.assessment_loaded">
+        <app-assessment-list></app-assessment-list>
+    </div>
+</ng-container>
+<ng-container *mobxAutorun>
+    <app-no-data  *ngIf="AssessmentStore.assessment_loaded && AssessmentStore.assessments.length==0"></app-no-data>
+  </ng-container>
+
+<div class="modal modal-style-1 competency-result-popup fade" id="result-popup" data-backdrop="static" data-keyboard="false"
+   #resultPopup>
+   <div class="modal-dialog modal-lg modal-dialog-centered" *mobxAutorun>
+      <div class="modal-content" *ngIf="AssessmentStore.total_result_loaded">
+         <!-- Modal Header -->
+         <div class="modal-header">
+            <h4 class="modal-title">{{'competency_assessment_result'|translate}}</h4>
+            <button type="button" class="close" (click)="cancel()" data-dismiss="modal">&times;</button>
+         </div>
+         <!-- Modal body -->
+         <div class="modal-body">
+            <div class="row d-flex justify-content-center">
+               <div class="col-md-10">
+                  <div class="competency-result-box">
+                     <div class="row mb-5">
+                        <div class="col-sm-12">
+                           <h3> {{AssessmentStore.totalResult.total_score_percentage}}/100</h3>
+                           <h4 class="mb-3">{{AssessmentStore.currentDate|date : OrganizationGeneralSettingsStore.organizationSettings.date_format}}<br>
+                              {{'competency_assessment'|translate}}
+                           </h4>
+                          <div class="row">
+                              <div class="col-lg-6 col-sm-12">
+                                  <h6>{{'employee'|translate}}</h6>
+                                 <div class="d-flex flex-row user-list-sm">
+                                    <img [attr.src]="AssessmentStore.totalResult.user.image.token?createImageUrl('user-profile-picture',AssessmentStore.totalResult.user.image.token):getDefaultGeneralImage()"
+                                    onerror="this.src='/assets/images/placeholder.png'"
+                                    width="30px" height="30px" class="rounded-circle">
+                                    <div>
+                                       <h6>{{AssessmentStore.totalResult.user.first_name|titlecase}} {{AssessmentStore.totalResult.user.last_name|titlecase}}</h6>
+                                       <span>{{AssessmentStore.totalResult.user.designation}}</span>
+                                    </div>
+                                 </div>
+                                 <!-- <app-user-popup-box style="z-index: 999999;" [source]="getResultPopupDetails(AssessmentStore.totalResult.user)"></app-user-popup-box> -->
+                              </div>
+
+                              <div class="col-lg-6 col-sm-12">
+                                  <h6>{{'performed_by'|translate}}</h6>
+                                <div class="d-flex flex-row user-list-sm">
+                                   <img [attr.src]="AssessmentStore.totalResult.created_by.image.token?createImageUrl('user-profile-picture',AssessmentStore.totalResult.created_by.image.token):getDefaultGeneralImage()"
+                                   onerror="this.src='/assets/images/placeholder.png'"
+                                   width="30px" height="30px" class="rounded-circle">
+                                   <div>
+                                      <h6>{{AssessmentStore.totalResult.created_by.first_name|titlecase}} {{AssessmentStore.totalResult.created_by.last_name|titlecase}}</h6>
+                                      <span>{{AssessmentStore.totalResult.created_by.designation}}</span>
+                                   </div>
+                                </div>
+                                <!-- <app-user-popup-box style="z-index: 999999;" [source]="getResultPopupDetails(AssessmentStore.totalResult.created_by)"></app-user-popup-box> -->
+                             </div>
+                           </div>
+                        </div>
+                     </div>
+
+                     <div class="row">
+                        <div class="col-md-12">
+                           <ul class="assessment-progress-status" *ngIf="AssessmentStore.total_result_loaded">
+                              <li *ngFor="let group of AssessmentStore.totalResult.competency_score;let num = index">
+                                 <span class="progress-number">{{num+1}}</span>
+                                 <span class="progress-name">{{group.competency_group.title}} / {{group.title}}</span>
+                                 <!-- {{getCompetencyTitle(group.competency_group_id,AssessmentStore.totalResult)}} -->
+                                 <span class="percentage-progress">{{group.pivot.score*10| number : '1.2-2'}}%</span>
+                                 <div class="progress-scale-line progress-bar-animation" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" [style.max-width.%]="group.pivot.score*10"></div>
+                              </li>
+                             
+                           </ul>
+                        </div>
+                     </div>
+                     <div class="row">
+                        <!-- <div class="col-sm-12"> <a class="btn ordinary-btn mt-3">Download</a> </div> -->
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+</div>

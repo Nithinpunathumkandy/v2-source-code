@@ -1,0 +1,76 @@
+<div class="tab-pane" id="riskmng">
+    <!-- <div class="container-fluid"> -->
+    <div class="audit-program-box audit-page-table-main">
+        <div *mobxAutorun>
+            <!-- <div class="col-sm-12"> -->
+            <div class="full-width-table audit-program-box mb-3">
+                <table
+                    *ngIf="RiskStore.loaded && RiskStore.allItems.length > 0 && AuthStore.getActivityPermission(3700,'PROJECT_MONITORING_RISK_LIST')"
+                    class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                    <thead>
+                        <tr>
+                            <th class="border-top-0 text-center" width="2%">#</th>
+                            <th class="border-top-0" width="45%">{{'project_risk' | translate}}</th>
+                            <th class="border-top-0 text-center" width="10%">{{'risk_rating' | translate}}</th>
+                            <th class="border-top-0" width="43">{{'risk_resolving_plan' | translate}}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="edit-and-delete-main"
+                            *ngFor="let items of RiskStore.allItems| paginate: {currentPage:RiskStore.currentPage, itemsPerPage:RiskStore.itemsPerPage,totalItems:RiskStore.totalItems};let num=index">
+                            <td class="text-center"> {{(RiskStore.currentPage - 1) * RiskStore.itemsPerPage + (num +
+                                1)}}</td>
+                            <td>{{items.title? items.title : 'NA'}}</td>
+                            <td class="text-center">
+                                <div [ngClass]="'dot-div '+items.label+'-dot'">{{items.risk_rating_title?
+                                    items.risk_rating_title : 'NA'}}</div>
+                            </td>
+                            <td style="white-space: pre-wrap;">{{items.risk_resolving_plan? items.risk_resolving_plan :
+                                'NA'}}
+                                <div *ngIf="ProjectMonitoringStore.individualDetails?.project_monitoring_status?.type =='draft' || ProjectMonitoringStore.individualDetails?.project_monitoring_status?.type =='send-back'"
+                                    class="edit-option-show" style="margin: 33px 0px 0px 0px; ">
+                                    <a *ngIf="AuthStore.getActivityPermission(3700,'UPDATE_PROJECT_MONITORING_RISK')"
+                                        (click)="editRisk(items)"><i class="fas fa-pen"></i></a>
+                                    <a *ngIf="AuthStore.getActivityPermission(3700,'DELETE_PROJECT_MONITORING_RISK')"
+                                        (click)="delete(items.id)"><i class="fas fa-trash"></i></a>
+                                </div>
+                            </td>
+
+                        </tr>
+                    </tbody>
+                </table>
+                <ng-container *mobxAutorun>
+                    <div *ngIf="!RiskStore.loaded">
+                        <app-project-monitoring-list-loader></app-project-monitoring-list-loader>
+                    </div>
+                    <app-no-data *ngIf="RiskStore.allItems.length == 0 && RiskStore.loaded == true"></app-no-data>
+                </ng-container>
+            </div>
+            <!-- </div>    -->
+        </div>
+        <div *ngIf="RiskStore.totalItems>RiskStore.itemsPerPage" class="col-sm-12">
+            <ul class="pagination justify-content-center mt-3">
+                <div class="list">
+                    <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+                        class="my-pagination" (pageChange)="pageChange($event)">
+                    </pagination-controls>
+                </div>
+            </ul>
+        </div>
+    </div>
+    <!-- </div>                   -->
+</div>
+
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #newRisk>
+    <app-add-project-risk [source]="newRiskObject" *ngIf="newRiskObject.type">
+
+    </app-add-project-risk>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>

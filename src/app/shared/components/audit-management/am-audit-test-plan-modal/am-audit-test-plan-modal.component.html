@@ -1,0 +1,471 @@
+<button type="button" class="close" (click)="confirmCancel()"><i class="lni-close"></i><span>esc</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header">
+            <h4 class="modal-title">
+                {{testPlanSource.type=='Add'?getButtonText('new_test_plan'):getButtonText('edit_test_plan')}} </h4>
+        </div>
+        <!-- Modal body -->
+        <form [formGroup]="form">
+            <div class="modal-body form-body">
+                <p class="head-details">{{'am_test_plan_description'|translate}}
+                </p>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label>Title<sup>*</sup></label>
+                            <input type="text" class="form-control" formControlName="title"
+                                [placeholder]="'enter_test_plan_title'|translate">
+                            <p class="form-error pt-1" *ngIf="formErrors&&formErrors.title">
+                                {{formErrors.title[0]}}</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea class="form-control" rows="3" formControlName="description" id="comment9"
+                                [placeholder]="'write_description_test_plan'|translate"></textarea>
+                            <p class="form-error pt-1" *ngIf="formErrors&&formErrors.description">
+                                {{formErrors.description[0]}}</p>
+                        </div>
+                    </div>
+
+
+
+                    <div class="col-sm-12">
+                        <div class="common-tab-md clearfix bg-body-color-menu popup-form-tab mb-3 tab-same-height">
+                            <div class="tab-common-left-md">
+                                <div class=" issues-tab">
+                                    <!-- tab menu start -->
+                                    <ul class="nav nav-tabs nav-tabs--vertical nav-tabs--left vertical-tab"
+                                        role="navigation">
+                                        <li class="nav-item"><a [ngClass]="currentTab=='control'?'nav-link active':'nav-link'"
+                                                data-toggle="tab" role="tab" aria-controls="lorem" aria-selected="false"
+                                                data-original-title="" title=""
+                                                (click)="getControls(1)">{{'controls'|translate}}</a></li>
+                                        <li class="nav-item"><a [ngClass]="currentTab=='risk'?'nav-link active':'nav-link'" data-toggle="tab"
+                                                role="tab" aria-controls="ipsum" aria-selected="false"
+                                                data-original-title="" title=""
+                                                (click)="getRisks(1)">{{'risks'|translate}}</a></li>
+                                        <li class="nav-item"><a [ngClass]="currentTab=='objective'?'nav-link active':'nav-link'" data-toggle="tab"
+                                                role="tab" aria-controls="ipsum" aria-selected="true"
+                                                data-original-title="" title=""
+                                                (click)="getStrategicObjectives(1)">{{'strategic_objectives'|translate}}
+                                            </a></li>
+                                        <li class="nav-item"><a [ngClass]="currentTab=='ms-type'?'nav-link active':'nav-link'" data-toggle="tab"
+                                                role="tab" aria-controls="ipsum" aria-selected="true"
+                                                data-original-title="" title=""
+                                                (click)="getMsDocumentVersionsList(1)">{{'ms_types'|translate}}
+                                            </a></li>
+
+
+                                    </ul>
+                                </div>
+                                <!-- tab menu end -->
+                            </div>
+
+
+                            <div class="tab-common-left-content-m bg-white cmn-bdr widg-padding-cmn-small"
+                                style="min-height:320px;">
+                                <div class="tab-content">
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <div class="form-group">
+
+                                                <form
+                                                    class="form-control issue-select-process-search bg-white search-popup-new">
+                                                    <input type="text"  [(ngModel)]="searchText" [placeholder]="'search' | translate" name="search"
+                                                    (keyup)="searchItem($event)"
+                                                        class="search-process" autocomplete="off">
+                                                        <a class="search-clear-btn" (click)="clear()" *ngIf="searchText">X</a>
+                                                        <button type="submit" (click)="searchItem($event)" style="width: 40px;"><i
+                                                            class="fa fa-search"></i></button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane fade active show" id="tab-sm-one" role="tabpanel" *ngIf="currentTab=='control'">
+
+                                        <div *ngIf="!AmAuditTestPlanStore.control_loaded">
+                                            <app-am-audit-plan-loader></app-am-audit-plan-loader>
+                                        </div>
+                                        <ng-container *ngIf="AmAuditTestPlanStore.control_loaded && AmAuditTestPlanStore.controls?.length==0">
+                                            <app-no-data-list [source]="'common_no_data_title'|translate" [border]="false"></app-no-data-list>
+                                        </ng-container>
+                                        <div class="custom-control white-cbox custom-checkbox"
+                                            *ngFor="let control of AmAuditTestPlanStore.controls | paginate: {id:'control',currentPage:AmAuditTestPlanStore?.controlCurrentPage, itemsPerPage:AmAuditTestPlanStore?.controlItemsPerPage,totalItems:AmAuditTestPlanStore?.controlTotalItems}; let num = index">
+                                            <input type="checkbox" class="custom-control-input"
+                                                [attr.id]="'radio-one-control'+num"
+                                                [attr.name]="'radio-one-control'+num"
+                                                [checked]="isControlSelected(control.id)"
+                                                (change)="addToControlList(control.id)">
+                                            <label
+                                                class="custom-control-label align-label-check smoothe-slide font-normal"
+                                                [attr.for]="'radio-one-control'+num">{{control.title}}</label>
+                                        </div>
+
+                                        <div *ngIf="AmAuditTestPlanStore.controlTotalItems>AmAuditTestPlanStore.controlItemsPerPage"
+                                            class="col-sm-12">
+                                            <ul class="pagination justify-content-center mt-0">
+                                                <div class="list">
+                                                    <pagination-controls id="control"
+                                                        [previousLabel]="'previous' | translate"
+                                                        [nextLabel]="'next' | translate"
+                                                        (pageChange)="getControls($event)" class="my-pagination">
+                                                    </pagination-controls>
+                                                </div>
+                                            </ul>
+                                        </div>
+
+
+                                    </div>
+
+                                    <div class="tab-pane fade active show" id="tab-sm-two" role="tabpanel" *ngIf="currentTab=='risk'">
+                                        <div *ngIf="!AmAuditTestPlanStore.risk_loaded">
+                                            <app-am-audit-plan-loader></app-am-audit-plan-loader>
+                                        </div>
+                                        <ng-container *ngIf="AmAuditTestPlanStore.risk_loaded && AmAuditTestPlanStore.risks?.length==0">
+                                            <app-no-data-list [source]="'common_no_data_title'|translate" [border]="false"></app-no-data-list>
+                                        </ng-container>
+                                        <div class="custom-control white-cbox custom-checkbox"
+                                            *ngFor="let risk of AmAuditTestPlanStore.risks | paginate: {id:'risk',currentPage:AmAuditTestPlanStore?.riskCurrentPage, itemsPerPage:AmAuditTestPlanStore?.riskItemsPerPage,totalItems:AmAuditTestPlanStore?.riskTotalItems}; let num = index">
+                                            <input type="checkbox" class="custom-control-input"
+                                                [attr.id]="'radio-one-risk'+num" [attr.name]="'radio-one-risk'+num"
+                                                [checked]="isRiskSelected(risk.id)" (change)="addToRiskList(risk.id)">
+                                            <label
+                                                class="custom-control-label align-label-check smoothe-slide font-normal"
+                                                [attr.for]="'radio-one-risk'+num">{{risk.title}} </label>
+                                        </div>
+                                        <div *ngIf="AmAuditTestPlanStore.riskTotalItems>AmAuditTestPlanStore.riskItemsPerPage"
+                                            class="col-sm-12">
+                                            <ul class="pagination justify-content-center mt-0">
+                                                <div class="list">
+
+                                                    <pagination-controls id="risk"
+                                                        [previousLabel]="'previous' | translate"
+                                                        [nextLabel]="'next' | translate" (pageChange)="getRisks($event)"
+                                                        class="my-pagination">
+                                                    </pagination-controls>
+                                                </div>
+                                            </ul>
+                                        </div>
+
+                                    </div>
+
+                                    <div class="tab-pane fade active show" id="tab-sm-three" role="tabpanel" *ngIf="currentTab=='objective'">
+                                        <div *ngIf="!AmAuditTestPlanStore.objective_loaded">
+                                            <app-am-audit-plan-loader></app-am-audit-plan-loader>
+                                        </div>
+                                        <ng-container *ngIf="AmAuditTestPlanStore.objective_loaded && AmAuditTestPlanStore.objectives?.length==0">
+                                            <app-no-data-list [source]="'common_no_data_title'|translate" [border]="false"></app-no-data-list>
+                                        </ng-container>
+                                        <div class="custom-control white-cbox custom-checkbox"
+                                            *ngFor="let objective of AmAuditTestPlanStore.objectives | paginate: {id:'objective',currentPage:AmAuditTestPlanStore?.objectiveCurrentPage, itemsPerPage:AmAuditTestPlanStore?.objectiveItemsPerPage,totalItems:AmAuditTestPlanStore?.objectiveTotalItems}; let num = index">
+                                            <input type="checkbox" class="custom-control-input"
+                                                [attr.id]="'radio-one-objective'+num"
+                                                [attr.name]="'radio-one-objective'+num"
+                                                [checked]="isObjectiveSelected(objective.id)"
+                                                (change)="addToObjectiveList(objective.id)">
+                                            <label
+                                                class="custom-control-label align-label-check smoothe-slide font-normal"
+                                                [attr.for]="'radio-one-objective'+num">{{objective.title}} </label>
+                                        </div>
+                                        <div *ngIf="AmAuditTestPlanStore.objectiveTotalItems>AmAuditTestPlanStore.objectiveItemsPerPage"
+                                            class="col-sm-12">
+                                            <ul class="pagination justify-content-center mt-0">
+                                                <div class="list">
+                                                    <pagination-controls id="objective"
+                                                        [previousLabel]="'previous' | translate"
+                                                        [nextLabel]="'next' | translate"
+                                                        (pageChange)="getStrategicObjectives($event)"
+                                                        class="my-pagination">
+                                                    </pagination-controls>
+                                                </div>
+                                            </ul>
+                                        </div>
+
+
+                                    </div>
+
+                                    <div class="tab-pane fade active show" id="tab-sm-four" role="tabpanel" *ngIf="currentTab=='ms-type'">
+
+                                        <!-- <div class="custom-control white-cbox custom-checkbox" *ngFor="let type  of AmAuditTestPlanStore.msTypes; let num = index">
+                                            <input type="checkbox" class="custom-control-input" [attr.id]="'radio-one-type'+num"
+                                                [attr.name]="'radio-one-type'+num" [checked]="isMsTypeSelected(type.id)" (change)="addToMsTypeList(type.id)">
+                                            <label
+                                                class="custom-control-label align-label-check smoothe-slide font-normal"
+                                                [attr.for]="'radio-one-type'+num">{{type.ms_type_title}} V{{type?.version}}</label>
+                                        </div> -->
+                                        <!-- <div *ngIf="AmAuditTestPlanStore.objectiveTotalItems>AmAuditTestPlanStore.objectiveItemsPerPage"
+                                            class="col-sm-12">
+                                            <ul class="pagination justify-content-center mt-3">
+                                                <div class="list">
+                                                    <pagination-controls id="objective"
+                                                        [previousLabel]="'previous' | translate"
+                                                        [nextLabel]="'next' | translate"
+                                                        (pageChange)="getStrategicObjectives($event)"
+                                                        class="my-pagination">
+                                                    </pagination-controls>
+                                                </div>
+                                            </ul>
+                                        </div> -->
+
+                                        <div class="row" *ngIf="AmAuditTestPlanStore.msTypes.length!=0 ">
+                                            <div class="col-sm-12">
+                                                <div class="panel-group panel-drop-sections panel-drop-white" id="jdn"
+                                                    role="tablist" aria-multiselectable="true">
+                                                    <div class="panel-group panel-drop-sections pt-0" id="cc"
+                                                        role="tablist" aria-multiselectable="true">
+                                                        <div class="panel panel-default edit-and-delete-main"
+                                                            *ngFor="let msType of AmAuditTestPlanStore.msTypes;let num = index">
+
+                                                            <div class="pointer"
+                                                                [ngClass]="selectedTypeIndex == num? 'panel-heading active' : 'panel-heading'"
+                                                                role="tab" id="activityHeader">
+                                                                <div class="panel-title">
+                                                                    <a role="button" data-toggle="collapse"
+                                                                        aria-expanded="true" aria-controls="collapseOne"
+                                                                        (click)="msTypeAccordianClick(num,msType?.document_version_id)">
+                                                                        <h5 class="width96pc mt-0">
+                                                                            <span>{{num+1}}.</span>
+                                                                            <span>{{msType.ms_type_title}}
+                                                                                V{{msType?.version}}</span><span
+                                                                                class="drop-down-icone"><i
+                                                                                    class="fas fa-chevron-down"></i></span>
+                                                                        </h5>
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                            <div class="drop-detail-sec"
+                                                                [ngClass]="selectedTypeIndex == num? 'panel-collapse collapse show' : 'panel-collapse collapse'"
+                                                                role="tabpanel" aria-labelledby="activityHeader"
+                                                                #controlShow>
+                                                                <div class="panel-body bg-white">
+                                                                    <div class="row">
+                                                                        <div class="col-sm-12">
+                                                                            <div class="panel-group panel-drop-sections"
+                                                                                id="jd" role="tablist"
+                                                                                aria-multiselectable="true"
+                                                                                *ngIf="AmAuditTestPlanStore.individualContentLoaded && AmAuditTestPlanStore.versionContents?.length>0">
+                                                                                <div class="panel panel-default"
+                                                                                    *ngFor="let list of AmAuditTestPlanStore.versionContents ;let mIndex = index">
+                                                                                    <div class=""
+                                                                                        [ngClass]="selectedIndex == mIndex ? 'panel-heading active' : 'panel-heading'"
+                                                                                        role="tab" id="headingOne">
+                                                                                        <div
+                                                                                            class="panel-title panel-title-check">
+                                                                                            <a role="button"
+                                                                                                (click)="selectedIndexChange(mIndex)"
+                                                                                                [ngClass]="selectedIndex == mIndex ? '' : 'collapsed'">
+                                                                                                <h5
+                                                                                                    class="width96pc mt-0 pl-5">
+                                                                                                    {{list.clause_number}}.
+                                                                                                    {{list.title}} <span
+                                                                                                        class="drop-down-icone"><i
+                                                                                                            class="fas fa-chevron-down"></i></span>
+                                                                                                </h5>
+                                                                                            </a>
+                                                                                            <div
+                                                                                                class="custom-control white-cbox custom-checkbox drop-check-new">
+                                                                                                <input type="checkbox"
+                                                                                                    (change)="changeDocumetVersion(list)"
+                                                                                                    [checked]="AmAuditTestPlanStore.checkSelectedStatus(list)"
+                                                                                                    class="custom-control-input"
+                                                                                                    [id]="list.id"
+                                                                                                    [name]="list.id"
+                                                                                                    checked="">
+                                                                                                <label
+                                                                                                    class="custom-control-label align-label-check"
+                                                                                                    [for]="list.id"></label>
+                                                                                            </div>
+
+
+
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div [ngClass]="selectedIndex == mIndex ? 'panel-collapse show collapse' : 'panel-collapse  collapse'"
+                                                                                        role="tabpanel"
+                                                                                        aria-labelledby="headingOne">
+                                                                                        <div
+                                                                                            class="panel-body bg-white">
+
+                                                                                            <div *ngFor="let data of list.children_content; let num = index">
+                                                                                                <div
+                                                                                                    class="custom-control white-cbox custom-checkbox">
+                                                                                                    <input
+                                                                                                        (change)="changeDocumetVersion(data)"
+                                                                                                        [checked]="AmAuditTestPlanStore.checkSelectedStatus(data)"
+                                                                                                        type="checkbox"
+                                                                                                        class="custom-control-input"
+                                                                                                        [id]="data.id"
+                                                                                                        name="4">
+                                                                                                    <label
+                                                                                                        class="custom-control-label align-label-check smoothe-slide"
+                                                                                                        [for]="data.id">{{data.clause_number}}.
+                                                                                                        {{data.title}}</label>
+                                                                                                </div>
+                                                                                                <app-am-inner-document-versions
+                                                                                                    *ngIf="data.children.length > 0"
+                                                                                                    [source]="data.children"
+                                                                                                    [index]="num+1">
+                                                                                                </app-am-inner-document-versions>
+
+                                                                                            </div>
+                                                                                            <ng-container
+                                                                                                *ngIf="list.children_content.length == 0">
+                                                                                                <app-no-data-list
+                                                                                                    [source]="emptyTier"
+                                                                                                    [height]="false"
+                                                                                                    [border]=false>
+                                                                                                </app-no-data-list>
+                                                                                            </ng-container>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                            <ng-container
+                                                                                *ngIf="AmAuditTestPlanStore.individualContentLoaded && AmAuditTestPlanStore?.versionContents?.length == 0">
+                                                                                <app-no-data-list [source]="emptyTier"
+                                                                                    [height]="false" [border]=false>
+                                                                                </app-no-data-list>
+                                                                            </ng-container>
+                                                                            <ng-container
+                                                                                *ngIf="!AmAuditTestPlanStore.individualContentLoaded">
+                                                                                <app-acl-list></app-acl-list>
+                                                                            </ng-container>
+                                                                        </div>
+
+                                                                    </div>
+                                                                </div>
+
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-12 col-sm-12">
+                        <div class="form-group mb-0">
+                            <label>Support Files</label>
+
+                            <div class="scroll-documents" #uploadArea>
+                                <div class="thumb-pics-bg thumb-pics-col-3 clearfix thumb-pics-fix-text"
+                                    style="padding-top: 0;">
+                                    <div class="thumb-pics">
+
+                                        <div class="form-group form-group-upload">
+                                            <div class="darag-dropifile-upload">
+                                                <div
+                                                    class="d-flex justify-content-center align-items-center text-center">
+                                                    <div>
+                                                        <img src="/assets/images/drag-pic.png" alt="image"
+                                                            class="drag-pic-files">
+                                                        <div class="drag-file-name"> Select or Upload Your File Here
+                                                        </div>
+                                                        <div class="upload-btn-wrapper">
+                                                            <button (click)="openFileUploadModal()" type="button"
+                                                                class="btn">{{'browse_files' |
+                                                                translate}}</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="thumb-pics"
+                                        *ngFor="let docs of fileUploadPopupStore.displayFiles ;let i = index">
+                                        <div class="upload-pics edit-option" data-toggle="modal">
+                                            <div *ngIf="docs.id && !docs.preview" class="browse-form-pic"
+                                                [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                                            </div>
+                                            <div *ngIf="docs.preview" class="browse-form-pic"
+                                                [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">
+                                            </div>
+                                            <div class="browse-form-name clearfix">
+                                                <div class="float-left">
+                                                    <h6>
+                                                        {{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                                    </h6>
+                                                    <span *ngIf="docs.is_kh_document" class="mr-2 cmn-clr"><i
+                                                            class="fas fa-book"></i></span>
+                                                    <span *ngIf="!docs.is_kh_document" class="mr-2 cmn-clr"><i
+                                                            class="fas fa-laptop"></i></span>
+                                                    <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                                                </div>
+                                                <div class="browse-logo">
+                                                    <img *ngIf="checkExtension(docs.ext,'image') != -1"
+                                                        class="folder-picher" src="/assets/images/jpg-icone.png">
+                                                    <img *ngIf="checkExtension(docs.ext,'doc') != -1"
+                                                        class="folder-picher" src="/assets/images/word-icone.png">
+                                                    <img *ngIf="checkExtension(docs.ext,'pdf') != -1"
+                                                        class="folder-picher" src="/assets/images/pdf-icone.png">
+                                                    <img *ngIf="checkExtension(docs.ext,'excel') != -1"
+                                                        class="folder-picher" src="/assets/images/excel-icone.png">
+                                                    <img *ngIf="checkExtension(docs.ext,'video') != -1"
+                                                        class="folder-picher" src="/assets/images/md-video.png">
+                                                    <img *ngIf="checkExtension(docs.ext,'audio') != -1"
+                                                        class="folder-picher" src="/assets/images/md-audio.png">
+                                                    <img *ngIf="checkExtension(docs.ext,'ppt') != -1"
+                                                        class="folder-picher" src="/assets/images/md-ppt.png">
+                                                </div>
+                                                <div class="edit-option-show">
+                                                    <a (click)="removeDocument(docs)"><i class="fas fa-trash"></i></a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                </div>
+                            </div>
+                            <p class="form-error pt-1" *ngIf="formErrors&&formErrors.document">
+                                {{formErrors.document[0]}}</p>
+                        </div>
+                    </div>
+
+
+                </div>
+
+
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="d-block justify-content-left border-0 mt-3">
+                            <button type="button" class="btn btn-active" [disabled]="AppStore.loading || form.invalid"
+                                (click)="saveAuditTestPlan()">{{AppStore.loading?getButtonText('loading'):getButtonText('save')}}</button>
+                            <button type="button" class="btn" (click)="saveAuditTestPlan(true)"
+                                [disabled]="AppStore.loading || form.invalid">{{AppStore.loading?getButtonText('loading'):getButtonText('save_close')}}</button>
+                            <button type="button" (click)="confirmCancel()" class="btn"
+                                [disabled]="AppStore.loading">{{AppStore.loading?getButtonText('loading'):getButtonText('cancel')}}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <!-- Modal footer -->
+    </div>
+</div>
+<!-- new-test-plan-popup End -->
+
+
+<!-- * Documetn Attach/Upload Common Component Starts Here -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #fileUploadModal>
+
+    <app-file-upload-popup *ngIf="fileUploadPopupStore.openPopup"></app-file-upload-popup>
+
+</div>
+<!-- * Documetn Attach/Upload Common Component Ends Here -->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #cancelPopup data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="confirmationObject"></app-delete-popup>
+</div>

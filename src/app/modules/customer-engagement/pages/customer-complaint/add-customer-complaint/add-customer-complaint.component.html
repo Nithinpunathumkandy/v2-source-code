@@ -1,0 +1,299 @@
+<button type="button" class="close" data-dismiss="modal" (click)="cancel()"><i
+      class="lni-close"></i><span>esc</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered">
+   <div class="modal-content">
+      <!-- Modal Header -->
+      <div class="modal-header">
+         <h4 class="modal-title" *ngIf="customerComplaintObjectSource.type == 'Add'" >{{'new_complaint/feedback' | translate}}</h4>
+         <h4 class="modal-title" *ngIf="customerComplaintObjectSource.type == 'Edit'" >{{'edit_complaint/feedback' | translate}}</h4>
+      </div>
+      <!-- Modal body -->
+      <div class="modal-body form-body" *mobxAutorun>
+         <p class="head-details">{{'complaint_form_message' | translate}}</p>
+         <form [formGroup]="form" *mobxAutorun>
+            <div class="row">
+               <div class="col-sm-6">
+                  <div class="form-group">
+                     <label>{{'complaint_type' | translate}}<span class="form-error">*</span></label>
+                     <div class="clearfix">
+                        <div class="multiple-plain-ngselect">
+                           <ng-select [placeholder]="'select_complaint_type' | translate" [multiple]="false"
+                              formControlName="customer_complaint_type_id" (open)="getCustomerType()"
+                              (search)="searchCustomerType($event)" bindLabel="title">
+                              <ng-option [value]="item.id" *ngFor="let item of CustomerTypeMasterStore.allItems">
+                                 {{item.title}}
+                              </ng-option>
+                           </ng-select>                                                   
+                        </div>
+                     </div>
+                     <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.customer_complaint_type_id">
+                        {{formErrors.customer_complaint_type_id}}
+                     </p>
+                  </div>
+               </div>
+               <div class="col-sm-6">
+                  <div class="form-group">
+                     <label for="name">{{'customer' | translate}}<span class="form-error">*</span></label>
+                     <div class="clearfix d-flex">
+                        <div class="multiple-plain-ngselect w-100">
+                           <ng-select [placeholder]="'select_customer' | translate" [multiple]="false"
+                              formControlName="customer_id" (open)="getCustomer()" (search)="searchCustomer($event)"
+                              bindLabel="title">
+                              <ng-option [value]="item.id" *ngFor="let item of BusinessCustomersStore.customerDetails">
+                                 {{item.title}}
+                              </ng-option>
+                           </ng-select>                         
+                        </div>
+                        <button *ngIf = "AuthStore.getActivityPermission(1600,'CREATE_CUSTOMER')" class="btn multi-add-user ml-2" style="width: 42px;"
+                        (click)="customerAdd()"><i class="fas fa-plus"></i></button>
+                     </div>
+                     <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.customer_id">
+                        {{formErrors.customer_id}}</p>
+                  </div>
+               </div>
+
+               <div class="col-lg-6">
+                  <div class="form-group">
+                     <label for="name">{{'customer_complaint_source' | translate}}<span
+                           class="form-error">*</span></label>
+                     <div class="clearfix d-flex">
+                        <div class="multiple-plain-ngselect w-100">
+                           <ng-select [placeholder]="'select_customer_complaint_source' | translate" [multiple]="false"
+                              [items]="CustomerComplaintSourceMasterStore.CustomerComplaintSource"
+                              formControlName="customer_complaint_source_id" (open)="getComplianceSource()"
+                              (search)="searchComplianceSource($event)" bindLabel="title">
+                              <ng-option [value]="item.id"
+                                 *ngFor="let item of CustomerComplaintSourceMasterStore.CustomerComplaintSource">
+                                 {{item.title.length > 80 ? item.title.substring(0,80)+' ...' : item.title}}
+                              </ng-option>
+                           </ng-select>
+                           <p class="pt-1" style="color: red;"
+                              *ngIf="formErrors && formErrors.customer_complaint_source_id">
+                              {{formErrors.customer_complaint_source_id}}
+                           </p>
+                        </div>
+                        <button class="btn multi-add-user ml-2" style="width: 42px;" (click)="complianceSourceAdd()"
+                         *ngIf = "AuthStore.getActivityPermission(1600,'CREATE_CUSTOMER_COMPLAINT_SOURCE')">
+                         <i class="fas fa-plus"></i></button>
+                     </div>
+                  </div>
+               </div>
+               
+               <div class="col-sm-6">
+                  <div class="form-group">
+                     <label for="establish_date">{{'date_of_receiving_complaint' | translate}}<span
+                           class="form-error">*</span></label>
+                     <div class="input-group date-picker position-relative">
+                        <input class="form-control cal3" formControlName="receiving_date" placeholder="yyyy-mm-dd"
+                           (click)="recieveDateInput.toggle()" id="recieve" ngbDatepicker                         
+                           [maxDate]="getTodaysDateObject()"
+                           #recieveDateInput="ngbDatepicker">
+                        <div class="input-group-append">
+                           <button class="btn btn-outline-secondary calendar" (click)="recieveDateInput.toggle()"
+                              type="button"><i class="fas fa-calendar-alt"></i></button>
+                        </div>
+                     </div>
+                     <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.receiving_date">
+                        {{formErrors.receiving_date}}</p>
+                  </div>
+               </div>
+
+               <div class="col-sm-12">
+                  <div class="form-group">
+                     <label for="title">{{'title' | translate}}<span class="form-error">*</span></label>
+                     <div class="clearfix">
+                        <input type="text" formControlName="title" class="form-control"
+                           [attr.placeholder]="'customer_complaint_title_placeholder' | translate" id="title" #titleInput>
+                        <p style="color: red;" *ngIf="formErrors"> {{formErrors.title}}</p>
+                     </div>
+                  </div>
+               </div>
+
+               <div class="col-sm-12">
+                  <div class="form-group">
+                     <span style="float: right;">
+                        <p class="text-grey mb-0">{{form?.value.description != null ? form?.value.description?.length : 0}}
+                           {{'characters' | translate}}</p>
+                     </span>
+                     <label>{{'description' | translate}}</label>
+                     <div class="clearfix">
+                        <textarea class="form-control" rows="3" id="description"
+                           [attr.placeholder]="'customer_complaint_description' | translate" formControlName="description"></textarea>
+                     </div>
+                  </div>
+               </div>
+
+               <div class="col-sm-6">
+                  <div class="form-group">
+                     <a class="text-light-blue" data-toggle="modal" (click)="organisationChanges()"
+                        style="border-bottom: 1px solid;">{{'change_organization_unit' | translate}}</a>
+                  </div>
+               </div>
+
+               <div class="col-sm-12 ">
+                  <div class="form-group">
+                     <label>{{'responsible_user' | translate}} <span class="form-error">*</span></label>
+                     <div class="clearfix">
+                        <div class="multiple-plain-ngselect">
+                           <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                              [placeholder]="'select_responsible_user'| translate" [multiple]="false"
+                              formControlName="responsible_user_id" (search)="searchUsers($event)"
+                              [searchFn]="customSearchFn" (open)="getResponsibleUsers()">
+                              <ng-option [value]="responsible_user_id.id"
+                                 *ngFor="let responsible_user_id of CustomerComplaintStore.allItems">
+                                 {{responsible_user_id.title}}
+                              </ng-option>
+                              <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                 <img *ngIf="item.image_token" height="15" width="15"
+                                    [attr.src]="createImagePreview('user-profile-picture',item.image_token)"
+                                    onerror="this.src='/assets/images/user-demo2.png'" />
+                                 <img *ngIf="!item.image_token" height="15" width="15" [attr.src]="getDefaultImage()" />
+                                 <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,'
+                                    ') | titlecase}}
+                                 </b><span aria-hidden="true" (click)="clear(item)" style="border:none;"
+                                    class="ng-value-icon left">×</span>
+                              </ng-template>
+                              <ng-template ng-option-tmp let-item="item" let-index="index">
+                                 <div class="user-post-department-pic">
+                                    <img *ngIf="item.image_token" height="25" width="25"
+                                       [attr.src]="createImagePreview('user-profile-picture',item.image_token)"
+                                       onerror="this.src='/assets/images/user-demo2.png'" />
+                                    <img *ngIf="!item.image_token" height="25" width="25"
+                                       [attr.src]="getDefaultImage()" />
+                                 </div>
+                                 <div class="user-post-department-div">
+                                    <b>{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b>
+                                    <p class="user-post-department-multiple">
+                                       {{getStringsFormatted([item.designation_title,' '+item.department],50,',')}}</p>
+                                 </div>
+                              </ng-template>
+                           </ng-select>
+                           <p style="color: red;" *ngIf="formErrors && formErrors.responsible_user_id">
+                              {{formErrors.responsible_user_id}}</p>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+            <label class="label-style mb-1">{{'support_files' | translate}}</label>
+            <!-- Common File Upload Starts Here -->
+            <div class="scroll-documents" #uploadArea>
+               <div class="thumb-pics-bg thumb-pics-col-3 clearfix thumb-pics-fix-text" style="padding-top: 0;">
+                  <div class="thumb-pics">
+                     <div class="question-circle-inp" style="margin-right: 7px;">
+                        <i class="far fa-question-circle"></i>
+                        <div class="message-password-inp">
+                           <p class="mb-0">{{'allowed_file_types' | translate}}
+                              {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                           </p>
+                        </div>
+                     </div>
+                     <div class="form-group form-group-upload">
+                        <div class="darag-dropifile-upload">
+                           <div class="d-flex justify-content-center align-items-center text-center">
+                              <div>
+                                 <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                                 <div class="drag-file-name">{{'select_or_upload_your_file_here' | translate}}</div>
+                                 <div class="upload-btn-wrapper">
+                                    <button (click)="openFileUploadModal()" type="button" class="btn">{{'browse_files' |
+                                       translate}}</button>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+
+                  <div class="thumb-pics" *ngFor="let docs of fileUploadPopupStore.displayFiles ;let i = index">
+                     <div class="upload-pics edit-option" data-toggle="modal">
+                        <div *ngIf="docs.id && !docs.preview" class="browse-form-pic"
+                           [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                        </div>
+                        <div *ngIf="docs.preview" class="browse-form-pic"
+                           [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">
+                        </div>
+                        <div class="browse-form-name clearfix">
+                           <div class="float-left">
+                              <h6>
+                                 {{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                              </h6>
+                              <span *ngIf="docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-book"></i></span>
+                              <span *ngIf="!docs.is_kh_document" class="mr-2 cmn-clr"><i
+                                    class="fas fa-laptop"></i></span>
+                              <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                           </div>
+                           <div class="browse-logo">
+                              <img *ngIf="checkExtension(docs.ext,'image') != -1" class="folder-picher"
+                                 src="/assets/images/jpg-icone.png">
+                              <img *ngIf="checkExtension(docs.ext,'doc') != -1" class="folder-picher"
+                                 src="/assets/images/word-icone.png">
+                              <img *ngIf="checkExtension(docs.ext,'pdf') != -1" class="folder-picher"
+                                 src="/assets/images/pdf-icone.png">
+                              <img *ngIf="checkExtension(docs.ext,'excel') != -1" class="folder-picher"
+                                 src="/assets/images/excel-icone.png">
+                              <img *ngIf="checkExtension(docs.ext,'video') != -1" class="folder-picher"
+                                 src="/assets/images/md-video.png">
+                              <img *ngIf="checkExtension(docs.ext,'audio') != -1" class="folder-picher"
+                                 src="/assets/images/md-audio.png">
+                              <img *ngIf="checkExtension(docs.ext,'ppt') != -1" class="folder-picher"
+                                 src="/assets/images/md-ppt.png">
+                           </div>
+                        </div>
+                        <div class="edit-option-show">
+                           <a (click) = "removeDocument(docs)"><i class="fas fa-trash"></i></a>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="row mt-2">
+               <div class="col-sm-12">
+                  <div class="d-block justify-content-left border-0 mt-3">
+                     <button type="button" data-toggle="modal" data-target="#signal-lost"
+                        class="btn btn-primary mr-3 btn-active" (click)="save()" [disabled] = "AppStore.loading || form.invalid">{{ AppStore.loading ?
+                        getButtonText('loading') : getButtonText('save') }}</button>
+                     <button type="button" data-toggle="modal" data-target="#signal-lost" class="btn btn-primary mr-3"
+                        (click)="save(true)" [disabled] = "AppStore.loading || form.invalid">{{ AppStore.loading ? getButtonText('loading') :
+                        getButtonText('save_close') }}</button>
+                     <button type="button" data-toggle="modal" data-target="#error-message" class="btn btn-primary mr-2"
+                        (click)="cancel()">{{ AppStore.loading ? getButtonText('loading') : getButtonText('cancel')
+                        }}</button>
+                  </div>
+               </div>
+            </div>
+         </form>
+      </div>
+      <!-- Modal footer -->
+   </div>
+</div>
+<!-- </div> -->
+
+<!-- * Documetn Attach/Upload Common Component Starts Here -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #fileUploadModal>
+   <app-file-upload-popup *ngIf="fileUploadPopupStore.openPopup"></app-file-upload-popup>
+</div>
+<!-- * Documetn Attach/Upload Common Component Ends Here -->
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static"
+   #organisationChangeFormModal *mobxAutorun>
+   <app-organisation-change-modal *ngIf="openModelPopup" [source]="form.value"
+      (organizationChangeEvent)="closeModal($event)"></app-organisation-change-modal>
+</div>
+
+<!-----------------------customer-complaint-source Form Modal Start--------------------------->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #addComplianceSource>
+   <app-customer-complaint-source-modal *ngIf="openComplianceSource == true" [source]="customerComplaintSourceObject">
+   </app-customer-complaint-source-modal>
+</div>
+<!----------------------- customer-complaint-source Modal End-------------------------->
+
+<!-- -----------------------customers Form Modal Start------------------------>
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #addCustomer>
+   <app-add-customers-component *ngIf = "customerObject.type" [source]="customerObject" >
+   </app-add-customers-component> 
+</div>
+<!-----------------------customers Modal End-------------------------->

@@ -1,0 +1,188 @@
+<!----------new-popup starts------>
+<button type="button" class="close" (click)="closeFormModal()"><i class="lni-close"></i><span>esc</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered" *mobxAutorun>
+    <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header">
+
+            <h4 class="modal-title" *ngIf="CSASource?.type=='Add'">{{'new_csa_question' | translate}}</h4>
+            <h4 class="modal-title" *ngIf="CSASource?.type=='Edit'">{{'edit_csa_question' | translate}}</h4>
+        </div>
+        <!-- Modal body -->
+        <div class="modal-body form-body">
+            <p class="head-details">{{'am_csa_question_modal_description'|translate}}
+            </p>
+            <form [formGroup]="form" *mobxAutorun>
+                <div class="row" *ngIf="AmAuditTestPlanStore.msTypes.length!=0 ">
+                <div class="col-sm-12">
+                    <div class="panel-group panel-drop-sections panel-drop-white" id="jdn" role="tablist"
+                        aria-multiselectable="true">
+                        <div class="panel-group panel-drop-sections pt-0" id="cc" role="tablist"
+                            aria-multiselectable="true">
+                            <div class="panel panel-default edit-and-delete-main"
+                                *ngFor="let msType of AmAuditTestPlanStore.msTypes;let num = index">
+
+                                <div class="pointer"
+                                    [ngClass]="selectedTypeIndex == num? 'panel-heading active' : 'panel-heading'"
+                                    role="tab" id="activityHeader">
+                                    <div class="panel-title">
+                                        <a role="button" data-toggle="collapse" aria-expanded="true"
+                                            aria-controls="collapseOne"
+                                            (click)="msTypeAccordianClick(num,msType?.document_version_id)">
+                                            <h5 class="width96pc mt-0"> <span>{{num+1}}.</span>
+                                                <span>{{msType.ms_type_title}} V{{msType?.version}}</span><span
+                                                    class="drop-down-icone"><i class="fas fa-chevron-down"></i></span>
+                                            </h5>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="drop-detail-sec"
+                                    [ngClass]="selectedTypeIndex == num? 'panel-collapse collapse show' : 'panel-collapse collapse'"
+                                    role="tabpanel" aria-labelledby="activityHeader" #controlShow>
+                                    <div class="panel-body bg-white pb-2">
+                                        <div class="row">
+                                            <div class="col-sm-12">
+                                                <div class="panel-group panel-drop-sections" id="jd" role="tablist"
+                                                    aria-multiselectable="true" *ngIf="AmAuditTestPlanStore.individualContentLoaded">
+                                                    <div class="panel panel-default"
+                                                        *ngFor="let list of AmAuditTestPlanStore.versionContents ;let mIndex = index">
+                                                        <div class=""
+                                                            [ngClass]="selectedIndex == mIndex ? 'panel-heading active' : 'panel-heading'"
+                                                            role="tab" id="headingOne">
+                                                            <div class="panel-title panel-title-check">
+                                                                <a role="button" (click)="selectedIndexChange(mIndex)"
+                                                                    [ngClass]="selectedIndex == mIndex ? '' : 'collapsed'">
+                                                                    <h5 class="width96pc mt-0 pl-5">
+                                                                        {{list.clause_number}}. {{list.title}} <span
+                                                                            class="drop-down-icone"><i
+                                                                                class="fas fa-chevron-down"></i></span>
+                                                                    </h5>
+                                                                </a>
+                                                                <div
+                                                                    class="custom-control white-cbox custom-checkbox drop-check-new">
+                                                                    <input type="checkbox"
+                                                                        (change)="changeDocumetVersion(list)"
+                                                                        [checked]="AmAuditTestPlanStore.checkSelectedStatus(list)"
+                                                                        class="custom-control-input" [id]="list.id"
+                                                                        [name]="list.id" checked="">
+                                                                    <label
+                                                                        class="custom-control-label align-label-check"
+                                                                        [for]="list.id"></label>
+                                                                </div>
+
+
+
+                                                            </div>
+                                                        </div>
+                                                        <div [ngClass]="selectedIndex == mIndex ? 'panel-collapse show collapse' : 'panel-collapse  collapse'"
+                                                            role="tabpanel" aria-labelledby="headingOne">
+                                                            <div class="panel-body bg-white pb-2">
+
+                                                                <div *ngFor="let data of list.children_content; let num = index"
+                                                                    class="ml-4">
+                                                                    <div
+                                                                        class="custom-control white-cbox custom-checkbox">
+                                                                        <input (change)="changeDocumetVersion(data)"
+                                                                            [checked]="AmAuditTestPlanStore.checkSelectedStatus(data)"
+                                                                            type="checkbox" class="custom-control-input"
+                                                                            [id]="data.id" name="4">
+                                                                        <label
+                                                                            class="custom-control-label align-label-check smoothe-slide"
+                                                                            [for]="data.id">{{data.clause_number}}.
+                                                                            {{data.title}}</label>
+                                                                    </div>
+                                                                    <app-am-inner-document-versions
+                                                                        *ngIf="data.children.length > 0"
+                                                                        [source]="data.children" [index]="num+1">
+                                                                    </app-am-inner-document-versions>
+
+                                                                </div>
+                                                                <ng-container *ngIf="list.children_content.length == 0">
+                                                                    <app-no-data-list [source]="emptyTier"
+                                                                        [height]="false" [border]=false>
+                                                                    </app-no-data-list>
+                                                                </ng-container>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <ng-container
+                                                    *ngIf="AmAuditTestPlanStore.individualContentLoaded && AmAuditTestPlanStore?.versionContents?.length == 0">
+                                                    <app-no-data-list [source]="emptyTier" [height]="false"
+                                                        [border]=false></app-no-data-list>
+                                                </ng-container>
+                                                <ng-container *ngIf="!AmAuditTestPlanStore.individualContentLoaded">
+                                                    <app-acl-list></app-acl-list>
+                                                </ng-container>
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        </div>
+        <div class="row">
+
+            <div class="col-lg-12 col-sm-12">
+                <div class="form-group">
+                    <label>{{'am_csa_question'|translate}}</label>
+                    <div class="d-flex"> <input type="text" class="form-control w-100"
+                            [placeholder]="'am_csa_add_question'|translate"
+                            formControlName="question">
+                        <button class="btn multi-add-user ml-2" [disabled]="!form.value.question"
+                            style="width: 42px;" (click)="addQuestion()"><i class="fas fa-plus"></i></button>
+                    </div>
+
+                    <ul class="arrowlist pl-0 mt-2" *ngIf="otherQuestions?.length>0">
+
+                        <li class="clearfix" *ngFor="let question of otherQuestions;let i=index">{{question.title}}
+                            <Button type="button" (click)="removeQuestion(i)"
+                                class="btn btn-small float-right btn-small-delete" style="border: none;"><i
+                                    class="fas fa-trash"></i></Button>
+
+                        </li>
+
+                    </ul>
+
+                    <p class="form-error pt-1" *ngIf="formErrors && formErrors.question">{{formErrors.question}}
+                    </p>
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- Common File Upload Starts Here -->
+
+        <!-- Common File Upload Ends Here -->
+
+        <div class="clearfix"></div>
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="d-block justify-content-left border-0 mt-3">
+                    <button type="submit" class="btn btn-active" (click)="save()"
+                        [disabled]="AppStore.loading">{{ AppStore.loading ?
+                        getButtonText('loading') : getButtonText('save') }}</button>
+                    <button type="button" data-toggle="modal" class="btn" (click)="save(true)"
+                        [disabled]="AppStore.loading">{{
+                        AppStore.loading ?
+                        getButtonText('loading') : getButtonText('save_close') }}</button>
+                    <button type="button" data-toggle="modal" class="btn" (click)="closeFormModal()"
+                        [disabled]="AppStore.loading">{{
+                        AppStore.loading ? getButtonText('loading') :
+                        getButtonText('cancel')}}</button>
+                </div>
+            </div>
+        </div>
+        </form>
+    </div>
+    <!-- Modal footer -->
+</div>
+</div>
+<!----------new-popup ends------>

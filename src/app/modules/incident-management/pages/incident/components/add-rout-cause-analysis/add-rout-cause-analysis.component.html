@@ -1,0 +1,113 @@
+
+    <button type="button" class="close" (click)="cancel()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h4 class="modal-title">{{'root_cause_analysis' | translate}} </h4>
+          <!-- <button type="button" class="close" data-dismiss="modal">&times;</button>-->
+        </div>
+        <!-- Modal body -->
+        <form [formGroup]="form"> 
+        <div class="modal-body form-body">
+          <p *ngIf="addOrEdit == 'add'" class="head-details">Root Cause Analysis helps you to add root cause types with their description for incident management.</p>
+          <p *ngIf="addOrEdit == 'edit'" class="head-details">Root Cause Analysis helps you to edit root cause types with their description for incident management.</p>
+          <div class="row">
+            <div class="col-sm-12">
+              <div class="form-group">
+               <label *ngIf="addOrEdit == 'add'" class="question-head-text mb-0"><span class="question-icon pulse-effect"><i class="fas fa-question-circle"></i></span> {{'why' | translate}}{{why}}</label>
+                  <label *ngIf="addOrEdit == 'edit'" class="question-head-text mb-0"><span class="question-icon pulse-effect"><i class="fas fa-question-circle"></i></span> {{IncidentStore.rootCaseEditData.why}}</label>
+               </div>
+           </div>
+            <div class="col-lg-6 col-sm-12">
+                <div class="form-group">
+                   <label>{{'root_cause_category' | translate}}<span class="form-error">*</span></label>
+                   <div class="clearfix d-flex">
+                    <div class="multiple-plain-ngselect w-100">
+                     <ng-select 
+                     [placeholder]="'root_cause_category_placeholder' | translate" [multiple]="false"
+                     [(ngModel)] = "rootCauseCategory"
+                     [ngModelOptions]="{standalone: true}"
+                     (change) = "ngModalChange('root-cause-category')"
+                     bindLabel="title"
+                     (search)="searchRootCause($event)"
+                     (open)="getRootCause()">
+                     <ng-option [value]="item.id" *ngFor="let item of RootCauseCategoryStore.allItems">
+                       {{item.title.length > 80 ? item.title.substring(0,80)+' ...' : item.title }}
+                    </ng-option>
+
+                 </ng-select>
+                 <p style="color: red;" *ngIf="formErrors"> {{formErrors.root_cause_category_id}}</p>
+                    </div>
+                    <button class="btn multi-add-user ml-2" (click)="openFormModal()" style="width: 42px;"><i class="fas fa-plus"></i></button>
+                </div>
+             </div>
+                </div>
+                <!-- <span class="form-error">*</span> -->
+            <div class="col-lg-6 col-sm-12">
+                <div class="form-group">
+                   <label>{{'root_cause_sub_category' | translate}}</label>
+                   <div class="clearfix d-flex">
+                    <div class="multiple-plain-ngselect w-100">
+                     <ng-select 
+                     [placeholder]="'root_cause_sub_category_placeholder' | translate" [multiple]="false"
+                     [(ngModel)] = "rootCauseSubCategory"
+                     [ngModelOptions]="{standalone: true}"
+                     bindLabel="title"
+                     (change) = "ngModalChange('root-cause-sub-category')"
+                     (search)="searchRootCauseSubCategory($event)"
+                     (open)="getRootCauseSubCategory()">
+                     <ng-option [value]="item.id" *ngFor="let item of RootCauseSubCategoryStore.allItems">
+                       {{item.title.length > 80 ? item.title.substring(0,80)+' ...' : item.title }}
+                    </ng-option>
+
+                 </ng-select>
+                 <p style="color: red;" *ngIf="formErrors"> {{formErrors.root_cause_sub_category_id}}</p>
+                    </div>
+                    <button class="btn multi-add-user ml-2" [disabled] = "!rootCauseCategory" (click)="openFormModalSub()" style="width: 42px;"><i class="fas fa-plus"></i></button>
+                </div>
+                </div>
+            </div> 
+            
+            <div class="col-sm-12">
+              <div class="form-group">
+                <label>{{'description' | translate}}<span class="form-error">*</span></label>
+                <textarea class="form-control" formControlName="description" rows="3" id="comment9" [placeholder]="'root_cause_description_placeholder' | translate"></textarea>
+             </div>
+             <p style="color: red;" *ngIf="formErrors"> {{formErrors.description}}</p>
+            </div>
+            
+            
+            
+            
+            <div class="col-sm-12">
+              <div class="d-block justify-content-left border-0 mt-3">
+                <button type="button" data-toggle="modal" data-target="#signal-lost" [disabled]="form.invalid || AppStore.loading" class="btn btn-primary mr-3 btn-active" (click)="saveOtherWitnessUserDetails()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save_next') }}</button>
+                <button type="button" data-toggle="modal" data-target="#signal-lost" [disabled]="form.invalid || AppStore.loading" class="btn btn-primary mr-3" (click)="saveOtherWitnessUserDetails(true);">{{  AppStore.loading  ? getButtonText('loading') : getButtonText('save_close') }}</button>
+                <button type="button" data-toggle="modal" data-target="#error-message" class="btn btn-primary mr-2"(click)="cancel()">{{  AppStore.loading  ? getButtonText('loading') : getButtonText('cancel') }}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+          </form>
+        </div>
+        <!-- Modal footer --> 
+      </div>
+    <!-- </div> -->
+
+  <!-- root-cause-analysis-popup End -->
+
+
+  <!-- Modal part -->
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+  <app-root-cause-categories-modal *ngIf="rootCauseCategoryObject.type" [source]="rootCauseCategoryObject">
+  </app-root-cause-categories-modal>
+</div>
+
+  <!-- Modal part -->
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #rootCauseCategoryformModal>
+  <app-root-cause-sub-categories-modal *ngIf="rootCauseSubCategoryObject.type" [source]="rootCauseSubCategoryObject">
+  </app-root-cause-sub-categories-modal>
+</div>

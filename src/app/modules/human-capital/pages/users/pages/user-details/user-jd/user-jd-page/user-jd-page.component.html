@@ -1,0 +1,340 @@
+<div class="modal modal-style-1 popup-full-width fade" id="user-jd-modal" style="z-index: 999999 !important;"
+  data-keyboard="false" data-backdrop="static" #jobModal>
+  <app-user-jd-modal></app-user-jd-modal>
+
+</div>
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal
+  *ngIf="AuthStore.getActivityPermission(200,'CREATE_USER_JD')" style="z-index: 99999 !important;">
+  <button type="button" class="close" (click)="closeFormModal()"><i
+      class="lni-close"></i><span>{{'esc'|translate}}</span></button>
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <!-- Modal Header -->
+      <div class="modal-header">
+
+        <h4 class="modal-title">{{'job_details'|translate}}</h4>
+
+      </div>
+      <!-- Modal body -->
+      <div class="modal-body form-body">
+        <p class="head-details">{{'jd_form_message' | translate}}</p>
+        <form [formGroup]="form" *mobxAutorun>
+
+          <div class="row">
+            <div class="col-sm-12">
+              <div class="form-group">
+                <label for="name">{{'job'|translate}}<sup>*</sup></label>
+                <div class="clearfix">
+                  <div class="multiple-plain-ngselect select-new-width">
+                    <ng-select [placeholder]="'select_job'|translate" [multiple]="false" searchable="true"
+                      formControlName="jd_id" (clear)="getJob()" (search)="searchJob($event)" (open)="getJob()">
+                      <ng-option [value]="type.id" *ngFor="let type of JobMasterStore.jobs"
+                        [attr.title]="type.title.length>50?type.title:''">
+                        {{type?.title?.length>50?type?.title?.substring(0,50)+' ...':type?.title}}
+                      </ng-option>
+                    </ng-select>
+                  </div>
+                  <button class="btn multi-add-user" (click)="openJobModal()"><i class="fas fa-plus"></i></button>
+                </div>
+                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.jd_id">
+                  {{formErrors.jd_id}}</p>
+              </div>
+
+
+              <div class="form-group">
+                <label for="name">{{'reporting_users'|translate}}<sup>*</sup></label>
+
+                <div class="clearfix">
+                  <div class="multiple-plain-ngselect">
+                    <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                      [placeholder]="'reporting_user'|translate" multiple="true" formControlName="reporting_user_ids"
+                      (clear)="getUsers()" (search)="searchUers($event)" (open)="getUsers()"
+                      [searchFn]="customSearchFn">
+                      <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                        <img class="ng-select-user-display" *ngIf="item.image_token" height="15" width="15"
+                          [attr.src]="createImagePreview('user-profile-picture',item.image_token)"
+                          onerror="this.src='/assets/images/user-demo2.png'" />
+                        <img class="ng-select-user-display" *ngIf="!item.image_token" height="15" width="15"
+                          [attr.src]="getDefaultImage('user-logo')"
+                          onerror="this.src='/assets/images/user-demo2.png'" />
+                        <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,' ') |
+                          titlecase}}</b><span aria-hidden="true" (click)="clear(item)" style="border:none;"
+                          class="ng-value-icon left">×</span>
+                      </ng-template>
+                      <ng-template ng-option-tmp let-item="item" let-index="index">
+                        <div class="user-post-department-pic">
+                          <img class="ng-select-user-display" *ngIf="item.image_token" height="25" width="25"
+                            [attr.src]="createImagePreview('user-profile-picture',item.image_token)"
+                            onerror="this.src='/assets/images/user-demo2.png'" />
+                          <img class="ng-select-user-display" *ngIf="!item.image_token" height="25" width="25"
+                            [attr.src]="getDefaultImage('user-logo')"
+                            onerror="this.src='/assets/images/user-demo2.png'" />
+                        </div>
+                        <div class="user-post-department-div">
+                          <b>{{getStringsFormatted([item.first_name,item.last_name],100,' ') | titlecase}}</b>
+                          <p class="user-post-department-multiple">{{getStringsFormatted([item.designation_title,'
+                            '+item.department],50,',')}}</p>
+                        </div>
+                      </ng-template>
+                    </ng-select>
+                  </div>
+                </div>
+                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.reporting_user_ids">
+                  {{formErrors.reporting_user_ids}}</p>
+              </div>
+              <div class="form-group">
+                <label for="name">{{'supervisor'|translate}}</label>
+
+                <div class="clearfix">
+                  <div class="multiple-plain-ngselect">
+                    <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                      [placeholder]="'select_supervisor'|translate" formControlName="supervisor_id" searchable="true"
+                      (search)="searchUers($event)" (clear)="getUsers()" (open)="getUsers()"
+                      [searchFn]="customSearchFn">
+                      <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                        <img class="ng-select-user-display" *ngIf="item.image_token" height="15" width="15"
+                          [attr.src]="createImagePreview('user-profile-picture',item.image_token)"
+                          onerror="this.src='/assets/images/user-demo2.png'" />
+                        <img class="ng-select-user-display" *ngIf="!item.image_token" height="15" width="15"
+                          [attr.src]="getDefaultImage('user-logo')"
+                          onerror="this.src='/assets/images/user-demo2.png'" />
+                        <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,' ') |
+                          titlecase}}</b><span aria-hidden="true" (click)="clear(item)" style="border:none;"
+                          class="ng-value-icon left">×</span>
+                      </ng-template>
+                      <ng-template ng-option-tmp let-item="item" let-index="index">
+                        <div class="user-post-department-pic">
+                          <img class="ng-select-user-display" *ngIf="item.image_token" height="25" width="25"
+                            [attr.src]="createImagePreview('user-profile-picture',item.image_token)"
+                            onerror="this.src='/assets/images/user-demo2.png'" />
+                          <img class="ng-select-user-display" *ngIf="!item.image_token" height="25" width="25"
+                            [attr.src]="getDefaultImage('user-logo')"
+                            onerror="this.src='/assets/images/user-demo2.png'" />
+                        </div>
+                        <div class="user-post-department-div">
+                          <b>{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b>
+                          <p class="user-post-department-multiple">{{getStringsFormatted([item.designation_title,'
+                            '+item.department],50,',')}}</p>
+                        </div>
+                      </ng-template>
+                    </ng-select>
+                  </div>
+                </div>
+                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.supervisor_id">
+                  {{formErrors.supervisor_id}}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-sm-12">
+              <div class="d-block justify-content-left border-0 mt-3">
+                <button type="submit" class="btn ordinary-btn mr-3 btn-active" (click)="save()"
+                  [disabled]="form.invalid || AppStore.loading">{{ AppStore.loading ? getButtonText('loading') :
+                  getButtonText('save') }}</button>
+                <button type="button" data-toggle="modal" data-target="#signal-lost" class="btn ordinary-btn mr-3"
+                  (click)="save(true)" [disabled]="form.invalid || AppStore.loading">{{ AppStore.loading ?
+                  getButtonText('loading') : getButtonText('save_close') }}</button>
+                <button type="button" data-toggle="modal" data-target="#error-message" class="btn ordinary-btn mr-2"
+                  (click)="closeFormModal()">{{ AppStore.loading ? getButtonText('loading') : getButtonText('cancel')
+                  }}</button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <!-- Modal footer -->
+    </div>
+  </div>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" data-backdrop="static" data-keyboard="false" #deletePopup>
+  <app-delete-popup [source]="deleteObject"></app-delete-popup>
+</div>
+
+<!------------------- Delete Confirmation Modal End --------------------------->
+<ng-container *mobxAutorun>
+  <div class="tab-pane" id="subsidiary"
+    *ngIf="UserJobStore.loaded && UserJobStore.userJobDetails.length>0 && AuthStore.getActivityPermission(200,'USER_JDS')">
+    <div class="row">
+      <div class="col-sm-12">
+        <!-- <div class="widget-body-light right-block user-box-adjut-screen" > -->
+        <!-- <div class="row"> -->
+        <!-- <div class="col-sm-12"> -->
+        <div class="panel-group panel-drop-sections panel-drop-white" id="jd" role="tablist"
+          aria-multiselectable="true">
+          <div class="panel panel-default"
+            *ngFor="let row of UserJobStore.userJobDetails | paginate: {currentPage:UserJobStore?.currentPage, itemsPerPage:UserJobStore?.itemsPerPage,totalItems:UserJobStore?.totalItems};let num = index">
+            <div class="pointer" [ngClass]="row?.is_accordion_active == true ? 'panel-heading active' : 'panel-heading'"
+              role="tab" id="headingOne">
+              <div class="panel-title">
+                <a role="button" data-toggle="collapse" aria-expanded="true" aria-controls="collapseOne"
+                  (click)="getUserJob(row.id,num)">
+                  <h5 class="width96pc mt-0" [attr.title]="row?.jd_title?.length>50?row?.jd_title:''">
+                    {{row?.jd_title?.length>50?row?.jd_title?.substring(0,15)+' ...':row?.jd_title}}
+                    <span class="drop-down-icone">
+                      <!-- {{row.jd_title? row.jd_title:row.title?row.title:row.jd.title}}  -->
+                      <i class="fas fa-chevron-down"></i> </span>
+                  </h5>
+                </a>
+              </div>
+            </div>
+            <div
+              [ngClass]="row?.is_accordion_active == true ? 'drop-detail-sec panel-collapse collapse show' : 'drop-detail-sec panel-collapse collapse'"
+              role="tabpanel" aria-labelledby="headingOne" *ngIf="UserJobStore?.individual_job_loaded">
+              <div class="panel-body edit-and-delete-main pb-2">
+                <div class="edit-option-show" style="margin: -17px 20px 0 0;">
+                  <a class="pointer" [attr.title]="'edit'|translate"
+                    (click)="editJob(UserJobStore?.individualJobDetails?.id,num)"
+                    *ngIf="AuthStore.getActivityPermission(200,'UPDATE_USER_JD')"><i class="fas fa-pen"></i></a>
+                  <a class="pointer" [attr.title]="'delete'|translate"
+                    (click)="deleteJob(UserJobStore?.individualJobDetails?.id,num)"
+                    *ngIf="AuthStore.getActivityPermission(200,'DELETE_USER_JD')"><i class="fas fa-trash"></i></a>
+                  <a class="pointer" [attr.title]="'activate'|translate"
+                    *ngIf="UserJobStore?.individualJobDetails?.status?.id!=AppStore.activeStatusId && AuthStore.getActivityPermission(200,'ACTIVATE_USER_JD')"
+                    (click)="activate(UserJobStore?.individualJobDetails.id,num)"><i class="fas fa-check"></i></a>
+                  <a [attr.title]="'deactivate'|translate" class="pointer"
+                    *ngIf="UserJobStore?.individualJobDetails?.status?.id==AppStore.activeStatusId && AuthStore.getActivityPermission(200,'DEACTIVATE_USER_JD')"
+                    (click)="deactivateJob(UserJobStore?.individualJobDetails.id,num)"><i class="fas fa-ban"></i></a>
+                </div>
+                <div class="row" (click)="hover=false"
+                  *ngIf="UserJobStore?.individualJobDetails?.jd?.description || UserJobStore?.individualJobDetails?.jd?.documents?.length>0">
+                  <div class="col-sm-12">
+
+                    <!-- <p style="white-space: pre-wrap;" *ngIf="UserJobStore?.individualJobDetails?.jd.description">
+                          {{UserJobStore?.individualJobDetails?.jd.description}}
+                        </p> -->
+                    <p class="text-editor-content bullet-point-list"
+                      [innerHTML]="UserJobStore?.individualJobDetails?.jd.description | safeHtml"></p>
+                    <h6 *ngIf="UserJobStore?.individualJobDetails?.jd?.documents?.length>0">{{'documents'|translate}}</h6>
+                    <div class="thumb-pics-bg clearfix thumb-pics-fix-text thump-pics-full">
+                      <div class="thumb-pics"
+                        *ngFor="let document of UserJobStore?.individualJobDetails?.jd?.documents">
+                        <div class="upload-pics upload-pics-small edit-option">
+                          <div class="browse-form-pic"
+                            [ngStyle]="{'background': 'url(' + createImagePreview('user-jobs',document.token) + '), url(' + getDefaultImage('no-preview') + ') no-repeat 0 0 / cover'}"
+                            (click)="viewDocument(document)">
+                          </div>
+                          <div class="browse-form-name clearfix">
+                            <div class="float-left">
+                              <h6 [attr.title]="document?.title?.length > 10 ? document?.title:''">
+                                {{document?.title?.length > 10 ? document?.title?.substring(0,10)+' ...': document?.title}}
+                              </h6>
+                              <span>{{document?.size/1048576 | number:'0.2-2'}}MB</span>
+                            </div>
+                            <div class="browse-logo">
+                              <img *ngIf="checkExtension(document.ext,'image') != -1" src="/assets/images/md-jpg.png">
+                              <img *ngIf="checkExtension(document.ext,'doc') != -1" src="/assets/images/md-doc.png">
+                              <img *ngIf="checkExtension(document.ext,'pdf') != -1" src="/assets/images/pdf-icone.png">
+                              <img *ngIf="checkExtension(document.ext,'excel') != -1" src="/assets/images/md-xl.png">
+                              <img *ngIf="checkExtension(document.ext,'video') != -1" src="/assets/images/md-video.png">
+                              <img *ngIf="checkExtension(document.ext,'audio') != -1" src="/assets/images/md-audio.png">
+                              <img *ngIf="checkExtension(document.ext,'ppt') != -1" src="/assets/images/md-ppt.png">
+
+                            </div>
+                          </div>
+                          <div class="edit-option-show-inner">
+                            <a [attr.title]="'download'|translate"
+                              (click)="downloadDocument(document.jd_id,document.title,document.id,document)"><i
+                                class="fas fa-download"></i></a>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="col-xl-2" *ngFor="let document of row.jd?.documents">
+                        <div class="upload-pics upload-pics-small edit-option">
+                          <div class="browse-form-pic"
+                            [ngStyle]="{'background': 'url(' + createImagePreview('user-jobs',document.token) + '), url(' + getDefaultImage('no-preview') + ') no-repeat 0 0 / cover'}"
+                            (click)="viewDocument(document)">
+                          </div>
+                          <div class="browse-form-name clearfix">
+                            <div class="float-left">
+                              <h6 [attr.title]="document.title.length > 10 ? document.title:''">
+                                {{document.title.length > 10 ? document.title.substring(0,10)+' ...': document.title}}
+                              </h6>
+                              <span>{{document.size/1048576 | number:'0.2-2'}}MB</span>
+                            </div>
+                            <div class="browse-logo">
+
+                              <img *ngIf="checkExtension(document.ext,'image') != -1" src="/assets/images/md-jpg.png">
+                              <img *ngIf="checkExtension(document.ext,'doc') != -1" src="/assets/images/md-doc.png">
+                              <img *ngIf="checkExtension(document.ext,'pdf') != -1" src="/assets/images/pdf-icone.png">
+                              <img *ngIf="checkExtension(document.ext,'excel') != -1" src="/assets/images/md-xl.png">
+                              <img *ngIf="checkExtension(document.ext,'video') != -1" src="/assets/images/md-video.png">
+                              <img *ngIf="checkExtension(document.ext,'audio') != -1" src="/assets/images/md-audio.png">
+                              <img *ngIf="checkExtension(document.ext,'ppt') != -1" src="/assets/images/md-ppt.png">
+
+                            </div>
+                          </div>
+                          <div class="edit-option-show-inner">
+                            <a class="pointer" [attr.title]="'download'|translate"><i class="fas fa-download"
+                                (click)="downloadDocument(document.jd_id,document.title,document.id,document)"></i></a>
+
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-sm-12">
+                    <h6>{{'reporting_to'|translate}}</h6>
+                  </div>
+
+                  <div class="col-sm-6 col-lg-6 col-xl-4 animation-pulse"
+                    *ngFor="let reporting of UserJobStore?.individualJobDetails?.reporting_users;let i=index">
+                    <div class="label-and-user-pic">
+                      <app-user-popup-box id="jd" [source]="getPopupDetails(reporting,row)"></app-user-popup-box>
+                    </div>
+                  </div>
+                
+                  <div class="col-sm-12" *ngIf="row.supervisor_id">
+                    <h6>{{'supervisor'|translate}}</h6>
+                  </div>
+
+                  <div class="col-sm-6 col-lg-6 col-xl-4 animation-pulse" *ngIf="row.supervisor_id">
+                    <div class="label-and-user-pic">
+                      <app-user-popup-box id="jd"
+                        [source]="getSupervisorPopupDetails(UserJobStore?.individualJobDetails?.supervisor,row)"></app-user-popup-box>
+                    </div>
+                  </div>
+                
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <!-- </div> -->
+        <!-- </div> -->
+        <div class="col-sm-12" *ngIf="UserJobStore?.userJobDetails?.length>UserJobStore?.itemsPerPage">
+          <ul class="pagination justify-content-center mt-3">
+            <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+              (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+          </ul>
+
+        </div>
+        <!-- </div> -->
+      </div>
+    </div>
+  </div>
+</ng-container>
+<ng-container *mobxAutorun>
+  <app-no-data *ngIf="UserJobStore?.loaded && UserJobStore?.userJobDetails?.length == 0"></app-no-data>
+</ng-container>
+<ng-container *ngIf="!UserJobStore?.loaded">
+  <app-user-jd-loader></app-user-jd-loader>
+</ng-container>
+
+<!-- preview component for image preview -->
+<div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup" data-keyboard="false"
+  data-backdrop="static" #filePreviewModal *mobxAutorun>
+  <button type="button" class="close" data-dismiss="modal" (click)="closePreviewModal($event)"><i
+      class="lni-close"></i><span>{{'esc'|translate}}</span></button>
+  <app-previewcomponent *ngIf="previewObject" [source]="previewObject" (close)="closePreviewModal($event)">
+  </app-previewcomponent>
+</div>
+<!-- preview modal end -->

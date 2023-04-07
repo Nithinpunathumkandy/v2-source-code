@@ -1,0 +1,86 @@
+<div class="widget bg-white">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item pointer" [routerLink]="['/masters/bcm']">
+                <a>{{'bcm' | translate}}</a>
+            </li>
+            <li class="breadcrumb-item active">{{'test_and_exercise_types' | translate}}</li>
+        </ol>
+    </nav>
+
+    <table class="table-master table"
+        *ngIf="TestAndExerciseTypesMasterStore?.loaded && TestAndExerciseTypesMasterStore.allItems.length > 0">
+        <tr>
+            <th style="width: 5%; text-align: center;">{{'sl' | translate}}</th>
+            <th (click)="sortTitle('test_and_exercise_types.title')"
+                class="border-top-0 issue-list-org-tab-three pointer" style="width: 30%;">
+                <span>{{'test_and_exercise_types' | translate}}</span>
+                <img _ngcontent-twv-c17="" *ngIf="TestAndExerciseTypesMasterStore.orderItem=='test_and_exercise_types.title'" class="sort-down-pics pl-2" [attr.src]="TestAndExerciseTypesMasterStore.orderBy=='desc' ? 
+                'assets/images/sort-up.png' : TestAndExerciseTypesMasterStore.orderBy=='asc' ? 
+                'assets/images/sort-down.png' : 'assets/images/sort-empty.png'">
+            </th>
+            <th style="width: 7%;">{{'status' | translate}}</th>
+        </tr>
+        <ng-container *mobxAutorun>
+            <tr class="edit-and-delete-main"
+                *ngFor="let row of TestAndExerciseTypesMasterStore?.allItems | paginate: {currentPage:TestAndExerciseTypesMasterStore?.currentPage, itemsPerPage:TestAndExerciseTypesMasterStore?.itemsPerPage,totalItems:TestAndExerciseTypesMasterStore?.totalItems}; let num = index">
+                <td style="text-align: center;">{{(TestAndExerciseTypesMasterStore?.currentPage - 1) *
+                    TestAndExerciseTypesMasterStore?.itemsPerPage + (num + 1)}}</td>
+                <td><a [ngStyle] = "{ 'pointer-events' : AuthStore.getActivityPermission(2800,'UPDATE_TEST_AND_EXERCISE_TYPE') ? '' : 'none'}" (click)=" getTestAndExerciseTypes(row.id)">{{row.title}}</a></td>
+                <td style="padding:0.75rem;">
+                    <div [attr.class]="'dot-div '+row.status_label">{{row.status}}</div>
+                    <div class="edit-option-show">
+                        <a *ngIf="AuthStore.getActivityPermission(2800,'UPDATE_TEST_AND_EXERCISE_TYPE')"
+                            (click)=" getTestAndExerciseTypes(row.id)" [attr.title]="'edit' | translate"><i
+                                class="fas fa-pen pointer"></i></a>
+                        <a *ngIf="AuthStore.getActivityPermission(2800,'DELETE_TEST_AND_EXERCISE_TYPE')"
+                            (click)="delete(row.id)" [attr.title]="'delete' | translate"><i class="fas fa-trash pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(2800,'ACTIVATE_TEST_AND_EXERCISE_TYPE')"
+                            (click)="activate(row.id)" [attr.title]="'activate' | translate"><i class="fas fa-check pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.activeStatusId && AuthStore.getActivityPermission(2800,'DEACTIVATE_TEST_AND_EXERCISE_TYPE')"
+                            (click)="deactivate(row.id)" [attr.title]="'deactivate' | translate"><i class="fas fa-ban pointer"></i></a>
+                    </div> 
+                </td>
+            </tr>
+        </ng-container>
+    </table>
+    <p class="float-right" *ngIf="TestAndExerciseTypesMasterStore?.loaded && TestAndExerciseTypesMasterStore.totalItems > 0"><b>{{'total_Items' | translate}}:{{TestAndExerciseTypesMasterStore?.totalItems}}</b></p>
+
+    <ng-container *mobxAutorun>
+        <div *ngIf="!TestAndExerciseTypesMasterStore.loaded">
+            <app-table-loader></app-table-loader>
+        </div>
+        <app-no-data
+            *ngIf="TestAndExerciseTypesMasterStore?.allItems?.length == 0 && TestAndExerciseTypesMasterStore.loaded == true">
+        </app-no-data>
+    </ng-container>
+
+    <div *ngIf="TestAndExerciseTypesMasterStore.totalItems>TestAndExerciseTypesMasterStore.itemsPerPage"
+        class="col-sm-12">
+        <ul class="pagination justify-content-center mt-3">
+            <div class="list">
+                <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+                    (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+            </div>
+        </ul>
+    </div>
+</div>
+
+<!-- Modal part start here-->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+    <app-test-and-exercise-types-modal *ngIf="testAndExerciseTypesObject.type"
+        [source]="testAndExerciseTypesObject">
+    </app-test-and-exercise-types-modal>
+</div>
+<!-- Modal part end here-->
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+<!------------------- Delete Confirmation Modal End --------------------------->
+
+<div class="modal modal-style-1 email-popup-new fade" data-backdrop="static" data-keyboard="false"
+    id="email-notification-popup" #mailConfirmationPopup>
+    <app-mail-send-popup [source]="mailConfirmationData"></app-mail-send-popup>
+</div> 

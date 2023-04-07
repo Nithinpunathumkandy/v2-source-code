@@ -1,0 +1,233 @@
+
+<button type="button" class="close" data-dismiss="modal" (click)="closeFormModal()"><i
+    class="lni-close"></i><span>{{'esc'|translate}}</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered">
+ <div class="modal-content">
+    <!-- Modal Header -->
+    <div class="modal-header">
+       <h4 class="modal-title">{{'maturity_model'|translate}}</h4>
+    </div>
+    <!-- Modal body -->
+    <div class="modal-body form-body" >
+      <form  [formGroup]="form" class="organization-multi-stup-form multi-stup-form-common"
+          >
+       <div class="row">
+         
+          <div class="col-sm-12">
+             <div class="form-group">
+                <label for="name">{{'title'|translate}}<span class="form-error">*</span></label>
+                <div class="plain-select input-add-report">
+                   <input type="text" class="form-control"  formControlName="title" [placeholder]="'title'|translate">
+                   <p style="color: red;" class="pt-1" *ngIf="formErrors && formErrors.title">
+                      {{formErrors.title}}
+                   </p>
+                </div>
+             </div>
+          </div>
+          <div class="col-sm-12">
+             <!-- <div class="form-group">
+                   <label for="name">Description</label>
+                   <textarea class="form-control " rows="3" id="comment" [(ngModel)]="description"
+                      placeholder="Description"></textarea>
+                      <p style="color: red;" class="pt-1" *ngIf="formErrors && formErrors.description">
+                         {{formErrors.description}}
+                      </p>
+                </div> -->
+             <div class="form-group">
+                <!-- <span style="float: right;"
+                   class="text-grey mb-0">{{form?.value.description != null ? getDescriptionLength() : 0}}
+                   {{'characters'|translate}}</span> -->
+                <label for="fdescription">{{'description' | translate}}</label>
+                <ckeditor id="description" formControlName="description" (change)="descriptionValueChange($event)" [editor]="Editor"></ckeditor>
+             </div>
+             <p style="color: red;" class="pt-1" *ngIf="formErrors && formErrors.description">
+                {{formErrors.description}}
+             </p>
+
+            
+          </div>
+       </div>
+       <div class="widg-padding-cmn-small pb-2 border-radius cmn-bdr mb-3" style="background: #f6f6f6;">
+      <div class="row sm-row">
+          <div class="col-lg-12 col-sm-12 sm-col">
+             <div class="form-group">
+                <label for="name">{{'options'|translate}}<span class="form-error">*</span></label>
+                <input type="text" class="form-control" [ngModelOptions]="{standalone: true}" [(ngModel)]="optionTitle" [placeholder]="'option_title'|translate">
+                <p style="color: red;" class="pt-1"
+                   *ngIf="formErrors && formErrors.business_assessment_framework_options">
+                   {{formErrors.business_assessment_framework_options}}
+                </p>
+             </div>
+          </div>
+          <div class="col-lg-12 col-sm-12 sm-col">
+            <div class="row sm-row">
+               <div class="col-sm-3 sm-col">
+                  <div class="form-group">
+                     <label for="name">{{'score_from'|translate}}<span class="form-error">*</span></label>
+                     <div class="plain-select input-add-report">
+                        <input  (keypress)="numberOnly($event)" [ngModelOptions]="{standalone: true}" [(ngModel)]="optionScoreFrom" type="text" class="form-control"  [placeholder]="'score_from'|translate">
+     
+                     </div>
+                     
+                  </div>
+               </div>
+               <div class="col-sm-3 sm-col">
+                  <div class="form-group">
+                     <label for="name">{{'score_to'|translate}}<span class="form-error">*</span></label>
+                     <div class="plain-select input-add-report">
+                        <input [ngModelOptions]="{standalone: true}" [(ngModel)]="optionScoreTo" (keypress)="numberOnly($event)" type="text" class="form-control" 
+                          [placeholder]="'score_to'|translate">
+     
+                     </div>
+                     
+                  </div>
+               </div>
+               <div class="col-sm-3 sm-col">
+                  <div class="form-group">
+                     <label for="name">{{'level'|translate}}</label>
+                     <div class="d-flex multiple-plain-ngselect">
+                        <ng-select class="w-100" [ngModelOptions]="{standalone: true}"
+                        [placeholder]="'select_level' | translate" [multiple]="false"
+                        [items]="levelsList" [(ngModel)]="level"
+                        >
+                        </ng-select>
+                       
+                     </div>
+                  </div>
+               </div>
+               <div class="col-sm-3 sm-col">
+                  <label for="name">{{'color'|translate}}</label>
+                  <div class=" d-flex justify-content-end align-items-center">
+                     <div class="costmz-color" [(colorPicker)]="color" [style.background]="color"> </div>
+                     <div class="form-group hexa-color mb-0">
+                         <input readonly class="form-control color-header-new text-10 text-black px-2" [value]="color">
+                     </div>
+                     <button type="button" [disabled]="!optionTitle || !optionScoreTo || !optionScoreFrom ||compareScores()" (click)="addOption()"
+                  class="btn multi-add-user ml-2" style="width: 44px;"><i class="fas fa-plus"></i></button>
+                 </div>
+                  
+               </div>
+            </div>
+
+
+             
+             
+               
+          </div>
+          <p style="color: red;" class="pt-1 pl-3" *ngIf="formErrors==null && optionScoreFrom>100">
+            {{'option_score_from_warning'|translate}}
+
+         </p>
+          <p style="color: red;" class="pt-1 pl-3" *ngIf="formErrors==null && optionScoreTo>100">
+            {{'option_score_to_warning'|translate}}
+
+         </p>
+         <p style="color: red;" class="pt-1 pl-3" *ngIf="existwaring">
+            {{'this_range_model_is_exist'|translate}}
+
+         </p>
+         <p style="color: red;" class="pt-1 pl-3" *ngIf="compareScores()">
+            {{'option_score_from_greater_to_warning'|translate}}
+
+         </p>
+          <!-- 
+          <p style="color: red;" class="pt-1 pl-3" *ngIf="formErrors==null && optionScoreTo>100">
+            {{'option_score_warning'|translate}}
+
+         </p> -->
+         </div>
+      </div>
+         
+         <div class="row">
+          <div class="col-sm-12" *ngIf="optionArray?.length>0">
+             <table class="table table-bordered ordinary-table table-hover issue-list-table-org mb-4">
+                <thead>
+                   <tr>
+                      <th class="border-top-0 issue-list-org-tab-one" width="5%">
+
+                         #
+                      </th>
+
+                      <th class="border-top-0 issue-list-org-tab-one" width="45%">
+                         {{'options'|translate}}
+                      </th>
+
+                      <th class="border-top-0 issue-list-org-tab-one text-center" width="20%">
+                         {{'score_from'|translate}}
+                      </th>
+
+                      <th class="border-top-0 issue-list-org-tab-one text-center" width="15%">
+                         {{'score_to'|translate}}
+                      </th>
+
+                      <th class="border-top-0 issue-list-org-tab-one text-center" width="15%">
+                        {{'level'|translate}}
+                     </th>
+
+                     <th class="border-top-0 issue-list-org-tab-one text-center" width="15%">
+                        {{'color'|translate}}
+                     </th>
+
+                   </tr>
+                </thead>
+                <tbody>
+
+
+                   <tr class="edit-and-delete-main" *ngFor="let option of optionArray;let op=index">
+                      <td>{{op+1}}</td>
+                      <td>{{option.title}}</td>
+                      <td class="text-center">{{option.score_from}}</td>
+                      <td class="text-center">{{option.score_to}}</td>
+                      <td class="text-center">{{option.level?option.level:'NA'}}</td>
+                      
+
+                      <td class="text-center">
+                         <div class="edit-option-show" style="margin:6px 0 0 0">
+                            <!-- <a [attr.title]="'view'|translate" (click)="viewDetails(row.employee_id,row.id)"><i
+                                    class="fas fa-eye"></i></a> -->
+
+                            <a [attr.title]="'delete'|translate" (click)="removeOption(op)"><i
+                                  class="fas fa-trash"></i></a>
+                         </div>
+                         <span *ngIf="!option.color_code">{{AppStore.noContentText}}</span>
+                         <div *ngIf="option.color_code"style="width:47px;border-radius: 2px;height: 15px;"  [style.backgroundColor]="option.color_code"></div>
+                      </td>
+
+                   </tr>
+
+
+
+                </tbody>
+
+             </table>
+             <p style="color: red;" class="pt-1" *ngIf="formErrors && formErrors.message">
+                {{formErrors.message}}
+
+             </p>
+
+
+
+          </div>
+       </div>
+       <div class="row">
+          <div class="col-sm-12">
+             <div class="d-block justify-content-left border-0 mt-3">
+                <button [disabled]="AppStore.loading || form.invalid || optionArray?.length==0" type="button" data-toggle="modal" data-target="#signal-lost" (click)="save()"
+                   class="btn btn-active">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save') }}</button>
+                <button [disabled]="AppStore.loading || form.invalid || optionArray?.length==0" type="button" data-toggle="modal" data-target="#signal-lost" (click)="save(true)"
+                   class="btn mr-3">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save_close') }}</button>
+                <button class="btn" type="button" (click)="closeFormModal()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('cancel') }}</button>
+             </div>
+          </div>
+       </div>
+       </form>
+       
+
+       <!-- Modal footer -->
+    </div>
+ </div>
+</div>
+
+
+ <!-- </div> -->
+ <!-- add-business-framework-popup End -->

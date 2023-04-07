@@ -1,0 +1,175 @@
+<button type="button" class="close" (click)="cancel()"><i class="lni-close"></i><span>esc</span></button>
+<div class="modal-dialog modal-xl modal-dialog-centered">
+   <div class="modal-content">
+      <!-- Modal Header -->
+      <div class="modal-header">
+         <h4 class="modal-title">{{'auditable_items' | translate}}</h4> 
+         <!-- <button type="button" class="close" data-dismiss="modal">&times;</button> -->
+
+      </div>
+      <!-- Modal body -->
+      <div class="modal-body form-body add-profie-org-pup">
+         <p class="head-details">The auditable item represents business processes, projects, compliance programs or risks which can be audited. You can create auditable items in the Audit Universe by making a request.</p>
+         <div class="row">
+            <div class="col-sm-12 col-lg-8">
+               <div class="form-group">
+                  <label for="name">{{'search' | translate}}</label>
+                  <form class="form-control issue-select-process-search bg-white search-popup-new" 
+                  autocomplete="off" [formGroup]="form"
+                  (submit) = "searchAuditableItem()"
+                  >
+                     <input type="text" [placeholder]="'search'|translate" name="search" class="search-process"   [(ngModel)] = "searchTerm" (ngModelChange) = "searchAuditableItem()"  [ngModelOptions]="{standalone: true}">
+                     <a class="search-clear-btn" style="width: 20px;" (click) = "clearSearchBar()" *ngIf = "searchTerm">X</a>
+                     <button type="submit" style="width: 40px;"><i class="fa fa-search"></i></button> 
+                  </form>
+               </div>
+            </div>
+         </div>
+         <div class="row">
+            <div class="col-sm-4 col-lg-4">
+               <div class="form-group">
+                  <label for="name">{{'auditable_item_type' | translate}}</label>
+                  <div class="clearfix">
+                      <div class="multiple-plain-ngselect ">
+                          <ng-select [placeholder]="'auditable_item_type'|translate" [multiple]="false"
+                              [(ngModel)]="auditable_item_type_id" 
+                              (change) = "sortAuditableItems()"
+                              (search)="searchAuditableItemType($event)"
+                              (open)="getAuditableItemType()">
+                              <ng-option [value]="type.id" *ngFor="let type of AuditItemTypeMasterStore.allItems">
+                                {{type.title.length > 80 ? type.title.substring(0,80)+' ...' : type.title}}
+                              </ng-option>
+                          </ng-select>
+      
+                      </div>
+                  </div>
+              </div>
+            </div>
+            <div class="col-sm-4 col-lg-4">
+               <div class="form-group">
+                  <label for="name">{{'risk_rating' | translate}}</label>
+                  <div class="clearfix">
+                      <div class="multiple-plain-ngselect ">
+                          <ng-select [placeholder]="'risk_rating'|translate" [multiple]="false"
+                              [(ngModel)]="riskRatingId" 
+                              (change) = "sortAuditableItems()"
+                              (open)="getRiskRating()">
+                              <ng-option [value]="risk.id" *ngFor="let risk of RiskRatingMasterStore.allItems">
+                                 <div [ngClass]="risk.id==1 ? 'dot-div red-dot': risk.id==2 ? 'dot-div orange-dot' : risk.id==3 ? 'dot-div yellow-dot' : 'dot-div green-dot'">
+                                    {{risk.title}}
+                                 </div>
+                              </ng-option>
+                          </ng-select>
+      
+                      </div>
+                  </div>
+              </div>
+            </div>
+            <div class="col-sm-4 col-lg-4">
+               <div class="form-group">
+                  <label for="name">{{'auditable_item_categories' | translate}}</label>
+                  <div class="clearfix">
+                      <div class="multiple-plain-ngselect ">
+                        <ng-select [placeholder]="'auditable_item_categories'|translate" [multiple]="false"
+                        [(ngModel)]="auditable_item_category_id"
+                        (search)="searchAuditableItemCategory($event)"
+                        (change) = "sortAuditableItems()"
+                        (open)="getAuditableItemCategory()">
+                        <ng-option [value]="audit.id"
+                            *ngFor="let audit of AuditItemCategoryMasterStore.allItems">
+                            {{audit.title.length > 80 ? audit.title.substring(0,80)+' ...' : audit.title}}
+                        </ng-option>
+                    </ng-select>
+      
+                      </div>
+                  </div>
+              </div>
+            </div>
+         </div>
+
+
+         <div class="audit-form-table w-100">
+            <table *ngIf="AuditFindingsStore.auditLoaded" class="table table-bordered ordinary-table audit-page-table mb-2 table-scroll">
+               <tr>
+                  <th class="border-top-0" width="6%">
+                     <label class="container2 float-left" style="margin-top: 2px; padding-left: 22px;">
+                        <input type="checkbox" [checked]="allAuditableItems" (change)="checkAll($event)">
+                        <span class="checkmark"></span>
+                     </label>
+                     #</th>
+                     <th class="border-top-0" width="8%">{{'ref_no' | translate}}</th>
+                  <th class="border-top-0" width="46%">{{'title' | translate}}</th>
+                  <th class="border-top-0" width="10%">{{'auditable_item_types' | translate}}</th>
+                  <th class="border-top-0" width="10%">{{'auditable_item_categories' | translate}}</th>
+                  <th class="border-top-0" width="10%">{{'risk_rating' | translate}}</th>
+                  
+               </tr>
+               
+              <ng-container  *ngFor="let row of AuditFindingsStore.auditableItems;let num=index ">
+               <tr >
+                  <td>
+                     <label class="container2 float-left" style="margin-top: 2px; padding-left: 22px;">
+                        <input type="checkbox" [id]="row.id" [name]="row.name" [checked] = "checkSelectedStatus(row.id)" (change) = "selectAuditableItemPresent($event,row, num)">
+                        <span class="checkmark"></span>
+                     </label>
+                     {{(AuditableItemMasterStore.currentPage - 1) * AuditableItemMasterStore.itemsPerPage + (num + 1)}}</td>
+                     <td>#{{row.reference_code}}</td>
+                  <td>{{row.title}}</td>
+                  <td>{{row.auditableItemType?.title}}</td>
+                  <td>{{row.auditableItemCategory ? row.auditableItemCategory.title : AppStore.noContentText}}</td>
+                  <ng-container *ngIf="row.risk_rating_type!=null">
+                     <td>
+                         <div *ngIf="row.risk_rating_type=='high'"
+                             class="dot-div orange-dot">{{row.risk_rating?.language[0]?.pivot?.title}} </div>
+                         <div *ngIf="row.risk_rating_type=='medium'"
+                             class="dot-div yellow-dot">{{row.risk_rating?.language[0]?.pivot?.title}} </div>
+                         <div *ngIf="row.risk_rating_type=='low'" class="dot-div green-dot">
+                             {{row.risk_rating?.language[0]?.pivot?.title}} </div>
+                         <div *ngIf="row.risk_rating_type=='very_high'"
+                             class="dot-div red-dot">{{row.risk_rating?.language[0]?.pivot?.title}} </div>
+                     </td>
+                 </ng-container>
+                 <td *ngIf="row.risk_rating_type==null">
+                     {{ AppStore.noContentText}}
+                 </td>
+
+                
+        
+                  <!-- <td>
+                     <div *ngIf=" row.status=='Inactive'" class="dot-div red-dot">{{ row.status}}</div>
+                     <div *ngIf=" row.status=='Active'" class="dot-div green-dot">{{ row.status }}</div>
+                   
+                  </td> -->
+               </tr>
+            </ng-container>
+            </table>
+
+            <app-no-data-list [source] = "auditableItemEmptyList" *ngIf = "AuditFindingsStore.auditableItems.length == 0 && AuditFindingsStore.auditLoaded == true"></app-no-data-list>
+
+
+            <!-- <div *ngIf="AuditableItemMasterStore.totalItems > AuditableItemMasterStore.itemsPerPage && AuditableItemMasterStore?.loaded"
+               class="col-sm-12">
+               <ul class="pagination justify-content-center mt-3">
+                   <div class="list">
+                       <pagination-controls (pageChange)="pageChange($event)" class="my-pagination">
+                       </pagination-controls>
+                   </div>
+               </ul>
+           </div> -->
+
+
+         </div>
+
+         <div class="d-block justify-content-left border-0 mt-4">
+            <button type="button" data-toggle="modal" data-target="#signal-lost"
+               class="btn btn-active"  [disabled]="AppStore.loading || auditableItemArray.length==0" (click)="save()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('add') }} </button> 
+            <button type="button" data-toggle="modal"  [disabled]="AppStore.loading || auditableItemArray.length==0" (click)="save(true)" data-target="#signal-lost" class="btn">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('add_close') }}</button>
+            <button type="button" data-toggle="modal" data-target="#error-message"
+               class="btn"  (click)="cancel()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('cancel') }}</button>
+         </div>
+
+
+      </div>
+      <!-- Modal footer -->
+   </div>
+</div>

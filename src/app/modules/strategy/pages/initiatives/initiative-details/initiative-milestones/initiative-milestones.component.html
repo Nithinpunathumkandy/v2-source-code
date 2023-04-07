@@ -1,0 +1,252 @@
+<app-initiative-milestone-loader *ngIf="!StrategyInitiativeStore.mileStonesLoaded"></app-initiative-milestone-loader>
+<ng-container *mobxAutorun>
+   <app-no-data [border]="false" *ngIf="StrategyInitiativeStore.milesstones.length == 0 && StrategyInitiativeStore.actionPlans.length == 0"></app-no-data>
+</ng-container>
+<div class="tab-pane" id="top-tab-left-two" *ngIf="StrategyInitiativeStore.milesstones.length > 0 || (StrategyInitiativeStore.is_mileStoneReq == 2 && StrategyInitiativeStore.actionPlans.length > 0)">
+   <div class="bg-white widg-padding-cmn" *mobxAutorun>
+      <div class="initiaves-dtl-boxes-main initiaves-dtl-boxes-last-plus" >
+         <div class="initiaves-dtl-boxes d-flex edit-and-delete-main" *ngFor="let milestone of StrategyInitiativeStore.milesstones;let num = index">
+            <div class="initiaves-dtl-boxes-left">
+               <div class="initiaves-dtl-boxes-nbr text-light-blue theme-border-color">{{num+1}}</div>
+            </div>
+            <div class="initiaves-dtl-boxes-right cmn-bdr widg-padding-cmn w-100">
+               <div class="edit-option-show" style="margin: 30px 0 0 0; ">
+                  <a (click)="editMileStone(milestone.id)"><i class="fas fa-pen"></i></a>
+                  <a><i class="far fa-times-circle" (click)="closeMilestone(milestone.id)" *ngIf="milestone.status_title != 'Closed'"></i></a>
+                  <a><i class="fas fa-check pointer" *ngIf="milestone.strategy_status_id == 2 && StrategyManagementSettingStore?.strategyManagementSettings?.is_activate" (click)="activateMilestone(milestone.id)"></i></a>
+                  <a><i class="fas fa-ban" *ngIf="milestone.strategy_status_id == 1 && StrategyManagementSettingStore?.strategyManagementSettings?.is_activate" (click)="passiveMilestone(milestone.id)"></i></a>
+                  <a (click)="delete(milestone.id)"><i class="fas fa-trash"></i></a>
+                  <a><i class="fas fa-history" (click)="openHistoryModal(milestone.id,'Milestone')"></i></a>
+              </div>
+               <h6>{{milestone.title}}</h6>
+               <hr class="mt-0 mb-3">
+               <div class="row">
+                  <div class="col-xl-10 col-lg-10 col-sm-12">
+                     <p style="white-space: pre-wrap;">{{milestone.description ? milestone.description : AppStore.noContentText}}</p>
+
+                     <div class="row">
+                        <div class="col-lg-4 col-sm-6">
+                           <h6>{{'start_date' | translate}}</h6>
+                           <p>{{milestone.start_date | date:
+                              OrganizationGeneralSettingsStore.organizationSettings?.date_format}} </p>
+                        </div>
+                        <div class="col-lg-4 col-sm-6">
+                           <h6>{{'end_date' | translate}}</h6>
+                           <p>{{milestone.end_date | date:
+                              OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</p>
+                        </div>
+                        <div class="col-lg-4 col-sm-6">
+                           <h6>{{'budget' | translate}}</h6>
+                           <p>{{OrganizationGeneralSettingsStore?.organizationSettings?.currency}} {{milestone.budget}} </p>
+                        </div>
+                     </div>
+
+
+                  </div>
+                  <div class="col-xl-2 col-lg-2 col-sm-12 budget-initives-sec">
+                     <div class="row align-items-center h-100">
+
+                        <div class="col-sm-12">
+                           <div [ngClass]="milestone.score && milestone.score > 50 ? 'progress-circle over50 p'+milestone.score : (milestone.score && milestone.score < 50 ? 'progress-circle p'+milestone.score : 'progress-circle p0')">
+                              <span>{{StrategyManagementSettingStore?.strategyManagementSettings?.is_weightage_fraction ? (milestone.score ? milestone.score : '0') : milestone.score? (milestone.score | number : '1.0-0') : '0'}} %</span>
+                              <div class="left-half-clipper">
+                                 <div class="first50-bar"></div>
+                                 <div class="value-bar"></div>
+                              </div>
+                           </div>
+                           <div class="budget-total-score-sec text-center mt-3">
+                              <!-- <h3>{{milestone.score ? milestone.score : '0' }}/<span>100</span></h3> -->
+                              <p class="mb-0">Completed</p>
+                           </div>
+                        </div>
+                     </div>
+
+                  </div>
+               </div>
+
+               <div class="row">
+                  <div class="col-sm-12">
+                     <h6>{{'action_plans' | translate}}
+                        <button type="button" (click)="openActionPlanModal(milestone.id)" class="btn btn-active btn-small ml-3">{{'add' | translate}}</button>
+                     </h6>
+                     
+                     <div class="audit-form-table w-100 not-fixed-table">
+                        <table class="table table-bordered ordinary-table audit-page-table mb-0 table-scroll" *ngIf="milestone.strategy_initiative_milestone_action_plans?.length > 0">
+                          <thead>
+                             <tr>
+                                <th class="border-top-0 text-center" width="2%">#</th>
+                                <th class="border-top-0" width="35%">{{'title' | translate}}</th>
+                                <th class="border-top-0" width="15%">{{'target' | translate}} </th>
+                                <th class="border-top-0" width="15%">{{'start_date' | translate}}</th>
+                                <th class="border-top-0" width="15%">{{'end_date' | translate}}</th>
+                                <th class="border-top-0" width="18%">{{'responsible_user' | translate}}</th>
+                             </tr>
+                          </thead>
+                          <tbody>
+                           <tr *ngFor="let plan of milestone.strategy_initiative_milestone_action_plans;let num = index">
+                              <td class="text-center">{{num+1}}</td>
+                              <td>{{plan.title}}</td>
+                              <td>{{plan.target ? plan.target : AppStore.noContentText}} {{plan.target ? plan?.target_unit?.title : ''}}</td>
+                              <td>{{plan.start_date | date:
+                                OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</td>
+                              <td>{{plan.end_date | date:
+                                OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</td>
+                              <td>
+                                 <!-- <div class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                                    <img *ngIf="plan.responsible_user?.image_token" height="30px" width="30px"[attr.src]="createImagePreview('user-profile-picture',plan.responsible_user?.image_token)" onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                    <img *ngIf="!plan.responsible_user?.image_token" height="30px" width="30px" [attr.src]="getDefaultImage('user-logo')"/>
+                                     
+                                    -->
+                                 <div class="user-multiple">
+                                    <ul class="arci-user-tab-dtl workflow-lst-pics-loop clearfix">
+                                       <li class="rounde-hov-bg" *ngFor="let user of responsibleOthers(plan.responsible_users)">
+                                           <a>
+                                             <app-user-popup-box [source]="getPopupDetails(user)" [showName] = "false"  [activateButtons] = "false"></app-user-popup-box>
+                                          </a> 
+                                       </li>
+                                       <li class="rounde-hov-bg" *ngIf="plan.responsible_users.length > 3">
+                                           <a><span class="more-users" data-toggle="modal" (click)="openResponsibleUsersModal(plan.responsible_users)">{{plan.responsible_users.length - 3 }}..</span></a>
+                                       </li>
+                                    </ul>
+                                 </div>
+                                 <!-- <div class="pointer">
+                                    <h6>{{plan.responsible_user.first_name ? plan.responsible_user.first_name : AppStore.noContentText }} {{plan.responsible_user.last_name ? plan.responsible_user.last_name : AppStore.noContentText }}</h6>
+                                    <span>{{plan.responsible_user ? plan.responsible_user.designation?.title : AppStore.noContentText }}</span>
+                                 </div> -->
+                                 <div class="edit-option-show" style="margin: 30px 0 0 0; " *ngIf="plan.strategy_initiative_action_plan_status_id != 4">
+                                    <a (click)="editActionPlan(plan,milestone.id)"><i class="fas fa-pen"></i></a>
+                                    <a><i class="far fa-times-circle" (click)="closeActionPlan(plan)" ></i></a>
+                                    <a><i class="fas fa-check pointer" *ngIf="plan.strategy_status_id == 2 && StrategyManagementSettingStore?.strategyManagementSettings?.is_activate" (click)="activateActionPlan(plan.id)"></i></a>
+                                    <a><i class="fas fa-ban" *ngIf="plan.strategy_status_id == 1 && StrategyManagementSettingStore?.strategyManagementSettings?.is_activate" (click)="passiveActionPlan(plan.id)"></i></a>
+                                    <a><i class="fas fa-history" (click)="openHistoryModal(plan.id,'Action Plan')"></i></a>
+                                </div>
+                              </td>
+                           </tr>
+                         
+                          </tbody>
+                       </table>
+                       <p *ngIf="milestone.strategy_initiative_milestone_action_plans?.length == 0">{{AppStore.noContentText}}</p>
+                     </div>
+
+                  </div>
+               </div>
+
+            </div>
+         </div>
+         <div class="initiaves-dtl-boxes d-flex edit-and-delete-main" *ngIf="StrategyInitiativeStore.is_mileStoneReq == 2 && StrategyInitiativeStore.actionPlans.length > 0" >
+            
+            <div class="radius-15 cmn-bdr widg-padding-cmn w-100">
+               <div class="row">
+                  <div class="col-xl-10 col-lg-10 col-sm-12">                  
+                  </div>             
+               </div>
+
+               <div class="row">
+                  <div class="col-sm-12">
+                     <div class="d-flex mb-2">
+                        <div class="w-100 mr-3">
+                           <h6 class="pt-2 mb-0">{{'action_plans' | translate}}</h6>
+                        </div>
+                        <!-- <button type="button" (click)="openActionPlanOrMileStone()" class="btn btn-small">Add</button> -->
+                     </div>
+                      
+                     <div class="audit-form-table w-100 not-fixed-table">
+                      <table *ngIf="StrategyInitiativeStore.is_mileStoneReq == 2 && StrategyInitiativeStore.actionPlans.length > 0" class="table table-bordered ordinary-table audit-page-table mb-0 table-scroll">
+                          <thead>
+                             <tr>
+                                <th class="border-top-0 text-center" width="4%">#</th>
+                                <th class="border-top-0" width="31%">{{'title' | translate}}</th>
+                                <th class="border-top-0" width="15%">{{'target' | translate}}</th>
+                                <th class="border-top-0" width="15%">{{'start_date' | translate}}</th>
+                                <th class="border-top-0" width="15%">{{'end_date' | translate}}</th>
+                                <th class="border-top-0" width="20%">{{'responsible_user' | translate}}</th>
+                             </tr>
+                          </thead>
+                          <tbody>
+                             <tr class="edit-and-delete-main" *ngFor="let plans of StrategyInitiativeStore.actionPlans;let num = index">
+                                <td class="text-center">{{num+1}}</td>
+                                <td>{{plans.title}}</td>
+                                <td>{{plans.target ? plans.target :AppStore.noContentText}} {{plans.target ? plans.target_unit_title : ''}}</td>
+                                <td>{{plans.start_date | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</td>
+                                <td>{{plans.start_date | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</td>
+                                <td>
+                                    <div *ngIf="plans.responsible_users.length == 1"  class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                                       <img *ngIf="plans.responsible_users[0]?.image_token ? plans.responsible_users[0]?.image_token : plans.responsible_user_id?.image_token " height="30px" width="30px"[attr.src]="createImagePreview('user-profile-picture',plans.responsible_users[0]?.image_token? plans.responsible_users[0]?.image_token : plans.responsible_user_id?.image_token)" onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                       <img *ngIf="!plans.responsible_users[0]?.image_token" height="30px" width="30px" [attr.src]="getDefaultImage('user-logo')"/>
+                                       
+                                       <div class="pointer">
+                                          <h6>{{plans.responsible_users[0].first_name ? plans.responsible_users[0].first_name : plans.responsible_user_id.first_name  }} {{plans.responsible_users[0].last_name ? plans.responsible_users[0].last_name : plans.responsible_user_id.last_name }}</h6>
+                                          <span>{{plans.responsible_users[0]?.designation_title ? plans.responsible_users[0]?.designation_title  : plans.responsible_users[0].designation?.title }}</span>
+                                       </div>
+                                    </div>
+                                    <div class="user-multiple" *ngIf="plans.responsible_users.length > 1">
+                                       <ul class="arci-user-tab-dtl workflow-lst-pics-loop clearfix">
+                                          <li class="rounde-hov-bg" *ngFor="let user of responsibleOthers(plans.responsible_users)">
+                                             <a>
+                                                <app-user-popup-box [source]="getPopupDetails(user)" [showName] = "false" [activateButtons] = "false"></app-user-popup-box>
+                                             </a> 
+                                          </li>
+                                    
+                                          <li class="rounde-hov-bg" *ngIf="plans.responsible_users.length > 3">
+                                             <a><span class="more-users" data-toggle="modal" (click)="openResponsibleUsersModal(plans.responsible_users)">..{{plans.responsible_users.length - 3}}</span></a>
+                                          </li>
+                                       </ul>
+                                    </div>
+                                    <!-- <div class="edit-option-show" style="margin: 30px 0 0 0; ">
+                                       <a (click)="editActionPlan(plans)" ><i class="fas fa-pen"></i></a>
+                                       <a (click)="deletePlan(plans,num)" ><i class="fas fa-trash"></i></a>
+                                    </div> -->
+                                    <div class="edit-option-show" style="margin: 30px 0 0 0; ">
+                                       <a (click)="editActionPlan(plans)"><i class="fas fa-pen"></i></a>
+                                       <a><i class="far fa-times-circle" (click)="closeActionPlan(plans)" *ngIf="plans.strategy_initiative_action_id != 4"></i></a>
+                                       <a><i class="fas fa-check pointer" *ngIf="plans.strategy_status_id == 2 && StrategyManagementSettingStore?.strategyManagementSettings?.is_activate" (click)="activateActionPlan(plans.id)"></i></a>
+                                       <a><i class="fas fa-ban" *ngIf="plans.strategy_status_id == 1 && StrategyManagementSettingStore?.strategyManagementSettings?.is_activate" (click)="passiveActionPlan(plans.id)"></i></a>
+                                       <a><i class="fas fa-history" (click)="openHistoryModal(plans.id,'Action Plan')"></i></a>
+                                    </div>
+                                 </td>
+                             </tr>
+                          </tbody>
+                       </table>
+                     </div>
+
+                  </div>
+               </div>
+
+            </div>
+         </div>
+
+      </div>
+      <div data-toggle="modal" *ngIf="StrategyInitiativeStore.is_mileStoneReq  == 1" (click)="openMileStoneModal()" class="initiaves-milestone-add-btn theme-border-color bg-light-blue pointer m-0"><i class="fas fa-plus"></i></div>
+   </div>
+
+ </div>
+<!-- mile stone add -->
+ <div class="modal modal-style-1 popup-full-width fade" id="add-milestone-popup" data-keyboard="false"
+data-backdrop="static" #milestoneModal>
+   <app-new-milestone [source] = "milestoneObject" *ngIf = "milestoneObject.type"></app-new-milestone>
+
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="add-milestone-popup" data-keyboard="false"
+data-backdrop="static" #otherResponsibleUsers>
+   <app-other-responsible-users-modal [source] = "otherResponsibleUsersObject" *ngIf = "otherResponsibleUsersObject.type"></app-other-responsible-users-modal>
+
+</div>
+
+     <!------------------- Delete Confirmation Modal Start --------------------------->
+
+     <div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+      <app-delete-popup [source]="popupObject"></app-delete-popup>
+    </div>
+
+<!----------------------- History ----------------------->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #historyPopup>
+   <app-initiative-activity-history-popup *ngIf="historyObject.type" [source]="historyObject">
+   </app-initiative-activity-history-popup>
+</div>
+
+<!-- Action Plan -->
+<div class="modal modal-style-1 popup-full-width fade" id="add-actionplan-popup" data-keyboard="false"
+   data-backdrop="static" #actionPlanModal>
+   <app-add-action-plan [source]="actionPlanObject" *ngIf="actionPlanObject.type"></app-add-action-plan>
+</div>

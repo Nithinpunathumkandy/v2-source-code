@@ -1,0 +1,118 @@
+<div #plainDev></div>
+<div class="bg-white">
+    <nav class="edit-bar" data-toggle="affix" #navBar>
+      <div class="module-name-block module-name-block-space float-left">
+        <a class="dropdown module-title">{{'maturity_model'|translate}}</a>
+      </div>   
+        <app-sub-menu>-</app-sub-menu>
+    </nav>
+  </div>
+  <main class="mt-3 acl-page" *mobxAutorun>
+    <div class="container-fluid widget" *ngIf="MaturityModalStore.loaded && MaturityModalStore.maturityModalDetails.length>0">
+       <div class="audit-program-box audit-page-table-main">
+          <div class="row">
+             <div class="col-sm-12">
+                <div class="full-width-table">
+                <table *ngIf="AuthStore.getActivityPermission(1900,'MATURITY_MODEL_LIST')" class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                   <thead>
+                      <tr>
+                         <th class="border-top-0" width="2%">#</th>
+                         <th class="border-top-0 pointer" width="10%" (click) = "setMaturityModalSort('maturity_modal.reference_code')">{{'reference_code'|translate}}
+                            <img *ngIf = "MaturityModalStore.orderItem == 'maturity_modal.reference_code'"
+                            [attr.src]="MaturityModalStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" class="sort-down-pics">
+                         </th>
+                         <th class="border-top-0 pointer" width="58%" (click) = "setMaturityModalSort('maturity_modal.title')">{{'title'|translate}}
+                            <img *ngIf = "MaturityModalStore.orderItem == 'maturity_modal.title'"
+                            [attr.src]="MaturityModalStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" class="sort-down-pics">
+                         </th>
+                         <th class="border-top-0 pointer" width="20%" (click) = "setMaturityModalSort('created_user.first_name')">{{'created_by'|translate}}
+                            <img *ngIf = "MaturityModalStore.orderItem == 'created_user.first_name'"
+                            [attr.src]="MaturityModalStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" class="sort-down-pics">
+                         </th>
+                         <th class="border-top-0 pointer text-center" width="10%" >{{'status'|translate}}
+                           
+                         </th>
+                      </tr>
+                   </thead>
+                   <tbody>
+                      <tr  (click)="gotoDetails(row.id)" class="edit-and-delete-main pointer"
+                         *ngFor="let row of MaturityModalStore.maturityModalDetails| paginate: {currentPage:MaturityModalStore?.currentPage, itemsPerPage:MaturityModalStore?.itemsPerPage,totalItems:MaturityModalStore?.totalItems};let num = index">
+                         <td >{{(MaturityModalStore?.currentPage - 1) * MaturityModalStore?.itemsPerPage + (num + 1)}}</td>
+                         <td >#{{row.reference_code}}</td>
+                         <td >{{row.title}}</td>
+                         <td class="pointer">
+                         
+                            <!-- <app-user-popup-box [source]="getPopupDetails(framework)"></app-user-popup-box> -->
+                            <div class="d-flex flex-row user-list-sm user-box-smol-round rounde-hov-bg">
+                               <img data-toggle="modal"  [attr.src]="row.created_by_image_token?createImageUrl('user-profile-picture',row.created_by_image_token):getDefaultImage('user-logo')" width="30px" height="30px" class="rounded-circle rounde-hov details-show-popup">
+                           
+                           <div>
+                               <h6>{{row.created_by_first_name}} {{row.created_by_last_name}}</h6>
+                               <span>{{row.created_by_designation}}</span>
+                           </div>
+                       </div>
+                      </td>
+                         <td class="text-center">
+                            <div class="pointer" (click)="gotoDetails(row.id)" [attr.class]="'dot-div '+row.status_label">{{row.status}}</div>
+                            <div class="edit-option-show" style="margin: 36px 15px 0 0;">
+                               <!-- edit-and-delete starts -->
+                               <a *ngIf="AuthStore.getActivityPermission(1900,'UPDATE_MATURITY_MODEL')" 
+                               [attr.title]="'edit'|translate" (click)="editMaturityModal(row.id,$event)"><i class="fas fa-pen"></i></a>
+                               <a *ngIf="AuthStore.getActivityPermission(1900,'DELETE_MATURITY_MODEL')" 
+                               [attr.title]="'delete'|translate" (click)="deleteMaturityModal(row.id,$event)"><i class="fas fa-trash"></i></a>
+                               <a class="pointer" [attr.title]="'activate'|translate"
+                              *ngIf="row.status_id!=AppStore.activeStatusId && AuthStore.getActivityPermission(1900,'ACTIVATE_MATURITY_MODEL')"
+                              (click)="activate(row.id,$event)"><i class="fas fa-check"></i></a>
+                            <a [attr.title]="'deactivate'" class="pointer"
+                              *ngIf="row.status_id==AppStore.activeStatusId && AuthStore.getActivityPermission(1900,'DEACTIVATE_MATURITY_MODEL')"
+                              (click)="deactivate(row.id,$event)"><i class="fas fa-ban"></i></a>
+                              
+                            </div><!-- edit-and-delete end -->
+                         </td>
+                      </tr>
+ 
+                   </tbody>
+                </table>
+             </div>
+                <p class="float-right bold mb-0" *ngIf="MaturityModalStore.loaded && MaturityModalStore.maturityModalDetails.length > 0">{{'total_Items' | translate}}:{{MaturityModalStore?.totalItems}}</p>
+             </div>
+             <div class="col-sm-12" *ngIf="MaturityModalStore?.totalItems>MaturityModalStore?.itemsPerPage">
+                <ul class="pagination justify-content-center mt-3">
+                   <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate" (pageChange)="pageChange($event)" class="my-pagination">
+                   </pagination-controls>
+                </ul>
+ 
+             </div>
+          </div>
+       </div>
+ 
+ 
+ 
+    </div>
+ 
+    <ng-container *mobxAutorun>
+       <app-no-data [border]="false" *ngIf="MaturityModalStore.loaded && MaturityModalStore.maturityModalDetails.length==0"></app-no-data>
+     </ng-container>
+ 
+     <ng-container *mobxAutorun>
+       <div *ngIf="!MaturityModalStore.loaded">
+           <app-framework-loader></app-framework-loader>
+       </div>
+   </ng-container>
+ </main>
+
+
+<!----------------- Delete Confirmation Modal Start --------------------------->
+
+ <div class="modal modal-style-1 fade" id="delete-popup" #deletePopup data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="deleteObject"></app-delete-popup>
+</div>
+
+<div class="modal modal-style-1 fade popup-full-width" id="add-business-framework-popup" data-keyboard="false"
+   data-backdrop="static" #formModal>
+  
+   <app-add-maturity-modal *ngIf="maturityModalObject.type" [source]="maturityModalObject">
+
+   </app-add-maturity-modal>
+
+   </div>

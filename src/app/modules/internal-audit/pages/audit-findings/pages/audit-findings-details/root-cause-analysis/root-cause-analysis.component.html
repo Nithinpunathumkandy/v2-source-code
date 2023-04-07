@@ -1,0 +1,119 @@
+
+    <div class="container-fluid">
+    <div class="row" *mobxAutorun>
+    <div class="col-md-12">
+       <div class="widget"  *ngIf="RCAStore.allItems.length>0">
+          <!-- <div class="processes-issue clearfix mb-0" >
+             <h5><img src="/assets/images/issue-processes.png">{{'start_rca' | translate}}</h5> 
+             <a  data-toggle="modal" data-target="#findings-start-popup" class="btn" (click)="addRCA()">{{'start_label' | translate}}</a>
+            
+           </div>  -->
+           <div class="stup-root-cause-main rca-tab-stup-root-cause-main  p-0" >
+          <div class="stup-root-cause pb-3 line-top-remove edit-and-delete-main" [ngClass]="setLineClass(rca)"  *ngFor="let rca of RCAStore.allItems"><!-- one starts -->
+            <div class="edit-option-show" style="margin: 25px -15px 0 0;" wfd-id="222"><!-- edit-and-delete starts -->
+               <a *ngIf = "AuthStore.getActivityPermission(1000,'UPDATE_FINDING_ROOT_CAUSE_ANALYSIS')" title="Edit" (click)="editRCA(rca.id)"><i class="fas fa-pen"></i></a>
+                <a title="Delete" (click)="delete(rca.id)" *ngIf="lastItem==rca.why && AuthStore.getActivityPermission(1000,'DELETE_FINDING_ROOT_CAUSE_ANALYSIS')"><i class="fas fa-trash"></i></a> 
+             </div>
+            <div class="clearfix">
+                <div class="round-question-bg">
+                   <div class="round-question">
+                      <h2 class="pulse-effect">?</h2>
+                      <h5>{{rca.why}}</h5>
+                   </div>
+                </div>
+                <div class="bg-white round-question-details widg-padding-cmn">
+                  <p class="mb-3">{{rca.description}}</p>
+                  <div class="row">
+                     <div class="col-lg-4 col-sm-6">
+                        <h6>{{'root_cause_category' | translate}}</h6>
+                        <p>{{rca.root_cause_category}}</p>
+                     </div>
+
+                     <div class="col-lg-4 col-sm-6">
+                        <h6>{{'root_cause_sub_category' | translate}}</h6>
+                        <p>{{rca.root_cause_sub_category}}</p>
+                     </div>
+                  </div> 
+                   <div class="created-info-sec created-info-sec-drop">
+                      <hr class="mb-2">
+                           <img *ngIf = "rca.created_by_image_token" [attr.src]="createImagePreview('user-profile-picture',rca.created_by_image_token)"
+                                 width="30px" height="30px" class="rounded-circle"
+                                 onerror = "this.src='/assets/images/user-demo2.png'">
+                                 <img *ngIf = "!rca.created_by_image_token" 
+                                 [attr.src]="getDefaultImage('user-logo')" 
+                                 width="30px" height="30px" 
+                                 class="rounded-circle"
+                                 onerror = "this.src='/assets/images/user-demo2.png'">
+                          <div>
+                            <h6>{{rca.created_by_first_name}}&nbsp;
+                               {{rca.created_by_last_name}}</h6>
+                            <span>
+                             {{rca.created_by_designation}}
+                                  | Created on
+                                  {{getTimezoneFormatted(rca.created_at) | date: OrganizationGeneralSettingsStore.organizationSettings?.date_time_format}}</span>
+
+                          </div>
+                          
+                        
+                    </div>
+                </div>
+             </div>
+             
+           </div>
+           <div class="stup-root-cause line-remove" *ngIf="RCAStore.allItems[RCAStore.allItems.length-1] && RCAStore.allItems.length<5">
+            <div class="clearfix">
+               <div class="round-question-details bg-main pl-0">
+                  <button *ngIf = "AuthStore.getActivityPermission(1000,'CREATE_FINDING_ROOT_CAUSE_ANALYSIS')" type="button" (click)="addRCA()" class="btn btn-small mr-0">Start</button>
+               </div>
+            </div>
+          </div>
+           <!-- <div class="start-btn-rca pt-4" style="padding-left:5px;" wfd-id="530" *ngIf="RCAStore.allItems[RCAStore.allItems.length-1] && RCAStore.allItems.length<5">
+            <button type="button" class="btn btn-small mr-0 rca-limit-btn" wfd-id="520" *ngIf = "AuthStore.getActivityPermission(1000,'CREATE_FINDING_ROOT_CAUSE_ANALYSIS')" (click)="addRCA()">{{'why' | translate}} {{RCAStore.allItems.length+1}}</button>
+         </div> -->
+
+         <div class="pt-4" wfd-id="530" *ngIf="RCAStore.allItems[RCAStore.allItems.length-1] && RCAStore.allItems.length>=5">
+            <span  class="blinking rca-msg-btn rca-limit-btn" > 
+               <b>{{'entry_reached_max' | translate}}!!!</b></span> 
+         </div>
+
+        </div>
+
+        <div *ngIf = "RCAStore.totalItems == 0 && RCAStore.loaded == true" class="mt-3"> 
+         
+         </div>
+
+       <div *ngIf="RCAStore.totalItems > RCAStore.itemsPerPage" class="col-sm-12">
+         <ul class="pagination justify-content-center mt-3">
+           <div class="list">
+             <pagination-controls (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+           </div>
+         </ul>
+       </div>
+       </div>
+       <app-no-data [border]="false"  *ngIf = "RCAStore.totalItems == 0 && RCAStore.loaded == true"></app-no-data>
+    </div>
+ </div>
+
+</div>
+
+<ng-container *mobxAutorun>
+   <div *ngIf="!RCAStore.loaded">
+       <app-audit-findings-details-rca></app-audit-findings-details-rca>
+   </div>
+</ng-container>
+<!-- calling add RCA modal -->
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #addRCAformModal>
+   <app-rca-add-modal *ngIf="rcaAddObject.type" [source]="rcaAddObject">
+
+   </app-rca-add-modal>
+   
+</div>
+
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+   <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+

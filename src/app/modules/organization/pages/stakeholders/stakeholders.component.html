@@ -1,0 +1,105 @@
+<!-- <p>stakeholders works!</p> -->
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navBar>
+   <app-breadcrumb-menu></app-breadcrumb-menu>
+   <div class="module-name-block module-name-block-space float-left" style="pointer-events: none;">
+    <a class="dropdown module-title">{{'stakeholders'|translate}}</a>
+   </div>
+   <app-sub-menu></app-sub-menu>
+   <!-- <app-sub-menu-drop-down></app-sub-menu-drop-down> -->
+   <!-- <div class="dropdown edit-dropdown d-lg-none">
+      <a class="btn btn-primary float-left three-dots-dropdown dropdown-toggle" data-toggle="dropdown"><i
+          class="fas fa-ellipsis-v"></i></a>
+      <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+        <a class="dropdown-item" data-toggle="pill" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" [routerLink]="['/organization/stakeholders']">{{'stakeholders' | translate}}</a>
+      </div>
+    </div>
+    <ul class="nav nav-pills float-left  d-none d-lg-block" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link" data-toggle="pill" routerLinkActive = "active" [routerLinkActiveOptions]="{exact: true}" [routerLink]="['/organization/stakeholders']">{{'stakeholders' | translate}}</a>
+      </li>
+    </ul> -->
+</nav>
+<main class="mt-3 acl-page">
+
+    <div class="container-fluid widget">
+      <app-filter-menu></app-filter-menu>
+      <app-five-column-loader *ngIf = "!StakeholdersStore.loaded"></app-five-column-loader>
+      <div class="audit-program-box audit-page-table-main" *ngIf = "StakeholdersStore.loaded && AuthStore.getActivityPermission(100,'STAKEHOLDER_LIST')">
+        <div class="row">
+           <div class="col-sm-12" *mobxAutorun>
+             <div class="full-width-table">
+              <table class="table-bordered ordinary-table table-hover table mb-1">
+              <!-- class="table table-bordered ordinary-table audit-page-table mb-4 table-scroll" -->
+                 <thead>
+                    <tr *ngIf = "StakeholdersStore.stakeholders.length > 0 && StakeholdersStore.loaded">
+                       <th class="border-top-0" style = "width:2%">{{'sl' | translate}}</th>
+                       <th class="border-top-0 pointer" style = "width:12%" (click)="sortTitle('stakeholders.reference_code')">{{'reference_code' | translate}} <img _ngcontent-twv-c17="" *ngIf = "StakeholdersStore.orderItem == 'stakeholders.reference_code'" class="sort-down-pics pl-2" 
+                        [attr.src]="StakeholdersStore.orderBy=='desc' ? 
+                        'assets/images/sort-up.png' : StakeholdersStore.orderBy=='asc' ? 
+                        'assets/images/sort-down.png' : 'assets/images/sort-empty.png'"></th>
+                       <th class="border-top-0 pointer" style = "width:64%" (click)="sortTitle('stakeholders.title')">
+                          {{'stakeholder_title' | translate}}<img _ngcontent-twv-c17="" *ngIf = "StakeholdersStore.orderItem == 'stakeholders.title'" class="sort-down-pics pl-2" 
+                          [attr.src]="StakeholdersStore.orderBy=='desc' ? 
+                          'assets/images/sort-up.png' : StakeholdersStore.orderBy=='asc' ? 
+                          'assets/images/sort-down.png' : 'assets/images/sort-empty.png'">
+                        </th>
+                        <th class="border-top-0" style = "width:12%">{{'stakeholder_types' | translate}}</th>
+                       <th class="border-top-0" style = "width:10%; text-align: center;">{{'status' | translate}}</th>
+                    </tr>
+                 </thead>
+                 <tbody>
+                  <ng-container>
+                    <tr *ngFor = "let stakeholders of StakeholdersStore.stakeholders| paginate: {currentPage:StakeholdersStore?.currentPage, itemsPerPage:StakeholdersStore?.itemsPerPage,totalItems:StakeholdersStore?.totalItems};let num=index" [ngClass]="AuthStore.getActivityPermission(100,'STAKEHOLDER_DETAILS') ? 'pointer edit-and-delete-main' : 'edit-and-delete-main'" (click) = "AuthStore.getActivityPermission(100,'STAKEHOLDER_DETAILS') ? gotoStakeholderDetails(stakeholders.id) : ''">
+                       <td style="text-align: center;">{{(StakeholdersStore?.currentPage - 1) * StakeholdersStore?.itemsPerPage + (num + 1)}}</td>
+                       <td>#{{stakeholders.reference_code}}</td>
+                       <td>{{stakeholders.title}}</td>
+                       <td>{{stakeholders.stakeholder_type}}</td>
+                       <td style="text-align: center;">
+                           <div [attr.class]="'dot-div '+stakeholders.status_label">{{stakeholders.status}}</div>
+                           <div class="edit-option-show">
+                                <a *ngIf = "AuthStore.getActivityPermission(100,'UPDATE_STAKEHOLDER')" (click) = "editStakeholder(stakeholders.id)" [attr.title]="'edit' | translate"><i class="fas fa-pen pointer"></i></a>
+                                <a *ngIf = "AuthStore.getActivityPermission(100,'DELETE_STAKEHOLDER')" (click) = "deleteStakeholderConfirm(stakeholders.id)" [attr.title]="'delete' | translate"><i class="fas fa-trash pointer"></i></a>
+                                <a *ngIf="AuthStore.getActivityPermission(100,'ACTIVATE_STAKEHOLDER') && stakeholders.status_id == AppStore.inActiveStatusId" (click)="activateStakeholderConfirm(stakeholders.id)" [attr.title]="'activate' | translate"><i class="fas fa-check pointer"></i></a>
+                                <a *ngIf="AuthStore.getActivityPermission(100,'DEACTIVATE_STAKEHOLDER') && stakeholders.status_id == AppStore.activeStatusId" (click)="deactivateStakeholderConfirm(stakeholders.id)" [attr.title]="'deactivate' | translate"><i class="fas fa-ban pointer"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                  </ng-container> 
+                 </tbody>
+              </table>
+            </div>
+            <p class="float-right bold mb-0" *ngIf="StakeholdersStore.loaded && StakeholdersStore.stakeholders.length > 0">{{'total_Items' | translate}}:{{StakeholdersStore?.totalItems}}</p>
+              <!-- <div *ngIf = "StakeholdersStore.stakeholders.length == 0 && StakeholdersStore.loaded" class="no-policy-demo-text bg-white d-flex align-items-center w-100 mt-2" style="height: 200px">
+                <div class="no-policy-demo">
+                   <div class="no-file-icon">
+                     <i class="far fa-file"></i>
+                   </div>
+                   <h6 class="bold mb-0">No Stakeholder has been added</h6>
+                </div>
+             </div> -->
+             <ng-container *mobxAutorun>
+              <app-no-data *ngIf = "StakeholdersStore.stakeholders.length == 0 && StakeholdersStore.loaded"></app-no-data>
+            </ng-container>
+           </div>
+           <div *ngIf="StakeholdersStore.totalItems > StakeholdersStore.itemsPerPage" class="col-sm-12">
+                <ul class="pagination justify-content-center mt-3">
+                    <div class="list">
+                        <pagination-controls [previousLabel]="'previous' | translate"  [nextLabel]="'next' | translate" (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls> 
+                    </div>
+                </ul>
+            </div>
+        </div>
+      </div>
+    </div>
+  </main>
+<!-- Modal part -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+    <app-stakeholder-modal *ngIf="stakeHolderObject.type" [source]="stakeHolderObject"></app-stakeholder-modal>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>

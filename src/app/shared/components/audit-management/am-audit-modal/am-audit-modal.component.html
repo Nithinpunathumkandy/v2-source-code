@@ -1,0 +1,266 @@
+<!--  new-audit-popup Start -->
+
+<button type="button" class="close" (click)="closeFormModal()"><i class="lni-close"></i><span>esc</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered" *mobxAutorun>
+   <div class="modal-content">
+      <!-- Modal Header -->
+      <div class="modal-header">
+         <h4 class="modal-title">{{'am_start_audit'|translate}}</h4>
+       </div>
+      <!-- Modal body -->
+      <div class="modal-body form-body">
+         <p class="head-details">{{'am_audit_modal_description'|translate}}</p>
+         <form [formGroup]="form">
+            <div class="row">
+               <div class="col-sm-12" *ngIf="this.auditSource.type != 'Edit'">
+                  <div class="form-group">
+                     <label>{{'am_choose_audit_plan'|translate}}</label>
+                  
+                        <div class="clearfix">
+                           <div class="multiple-plain-ngselect">
+                              <ng-select [placeholder]="'am_select_annual_plan'|translate" [multiple]="false"
+                                 [closeOnSelect]="true" searchable="true" formControlName="am_audit_plan_id"
+                                 (search)="searchAuditPlan($event)" (clear)="getAuditPlan()"
+                                 (open)="getAuditPlan()" autocomplete="new-password">
+                                 <ng-option [value]="type.id"
+                                    *ngFor="let type of AmAuditPlansStore.auditPlanDetails">
+                                   #{{type.reference_code}} - {{type.am_audit_category}} ({{type.start_date|date:OrganizationGeneralSettingsStore.organizationSettings?.date_format}} - {{type.end_date|date:OrganizationGeneralSettingsStore.organizationSettings?.date_format}})
+                                 </ng-option>
+                               
+                              </ng-select>
+                           </div>
+                        </div>
+                      
+
+                  </div>
+               </div>
+               <div class="col-sm-12" *ngIf="this.auditSource.type != 'Edit'">
+                  <div class="form-group">
+                     <label>{{'am_choose_annual_audit_plan'|translate}}<sup>*</sup></label>
+                  
+                        <div class="clearfix">
+                           <div class="multiple-plain-ngselect">
+                              <ng-select [placeholder]="'select_individual_audit_plan'|translate" [multiple]="false"
+                                 [closeOnSelect]="true" searchable="true" formControlName="am_individual_audit_plan_id"
+                                 (search)="searchIndividualAuditPlan($event)" (clear)="getIndividualAuditPlan()"
+                                 (open)="getIndividualAuditPlan()" (change)="getIndividualAuditDetails()" autocomplete="new-password">
+                                 <ng-option [value]="type.id"
+                                    *ngFor="let type of AmAnnualAuditPlansStore.annualAuditPlanDetails">
+                                    {{type.title}}
+                                 </ng-option>
+                               
+                              </ng-select>
+                           </div>
+                        </div>
+                        <p class="form-error pt-1" *ngIf="formErrors&&formErrors.am_individual_audit_plan_id">
+                           {{formErrors.am_individual_audit_plan_id[0]}}</p>
+
+
+                  </div>
+               </div>
+               <div class="col-sm-12" *ngIf="AmAnnualAuditPlansStore.individualAnnualAuditPlanDetails">
+                  <div class="cmn-bdr border-radius widg-padding-cmn-small pb-0 mb-3">
+                     <div class="row sm-row">
+                        <div class="col-lg-12 col-sm-12 sm-col">
+                           <div class="issue-top-sec">
+                              <div class="clearfix">
+                                 <h5 class="d-inline-block cmn-head-style label-tag-style">
+                                    <span
+                                    class="issue-smoal-head-text"># {{AmAnnualAuditPlansStore.individualAnnualAuditPlanDetails?.reference_code?AmAnnualAuditPlansStore.individualAnnualAuditPlanDetails?.reference_code:'XXXX'}}</span>
+                                   
+                                       {{AmAnnualAuditPlansStore.individualAnnualAuditPlanDetails?.am_annual_plan_auditable_item?.risk_id!=null?AmAnnualAuditPlansStore.individualAnnualAuditPlanDetails?.am_annual_plan_auditable_item?.risk.title:AmAnnualAuditPlansStore.individualAnnualAuditPlanDetails?.am_annual_plan_auditable_item?.process_id!=null?AmAnnualAuditPlansStore.individualAnnualAuditPlanDetails?.am_annual_plan_auditable_item?.process?.title:AmAnnualAuditPlansStore.individualAnnualAuditPlanDetails?.am_annual_plan_auditable_item?.strategic_objective_id!=null?AmAnnualAuditPlansStore.individualAnnualAuditPlanDetails?.am_annual_plan_auditable_item?.strategic_objective?.title:AmAnnualAuditPlansStore.individualAnnualAuditPlanDetails?.am_annual_plan_auditable_item?.department?.title}}
+                                       <!-- <span
+                                       class="draft-tag draft-tag-orange label-tag-style-tag label-left-arow-tag d-inline-block status-tag-new-one">Draft</span> -->
+                                 </h5>
+                              </div>
+                              <div class="clearfix">
+                                 <p class="label-tag-style mb-2"><i class="fas fa-calendar-alt date-pics-two"></i> {{AmAnnualAuditPlansStore.individualAnnualAuditPlanDetails?.start_date | date:OrganizationGeneralSettingsStore.organizationSettings?.date_format}} <span class="blinking">({{AmAnnualAuditPlansStore.individualAnnualAuditPlanDetails?.hours}} Hrs)</span></p>
+                              </div>
+                           </div>
+
+                           <div class="row">
+                              <div class="col-lg-6 col-sm-12">
+                                 <h6>{{'audit_manager'|translate}}</h6>
+                                 
+                                 <!-- <a (click)="openUserPopup()">{{AmAnnualAuditPlansStore.individualAnnualAuditPlanDetails?.audit_manager?.first_name}}</a> -->
+                                 <div class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg align-items-center mb-3"
+                                            *ngIf="AmAnnualAuditPlansStore.individualAnnualAuditPlanDetails?.audit_manager?.first_name">
+                                           <a  (click)="getManagerPopupDetails(AmAnnualAuditPlansStore.individualAnnualAuditPlanDetails?.audit_manager)"> <img [attr.src]="AmAnnualAuditPlansStore.individualAnnualAuditPlanDetails?.audit_manager?.image?.token?createImageUrl(AmAnnualAuditPlansStore.individualAnnualAuditPlanDetails?.audit_manager?.image?.token):getDefaultImage()"
+                                                width="40px" height="40px" class="rounded-circle cmn-bdr-img"></a>
+
+                                            <div class="ml-2"> 
+                                                <h6 class="elips-1">{{AmAnnualAuditPlansStore.individualAnnualAuditPlanDetails?.audit_manager?.first_name}}
+                                                    {{AmAnnualAuditPlansStore.individualAnnualAuditPlanDetails?.audit_manager?.last_name}}</h6>
+                                                <span class="elipse-1">{{AmAnnualAuditPlansStore.individualAnnualAuditPlanDetails?.audit_manager?.designation?AmAnnualAuditPlansStore.individualAnnualAuditPlanDetails?.audit_manager?.designation:AppStore.noContentText}}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                              </div>
+                              <div class="col-lg-6 col-sm-12">
+                                 <h6>{{'am_auditors'|translate}}</h6>
+                                 <div class="user-multiple mb-3">
+                                    <ul class="arci-user-tab-dtl workflow-lst-pics-loop clearfix">
+                                       <li class="rounde-hov-bg" *ngFor="let auditor of AmAnnualAuditPlansStore.individualAnnualAuditPlanDetails?.auditors">
+                                          <!-- <div class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg align-items-center mb-3"
+                                          *ngIf="AmAnnualAuditPlansStore.individualAnnualAuditPlanDetails?.audit_manager?.first_name"> -->
+                                          <a (click)="getAuditorPopupDetails(auditor)"><img [attr.src]="auditor?.image?.token?createImageUrl(auditor.image?.token):getDefaultImage()"
+                                                                                                class="w-100 user-round-pics-new rounde-hov cmn-bdr-img" ></a>
+                                          <!-- <div class="ml-2"> 
+                                              <h6 class="elips-1">{{AmAnnualAuditPlansStore.individualAnnualAuditPlanDetails?.audit_manager?.first_name}}
+                                                  {{AmAnnualAuditPlansStore.individualAnnualAuditPlanDetails?.audit_manager?.last_name}}</h6>
+                                              <span class="elipse-1">{{AmAnnualAuditPlansStore.individualAnnualAuditPlanDetails?.audit_manager?.designation?AmAnnualAuditPlansStore.individualAnnualAuditPlanDetails?.audit_manager?.designation:AppStore.noContentText}}
+                                              </span>
+                                          </div>
+                                      </div> -->
+                                          <!-- <app-user-popup-box  [source]=" getAuditorPopupDetails(auditor)" [showName]="false"></app-user-popup-box> -->
+                                    
+                                            
+                                        </li>
+                                    </ul>
+                                 </div>
+
+                              </div>
+                              <div class="col-lg-12 col-sm-12">
+                                 <h6>{{'department'|translate}}</h6>
+                                 <p>{{getArrayFormattedString('title',AmAnnualAuditPlansStore.individualAnnualAuditPlanDetails?.departments)}}</p>
+                              </div>
+                           </div>
+                        </div>
+                      
+                     </div>
+
+                  </div>
+               </div>
+
+               <div class="col-lg-6">
+                  <div class="form-group">
+                     <label for="name">{{'start_date' | translate}}<sup>*</sup></label>
+                     <div class="input-group date-picker input-clear-btn-main">
+                        <input formControlName="start_date" class="form-control bg-white" placeholder="yyyy-mm-dd"
+                           id="start_date" [readonly]="true"
+                           [maxDate]="{year: form.value.end_date?form.value.end_date.year:null, month: form.value.end_date?form.value.end_date?.month:null, day: form.value.end_date?form.value.end_date?.day:null}"
+               
+                            ngbDatepicker #startInput="ngbDatepicker"><span *ngIf="form.value.start_date"
+                           aria-hidden="true" (click)="clear('start_date')" style="border:none;"
+                           class="input-clear-btn">×</span>
+
+                        <div class="input-group-append">
+                           <button class="btn btn-outline-secondary calendar" (click)="startInput.toggle()"
+                              type="button"><i class="fas fa-calendar-alt"></i></button>
+                        </div>
+                     </div>
+                     <p class="form-error pt-1" *ngIf="formErrors&&formErrors.start_date">
+                        {{formErrors.start_date[0]}}</p>
+                  </div>
+               </div>
+               <div class="col-lg-6">
+                  <div class="form-group">
+                     <label for="name">{{'end_date' | translate}}<sup>*</sup></label>
+                     <div class="input-group date-picker input-clear-btn-main">
+
+                        <input formControlName="end_date" class="form-control bg-white" placeholder="yyyy-mm-dd"
+                           id="target_date" ngbDatepicker [readonly]="true"
+                           [minDate]="{year: form.value.start_date?.year?form.value.start_date?.year:null, month: form.value.start_date?.month?form.value.start_date?.month:null, day: form.value.start_date?.day?form.value.start_date?.day:null}"
+                  
+                           #endInput="ngbDatepicker"><span aria-hidden="true" *ngIf="form.value.target_date"
+                           (click)="clear('end_date')" style="border:none;" class="input-clear-btn">×</span>
+                        <div class="input-group-append">
+                           <button class="btn btn-outline-secondary calendar" (click)="endInput.toggle()"
+                              type="button"><i class="fas fa-calendar-alt"></i></button>
+                        </div>
+                     </div>
+                     <p class="form-error pt-1" *ngIf="formErrors&&formErrors.end_date">
+                        {{formErrors.end_date[0]}}</p>
+                  </div>
+               </div>
+
+               <div class="col-lg-12 col-sm-12">
+                  <div class="form-group">
+                     <label>{{'am_description'|translate}}</label>
+                     <textarea class="form-control" rows="3" id="comment9" formControlName="description"
+                        [placeholder]="'am_enter_description'|translate"></textarea>
+                  </div>
+               </div>
+
+               <div class="col-lg-12 col-sm-12">
+                  <div class="form-group">
+                      <label>{{'am_audit_methodologies'|translate}}</label>
+                      <div class="d-flex"> <input type="text" class="form-control w-100"
+                              [placeholder]="'am_add_methodology'|translate"
+                              formControlName="am_audit_methodologies">
+                          <button class="btn multi-add-user ml-2" [disabled]="!form.value.am_audit_methodologies"
+                              style="width: 42px;" (click)="addMethodology()"><i class="fas fa-plus"></i></button>
+                      </div>
+
+                      <ul class="arrowlist pl-0 mt-2" *ngIf="methodologyList?.length>0">
+
+                          <li class="clearfix" *ngFor="let methodology of methodologyList;let i=index">{{methodology}}
+                              <Button type="button" (click)="removeMethodology(i)"
+                                  class="btn btn-small float-right btn-small-delete" style="border: none;"><i
+                                      class="fas fa-trash"></i></Button>
+
+                          </li>
+
+                      </ul>
+
+                      <p class="form-error pt-1" *ngIf="formErrors && formErrors.am_audit_methodologies">{{formErrors.am_audit_methodologies}}
+                      </p>
+                  </div>
+
+              </div>
+
+               <div class="col-lg-12 col-sm-12">
+                  <div class="form-group">
+                     <label>{{'am_objective'|translate}}</label>
+                     <textarea class="form-control" rows="3" id="comment9" formControlName="objective"
+                        [placeholder]="'am_enter_objective'|translate"></textarea>
+                  </div>
+               </div>
+               <div class="col-lg-12 col-sm-12">
+                  <div class="form-group">
+                     <label>{{'am_criteria'|translate}}</label>
+                     <textarea class="form-control" rows="3" id="comment9" formControlName="criteria"
+                        [placeholder]="'am_enter_criteria'|translate"></textarea>
+                  </div>
+               </div>
+               <div class="col-lg-12 col-sm-12">
+                  <div class="form-group">
+                     <label>{{'am_scope'|translate}}</label>
+                     <textarea class="form-control" rows="3" id="comment9" formControlName="scope"
+                        [placeholder]="'am_enter_scope'|translate"></textarea>
+                  </div>
+               </div>
+               <div class="col-lg-12 col-sm-12">
+                  <div class="form-group">
+                     <label>{{'am_out_of_scope'|translate}}</label>
+                     <textarea class="form-control" rows="3" id="comment9" formControlName="out_of_scope"
+                        [placeholder]="'am_enter_out_of_scope'|translate"></textarea>
+                  </div>
+               </div>
+               
+            </div>
+            <div class="row">
+               <div class="col-sm-12">
+                  <div class="d-block justify-content-left border-0 mt-3">
+                     <button type="button" class="btn btn-active" [disabled]="AppStore.loading || form.invalid" (click)="startAudit(true)">{{AppStore.loading?getButtonText('loading'):getButtonText('start')}}</button>
+                     <button type="button" (click)="closeFormModal()" [disabled]="AppStore.loading" class="btn">{{AppStore.loading?getButtonText('loading'):getButtonText('cancel')}}</button>
+                  </div>
+               </div>
+            </div>
+         </form>
+      </div>
+      <!-- Modal footer -->
+   </div>
+</div>
+<!--  new-audit-popup End -->
+
+<div class="modal user-details-show-pop animate" [attr.id]="'user'+1" tabindex="-1" role="dialog"
+aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop="true" #userPopup>
+<!-- <div class="modal-dialog" role="document" #dialog>
+<button type="button" class="close" (click)="closeModal()" aria-label="Close">
+   <span aria-hidden="true">×</span>
+ </button> -->
+<app-modal-user-popup-box  [source]="userDetails"></app-modal-user-popup-box>
+<!-- </div> -->
+</div>

@@ -1,0 +1,135 @@
+<ng-container *mobxAutorun>
+    <div class="tab-pane" id="teamwise" *ngIf="AuthStore.getActivityPermission(3600,'ISMS_RISK_HEAT_MAP_BY_DEPARTMENT_LIST') && IsmsRiskHeatMapStore.sourceLoaded && IsmsRiskHeatMapStore.heatMapBySourceDetails?.length>0">
+      <div class="widget">
+        <div class="relative">
+          <div class="left-right-round-btns">
+            <button id="left-button" class="btn-left" (click)="prev()"></button>
+            <button id="right-button" class="btn-right" (click)="next()"></button>
+          </div>
+        <div class="no-fixed-table risk-heatmap-category risk-heatmap-category-title bg-white p-3 mb-1 table-scroll-small-device heatmap-scroll" id="container">
+          <table class="heatmap-scroll-inner">
+            <tr *ngFor="let dept of IsmsRiskHeatMapStore.heatMapBySourceDetails;let num=index">
+              <th>{{dept.risk_source_title}}</th>
+              <td [ngClass]="'color-box-risk bg-'+count.color" *ngFor="let count of dept.risk_score;let colm=index"><span
+                [ngClass]="activeRow == num && activeColumn==colm?'count-risk active':'count-risk'" *ngIf="count.count>0"
+                  (click)="pageChange(1,'inherent_risk_score='+count.score+'&is_inherent=true&risk_source_ids='+dept.risk_source_id,num,colm,true)">{{count.count}}</span></td>
+            </tr>
+            <tr>
+              <th></th>
+              <td class="number-risk" *ngFor="let dept of IsmsRiskHeatMapStore.heatMapBySourceDetails[0]?.risk_score">
+                {{dept.score}}</td>
+            </tr>
+          </table>
+          <!-- <div *ngIf="IsmsRiskHeatMapStore.risk_sourceLoaded && IsmsRiskHeatMapStore.heatMapBySourceDetails?.length==0">
+            <app-no-data-list [source]="mapEmptyList" [border]=false>
+    
+            </app-no-data-list>
+        </div> -->
+        </div>
+        </div>
+        <div *ngIf="IsmsRisksStore.loaded && IsmsRisksStore.riskDetails.length>0">
+          <div class="audit-program-box audit-page-table-main mt-3">
+            <div class="row">
+              <div class="col-sm-12">
+                
+                <div class="full-width-table table-scroll-small-device" >
+                <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                  <thead>
+                    <tr>
+                      <th class="border-top-0" width="2%">#</th>
+                      <th class="border-top-0 pointer" width="6%" (click)="setRiskSort('reference_code')">{{'ref_id' |
+                        translate}}
+                        <img *ngIf="IsmsRisksStore.orderItem == 'reference_code'"
+                          [attr.src]="IsmsRisksStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                          class="sort-down-pics">
+                      </th>
+                      <th class="border-top-0 pointer" width="37%" (click)="setRiskSort('risks.title')">{{'risk' |
+                        translate}}
+                        <img *ngIf="IsmsRisksStore.orderItem == 'risks.title'"
+                          [attr.src]="IsmsRisksStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                          class="sort-down-pics">
+                      </th>
+                      <th class="border-top-0 pointer" width="12%" (click)="setRiskSort('risks.risk_sources')">{{'risk_source'
+                        | translate}}
+                        <img *ngIf="IsmsRisksStore.orderItem == 'risks.risk_sources'"
+                          [attr.src]="IsmsRisksStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                          class="sort-down-pics">
+                      </th>
+                      <th class="border-top-0 pointer" width="10%" (click)="setRiskSort('risks.risk_category_title')">
+                        {{'risk_category' | translate}}
+                        <img *ngIf="IsmsRisksStore.orderItem == 'risks.risk_category_title'"
+                          [attr.src]="IsmsRisksStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                          class="sort-down-pics">
+                      </th>
+                      <th class="border-top-0 pointer" width="8%" (click)="setRiskSort('risks.risk_types')">{{'risk_types' |
+                        translate}}
+                        <img *ngIf="IsmsRisksStore.orderItem == 'risks.risk_types'"
+                          [attr.src]="IsmsRisksStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                          class="sort-down-pics">
+                      </th>
+
+                      <th class="border-top-0 pointer" width="15%"
+                      >{{'corporate_functional' | translate}}
+                     
+                  </th>
+                      <th class="border-top-0" width="10%" (click)="setRiskSort('risks.risk_status_title')">{{'status' |
+                        translate}}
+                        <img *ngIf="IsmsRisksStore.orderItem == 'risks.risk_status_title'"
+                          [attr.src]="IsmsRisksStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                          class="sort-down-pics">
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="pointer edit-and-delete-main" (click)="gotoRisk(risk.id)"
+                      *ngFor="let risk of IsmsRisksStore.riskDetails| paginate: {currentPage:IsmsRisksStore?.currentPage, itemsPerPage:IsmsRisksStore?.itemsPerPage,totalItems:IsmsRisksStore?.totalItems};let num = index">
+                      <td>{{(IsmsRisksStore?.currentPage - 1) * IsmsRisksStore?.itemsPerPage + (num + 1)}}</td>
+                      <td>#{{risk.reference_code}}</td>
+                      <td>{{risk.title}}</td>
+                      <td>{{risk.risk_sources ? risk.risk_sources : AppStore.noContentText}}</td>
+                      <td>{{risk.risk_category_title ? risk.risk_category_title : AppStore.noContentText}}</td>
+                      <td>
+                        {{risk.risk_types ? risk.risk_types : AppStore.noContentText}}</td>
+                        <td>
+                          {{risk.is_corporate==1?'Corporate':'Functional'}}</td>
+                      <td class="text-center">
+                        <div [ngClass]="risk.risk_status_id==AppStore.activeStatusId?'dot-div red-dot':'dot-div green-dot'">
+                          {{risk.risk_status_title}}</div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              </div>
+              <div class="col-sm-12" *ngIf="IsmsRisksStore?.totalItems>IsmsRisksStore?.itemsPerPage">
+                <ul class="pagination justify-content-center mt-3">
+                  <pagination-controls  [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate" (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <ng-container *mobxAutorun>
+          <div *ngIf="!IsmsRisksStore.loaded">
+            <app-risk-list></app-risk-list>
+          </div>
+        </ng-container>
+         <ng-container *mobxAutorun>
+            <app-no-data-list [border]=false [height]="false" 
+            *ngIf="IsmsRisksStore.loaded && IsmsRiskHeatMapStore.sourceLoaded && IsmsRisksStore.riskDetails.length==0"></app-no-data-list>     
+         </ng-container>
+      </div>
+    </div>
+    </ng-container>
+    <ng-container *mobxAutorun>
+      <div *ngIf="!IsmsRiskHeatMapStore.sourceLoaded">
+          <app-heatmap-by-department-loader></app-heatmap-by-department-loader>
+      </div>
+    </ng-container>
+    
+    <ng-container *mobxAutorun>
+      <app-no-data-list [border]=false [source]="mapEmptyList" *ngIf="IsmsRiskHeatMapStore.sourceLoaded && IsmsRiskHeatMapStore.heatMapBySourceDetails?.length==0">
+    
+      </app-no-data-list>
+    
+    </ng-container>

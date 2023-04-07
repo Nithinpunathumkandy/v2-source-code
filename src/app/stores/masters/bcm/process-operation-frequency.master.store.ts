@@ -1,0 +1,100 @@
+import { observable, action, computed } from "mobx-angular";
+import { ProcessOperationFrequency, ProcessOperationFrequencyPaginationResponse } from "src/app/core/models/masters/bcm/process-operation-frequency";
+
+class Store {
+    @observable
+    private _processOperationFrequency: ProcessOperationFrequency[] = [];
+
+    @observable
+    loaded: boolean = false;
+
+    @observable
+    currentPage: number = 1;
+
+    @observable
+    itemsPerPage: number = null;
+
+    @observable
+    totalItems: number = null;
+
+    @observable
+    lastInsertedId: number = null;
+
+    @observable
+    orderItem: string = 'process_operation_frequencies.created_at';
+
+    @observable
+    from: number = null;
+
+    @observable
+    orderBy: 'asc' | 'desc' = 'desc';
+
+    searchText: string;
+
+    @action
+    setProcessOperationFrequency(response: ProcessOperationFrequencyPaginationResponse) {
+
+        this._processOperationFrequency = response.data;
+        this.currentPage = response.current_page;
+        this.itemsPerPage = response.per_page;
+        this.totalItems = response.total;
+        this.from = response.from;
+        this.loaded = true;
+    }
+
+    @action
+    setOperationFreq(res:ProcessOperationFrequency[]){
+        this._processOperationFrequency = res
+    }
+
+    @action
+    setCurrentPage(current_page: number) {
+        this.currentPage = current_page;
+    }
+
+    @action
+    setOrderBy(order_by: 'asc' | 'desc') {
+        this.orderBy = order_by;
+    }
+
+
+    @action
+    updateProcessOperationFrequency(type: ProcessOperationFrequency) {
+        const types: ProcessOperationFrequency[] = this._processOperationFrequency.slice();
+        const index: number = types.findIndex(e => e.id == type.id);
+        if (index != -1) {
+            types[index] = type;
+            this._processOperationFrequency = types;
+        }
+    }
+
+    @computed
+    get processOperationFrequency(): ProcessOperationFrequency[] {
+        return this._processOperationFrequency.slice();
+    }
+
+    @computed
+    get allItems(): ProcessOperationFrequency[] {
+        return this._processOperationFrequency.slice();
+    }
+
+    @action
+    getProcessOperationFrequencyById(id: number): ProcessOperationFrequency {
+        return this._processOperationFrequency.slice().find(e => e.id == id);
+    }
+
+    @action
+    setLastInsertedId(id: number) {
+        this.lastInsertedId = id;
+    }
+
+    get LastInsertedId(): number {
+        if (this.lastInsertedId)
+            return this.lastInsertedId;
+        else
+            return null;
+    }
+
+}
+
+export const ProcessOperationFrequencyMasterStore = new Store();

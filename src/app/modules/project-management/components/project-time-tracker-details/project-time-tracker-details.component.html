@@ -1,0 +1,135 @@
+<button type="button" class="close" (click)="cancel()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+      <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header">
+            <h4 class="modal-title" >{{'time_logs_history' | translate}}</h4>
+           
+           
+        </div>
+        <!-- Modal body -->
+        <div class="modal-body form-body" *mobxAutorun>
+            <ng-container >
+                <app-seven-column-loader *ngIf="!TimeTrackerStore.projectTimeTrackerLoaded"></app-seven-column-loader>
+                
+             </ng-container>
+             <app-no-data
+               *ngIf="TimeTrackerStore?.projectTimeTrackers.length == 0 && TimeTrackerStore.projectTimeTrackerLoaded">
+            </app-no-data>
+            <div class="no-fixed-table mb-3" *ngIf="TimeTrackerStore.projectTimeTrackerLoaded && TimeTrackerStore?.projectTimeTrackers.length">
+                <table class="table table-bordered ordinary-table cmn-table-style mb-1">
+                    <tr>
+                        <th class="border-top-0 text-center" width="4%">#</th>
+              
+                        <th class="border-top-0" width="15%">{{'resources' | translate}}</th>
+                        <th class="border-top-0 text-center" width="5%">{{'hours' | translate}}</th>
+                        <th class="border-top-0 text-center" width="10%">{{'activity' | translate}}</th>
+                      
+                        <th class="border-top-0" width="28%">{{'comments' | translate}}</th>
+                        <th class="border-top-0" width="10%">{{'date' | translate}}</th>
+                        <th class="border-top-0" width="13%">{{'created_at' | translate}}</th>
+                        <th class="border-top-0" width="15%">{{'created_by' | translate}}</th>
+      
+                    </tr>
+                    <tr class="edit-and-delete-main" *ngFor="let item of TimeTrackerStore?.projectTimeTrackers | paginate: {currentPage:TimeTrackerStore.projectTimeTrackerCurrentPage, itemsPerPage:TimeTrackerStore.projectTimeTrackerItemsPerPage,totalItems:TimeTrackerStore.projectTimeTrackerTotalItems}; let num = index;">
+                        <td class="text-center">{{(TimeTrackerStore.projectTimeTrackerCurrentPage - 1) * TimeTrackerStore.projectTimeTrackerItemsPerPage + (num + 1)}}</td>
+                       
+                        <td class="pointer" >
+                            <div *ngIf="item?.resource_first_name" class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                                <img *ngIf="item.resource_image_token" data-toggle="modal" data-target="#user02" data-ui-class="a-zoom"
+                                [attr.src]="createImagePreview('user-profile-picture',item.resource_image_token)"
+                                width="30px" height="30px" class="rounded-circle rounde-hov details-show-popup"
+                                onerror="this.src='/assets/images/user-demo2.png'">
+                             <img *ngIf="!item.resource_image_token" [attr.src]="getDefaultImage('user-logo')" width="30px" height="30px" class="rounded-circle" onerror="this.src='/assets/images/user-demo2.png'">                                                    <!-- user-dtl-popup start -->
+                                <!-- user-dtl-popup end -->
+                                <div class="pointer" >
+                                    <h6 class="elips-1">{{item?.resource_first_name}} {{item?.resource_last_name}}</h6>
+                                    <span>{{item.resource_designation ? item.resource_designation : AppStore.noContentText}}</span>
+                                </div>
+        
+                            </div>
+                            
+                                <p *ngIf="!item?.resource_first_name">{{AppStore.noContentText}}</p>
+                        </td>
+                        <td class="text-center">{{item?.hours| number : '1.1-1'}}</td>
+                        <td  class="text-center">
+                           {{item?.project_time_tracker_activity_title?item?.project_time_tracker_activity_title:AppStore.noContentText}} 
+                        </td>
+                        <td >
+                            <p class="mb-0" *ngIf="selectedIndex!=num" style="white-space: pre-wrap;">{{item?.comment?.length > 35 ?
+                                    item?.comment.substring(0,35) + '...' :
+                                    item?.comment}}
+                            </p>
+                            <p class="mb-0" *ngIf="item?.comment?.length>35 && selectedIndex==num" style="white-space: pre-wrap;">{{item?.comment}}</p>
+                            <div  *ngIf="item?.comment?.length>35">
+                                <!-- <button (click)="readMore(num,'more');" *ngIf="selectedIndex!=num" type="submit" class="px-2 pt-1 pb-1 btn btn-active">{{'read_more' | translate}}</button> -->
+                                <a (click)="readMore(num,'more');" *ngIf="selectedIndex!=num" class="view-more-pestel-box pointer view-more-doted">{{'read_more' | translate}}</a>
+                                <a (click)="readMore(num,'less');" *ngIf="selectedIndex==num" class="view-more-pestel-box pointer view-more-doted">{{'read_less' | translate}}</a>
+                                <!-- <button (click)="readMore(num,'less');" *ngIf="selectedIndex==num" type="submit" class="px-2 pt-1 pb-1 btn btn-active">{{'read_less' | translate}}</button> -->
+                            </div>
+                            
+                            <!-- <button (click)="readMore(num);" *ngIf="item?.comment?.length>25" type="submit" class="btn btn-active">{{'read_less' | translate}}</button> -->
+                        </td>
+                        <td  >
+                           
+                            {{item.date | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                        </td>
+                        <td  >
+                           
+                            {{item.project_time_tracker_created_at | date: OrganizationGeneralSettingsStore.organizationSettings?.date_time_format}}
+                        </td>
+                        <td class="pointer" >
+                            <div *ngIf="item?.created_by_first_name" class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                                <img *ngIf="item.created_by_image_token" data-toggle="modal" data-target="#user02" data-ui-class="a-zoom"
+                                [attr.src]="createImagePreview('user-profile-picture',item.created_by_image_token)"
+                                width="30px" height="30px" class="rounded-circle rounde-hov details-show-popup"
+                                onerror="this.src='/assets/images/user-demo2.png'">
+                             <img *ngIf="!item.created_by_image_token" [attr.src]="getDefaultImage('user-logo')" width="30px" height="30px" class="rounded-circle" onerror="this.src='/assets/images/user-demo2.png'">                                                    <!-- user-dtl-popup start -->
+                                <!-- user-dtl-popup end -->
+                                <div class="pointer" >
+                                    <h6 class="elips-1">{{item?.created_by_first_name}} {{item?.created_by_last_name}}</h6>
+                                    <span>{{item.created_by_designation ? item.created_by_designation : AppStore.noContentText}}</span>
+                                </div>
+        
+                            </div>
+                            
+                                <p *ngIf="!item?.created_by_first_name">{{AppStore.noContentText}}</p>
+                            <div class="edit-option-show" (click)="editTimeTracker(item.id,$event)" *ngIf="AuthStore.user.id==item?.created_by">
+                                <a [attr.title]="'edit'|translate" 
+                               
+                                ><i class="fas fa-pen pointer"></i></a> 
+                                <a (click)="delete(item.id,$event)"  [attr.title]="'delete'|translate"
+                                
+                                ><i class="fas fa-trash pointer"></i></a>
+                            </div>
+                            
+                        </td>
+                      
+                    </tr>
+       
+                    
+                </table>
+            </div>
+            <div class="col-sm-12" *ngIf="TimeTrackerStore.projectTimeTrackerLoaded && TimeTrackerStore?.projectTimeTrackerTotalItems > TimeTrackerStore.projectTimeTrackerItemsPerPage">
+                <ul class="pagination justify-content-center mt-3">
+                   <div class="list">
+                      <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+                         (pageChange)="getDetailsProjectTimeTracker($event)" class="my-pagination"></pagination-controls>
+                   </div>
+                </ul>
+             </div>
+           
+        </div>
+    </div>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="time-tracker" data-keyboard="false" data-backdrop="static"
+  #addTimeTrackerModal >
+  <app-add-time-tracker [source] ="timeTrackerObject" *ngIf="timeTrackerObject.type" >
+   </app-add-time-tracker>
+</div>
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+ </div>
+

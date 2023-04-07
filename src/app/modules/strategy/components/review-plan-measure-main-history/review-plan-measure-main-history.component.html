@@ -1,0 +1,141 @@
+  <!-- kpi-measures-history-popup2 Start -->
+  <!-- <div class="modal modal-style-1 popup-full-width fade" id="kpi-measures-history-popup2" data-keyboard="false"  data-backdrop="static"> -->
+    <button type="button" class="close" (click)="cancel()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+      <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h4 class="modal-title">{{planMeasureData.value?.title}}</h4>
+          <!-- <button type="button" class="close" data-dismiss="modal">&times;</button>-->
+        </div>
+        <!-- Modal body -->
+        <div class="modal-body form-body">
+          <p class="head-details">{{planMeasureData.value?.description ? planMeasureData.value?.description  : ''}}</p>
+          
+          <div class="row">
+             <div class="col-md-12">
+                <div class="cmn-bdr widg-padding-cmn-small pb-2 mb-3" *ngFor="let plans of planMeasureData.value?.strategy_initiative_milestone_action_plans">
+                   <div class="row">
+                      <div class="col-sm-12">
+                         <div class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                            <app-user-popup-box
+                            [source]="getPopupDetails(plans?.created_by,true)"
+                            [showName]="true" [activateButtons]="false"></app-user-popup-box>
+                         </div> 
+                      </div>
+                      <div class="col-sm-12">
+                         <p>{{plans.justification ? plans.justification : AppStore.noContentText}}</p>
+                      </div>
+                   </div>
+                   <div class="row">
+                      <div class="col-lg-4 col-sm-6">
+                         <h6>{{'achieved_value' | translate}}</h6>
+                         <p>{{plans.actual_value ? plans.actual_value : AppStore.noContentText}}</p>
+                      </div>
+                      <div class="col-lg-4 col-sm-6">
+                         <h6>{{'actual_end_date' | translate}}</h6>
+                         <p>{{plans.actual_end_date ? (plans.actual_end_date | date:OrganizationGeneralSettingsStore.organizationSettings?.date_format) : AppStore.noContentText}}</p>
+                      </div>
+                      <div class="col-lg-4 col-sm-6">
+                         <h6>{{'cost' | translate}}</h6>
+                         <p>{{plans.cost ? OrganizationGeneralSettingsStore?.organizationSettings?.currency : ''}} {{plans.cost ? plans.cost : AppStore.noContentText}}</p>
+                      </div>
+                   </div>
+
+                   <h6>{{'attachments' | translate}}</h6>
+                   <p *ngIf="plans?.strategy_initiative_milestone_action_plan_documents?.length == 0">AppStore.noContentText</p>
+                       <div class="thumb-pics-bg thumb-pics-col-4 clearfix"
+                       *ngIf="plans?.strategy_initiative_milestone_action_plan_documents?.length > 0">
+           
+           
+                       <div class="thumb-pics" *ngFor="let doc of plans?.strategy_initiative_milestone_action_plan_documents">
+                         <div class="upload-pics edit-option"  *ngIf="!doc.document_id"
+                           (click)="viewIncidentDocument('plan-measure',doc,plans?.id,doc)">
+                           <div class="browse-form-pic"
+                             [ngStyle]="{'background': 'url(' + createImageUrl('plan-measure',doc.token) + '), url(' + getDefaultImage('no-preview') + ') no-repeat 0 0 / cover '}">
+                           </div>
+                           <div class="browse-form-name clearfix">
+                             <div class="float-left">
+                               <h6 *ngIf="doc.title" [attr.title]="doc.title">
+                                 {{doc.title.length > 13 ? doc.title.substring(0,13)+'
+                                 ...': doc.title}}
+                               </h6>
+                               <span>{{doc.size/1048576 | number:'0.2-2'}}MB</span>
+                             </div>
+                             <div class="browse-logo">
+                               <img *ngIf="checkExtension(doc.ext,'image') != -1" src="/assets/images/md-jpg.png">
+                               <img *ngIf="checkExtension(doc.ext,'doc') != -1" src="/assets/images/word-icone.png">
+                               <img *ngIf="checkExtension(doc.ext,'pdf') != -1" src="/assets/images/pdf-icone.png">
+                               <img *ngIf="checkExtension(doc.ext,'excel') != -1" src="/assets/images/excel-icone.png">
+                               <img *ngIf="checkExtension(doc.ext,'video') != -1" src="/assets/images/md-video.png">
+                               <img *ngIf="checkExtension(doc.ext,'audio') != -1" src="/assets/images/md-audio.png">
+                               <img *ngIf="checkExtension(doc.ext,'ppt') != -1" src="/assets/images/md-ppt.png">
+                             </div>
+                           </div>
+                           <div 
+                             class="edit-option-show-inner" title="Download Document">
+                             <a><i class="fas fa-download"
+                                 (click)="downloKpiMesureDocument('plan-measure',doc,doc,plans?.id)"></i></a>
+                           </div>
+                         </div>
+    
+                         <div class="upload-pics edit-option"  *ngIf="doc.document_id">
+                         <div *ngFor="let mainDoc of doc.kh_document.versions" (click) =  "viewIncidentDocument('document-version', doc,plans?.id,mainDoc)">
+    
+                         
+                         <div class="browse-form-pic"
+                         [ngStyle]="{'background': 'url('+createImageUrl('document-version',mainDoc?.token)+') no-repeat'}">
+                         </div>
+                         <div class="browse-form-name clearfix">
+                           <div class="float-left">
+                             <h6 [attr.title]="doc.title">
+                               {{mainDoc.title}}.{{mainDoc.ext}}
+                             </h6>
+                             <span>{{mainDoc.size/1048576 | number:'0.2-2'}}MB</span><span class="text-blue bold pl-2">{{'knowledge_hub' | translate}}</span>
+                            </div>
+                           <div class="browse-logo">
+                             <img *ngIf="checkExtension(mainDoc.ext,'image') != -1" src="/assets/images/md-jpg.png">
+                             <img *ngIf="checkExtension(mainDoc.ext,'mainDoc') != -1" src="/assets/images/word-icone.png">
+                             <img *ngIf="checkExtension(mainDoc.ext,'pdf') != -1" src="/assets/images/pdf-icone.png">
+                             <img *ngIf="checkExtension(mainDoc.ext,'excel') != -1" src="/assets/images/excel-icone.png">
+                             <img *ngIf="checkExtension(mainDoc.ext,'video') != -1" src="/assets/images/md-video.png">
+                             <img *ngIf="checkExtension(mainDoc.ext,'audio') != -1" src="/assets/images/md-audio.png">
+                             <img *ngIf="checkExtension(mainDoc.ext,'ppt') != -1" src="/assets/images/md-ppt.png">
+                           </div>
+                         </div>
+                         <div 
+                           class="edit-option-show-inner" title="Download Document">
+                           <a><i class="fas fa-download" (click) = "downloKpiMesureDocument('document-version',doc,mainDoc,plans?.id)"></i></a>
+                         </div>
+    
+                       </div>
+    
+                      </div>
+                       </div>
+                     </div>
+
+                </div>
+
+             
+
+             </div>
+          </div>
+            
+            
+            
+          
+        </div>
+        <!-- Modal footer --> 
+      </div>
+    </div>
+  <!-- </div> -->
+  <!-- kpi-measures-history-popup2 End -->
+
+  <!-- preview modal -->
+  <div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup" data-keyboard="false"
+  data-backdrop="static" #filePreviewModal *mobxAutorun>
+  <button type="button" class="close" data-dismiss="modal" (click)="closePreviewModal($event)"><i
+      class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+  <app-preview-modal *ngIf="previewObject" [source]="previewObject" (close)="closePreviewModal($event)">
+  </app-preview-modal>
+</div>

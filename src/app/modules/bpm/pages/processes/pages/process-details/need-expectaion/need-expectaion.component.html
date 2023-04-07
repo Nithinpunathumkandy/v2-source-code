@@ -1,0 +1,222 @@
+
+<ng-container *mobxAutorun>
+   <div *ngIf="NeedExpectationStore.loaded && NeedExpectationStore.needExptList.length>0 && AuthStore.getActivityPermission(100,'PROCESS_STAKEHOLDER_LIST')">
+      <div class="row">
+         <div class="col-md-12">
+            <div class="panel-group panel-drop-sections" *ngFor="let row of NeedExpectationStore.needExptList;let num = index">
+               <div class="panel panel-default edit-and-delete-main">
+                 <div class="edit-option-show" style="margin: 32px 36px 0 0;">
+                    <a title="Delete" (click) = "delete(row.id)" *ngIf="AuthStore.getActivityPermission(100,'DELETE_PROCESS_STAKEHOLDER')"><i class="fas fa-trash pointer"></i></a>
+                    <a title="Edit" (click) = "editStakeholder(row.id)" *ngIf="AuthStore.getActivityPermission(100,'UPDATE_PROCESS_STAKEHOLDER')"><i class="fas fa-pen pointer"></i></a>                               
+                  </div>                  
+                  <div  class="pointer" [ngClass]="row.is_accordion_active == true ? 'panel-heading active' : 'panel-heading'" role="tab" id="headingOne">
+                     <div class="panel-title">
+                        <a role="button" data-toggle="collapse" (click)="getNeedExptDetails(row.id,num)" *ngIf="AuthStore.getActivityPermission(100,'PROCESS_STAKEHOLDER_DETAILS')" aria-expanded="true" aria-controls="collapseOne" >
+                           <h5 class="width96pc mt-0"> <span class="employ-width">{{row.title}} </span> <span class="risk-type-bx risk-type-bx-drop"><i><img src="/assets/images/internal.svg"> </i> {{row.type[1] | titlecase}}</span><span class="drop-down-icone"><i class="fas fa-chevron-down"></i></span> </h5>
+                        </a>
+                     </div>
+                  </div>
+                 </div>
+                  <div class="drop-detail-sec"  [ngClass]="row.is_accordion_active == true ? 'panel-collapse collapse show' : 'panel-collapse collapse'"
+                   role="tabpanel" aria-labelledby="headingOne" data-parent="#ceo" >
+                     <div class="panel-body bg-white">       
+                       <div class="delete-bullet-point" *ngIf="NeedExpectationStore.needexp_details_loaded && NeedExpectationStore.needExptDetails.length>0">
+                          <ul class="arrowlist m-0 p-0">                           
+                             <div class="edit-and-delete-main pointer" style="top: 0px!important;">
+                                <li *ngFor="let list of NeedExpectationStore.needExptDetails" class="clearfix">{{list.need_and_expectation_title}}
+                                   <Button type="button" (click)="singleDelete(list.process_id,list.id)" *ngIf="AuthStore.getActivityPermission(100,'DELETE_PROCESS_NEED_AND_EXPECTATION')" class="btn btn-small float-right btn-small-delete" style="border: none;"><i class="fas fa-trash"></i></Button>
+                                </li>                         
+                             </div>
+                             
+                          </ul>
+                       </div> 
+                       
+                      <!-- <ng-cont #noNotes>
+                          {{AppStore.noContentText}}
+                       </ng-template>  -->
+                       <!-- <ng-container *ngIf="NeedExpectationStore.needExptDetails.length == 0 && NeedExpectationStore.needexp_details_loaded " >
+                        {{AppStore.noContentText}}
+                       </ng-container> -->
+                     </div>
+                  </div>
+             
+            </div>
+         </div>
+      </div>
+   </div> 
+   <div *ngIf="!NeedExpectationStore.loaded">
+      <app-process-need-expectation-loader></app-process-need-expectation-loader>
+  </div>
+</ng-container>
+
+<ng-container *mobxAutorun>
+   <app-no-data *ngIf = "NeedExpectationStore.loaded && NeedExpectationStore.needExptList.length == 0" [border]="false"></app-no-data>
+ </ng-container>
+
+
+<!-- <ng-container *mobxAutorun>
+   <div *ngIf="!NeedExpectationStore.loaded">
+       <app-process-need-expectation-loader></app-process-need-expectation-loader>
+   </div>
+</ng-container> -->
+
+
+<!-- Need and Expectation Form -->
+<div class="modal modal-style-1 popup-full-width fade" id="need-expectation-form-popup" data-keyboard="false"
+data-backdrop="static" #formModal>
+<button type="button" class="close" (click)="closeFormModal()" data-dismiss="modal"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+<form [formGroup]="form">
+<div class="modal-dialog modal-lg modal-dialog-centered">
+   <div class="modal-content">
+      <div class="modal-header">
+         <h4 class="modal-title">{{'need_and_expectation' | translate}}</h4>
+      </div>
+      <div class="modal-body form-body">
+ 
+            <div class="row">
+               <div class="col-sm-4">
+                 <div class="form-group" >
+                   <label for="name" style="display: block;">{{'stakeholder_type'| translate}}</label>
+                   <div class="btn-in-ex-btns-new">
+                     <button [disabled]="editCheck"  type="button" (click) = "selectStakeHolderType(stype)" *ngFor = "let stype of StakeholderTypeMasterStore.stakeholderTypes" [ngClass]="getSelectedStakeholderType()?.id == stype.id ? 'btn-in-ex-new in-pic active' : 'btn-in-ex-new in-pic'"><span class="in-ex-icon-new"></span>{{ stype.title | titlecase }}</button>
+                   </div>              
+                 </div>
+               </div>
+               <div class="col-sm-8">
+                  <div class="form-group">
+                     <label for="name">{{'stakeholder' | translate}}</label>
+                     <div class="clearfix d-flex">
+                        <div class="select-new-width w-100 multiple-plain-ngselect">
+                           <ng-select
+                           [placeholder]="'stakeholder' | translate"
+                           [disabled]="editCheck"
+                           [multiple]="false"
+                           [searchable] = "true"
+                           (change)='verifyItems($event)'
+                           [(ngModel)] = "selectedStakeHolder"
+                           [ngModelOptions]="{standalone: true}"
+                           (search) = "searchStakeHolder($event)"
+                           (clear) = "getStakeHolder()"
+                           (open) = "getStakeHolder()">
+                           <ng-option [value]="itemStake.id" *ngFor="let itemStake of StakeholderMasterStore.stakeholders">
+                              {{itemStake.title}}
+                           </ng-option>
+                        </ng-select>
+                        </div>
+                        <button [disabled]="editCheck" class="btn multi-add-user ml-2" style="width: 38px;" (click) = "addStakeholder()"><i class="fas fa-plus"></i></button>
+                     </div>
+                  </div>
+               </div>
+               <div class="col-sm-12">
+                  <div class="form-group">
+                     <label for="name">{{'need_and_expectation' | translate}}</label>
+                     <div class="clearfix d-flex">
+                        <div class="select-new-width w-100 multiple-plain-ngselect">
+                           <ng-select 
+                           [placeholder]="'need_and_expectation' | translate"
+                           [multiple]="false"
+                           [items] = "NeedsExpectationsStore.needsAndExpecations"
+                           bindLabel="title"
+                           bindValue="id"
+                           [(ngModel)] = "needsAndExpectation"
+                           [ngModelOptions]="{standalone: true}"
+                           (search) = "searchNeedsAndExpectations($event)"
+                           (clear) = "getNeedsAndExpectations()"
+                           (open) = "getNeedsAndExpectations()">
+                           <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                              {{item.title.length > 100 ? item.title.substring(0,100)+' ...' : item.title}}
+                          </ng-template>
+                           <ng-template ng-option-tmp let-item="item" let-index="index">
+                              {{item.title.length > 100 ? (item.title | slice:0:100)+' ...' : item.title}}
+                          </ng-template>
+                        </ng-select>
+                        </div>
+                        <button class="btn multi-add-user ml-2" style="width: 38px;" (click) = "addNeedsExpectation()"><i class="fas fa-plus"></i></button>
+                     </div>
+                  </div>
+               </div>
+               </div>
+           
+               <button [disabled] = "(needsAndExpectation && selectedStakeHolder) ? false : true" type="button" data-toggle="modal" data-target="#signal-lost" class="btn ordinary-btn mr-3 btn-new-space btn-active" (click) = "addNeedsExpectations()">{{'add' | translate}}</button>
+ 
+               <!-- panel-drop-sections starts -->
+                <div class="row">
+                  <div class="col-sm-12">
+                     <div class="widget-body-light right-block">
+                        <div class="row">
+                           <div class="col-sm-12">
+                              <div class="panel-group panel-drop-sections" id="jd" role="tablist" aria-multiselectable="true">
+                                 <div class="panel panel-default" *ngFor = "let ne of NeedExpectationStore.selectedNeedsExpectations; let n = index">
+                                    <div class="panel-heading pointer" role="tab" id="headingOne">
+                                       <div class="panel-title">
+                                          <a role="button" data-toggle="collapse" aria-expanded="false" aria-controls="collapseOne" class="collapsed" (click) = "showhideNeedsExpectations(n)">
+                                             <h5 class="width96pc mt-0"> <span class="employ-width">{{ne.stakeholder_title}} </span> <span class="risk-type-bx risk-type-bx-drop"><i><img  src="/assets/images/internal.svg"> </i> {{ne.type | titlecase}}</span><span class="drop-down-icone"><i [ngClass]="ne.active ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i></span> </h5>
+                                          </a>
+                                       </div>
+                                    </div>
+                                    <div [ngClass] = "ne.active?'panel-collapse collapse show':'panel-collapse collapse' " role="tabpanel" aria-labelledby="headingOne" data-parent="#ceo111">
+                                       <div class="panel-body">  
+                                             <div class="delete-bullet-point" *ngIf="ne.needs_title.length>0;else noNotes">
+                                                <ul class="arrowlist m-0 p-0">                           
+                                                      <li *ngFor="let list of ne.needs_title ; let num = index" class="clearfix">{{list}}
+                                                         <Button type="button" (click) = "deleteNeedExpectaion(num,list,ne)" class="btn btn-small float-right btn-small-delete" style="border: none;"><i class="fas fa-trash"></i></Button>
+                                                      </li> 
+                                                </ul>
+                                             </div>                                                                     
+                                             <ng-template #noNotes>
+                                                {{AppStore.noContentText}}
+                                             </ng-template>                                     
+                                       </div>
+                                    </div>
+                                    <p class="form-error pt-1" *ngIf="emptyData">
+                                       {{'select_any_need_expectation' | translate}}!</p> 
+                                 </div>
+                               </div>
+                           </div>
+                         </div>
+                     </div>
+ 
+                   </div>
+               </div>
+               <!-- panel-drop-sections end -->
+                <p class = "form-error" *ngIf="formErrors && formErrors.stakeholders"> {{'select_any_stake_holder' | translate}}</p>   
+         
+            <div class="row">
+               <div class="col-sm-12">
+                 <div class="d-block justify-content-left border-0 mt-3">
+                   <button type="submit" class="btn btn-active" (click)="save()"
+                     [disabled]="form.invalid || AppStore.loading || emptyData">{{ AppStore.loading  ? 'Loading...' : 'save' | translate}}</button>
+                   <button type="button" data-toggle="modal" data-target="#signal-lost" class="btn"
+                     (click)="save(true)"
+                     [disabled]="form.invalid || AppStore.loading || emptyData">{{ AppStore.loading  ? 'Loading...' : 'save_close' | translate}}</button>
+                   <button type="button" data-toggle="modal" data-target="#error-message" class="btn"
+                     (click)="closeFormModal()">{{ AppStore.loading  ? 'Loading...' : 'cancel' | translate}}</button>
+     
+                 </div>
+               </div>
+             </div>
+      </div>
+   </div>
+</div>
+</form>
+</div> 
+
+<div class="modal modal-style-1 popup-full-width fade" id="process-popup" data-keyboard="false" 
+ data-backdrop="static" #needsExpectationsFormModal *mobxAutorun>
+   <button type="button" class="close" data-dismiss="modal" (click) = "closeNeedsExpectations()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+   <app-add-needs-expectation *ngIf = "NeedExpectationStore.needs_expectation_form_modal"></app-add-needs-expectation>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="add-four-popup" data-keyboard="false"
+   data-backdrop="static" #stakeholderFormModal *mobxAutorun>
+   <button type="button" class="close" data-dismiss="modal" (click) = "closeStakeholderModal()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+   <app-add-stakeholder *ngIf = "NeedExpectationStore.stakeholder_form_modal"></app-add-stakeholder>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #deletePopup>
+   <app-delete-popup [source] = "deleteObject"></app-delete-popup>
+ </div>
+ 
+ <!------------------- Delete Confirmation Modal End --------------------------->

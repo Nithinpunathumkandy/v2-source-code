@@ -1,0 +1,274 @@
+<div #plainDev></div>
+
+<button type="button" class="close" data-dismiss="modal"><i class="lni-close"></i><span>esc</span></button>
+<div class="modal-dialog modal-xl">
+   <div class="modal-content">
+      <!-- Modal Header -->
+      <div class="modal-header folder-view-header" style="padding-right: 45px !important;">
+         <div class="row w-100">
+      
+            <div class="col-md-7">
+            <div class="brudcrumb pt-3 pl-1">
+               <ul class="clearfix">             
+                  <li><a (click)="listDocuments(DocumentsStore.selectedSideMenu,true)">Documents</a></li>
+                  <li *ngIf="DocumentsStore.breadCrumbStatus" class="right-arow"><a><i class="fas fa-chevron-right"></i></a></li>
+                  <div *ngFor="let item of DocumentsStore.breadCrumb let indexMain=index" >
+                     <li (click)='getFolderDetails(true,item.id,item,DocumentsStore.listStyle)' > <a> {{item.breadCrumbTitle}}</a></li>
+                     <li *ngIf="DocumentsStore.breadCrumb.length > 1 && checkIndex(item)" class="right-arow"><a><i class="fas fa-chevron-right"></i></a></li>                    
+                  </div>
+
+               </ul>
+            </div>
+         </div>
+  
+
+
+            <div class="col-md-2 pr-0">
+               <div class="small-tab-foder" style="display: none;">
+                     <ul class="nav nav-tabs clearfix" role="navigation">
+                         <li class="nav-item" *ngIf="DocumentsStore.listStyle=='table'"> <a (click)="setListStyle('grid')" class="nav-link active show" data-toggle="tab" role="tab" aria-controls="lorem" aria-selected="false"
+                           data-original-title="" title="Show Documents as Grid"><i class="fas fa-th-large"></i></a>
+                   </li>
+                   <li class="nav-item" *ngIf="DocumentsStore.listStyle=='grid'"> <a (click)="setListStyle('table')" class="nav-link active show" data-toggle="tab"  role="tab" aria-controls="ipsum" aria-selected="true" data-original-title=""
+                           title="Show Documents in Table"><i class="fas fa-list"></i></a>
+                   </li>
+                       </ul>
+                  </div>
+            </div>
+
+            <form [formGroup]="form">
+               <div class="col-md-12 pr-0">
+                  <div class="folder-view-search">
+                     <div class="form-group has-search mb-0">
+                         <span class="fa fa-search text-search"></span>
+                         <input formControlName="searchItem" type="text" class="form-control" placeholder="Search">
+                     </div>
+                  </div>
+               </div>
+            </form>            
+         </div>
+      </div>
+      <!-- Modal body -->
+      <div class="modal-body form-body pt-0">
+
+         <div class="row">
+            <div class="col-md-12">
+               <div class="clearfix d-flex folder-view-content">
+                  <!-- <div class="folder-options pt-1">
+                     <ul class="folder-options-main-ul">
+                        <li class="nav-item"> <a (click)="listDocuments('private')" class="folder-menu-link" data-toggle="tab" role="tab" aria-controls="lorem" aria-selected="false"><i class="fas fa-lock"></i>My Documents</a>
+                        </li>
+                        <li class="nav-item"> <a (click)="listDocuments('public')" class="folder-menu-link" ><i class="fas fa-globe-americas"></i>Public</a>
+                        </li>
+                        <li class="nav-item"> <a (click)="listDocuments('shared')" class="nav-link" data-toggle="tab" role="tab" aria-controls="lorem" aria-selected="false"><i class="fas fa-share"></i>Shared</a>
+                        <li><a data-toggle="collapse" data-target="#demo3" (click)="openMenu()" [ngClass]="menuOpened?'folder-menu-link':'folder-menu-link collapsed'" ><i class="far fa-folder"></i> Knwl.Hub</a>
+                           <ul [ngClass]="menuOpened?'folder-options-inner-ul collapse show':'folder-options-inner-ul collapse'" >
+                              <li *ngFor="let item of DocumentTypeMasterStore.allItems"> <a *ngIf="item.is_important" (click)="listDocuments('doc_type',false,item.id)">{{item.title}}</a>
+                              </li>
+                           </ul>
+                        </li>
+                        <li> <a (click)="listDocuments('new')" class="folder-menu-link" ><i class="fa fa-file" ></i>New</a>
+                        </li>
+                       <li> <a (click)="listDocuments('recent')" class="folder-menu-link" ><i class="far fa-clock"></i>Recent</a>
+                       </li>(click)="selectDocument(docs)"
+                     </ul>
+                  </div> -->
+
+                  <div class="folder-section pt-1">
+                     <div class="tab-content">
+                         <!-- !Grid View Starts -->
+                   
+                        <div  [ngClass]="DocumentsStore.listStyle=='grid'?'tab-pane tab-edit-class active' : 'tab-pane tab-edit-class fade'">
+                           <div class="bg-white p-3">
+                              <div class="thumb-pics-bg thumb-pics-col-5 clearfix thumb-pics-fix-text">
+                                 <div [ngStyle]="{'display': !docs.is_folder?'block':'none'}" [ngClass]="activeFile?.id==docs?.id?'thumb-pics active':'thumb-pics'"
+                                 (click)="gotoFolder(docs?.is_folder,docs?.id,docs?.title,docs)"
+                                    *ngFor="let docs of DocumentsStore.documentsList | paginate: {id:'fileUploadPopup',currentPage: DocumentsStore?.currentPage,itemsPerPage: DocumentsStore?.itemsPerPage,totalItems: DocumentsStore?.totalItems} ;let i = index">
+                                 <div *ngIf="!docs.is_folder">
+                                    <label class="container2 document-select-checkbox">
+                                       <input type="checkbox" [ngStyle]="activeFile?.id==docs?.id ?{'display': 'block'} : {'display': 'none'}" [id]="docs?.id" [name]="docs?.name"
+                                          [checked]="activeFile?.id==docs?.id">
+                                       <span class="checkmark"></span>
+                                    </label>
+                                    <div class="upload-pics upload-pics-small edit-option">
+                                       <div class="browse-form-pic"
+                                          [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+'), url(' + '/assets/images/no-image-popup-icon.png' + ') no-repeat'}"  onerror="this.src='/assets/images/no-image-popup-icon.png'">
+                                       </div>
+
+                                       <div class="browse-form-name clearfix">
+                                          <div class="float-left">
+                                             <h6>{{docs.title}}.{{docs.ext}}
+                                             </h6>
+                                             <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                                          </div>
+                                          <div class="browse-logo">
+                                             <img *ngIf="checkExtension(docs.ext,'image') != -1" class="folder-picher"
+                                                src="/assets/images/jpg-icone.png">
+                                             <img *ngIf="checkExtension(docs.ext,'doc') != -1" class="folder-picher"
+                                                src="/assets/images/word-icone.png">
+                                             <img *ngIf="checkExtension(docs.ext,'pdf') != -1" class="folder-picher"
+                                                src="/assets/images/pdf-icone.png">
+                                             <img *ngIf="checkExtension(docs.ext,'excel') != -1" class="folder-picher"
+                                                src="/assets/images/excel-icone.png">
+                                             <img *ngIf="checkExtension(docs.ext,'video') != -1" class="folder-picher"
+                                                src="/assets/images/md-video.png">
+                                             <img *ngIf="checkExtension(docs.ext,'audio') != -1" class="folder-picher"
+                                                src="/assets/images/md-audio.png">
+                                             <img *ngIf="checkExtension(docs.ext,'ppt') != -1" class="folder-picher"
+                                                src="/assets/images/md-ppt.png">
+                                          </div>
+                                       </div>
+                                       <!-- <div class="edit-option-show-inner">
+                                <a href="#"><i class="fas fa-download"></i></a>
+                              </div> -->
+                                    </div>
+                                 </div>
+                                 </div>
+                              </div>
+                              <!-- <div class="clearfix d-flex">                                 
+                                 <div class="folder-section">
+                                    
+                                    <div id="maindiv">
+                                       
+                                     <div id="dragdiv">
+                                      
+                                      <app-documents-loader *ngIf="!DocumentsStore.documentsLoaded"></app-documents-loader>
+                                       <app-no-data-list [source] = "documentEmptyList" *ngIf="DocumentsStore.documentsLoaded && DocumentsStore.documentsList.length == 0"></app-no-data-list>
+                                       
+                                       <ul *ngIf="DocumentsStore.documentsLoaded" id="allItems" runat="server" class="folder-loop folder-main-page clearfix">
+                                          <li *ngFor="let docs of DocumentsStore.documentsList | paginate: {currentPage: DocumentsStore?.currentPage,itemsPerPage: DocumentsStore?.itemsPerPage,totalItems: DocumentsStore?.totalItems} ;let i = index" class="folder-box-document" id="node1" draggable="true">
+                                       
+                                            
+                                            <a (click)="gotoFolder(docs?.is_folder,docs?.id,docs?.title,docs)" *ngIf="docs?.is_folder" class="folder-one">                   
+                                               <img  class="folder-picher" src="/assets/images/folder-icone.png">
+                                               <button type="text" class="btn-folder btn-menu"><i class="fas fa-bars" ></i></button>
+                                               <span class="icon-indication-folder"><i [ngClass]="docs?.document_access_type_icon_class"></i></span>
+                                                <span class="btn-folder number-folder">{{docs?.count}}</span>
+                                            </a>
+                                             
+                                             <a (click)="gotoFolder(docs?.is_folder,docs?.id,docs?.title,docs)" *ngIf="!docs?.is_folder" class="folder-one folder-documents">
+                                                <label class="container2 folder-checkbox" [ngStyle]="activeFile?.id==docs?.id ?{'display': 'block'} : {'display': 'none'}">
+                                                                     <input type="checkbox" [checked]="activeFile?.id==docs?.id">
+                                                                     <span class="checkmark"></span>
+                                                                  </label>
+                                               <img [attr.src]="createImageUrl('document-version',docs?.token,119,165)" class="w-100" >
+                                       
+                                               <span class="icon-indication-folder"><i [ngClass]="docs?.document_access_type_icon_class"></i></span>
+                                            </a>
+                                             <p>
+                                               
+                                               {{getDocumentTitleFormatted(docs.title,i)}}
+                                             </p>
+                                             <h5>{{docs?.created_at | date :'MMMM d'}}</h5>
+                                    
+                                          </li>                                                                                                                                                                        
+                                       </ul>
+                                    </div>
+                                 </div>
+                           <div class="row mt-4">
+                        <div *ngIf="DocumentsStore.totalItems > DocumentsStore.itemsPerPage && DocumentsStore?.documentsLoaded" class="col-sm-12 ">
+                          <ul class="pagination justify-content-center mt-3">
+                            <div class="list">
+                              <pagination-controls (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+                            </div>
+                          </ul>
+                        </div> 
+                       </div>                                          
+                                 </div>
+                              </div>                                         -->
+                              <div class="row mt-4">
+                                 <div *ngIf="DocumentsStore.totalItems > DocumentsStore.itemsPerPage && DocumentsStore?.documentsLoaded" class="col-sm-12 ">
+                                   <ul class="pagination justify-content-center mt-3">
+                                     <div class="list">
+                                       <pagination-controls (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+                                     </div>
+                                   </ul>
+                                 </div> 
+                                </div>
+                           </div>
+                        </div>
+                         <!-- !Grid View Ends -->
+                        
+              <!-- !Table View Starts -->
+                        <div  [ngClass]="DocumentsStore.listStyle=='table'?'tab-pane tab-edit-class active' : 'tab-pane tab-edit-class fade'">
+                                 <div class="bg-white widg-padding-cmn">
+                                    <div class="clearfix d-flex">                           
+                                 <div class="folder-list-page folder-list-page-table"><!-- folder-list-page start -->
+  
+                                    <div id="maindiv"><!-- maindiv starts -->
+                                           <div id="dragdiv"><!-- dragdiv starts -->
+                                    <table class="table table-bordered ordinary-table audit-page-table mb-0 table-scroll" id="allItems" runat="server" *ngIf="DocumentsStore.documentsLoaded">
+                                       <thead>
+                                      <tr>
+                                        <th (click) = "setDocumentSort('documents.title')" ><i class="far fa-file file-pic"></i>Name <img *ngIf = "DocumentsStore.orderItem == 'documents.title'"
+                                         [attr.src]="DocumentsStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" class="sort-down-pics"></th>
+                                        <th (click) = "setDocumentSort('documents.created_at')" >Date <img style="vertical-align: initial;" *ngIf = "DocumentsStore.orderItem == 'documents.created_at'"
+                                         [attr.src]="DocumentsStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" class="sort-down-pics"></th>
+                                        <th (click) = "setDocumentSort('documents.size')" >Size <img style="vertical-align: initial;" *ngIf = "DocumentsStore.orderItem == 'documents.size'"
+                                          [attr.src]="DocumentsStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" class="sort-down-pics"></th>
+                                        <th (click) = "setDocumentSort('documents.title')" >Created By <img *ngIf = "DocumentsStore.orderItem == 'documents.created_by_first_name'"
+                                         [attr.src]="DocumentsStore.orderBy == 'created_by_first_name'?'assets/images/sort-down.png':'assets/images/sort-up.png'" class="sort-down-pics"></th>
+                                      </tr>
+                                   </thead>
+                                   <tbody>
+                                      <ng-container *mobxAutorun>
+                                         <tr *ngFor="let docs of DocumentsStore.documentsList | paginate: {currentPage: DocumentsStore?.currentPage,itemsPerPage: DocumentsStore?.itemsPerPage,totalItems: DocumentsStore?.totalItems} ;;let i = index" class="folder-box-document pointer" (click)="gotoFolder(docs.is_folder,docs.id,docs.title,docs)" id="node101">
+                                            <td class="pointer">
+                                              <img *ngIf="docs.is_folder"  src="/assets/images/folder-icone.png" class="folder-list-view"> 
+                                              <img  *ngIf="!docs.is_folder" [attr.src]="createImageUrl('document-version',docs.token,13,28)" class="folder-list-view folder-list-view-document">                                     
+                                              {{docs.title}}
+                                           </td>
+                                            <td class="pointer">{{docs.created_at | date :'MMMM d'}}</td>
+                                            <td>{{docs.size/1048576 | number:'0.2-2'}}MB</td>
+                                            <td class="pointer">{{docs.created_by_first_name}}&nbsp;{{docs.created_by_last_name}}</td>
+                                          </tr>
+                                      </ng-container>
+                                   </tbody>
+                                    </table>
+                                    <ng-container>
+                                      <app-no-data-list [source] = "documentEmptyList" *ngIf="DocumentsStore.documentsLoaded && DocumentsStore.documentsList.length == 0"></app-no-data-list>
+                                   </ng-container>
+                                    </div>
+                                       </div><!-- maindiv starts -->
+  
+                                       <div class="row mt-4">
+                                         <div *ngIf="DocumentsStore.totalItems > DocumentsStore.itemsPerPage && DocumentsStore?.documentsLoaded" class="col-sm-12 ">
+                                           <ul class="pagination justify-content-center mt-3">
+                                             <div class="list">
+                                               <pagination-controls (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+                                             </div>
+                                           </ul>
+                                         </div> 
+                                        </div>
+  
+                              </div><!-- folder-list-page end -->
+  
+                                 </div>                        
+                              </div>
+                        </div>     
+               <!-- !Table View Ends --> 
+
+                     </div>
+
+
+                  </div>
+
+               </div>
+            </div>
+         </div>
+        
+         <div class="row mt-3">
+            <div class="col-sm-12">
+                <div class="d-block justify-content-left border-0 mt-3">
+                    <button type="button" class="btn btn-active" [disabled]="activeFile==null" (click)="openDocument()">Open</button>
+                    <button type="button" (click)="dismissModal()" class="btn mr-2">Cancel</button>
+                </div>
+            </div>
+        </div>
+         
+      </div>
+      <!-- Modal footer -->
+   </div>
+</div>
+
+

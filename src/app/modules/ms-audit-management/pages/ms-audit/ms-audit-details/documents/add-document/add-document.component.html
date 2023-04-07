@@ -1,0 +1,178 @@
+
+
+<!-- <div class="modal modal-style-1 popup-full-width fade" id="add-brnch" data-keyboard="false" data-backdrop="static"> -->
+    <button type="button" class="close" data-dismiss="modal" (click)="cancel()"><i class="lni-close"></i><span>esc</span></button>
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title">{{'add_document'| translate}}</h4>
+                <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
+
+            </div>
+            <!-- Modal body -->
+            <div class="modal-body form-body">
+                <p>To add a document to the MS audit, upload document file or document link and click Save to complete the procedure.</p>
+
+
+            <form [formGroup]="form" *mobxAutorun>
+                <div class="icon-with-text-small-tab"> 
+                   <ul class="nav nav-tabs mb-3">
+                      <li class="nav-item">
+                         <a class="nav-link active show" data-toggle="tab" href="#small-tab-one" data-original-title="" title=""><i class="fas fa-file-alt"></i>{{'document' | translate}}</a>
+                      </li>
+                      <li class="nav-item">
+                         <a class="nav-link" data-toggle="tab" href="#small-tab-two" data-original-title="" title=""><i class="fas fa-link"></i>{{'document_url' | translate}}</a>
+                      </li>
+                   </ul>
+
+                    <div class="tab-content" style="min-height: 220px;">
+                       <div id="small-tab-one" class="tab-pane active show">
+                         
+                        <!-- <label class="label-style mb-1">{{'support_files' | translate}}</label> -->
+                        <!-- Common File Upload Starts Here -->
+                        <div class="scroll-documents" #uploadArea>
+                           <div class="thumb-pics-bg thumb-pics-col-3 clearfix thumb-pics-fix-text" style="padding-top: 0;">
+                              <div class="thumb-pics">
+                                 <div class="question-circle-inp" style="margin-right: 7px;">
+                                    <i class="far fa-question-circle"></i>
+                                    <div class="message-password-inp">
+                                       <p class="mb-0">{{'allowed_file_types' | translate}}
+                                          {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                                       </p>
+                                    </div>
+                                 </div>
+                                 <div class="form-group form-group-upload">
+                                    <div class="darag-dropifile-upload">
+                                       <div class="d-flex justify-content-center align-items-center text-center">
+                                          <div>
+                                             <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                                             <div class="drag-file-name">{{'select_or_upload_your_file_here' | translate}}</div>
+                                             <div class="upload-btn-wrapper">
+                                                <button (click)="openFileUploadModal()" type="button" class="btn">{{'browse_files' |
+                                                   translate}}</button>
+                                             </div>
+                                          </div>
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+            
+                              <div class="thumb-pics" *ngFor="let docs of fileUploadPopupStore.displayFiles ;let i = index">
+                                 <div class="upload-pics edit-option" data-toggle="modal">
+                                    <div *ngIf="docs.id && !docs.preview" class="browse-form-pic"
+                                       [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                                    </div>
+                                    <div *ngIf="docs.preview" class="browse-form-pic"
+                                       [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">
+                                    </div>
+                                    <div class="browse-form-name clearfix">
+                                       <div class="float-left">
+                                          <h6>
+                                             {{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                          </h6>
+                                          <span *ngIf="docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-book"></i></span>
+                                          <span *ngIf="!docs.is_kh_document" class="mr-2 cmn-clr"><i
+                                                class="fas fa-laptop"></i></span>
+                                          <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                                       </div>
+                                       <div class="browse-logo">
+                                          <img *ngIf="checkExtension(docs.ext,'image') != -1" class="folder-picher"
+                                             src="/assets/images/jpg-icone.png">
+                                          <img *ngIf="checkExtension(docs.ext,'doc') != -1" class="folder-picher"
+                                             src="/assets/images/word-icone.png">
+                                          <img *ngIf="checkExtension(docs.ext,'pdf') != -1" class="folder-picher"
+                                             src="/assets/images/pdf-icone.png">
+                                          <img *ngIf="checkExtension(docs.ext,'excel') != -1" class="folder-picher"
+                                             src="/assets/images/excel-icone.png">
+                                          <img *ngIf="checkExtension(docs.ext,'video') != -1" class="folder-picher"
+                                             src="/assets/images/md-video.png">
+                                          <img *ngIf="checkExtension(docs.ext,'audio') != -1" class="folder-picher"
+                                             src="/assets/images/md-audio.png">
+                                          <img *ngIf="checkExtension(docs.ext,'ppt') != -1" class="folder-picher"
+                                             src="/assets/images/md-ppt.png">
+                                       </div>
+                                    </div>
+                                    <div class="edit-option-show">
+                                       <a (click) = "removeDocument(docs)"><i class="fas fa-trash"></i></a>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                        
+                       </div>
+
+                       <div id="small-tab-two" class="tab-pane fade">
+                         
+                        <div class="row">
+                           <div class="col-lg-12 col-sm-12">
+                              <div class="form-group">
+                                  <!-- <span style="float: right;" class="text-grey">{{form?.value.external_link != null ?
+                                      getCauseLength() : 0}} {{'characters' | translate}}</span> -->
+  
+                                  <label for="name">{{'document_url' | translate}}</label>
+                                  
+                                  <div class="d-flex"> <input type="text" class="form-control w-100"
+                                          [placeholder]="'ms_audit_document_url' | translate" formControlName="external_links">
+                                      <button class="btn multi-add-user ml-2" (click)="addUrl()" style="width: 42px;"
+                                          [disabled]="!form.value.external_links"><i class="fas fa-plus"></i></button>
+                                  </div>
+  
+                                  <ul class="arrowlist pl-0 mt-2" *ngIf="MsAuditDocStore.docUrlList?.length>0">
+  
+                                      <li class="clearfix" *ngFor="let docUrl of MsAuditDocStore.docUrlList;let j=index">{{docUrl}}
+                                          <button type="button" (click) = "removeDocUrl(j)" class="btn btn-small float-right btn-small-delete" style="border: none;"><i class="fas fa-trash"></i></button>
+                    
+                                      </li>
+  
+                                  </ul>
+                                  
+                                  <p class="form-error pt-1" *ngIf="formErrors && formErrors.external_links">
+                                      {{formErrors.external_links}}
+                                  </p>
+                              </div>
+  
+                          </div>
+                            <!-- <div class="col-lg-12 col-sm-12">
+                                <div class="form-group">
+                                    <label for="name">{{'document_url' | translate}}</label>
+                                    <input type="text" class="form-control" formControlName="external_link" 
+                                    [placeholder]="'ms_audit_document_url'">
+                                </div>
+                            </div> -->
+                        </div>
+
+                       </div>
+
+                    </div>
+                 </div>
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="d-block justify-content-left border-0 mt-3">
+                           <button type="button" data-toggle="modal" data-target="#signal-lost"
+                              class="btn btn-active" (click)="save()" [disabled] = "AppStore.loading || form.invalid || (fileUploadPopupStore.displayFiles.length == 0 && MsAuditDocStore.docUrlList.length ==0)">{{ AppStore.loading ?
+                              getButtonText('loading') : getButtonText('save') }}</button>
+                           <button type="button" data-toggle="modal" data-target="#signal-lost" class="btn"
+                              (click)="save(true)" [disabled] = "AppStore.loading || form.invalid || (fileUploadPopupStore.displayFiles.length == 0 && MsAuditDocStore.docUrlList.length ==0)">{{ AppStore.loading ? getButtonText('loading') :
+                              getButtonText('save_close') }}</button>
+                           <button type="button" data-toggle="modal" data-target="#error-message" class="btn"
+                              (click)="cancel()">{{ AppStore.loading ? getButtonText('loading') : getButtonText('cancel')
+                              }}</button>
+                        </div>
+                     </div>
+                </div>
+            </form>
+            </div>
+            <!-- Modal footer -->
+        </div>
+    </div>
+<!-- </div> -->
+
+<!-- * Documetn Attach/Upload Common Component Starts Here -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #fileUploadModal>
+    <app-file-upload-popup *ngIf="fileUploadPopupStore.openPopup"></app-file-upload-popup>
+ </div>
+ <!-- * Documetn Attach/Upload Common Component Ends Here -->
+

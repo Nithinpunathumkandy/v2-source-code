@@ -1,0 +1,420 @@
+<nav class="edit-bar" data-toggle="affix" scrollPoint #navigationBar *mobxAutorun>
+    <app-breadcrumb-menu></app-breadcrumb-menu>
+    <app-sub-menu></app-sub-menu>
+    <div style="
+    position: relative;
+    right: -4px;
+    top: 29px;">
+        <ul class="nav nav-pills edit-icons float-right d-none d-xl-block" role="tablist">
+            <li>
+                <button type="button" class="btn btn-small btn-resolve" (click)="gotoIncident()">Go to Incident</button>
+            </li>
+        </ul>
+    </div>
+</nav>
+<app-corrective-action-loader *ngIf="!IncidentCorrectiveActionStore.correctiveActionDetailListLoaded">
+</app-corrective-action-loader>
+
+<main class="audit-program-details-page mt-3" *ngIf="IncidentCorrectiveActionStore.correctiveActionDetailListLoaded">
+    <div class="container-fluid widget" *mobxAutorun>
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="row">
+                    <div class="col-lg-8 col-sm-12 padding-right-0">
+                        <div class="edit-and-delete-main">
+                            <div class="edit-option-show" style="margin: 38px 0 0 0;">
+                                <a class="pointer" [attr.title]="'ca_close_message'|translate"
+                                    (click)="closeCorrectiveAction()"
+                                    *ngIf="AuthStore.user?.id == IncidentCorrectiveActionStore.IncidentCAList?.responsible_user?.id && IncidentCorrectiveActionStore.IncidentCAList?.incident_corrective_action_status?.type == 'resolved'"><i
+                                        class="fas fa-times"></i></a>
+                                <a class="pointer"
+                                    *ngIf="IncidentCorrectiveActionStore.IncidentCAList?.incident_corrective_action_status?.type != 'closed' && IncidentCorrectiveActionStore.IncidentCAList?.incident_corrective_action_status?.type != 'resolved'"
+                                    [attr.title]="'update'|translate" (click)="openUpdateModal()"><i
+                                        class="fas fa-pen-alt"></i></a>
+                                <a (click)="openHistoryModal()" [attr.title]="'progress_history'|translate"><i
+                                        class="fas fa-history"></i></a>
+                            </div>
+                            <div class="bg-white widg-padding-cmn">
+                                <div class="min-height-64">
+                                    <div class="widget-body-light issuue-new-style p-0">
+                                        <div class="row">
+                                            <div class="col-sm-12">
+                                                <div class="issue-top-sec">
+                                                    <div class="clearfix">
+                                                        <h5 class="d-inline-block cmn-head-style label-tag-style"><span
+                                                                class="issue-smoal-head-text">#
+                                                                {{IncidentCorrectiveActionStore?.IncidentCAList?.reference_code}}</span>
+                                                            {{IncidentCorrectiveActionStore?.IncidentCAList?.title}}
+                                                            <!-- <span class="draft-tag label-tag-style-tag label-left-arow-tag"
+                                                            style="line-height: 16px; vertical-align: middle; margin-top: -4px; display: inline-block;" *ngFor="let sts of  IncidentCorrectiveActionStore.IncidentCAList?.incident_corrective_action_status?.language">
+                                                            {{sts?.pivot?.title}}</span> -->
+                                                            <div
+                                                                [attr.class]="'ml-3 dot-div '+IncidentCorrectiveActionStore.IncidentCAList?.incident_corrective_action_status?.label">
+                                                                {{IncidentCorrectiveActionStore.IncidentCAList?.incident_corrective_action_status?.languages[0].pivot.title}}
+                                                            </div>
+                                                        </h5>
+
+                                                    </div>
+                                                    <div class="clearfix">
+                                                        <p class="label-tag-style"><i
+                                                                class="fas fa-calendar-alt date-pics-two"></i>
+                                                            {{IncidentCorrectiveActionStore?.IncidentCAList?.start_date
+                                                            |
+                                                            date:
+                                                            OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                            To
+                                                            {{IncidentCorrectiveActionStore?.IncidentCAList?.target_date
+                                                            |
+                                                            date:
+                                                            OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                            <span
+                                                                *ngIf="IncidentCorrectiveActionStore?.IncidentCAList?.incident_corrective_action_status?.type!='resolved' && IncidentCorrectiveActionStore?.IncidentCAList?.incident_corrective_action_status?.type!='closed'"
+                                                                class="blinking">( {{getDaysRemaining()}}
+                                                                {{'days remaining' | translate}} )
+                                                            </span>
+                                                            <!-- <span class="ml-2 mr-2"
+                                                        *ngIf="FindingCorrectiveActionStore.IncidentCAList?.incident_corrective_action_status?.type!='resolved'&&FindingCorrectiveActionStore.IncidentCAList?.incident_corrective_action_status?.type!='closed'">|</span> -->
+                                                            <span class="small-text pt-1 pl-2"
+                                                                *ngIf="IncidentCorrectiveActionStore?.IncidentCAList?.incident_corrective_action_status?.type!='resolved' && IncidentCorrectiveActionStore?.IncidentCAList?.incident_corrective_action_status?.type!='closed'">{{IncidentCorrectiveActionStore?.IncidentCAList?.incident_corrective_action_update.slice(-1)[0]?.percentage?IncidentCorrectiveActionStore?.IncidentCAList?.incident_corrective_action_update.slice(-1)[0]?.percentage:0}}
+                                                                %
+                                                                {{'completed' | translate}}
+                                                            </span>
+                                                        </p>
+                                                    </div>
+                                                    <p *ngIf="IncidentCorrectiveActionStore?.IncidentCAList?.description"
+                                                        style="white-space: pre-line;">
+                                                        {{IncidentCorrectiveActionStore?.IncidentCAList?.description}}
+                                                    </p>
+                                                </div>
+                                                <div class="label-and-user-pic">
+                                                    <h6>{{'responsible_user' | translate}}</h6>
+                                                    <app-user-popup-box
+                                                        [source]="assignUserValues(IncidentCorrectiveActionStore.IncidentCAList?.responsible_user)">
+                                                    </app-user-popup-box>
+                                                    <div
+                                                        *ngIf="!IncidentCorrectiveActionStore.IncidentCAList?.responsible_user">
+                                                        {{AppStore.noContentText}}</div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-md-12">
+                                                        <h6>{{'watchers' | translate}}</h6>
+                                                        <div class="pb-3"
+                                                            *ngIf="IncidentCorrectiveActionStore?.IncidentCAList?.incident_corrective_action_watchers.length > 3">
+                                                            <ul
+                                                                class="arci-user-tab-dtl workflow-lst-pics-loop clearfix">
+                                                                <li class="rounde-hov-bg"
+                                                                    *ngFor=" let watchers of IncidentCorrectiveActionStore.IncidentCAList?.incident_corrective_action_watchers">
+                                                                    <app-user-popup-box [showName]="false"
+                                                                        [source]="assignUserValues(watchers)">
+                                                                    </app-user-popup-box>
+                                                                </li>
+                                                            </ul>
+                                                        </div>
+                                                        <!-- <div class="pb-3"> -->
+                                                        <div class="row"
+                                                            *ngIf="IncidentCorrectiveActionStore?.IncidentCAList?.incident_corrective_action_watchers.length <= 3">
+                                                            <div class="col-xl-3 col-lg-4 col-sm-6 animation-pulse"
+                                                                *ngFor=" let watchers of IncidentCorrectiveActionStore.IncidentCAList?.incident_corrective_action_watchers;let i=index">
+                                                                <div class="label-and-user-pic">
+                                                                    <app-user-popup-box
+                                                                        [source]="assignUserValues(watchers)">
+                                                                    </app-user-popup-box>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <p
+                                                            *ngIf="IncidentCorrectiveActionStore?.IncidentCAList?.incident_corrective_action_watchers.length==0">
+                                                            {{AppStore.noContentText}}</p>
+                                                        <!-- </div> -->
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-12">
+                                                <h6>{{'support_files' | translate}}</h6>
+                                                <p
+                                                    *ngIf="IncidentCorrectiveActionStore?.IncidentCAList?.documents?.length == 0">
+                                                    {{AppStore.noContentText}}</p>
+                                                <div class="thumb-pics-bg thumb-pics-col-4 thumb-pics-fix-text clearfix"
+                                                    style="padding-top: 0">
+                                                    <div [ngClass]="AuthStore.getActivityPermission(1900,'PREVIEW_INCIDENT_CORRECTIVE_ACTION_DOCUMENT_FILE') ? 'thumb-pics pointer' : 'thumb-pics'"
+                                                        *ngFor="let docs of IncidentCorrectiveActionStore?.IncidentCAList?.documents;let i = index">
+
+                                                        <!-- System Files Starts Here -->
+
+                                                        <div class="upload-pics edit-option" *ngIf="!docs.document_id">
+                                                            <div class="browse-form-pic"
+                                                                [ngStyle]="{'background': 'url('+createImageUrl('corrective-action-details',docs.token)+') no-repeat'}"
+                                                                (click)="AuthStore.getActivityPermission(1900,'PREVIEW_INCIDENT_CORRECTIVE_ACTION_DOCUMENT_FILE') ? viewAttachments('corrective-action-details',docs) : ''">
+                                                            </div>
+                                                            <div class="browse-form-name clearfix">
+                                                                <div class="float-left">
+                                                                    <h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                                                    </h6>
+                                                                    <span>{{docs.size/1048576 |
+                                                                        number:'0.2-2'}}MB</span><span
+                                                                        class="text-blue bold pl-2">System</span>
+                                                                </div>
+                                                                <div class="browse-logo">
+                                                                    <img *ngIf="checkExtension(docs.ext,'image') != -1"
+                                                                        class="folder-picher"
+                                                                        src="/assets/images/jpg-icone.png">
+                                                                    <img *ngIf="checkExtension(docs.ext,'doc') != -1"
+                                                                        class="folder-picher"
+                                                                        src="/assets/images/word-icone.png">
+                                                                    <img *ngIf="checkExtension(docs.ext,'pdf') != -1"
+                                                                        class="folder-picher"
+                                                                        src="/assets/images/pdf-icone.png">
+                                                                    <img *ngIf="checkExtension(docs.ext,'excel') != -1"
+                                                                        class="folder-picher"
+                                                                        src="/assets/images/excel-icone.png">
+                                                                    <img *ngIf="checkExtension(docs.ext,'video') != -1"
+                                                                        class="folder-picher"
+                                                                        src="/assets/images/md-video.png">
+                                                                    <img *ngIf="checkExtension(docs.ext,'audio') != -1"
+                                                                        class="folder-picher"
+                                                                        src="/assets/images/md-audio.png">
+                                                                    <img *ngIf="checkExtension(docs.ext,'ppt') != -1"
+                                                                        class="folder-picher"
+                                                                        src="/assets/images/md-ppt.png">
+                                                                </div>
+                                                            </div>
+                                                            <div class="edit-option-show-inner"
+                                                                style="margin: 0 -8px 0 0;">
+                                                                <a><i class="fas fa-download"
+                                                                        (click)="AuthStore.getActivityPermission(1900,'DOWNLOAD_INCIDENT_CORRECTIVE_ACTION_DOCUMENT_FILE') ? downloadDocument('corrective-action-details',docs) : ''"></i></a>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- KnowledgeHub Files Starts Here -->
+
+                                                        <div class="upload-pics edit-option" *ngIf="docs.document_id">
+
+                                                            <div *ngFor="let mainDoc of docs.kh_document.versions">
+                                                                <div *ngIf="mainDoc.is_latest">
+                                                                    <div class="browse-form-pic"
+                                                                        (click)="AuthStore.getActivityPermission(1900,'PREVIEW_INCIDENT_CORRECTIVE_ACTION_DOCUMENT_FILE') ? viewAttachments('document-version',docs,mainDoc) : ''"
+                                                                        [ngStyle]="{'background': 'url('+createImageUrl('document-version',mainDoc?.token)+') no-repeat'}">
+                                                                    </div>
+                                                                    <div class="browse-form-name clearfix">
+                                                                        <div class="float-left">
+                                                                            <h6>{{mainDoc.title}}.{{mainDoc.ext}}
+                                                                            </h6>
+                                                                            <span>{{mainDoc.size/1048576 |
+                                                                                number:'0.2-2'}}MB</span><span
+                                                                                class="text-blue bold pl-2">Knowledge
+                                                                                Hub</span>
+                                                                        </div>
+                                                                        <div class="browse-logo">
+                                                                            <img *ngIf="checkExtension(mainDoc.ext,'image') != -1"
+                                                                                class="folder-picher"
+                                                                                src="/assets/images/jpg-icone.png">
+                                                                            <img *ngIf="checkExtension(mainDoc.ext,'doc') != -1"
+                                                                                class="folder-picher"
+                                                                                src="/assets/images/word-icone.png">
+                                                                            <img *ngIf="checkExtension(mainDoc.ext,'pdf') != -1"
+                                                                                class="folder-picher"
+                                                                                src="/assets/images/pdf-icone.png">
+                                                                            <img *ngIf="checkExtension(mainDoc.ext,'excel') != -1"
+                                                                                class="folder-picher"
+                                                                                src="/assets/images/excel-icone.png">
+                                                                            <img *ngIf="checkExtension(mainDoc.ext,'video') != -1"
+                                                                                class="folder-picher"
+                                                                                src="/assets/images/md-video.png">
+                                                                            <img *ngIf="checkExtension(mainDoc.ext,'audio') != -1"
+                                                                                class="folder-picher"
+                                                                                src="/assets/images/md-audio.png">
+                                                                            <img *ngIf="checkExtension(mainDoc.ext,'ppt') != -1"
+                                                                                class="folder-picher"
+                                                                                src="/assets/images/md-ppt.png">
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="edit-option-show-inner"
+                                                                        style="margin: 0 -8px 0 0;">
+                                                                        <a><i class="fas fa-download"
+                                                                                (click)="AuthStore.getActivityPermission(1900,'DOWNLOAD_INCIDENT_CORRECTIVE_ACTION_DOCUMENT_FILE') ? downloadDocument('document-version',docs,mainDoc) : ''"></i></a>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="clearfix"></div>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <h6>{{'incident'|translate}}</h6>
+                                                <p>#{{IncidentStore.IncidentItemDetails?.reference_code}}
+                                                    {{IncidentStore.IncidentItemDetails?.title?IncidentStore.IncidentItemDetails?.title:AppStore.noContentText}}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <h6>{{'incident_description'|translate}}</h6>
+                                                <p
+                                                    [innerHTML]="IncidentStore.IncidentItemDetails?.description?IncidentStore.IncidentItemDetails?.description:AppStore.noContentText">
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <!-- <div class="col-md-4">
+                                            <h6>{{'risk_rating' | translate}}</h6>
+                                            <p
+                                                [attr.class]="'dot-div-new font-normal dot-'+IncidentStore.IncidentItemDetails?.risk_rating?.label">
+                                                {{IncidentStore?.IncidentItemDetails?.risk_rating?.language[0]?.pivot?.title}}
+                                            </p>
+                                        </div> -->
+                                            <div class="col-md-4">
+                                                <h6>{{'incident_category' | translate}}</h6>
+                                                <p>{{IncidentStore.IncidentItemDetails?.incident_categories.length>0?getArrayFormatedString('title',IncidentStore.IncidentItemDetails?.incident_categories):AppStore.noContentText}}
+
+                                                </p>
+                                            </div>
+                                            <div class="col-md-4"
+                                                *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_division">
+                                                <h6>{{'divisions' | translate}}</h6>
+                                                <p>{{IncidentStore.IncidentItemDetails?.divisions.length>0?getArrayFormatedString('title',IncidentStore.IncidentItemDetails?.divisions):AppStore.noContentText}}
+                                                </p>
+                                            </div>
+                                            <div class="col-md-4"
+                                                *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_department">
+                                                <h6>{{'departments' | translate}}</h6>
+                                                <p>{{IncidentStore.IncidentItemDetails?.departments.length>0?getArrayFormatedString('title',IncidentStore.IncidentItemDetails?.departments):AppStore.noContentText}}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+
+                                            <div class="col-md-4"
+                                                *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_section">
+                                                <h6>{{'sections' | translate}}</h6>
+                                                <p>{{IncidentStore.IncidentItemDetails?.sections.length>0?getArrayFormatedString('title',IncidentStore.IncidentItemDetails?.sections):AppStore.noContentText}}
+                                                </p>
+                                            </div>
+                                            <div class="col-md-4"
+                                                *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_sub_section">
+                                                <h6>{{'sub_sections' | translate}}</h6>
+                                                <p>{{IncidentStore.IncidentItemDetails?.sub_sections.length>0?getArrayFormatedString('title',IncidentStore.IncidentItemDetails?.sub_sections):AppStore.noContentText}}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-xl-12">
+                                        <hr class="mb-2">
+                                        <!-- <div class="d-flex flex-row user-list-sm"> -->
+                                        <app-user-popup-box
+                                            [source]=" getCreatedByPopupDetails(IncidentCorrectiveActionStore?.IncidentCAList?.created_by, IncidentCorrectiveActionStore?.IncidentCAList?.created_at)">
+                                        </app-user-popup-box>
+                                        <!-- </div> -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4 col-sm-12"
+                        *ngIf="IncidentCorrectiveActionStore?.IncidentCAList?.incident_corrective_action_update!=null">
+                        <!-- && IncidentCorrectiveActionStore?.IncidentCAList?.incident_corrective_action_update[incident_corrective_action_update.length-1]?.finding_corrective_action_status_id!=2 -->
+                        <div class="bg-white widg-padding-cmn-small mb-3 pb-2">
+
+                            <h6>{{'corrective_action'|translate}} % {{'completed' | translate}}</h6>
+                            <hr class="mt-0 mb-3">
+                            <div
+                                [ngClass]="IncidentCorrectiveActionStore?.IncidentCAList?.incident_corrective_action_update.slice(-1)[0]?.percentage > 50 ?'progress-circle progress-circle-big-one over50 p'+IncidentCorrectiveActionStore?.IncidentCAList?.incident_corrective_action_update.slice(-1)[0]?.percentage:'progress-circle progress-circle-big-one p'+IncidentCorrectiveActionStore?.IncidentCAList?.incident_corrective_action_update.slice(-1)[0]?.percentage">
+                                <span>{{IncidentCorrectiveActionStore?.IncidentCAList?.incident_corrective_action_update.slice(-1)[0]?.percentage>0?IncidentCorrectiveActionStore?.IncidentCAList?.incident_corrective_action_update.slice(-1)[0]?.percentage:0}}%</span>
+                                <div class="left-half-clipper">
+                                    <div class="first50-bar"></div>
+                                    <div class="value-bar"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white widg-padding-cmn-small mb-3">
+                            <h6>
+                                {{'days_remaining' | translate}}</h6>
+                            <hr class="mt-0 mb-3">
+                            <div class="clearfix">
+                                <div class="mb-3">
+                                    <p class="dot-div-new dot-green mb-0 span-dot-color d-block"><span
+                                            style="background: #028f14;"></span>{{'remaining_days'|translate}}
+                                        ({{getDaysRemaining()}}{{' days'}})</p>
+                                    <p class="dot-div-new dot-red mb-0 span-dot-color d-block"><span
+                                            style="background: #ffe6e6;"></span>{{'total_days'|translate}}
+                                        ({{getTotaldays()}}{{' days'}})</p>
+                                    <!-- <p class="dot-div-new mb-0 dot-green d-block font-normal">
+                                        {{'remaining_days'|translate}}
+                                        ({{getDaysRemaining()}}{{' days'}})
+                                    </p>
+                                    <p class="dot-div-new dot-red d-block font-normal">{{'total_days'|translate}}
+                                        ({{getTotaldays()}}{{' days'}})
+                                    </p> -->
+                                </div>
+                            </div>
+                            <div class="vertical-progress-v2">
+                                <div class="progress-bg-sec">
+                                    <div class="progress-inner-color"
+                                        [style.height.%]="(getDaysRemaining()/getTotaldays())*100">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+
+
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+    <app-add-corrective-action *ngIf="incidentCorrectiveActionObject.type" [source]="incidentCorrectiveActionObject">
+    </app-add-corrective-action>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade show" data-keyboard="false" data-backdrop="static" #formModals>
+    <app-update-correctiveaction-progress [source]="updateObject" *ngIf="updateObject.id !=null">
+    </app-update-correctiveaction-progress>
+</div>
+
+
+<div class="modal modal-style-1 popup-full-width fade show" data-keyboard="false" data-backdrop="static" #historyPopup>
+    <app-update-history-modal *ngIf="historyPopupObject.id !=null">
+    </app-update-history-modal>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+<!-- file preview modal call -->
+
+<ng-container>
+    <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #commentModal>
+        <app-incident-ca-workflow-comment *ngIf="IncidentCaWorkflowStore.commentForm">
+        </app-incident-ca-workflow-comment>
+    </div>
+</ng-container>
+
+<div class="modal modal-style-1 popup-full-width fade" id="process-popup" data-keyboard="false" data-backdrop="static"
+    #workflowHistory *mobxAutorun>
+    <app-incident-ca-workflow-history *ngIf="workflowHistoryOpened == true"></app-incident-ca-workflow-history>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="process-popup" data-keyboard="false" data-backdrop="static"
+    #workflowModal *mobxAutorun>
+    <app-incident-ca-workflow-popup *ngIf="workflowModalOpened == true"></app-incident-ca-workflow-popup>
+</div>
+
+<!-- file preview modal call -->
+<div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup" data-keyboard="false"
+    data-backdrop="static" #filePreviewModal *mobxAutorun>
+    <button type="button" class="close" (click)="closePreviewModal($event)"><i class="lni-close"></i><span>{{'esc' |
+            translate}}</span></button>
+    <app-incident-preview-modal *ngIf="previewObject" [source]="previewObject" (close)="closePreviewModal($event)">
+    </app-incident-preview-modal>
+</div>

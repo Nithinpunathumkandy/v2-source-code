@@ -1,0 +1,97 @@
+<div #plainDev></div>
+<div class="widget">
+    <div class="audit-program-box audit-page-table-main">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="full-width-table mb-3">
+                    <table class="table table-bordered ordinary-table table-hover issue-list-table-org mb-1"
+                        *ngIf="AuditFindingsStore?.loaded">
+                        <tr class="cursor-pointer" *ngIf="AuditFindingsStore.allItems.length>0">
+                            <th width="3%;" style="text-align: center;">{{'sl' | translate}}</th>
+                            <th style="width: 11%;">{{'ref_no' | translate}}
+                            </th>
+                            <th style="width: 48%;"><span>{{'title' | translate}}</span>
+                            </th>
+                            <th style="width: 14%;">
+                                <span>{{'finding_category' | translate}}</span>
+                            </th>
+                            <th style="width: 10%;"><span>{{'risk' | translate}}</span>
+                            </th>
+                            <th style="width: 10%; text-align: center;">{{'status' | translate}}</th>
+                        </tr>
+                        <ng-container *mobxAutorun>
+                            <tr (click)="AuthStore.getActivityPermission(1600,'FINDING_DETAILS') ? gotToAuditFindingsDetails(row.id) : ''"
+                                class="cursor-pointer" *ngFor="
+                          let row of AuditFindingsStore?.allItems
+                            | paginate
+                              : {
+                                  currentPage: AuditFindingsStore?.currentPage,
+                                  itemsPerPage: AuditFindingsStore?.itemsPerPage,
+                                  totalItems: AuditFindingsStore?.totalItems
+                                };
+                          let num = index
+                        " class="cursor-pointer tr-action edit-and-delete-main">
+                                <td style="text-align: center;">
+                                    {{
+                                    (AuditFindingsStore?.currentPage - 1) *
+                                    AuditFindingsStore?.itemsPerPage +
+                                    (num + 1)
+                                    }}
+                                </td>
+
+                                <td>{{row.reference_code}}</td>
+                                <td title="{{ row.title}}"><a class="cursor-pointer">{{row.title }}</a></td>
+
+                                <td title="{{row?.finding_categories}}">{{row.finding_categories.length > 20 ?
+                                    row.finding_categories.substring(0,20)+' ...' : row.finding_categories}}</td>
+
+                                <td>
+                                    <div *ngIf="row.risk_rating_id==2" class="dot-div orange-dot">{{row.risk_ratings}}
+                                    </div>
+                                    <div *ngIf="row.risk_rating_id==3" class="dot-div yellow-dot">{{row.risk_ratings}}
+                                    </div>
+                                    <div *ngIf="row.risk_rating_id==4" class="dot-div green-dot">{{row.risk_ratings}}
+                                    </div>
+                                    <div *ngIf="row.risk_rating_id==1" class="dot-div red-dot">{{row.risk_ratings}}
+                                    </div>
+
+                                </td>
+
+                                <td class="text-center">
+                                    <div *ngIf="row.finding_status_id==1" class="dot-div violet-dot">
+                                        {{row.finding_status_title}}</div>
+                                    <div *ngIf="row.finding_status_id==2" class="dot-div grey-dot">
+                                        {{row.finding_status_title}}</div>
+                                </td>
+
+                            </tr>
+                        </ng-container>
+                    </table>
+                </div>
+                <ng-container *mobxAutorun>
+                    <div *ngIf="!AuditFindingsStore.loaded">
+                        <app-auditable-item-loader></app-auditable-item-loader>
+                    </div>
+
+                    <app-no-data *ngIf="AuditFindingsStore.totalItems == 0 && AuditFindingsStore.loaded == true">
+                    </app-no-data>
+                </ng-container>
+
+                <div *ngIf="AuditFindingsStore.totalItems>AuditFindingsStore.itemsPerPage" class="col-sm-12">
+                    <ul class="pagination justify-content-center mt-3">
+                        <div class="list">
+                            <pagination-controls (pageChange)="pageChange($event)" class="my-pagination">
+                            </pagination-controls>
+                        </div>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>

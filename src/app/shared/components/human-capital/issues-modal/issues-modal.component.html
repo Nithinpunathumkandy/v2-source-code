@@ -1,0 +1,229 @@
+<button type="button" class="close" data-dismiss="modal" (click)="cancel()"><i class="lni-close"></i><span>{{'esc' |
+        translate}}</span></button>
+<div class="modal-dialog modal-xl modal-dialog-centered" *mobxAutorun>
+    <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header">
+            <h4 class="modal-title">{{'issues_modal_title' | translate}} {{issuesModalTitle?.component | translate}}
+            </h4>
+
+        </div>
+        <!-- Modal body -->
+        <div class="modal-body form-body add-profie-org-pup">
+            <!-- <p class="head-details">Review and select issues to link them with management review meeting plans.</p> -->
+            <p class="head-details">{{'issues_modal_message' | translate}} {{issuesModalTitle?.component | translate}}
+            </p>
+            <div class="row">
+                <div class="col-sm-12 col-lg-6">
+                    <div class="form-group">
+                        <label for="name">{{'search' | translate}}</label>
+                        <!-- <form class="form-control issue-select-process-search bg-white">
+                            <input type="text" placeholder="Search.." (change)="searchIssue($event,'text')"
+                                name="search" class="search-process">
+                            <button type="submit"><i class="fa fa-search"></i></button>
+                        </form> -->
+                        <form class="form-control issue-select-process-search bg-white search-popup-new"
+                            (submit)="searchIssues()">
+                            <input type="text" [(ngModel)]="searchTerm" [placeholder]="'search_here' | translate"
+                                name="search" (keyup)="searchIssues()" class="search-process" autocomplete="off">
+                            <a class="search-clear-btn" (click)="clear()" *ngIf="searchTerm">X</a>
+
+                            <button type="submit" style="width: 40px;" (click)="searchIssues()"><i
+                                    class="fa fa-search"></i></button>
+                        </form>
+                    </div>
+                </div>
+                <div class="col-sm-12 col-lg-6">
+                    <div class="form-group">
+                        <label for="name">{{'issue_category' | translate}}</label>
+                        <div class="clearfix">
+                            <div class="multiple-plain-ngselect">
+                                <ng-select [items]="IssueCategoryStore.issueCategories"
+                                    [placeholder]="'select_issue_category' | translate" [multiple]="false"
+                                    bindLabel="title" bindValue="id" [(ngModel)]="issue_category_id"
+                                    (search)="searchIssueCategory($event)" (change)="sortIssues()"
+                                    (clear)="getIssueCategory()" (open)="getIssueCategory()"
+                                    autocomplete="new-password">
+
+                                </ng-select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-6 col-lg-4">
+                    <div class="form-group">
+                        <label for="name">{{'issue_domain' | translate}}</label>
+                        <div class="clearfix">
+                            <div class="multiple-plain-ngselect">
+                                <ng-select [items]="IssueDomainMasterStore.issueDomains"
+                                    [placeholder]="'select_issue_domain' | translate" [multiple]="false"
+                                    bindLabel="title" bindValue="id" [(ngModel)]="issue_domain_id"
+                                    (search)="searchDomain($event)" (clear)="getDomain()" (change)="sortIssues()"
+                                    (open)="getDomain()" autocomplete="new-password">
+
+                                </ng-select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-4">
+                    <div class="form-group">
+                        <label for="name">{{'issue_type' | translate}}</label>
+                        <div class="clearfix">
+                            <div class="multiple-plain-ngselect">
+                                <ng-select [items]="IssueTypeStore.issueTypes"
+                                    [placeholder]="'select_issue_type' | translate" [multiple]="false"
+                                    [(ngModel)]="issue_type_id" (search)="searchIssueType($event)"
+                                    (clear)="getIssueType()" (open)="getIssueType()" (change)="sortIssues()"
+                                    bindLabel="title" bindValue="id" autocomplete="new-password">
+
+                                </ng-select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-6 col-lg-4">
+                    <div class="form-group">
+                        <label for="name">{{'department' | translate}}</label>
+                        <div class="multiple-plain-ngselect bg-white">
+                            <ng-select [items]="DepartmentStore.allItems" bindLabel="title" bindValue="id"
+                                [placeholder]="'select_department' | translate" [multiple]="false"
+                                [(ngModel)]="department_ids" (search)="searchDepartment($event)"
+                                (clear)="getDepartment()" (open)="getDepartment()" (change)="sortIssues()">
+                            </ng-select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="audit-form-table w-100">
+                <table class="table table-bordered ordinary-table table-hover issue-list-table-org mb-1">
+                    <thead>
+                        <tr>
+                            <th class="border-top-0 issue-list-org-tab-one" width="4%">
+                                <div class="container2">
+                                    <label><input type="checkbox" id="selectall" (change)="selectAllIssues($event)" />
+                                        <span class="checkmark"></span>#</label>
+
+                                </div>
+                            </th>
+                            <th class="border-top-0 issue-list-org-tab-two pointer"
+                                (click)="setIssueSort('organization_issues.reference_code')" width="15%">
+                                {{'ref_id' | translate}}<img
+                                    *ngIf="IssueListStore.orderItem == 'organization_issues.reference_code'"
+                                    [attr.src]="IssueListStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                    class="sort-down-pics">
+                            </th>
+                            <th class="border-top-0 issue-list-org-tab-three pointer" width="25%"
+                                (click)="setIssueSort('organization_issues.title')">{{'issue' | translate}} <img
+                                    *ngIf="IssueListStore.orderItem == 'organization_issues.title'"
+                                    [attr.src]="IssueListStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                    class="sort-down-pics"></th>
+                            <th class="border-top-0 issue-list-org-tab-four pointer" width="15%"
+                                (click)="setIssueSort('organization_issues.type')">{{'issue_type' | translate}} <img
+                                    *ngIf="IssueListStore.orderItem == 'organization_issues.type'"
+                                    [attr.src]="IssueListStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                    class="sort-down-pics"></th>
+                            <th class="border-top-0 issue-list-org-tab-four pointer" width="15%">{{'issue_category' |
+                                translate}} <img *ngIf="IssueListStore.orderItem == 'issue_categories'"
+                                    [attr.src]="IssueListStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                    class="sort-down-pics"></th>
+                            <th class="border-top-0 issue-list-org-tab-four pointer" width="15%">{{'issue_domain' |
+                                translate}} <img *ngIf="IssueListStore.orderItem == 'issue_domains'"
+                                    [attr.src]="IssueListStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                    class="sort-down-pics"></th>
+                            <th class="border-top-0 issue-list-org-tab-five pointer" width="15%">{{'department' |
+                                translate}} <img *ngIf="IssueListStore.orderItem == 'departments'"
+                                    [attr.src]="IssueListStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                    class="sort-up-pics"></th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+
+
+                        <tr [attr.title]="'View '+il.issues_title"
+                            *ngFor="let il of IssueListStore.issueListDetails | paginate: {id:'issue-modal',currentPage:IssueListStore?.currentPage, itemsPerPage:IssueListStore?.itemsPerPage,totalItems:IssueListStore?.totalItems};let num = index">
+
+                            <td>
+
+                                <div class="container2">
+                                    <label><input class="pointer" type="checkbox" [checked]="issuePresent(il.id)"
+                                            (change)="issueSelected(il)" class="case" name="case" />
+                                        <span class="checkmark"></span>{{(IssueListStore?.currentPage - 1) *
+                                        IssueListStore?.itemsPerPage + (num + 1)}}</label>
+                                </div>
+                            </td>
+                            <td>{{il.reference_code}}</td>
+                            <td>
+                                {{il.issues_title?il.issues_title:AppStore.noContentText}}
+                            </td>
+                            <td *ngIf="il.issue_types_list?.length>0">
+                                <span *ngFor="let types of il.issue_types_list" class="risk-type-bx risk-type-bx-drop">
+                                    <i><img [attr.src]="types == 'Internal' ? 'assets/images/internal.svg' : 'assets/images/external.svg'"
+                                            style="width: 15px;">{{types}}</i>&nbsp;
+                                </span>
+                            </td>
+                            <td *ngIf="il.issue_types_list?.length==0">
+                                {{ AppStore.noContentText }}
+                            </td>
+                            <td [attr.title]="il.issue_categories">
+                                {{ il.issue_categories.length > 25 ? il.issue_categories.substring(0,25)+'...' :
+                                il.issue_categories }}
+                            </td>
+                            <td *ngIf="il.issue_domains" [attr.title]="il.issue_domains">
+                                {{ il.issue_domains?.length > 25 ? il.issue_domains.substring(0,25)+'...' :
+                                il.issue_domains }}
+                            </td>
+                            <td *ngIf="!il.issue_domains">
+                                {{ AppStore.noContentText }}
+                            </td>
+                            <td class="edit-and-delete-main">
+                                {{il.departments}}
+
+                            </td>
+
+                        </tr>
+
+
+                    </tbody>
+
+                </table>
+                <app-no-data-list *ngIf="IssueListStore.loaded && IssueListStore.issueListDetails.length == 0"
+                    [source]="emptyIssue"></app-no-data-list>
+                <!-- <div *ngIf="IssueListStore.loaded && IssueListStore.issueListDetails.length == 0"
+                    class="no-policy-demo-text bg-white d-flex align-items-center w-100 mt-2" style="height: 200px">
+                    <div class="no-policy-demo">
+                        <div class="no-file-icon">
+                            <i class="far fa-file"></i>
+                        </div>
+                        <h6 class="bold mb-0">No Issues Has Been Reported</h6>
+                    </div>
+                </div> -->
+
+
+            </div>
+            <div class="col-sm-12" *ngIf="IssueListStore?.totalItems > IssueListStore?.itemsPerPage">
+                <ul class="pagination justify-content-center mt-3">
+                    <div class="list">
+                        <pagination-controls (pageChange)="pageChange($event)" id="issue-modal" class="my-pagination">
+                        </pagination-controls>
+                    </div>
+                </ul>
+            </div>
+
+            <div class="d-block justify-content-left border-0 mt-3">
+                <button type="button" data-toggle="modal" class="btn mr-3 btn-active" (click)="save()"
+                    [disabled]="selectedIssues.length==0">{{'add' | translate}}</button>
+                <button type="button" data-toggle="modal" class="btn mr-3" (click)="save(true)"
+                    [disabled]="selectedIssues.length==0">{{'add_close' | translate}}</button>
+                <button type="button" data-toggle="modal" class="btn mr-2" (click)="cancel()">{{'cancel' |
+                    translate}}</button>
+            </div>
+
+        </div>
+        <!-- Modal footer -->
+    </div>
+</div>

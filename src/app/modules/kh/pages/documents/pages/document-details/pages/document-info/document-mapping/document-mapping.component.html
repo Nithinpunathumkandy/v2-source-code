@@ -1,0 +1,327 @@
+
+
+<div 
+    class="tab-pane tab-edit-class" id="risk-mapping">
+
+    <div class="common-tab-md clearfix" *mobxAutorun>
+        <div class="tab-common-left-md">
+            <div class=" issues-tab">
+                <ul class="nav nav-tabs nav-tabs--vertical nav-tabs--left vertical-tab" role="navigation">
+                    <li 
+                    *ngIf="OrganizationModulesStore.checkOrganizationModules(100)" 
+                    class="nav-item"> <a (click)="gotoSection('issue')" href="#tab-one" class="nav-link active"
+                            data-toggle="tab" role="tab" aria-controls="ipsum" aria-selected="false"> {{'issues' |
+                            translate}}</a></li>
+
+                    <li 
+                    *ngIf="OrganizationModulesStore.checkOrganizationModules(600)"
+                    class="nav-item"> <a (click)="gotoSection('process')" class="nav-link" data-toggle="tab"
+                        role="tab" aria-controls="lorem" aria-selected="false">{{'process' | translate}}</a></li>
+                   
+                    
+                    <li 
+                    *ngIf="OrganizationModulesStore.checkOrganizationModules(900)" 
+                    class="nav-item"> <a (click)="gotoSection('risk')" class="nav-link" data-toggle="tab" role="tab"
+                        aria-controls="lorem" aria-selected="false"> {{'risks' | translate}}</a></li>
+                    
+                    
+                    
+                    
+                    <li
+                    *ngIf="OrganizationModulesStore.checkOrganizationModules(3900)"
+                    class="nav-item"> <a (click)="gotoSection('audit_finding')" class="nav-link" data-toggle="tab" role="tab"
+                        aria-controls="lorem" aria-selected="false"> {{'audit_findings' | translate}}</a></li>
+                    
+                   
+                </ul>
+            </div>
+        </div>
+
+
+        <div class="tab-common-left-content-m bg-white cmn-bdr p-3 min-height-83">
+            <div class="tab-content">
+
+                <div *ngIf="selectedSection=='issue'" class="tab-pane fade active show" id="tab-one" role="tabpanel">
+                    <div class="cmn-bdr py-2 px-3 d-flex mb-3 align-items-center" *ngIf="DocumentsStore._documentMappingDetails?.organization_issues?.length>0">
+                        <h6 class="mb-0 w-100">{{'issues' | translate}}</h6>
+                        <div class="text-right ml-2" style="width: 100px;">
+                            <button *ngIf="AuthStore.getActivityPermission(1600,'ISSUE_MEETING_PLAN_MAPPING_CREATE') && 
+                            DocumentsStore.documentMappingDetailsLoaded && DocumentsStore._documentMappingDetails.organization_issues.length>0" type="button" (click)="selectIssues()"
+                                class="btn btn-small" data-toggle="modal" data-target="#choose-process-popup"
+                                style="margin: 0 !important;">{{'select' | translate}}</button>
+                        </div>
+                    </div>
+                    <div class="no-fixed-table mb-4">
+                        <table class="table table-bordered ordinary-table cmn-table-style mb-1 word-break"
+                            *ngIf="DocumentsStore.documentMappingDetailsLoaded && DocumentsStore._documentMappingDetails?.organization_issues?.length>0">
+                            <tr>
+                                <th class="border-top-0" width="4%">#</th>
+                                <th class="border-top-0" width="10%">{{'ref_id' | translate}}</th>
+                                <th class="border-top-0" width="23%">{{'issue' | translate}}</th>
+                                <th class="border-top-0" width="13%">{{'issue_types' | translate}}</th>
+                                <th class="border-top-0" width="15%">{{'issue_categories' | translate}}</th>
+                                <th class="border-top-0" width="20%">{{'issue_domains' | translate}}</th>
+                                <th class="border-top-0" width="15%">{{'departments' | translate}}</th>
+                            </tr>
+                            <tr class="pointer edit-and-delete-main"
+                                *ngFor="let selected of DocumentsStore._documentMappingDetails.organization_issues; let list=index">
+                                <td class="text-center">{{list+1}}</td>
+                                <td>#{{selected.reference_code}}</td>
+                                <td>{{selected.issues_title?selected.issues_title:selected.title}}</td>
+                                <td *ngIf=" passOrganizationIssueIypes(selected.organization_issue_types)?.length>0">
+                                    <span
+                                        *ngFor="let types of passOrganizationIssueIypes(selected.organization_issue_types)"
+                                        class="risk-type-bx risk-type-bx-drop">
+                                        <i><img
+                                                [attr.src]="types == 'Internal' ? 'assets/images/internal.svg' : 'assets/images/external.svg'" style="width: 15px;"></i>&nbsp;{{types}}
+                                    </span>
+                                </td>
+                                <td *ngIf=" passOrganizationIssueIypes(selected.organization_issue_types)?.length==0">
+                                    {{ AppStore.noContentText }}
+                                </td>
+                                <td>
+                                    {{ passOrganizationIssueCategories(selected.organization_issue_categories)?
+                                    passOrganizationIssueCategories(selected.organization_issue_categories):AppStore.noContentText}}
+                                </td>
+                                <td>
+                                    {{
+                                    passIssueDomains(selected.organization_issue_domains)?passIssueDomains(selected.organization_issue_domains):AppStore.noContentText}}
+                                </td>
+                                <td>
+                                    {{passdepartments(selected.organization_issue_departments) }}
+                                    <div  class="edit-option-show">
+                                        <a *ngIf="AuthStore.getActivityPermission(1600,'DELETE_ISSUE_MEETING_PLAN_MAPPING')"
+                                            (click)="deleteIssueMapping(selected.id)"
+                                            [attr.title]="'delete' | translate"><i class="fas fa-trash pointer"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+
+                        </table>
+                        <ng-container *mobxAutorun>
+                            <app-no-data
+                                *ngIf="DocumentsStore.documentMappingDetailsLoaded && DocumentsStore._documentMappingDetails.organization_issues.length == 0"
+                                [border]='false'></app-no-data>
+                        </ng-container>
+                    </div>
+                </div>
+
+                <div *ngIf="selectedSection=='process'" class="tab-pane fade active show" id="tab-two" role="tabpanel">
+                    <div class="no-fixed-table mb-4">
+                        <div class="cmn-bdr py-2 px-3  d-flex mb-3 align-items-center"
+                        *ngIf="DocumentsStore._documentMappingDetails.processes.length>0">
+                          <h6 class="mb-0 w-100">{{'processes' | translate}}</h6>
+                          <div class="text-right ml-2" style="width: 100px;">
+                             <button *ngIf="DocumentsStore._documentMappingDetails?.processes?.length>0"
+                             type="button" (click)="selectProcesses()" class="btn btn-small" data-toggle="modal"
+                                data-target="#choose-process-popup" style="margin: 0 !important;">{{'select' | translate}}</button>
+                          </div>
+                    </div>
+
+                        <table class="table table-bordered ordinary-table cmn-table-style mb-1 word-break"
+                            *ngIf="DocumentsStore.documentMappingDetailsLoaded && DocumentsStore._documentMappingDetails.processes.length > 0">
+                            <tr>
+                                <th class="border-top-0" width="4%">#</th>
+                                <th class="border-top-0" width="9%">{{'ref_id' | translate}}</th>
+                                <th class="border-top-0" width="25%">{{'process_group' | translate}}</th>
+                                <th class="border-top-0" width="33%">{{'process' | translate}}</th>
+                                <th class="border-top-0" width="20%">{{'process_category' | translate}}</th>
+                                <th class="border-top-0" width="24%">{{'departments' | translate}}</th>
+                            </tr>
+                            <tr class="pointer edit-and-delete-main"
+                                *ngFor="let selected of DocumentsStore._documentMappingDetails.processes; let list=index">
+                                <td class="text-center">{{list+1}}</td>
+                                <td>#{{selected?.reference_code}}</td>
+                                <td>{{selected?.process_group?.title}}</td>
+                                <td> {{selected?.title}}
+                                </td>
+                                <td>{{selected?.process_category?.title? selected?.process_category?.title: AppStore.noContentText}}</td>
+                                <td>
+                                    {{selected?.department}}
+                                    <div  class="edit-option-show">
+                                        <a 
+                                            (click)="deleteProcessMapping(selected.id)"
+                                            [attr.title]="'delete' | translate"><i class="fas fa-trash pointer"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <ng-container *mobxAutorun>
+                            <app-no-data
+                                *ngIf="DocumentsStore.documentMappingDetailsLoaded && DocumentsStore._documentMappingDetails.processes.length == 0"
+                                [border]='false'></app-no-data>
+                        </ng-container>
+
+                    </div>
+                </div>
+
+                
+
+                <div *ngIf="selectedSection=='risk'" class="tab-pane fade active show" id="tab-three" role="tabpanel">
+                    <div class="no-fixed-table mb-4">
+                        <div class="cmn-bdr py-2 px-3 d-flex mb-3 align-items-center" *ngIf="DocumentsStore.documentMappingDetailsLoaded && DocumentsStore._documentMappingDetails?.risks?.length > 0">
+                            <h6 class="mb-0 w-100">{{'risks' | translate}}</h6>
+                            <div class="text-right ml-2" style="width: 100px;">
+                                <button *ngIf=" 
+                                DocumentsStore.documentMappingDetailsLoaded && DocumentsStore._documentMappingDetails?.risks?.length > 0" type="button" (click)="selectRisk()"
+                                    class="btn btn-small" data-toggle="modal" data-target="#choose-process-popup"
+                                    style="margin: 0 !important;">{{'select' | translate}}</button>
+                            </div>
+                        </div>
+                        <!-- <div class="clearfix">
+                            <button type="button" class="btn btn-small float-right mb-2" (click)="selectRisk()"
+                                *ngIf=" AuthStore.getActivityPermission(1600,'RISK_MEETING_PLAN_MAPPING_CREATE')&& 
+                                MappingStore.loaded && MappingStore.mappingDetails?.risks?.length > 0 &&
+                                MappingStore.mappingDetails?.meeting_plan_status?.id!=4">{{'select' | translate}}</button>
+                        </div> -->
+                        <table class="table table-bordered ordinary-table cmn-table-style mb-1 word-break"
+                            *ngIf="DocumentsStore.documentMappingDetailsLoaded && DocumentsStore._documentMappingDetails?.risks?.length > 0">
+                            <tr>
+                                <th class="border-top-0" width="4%">#</th>
+                                <th class="border-top-0" width="9%">{{'ref_id' | translate}}</th>
+                                <th class="border-top-0" width="25%">{{'risk' | translate}}</th>
+                                <th class="border-top-0" width="25%">{{'department' | translate}}</th>
+                                <th class="border-top-0" width="23%">{{'risk_category' | translate}}</th>
+                                <th class="border-top-0" width="25%">{{'risk_type' | translate}}</th>
+                            </tr>
+                            <tr class="pointer edit-and-delete-main" *ngFor="let selected of risk; let list=index">
+                                <td class="text-center">{{list+1}}</td>
+                                <td>{{selected.reference_code}}</td>
+                                <td>{{selected.title}}</td>
+                                <td> {{checkDepartment(selected.departments)}}
+                                </td>
+                                <td>{{ checkRiskCategory(selected.risk_category?.title
+                                    ?selected.risk_category?.title:selected.risk_category_title)}}</td>
+                                <td>{{checkRiskType(selected.risk_types)}}
+                                    <div  class="edit-option-show">
+                                        <a
+                                            (click)="deleteRiskMapping(selected.id)"
+                                            [attr.title]="'delete' | translate"><i class="fas fa-trash pointer"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <ng-container *mobxAutorun>
+                            <app-no-data
+                                *ngIf="DocumentsStore.documentMappingDetailsLoaded && DocumentsStore._documentMappingDetails?.risks?.length == 0"
+                                [border]='false'></app-no-data>
+                        </ng-container>
+
+                    </div>
+                </div>
+
+                
+
+
+                
+
+
+                <div *ngIf="selectedSection=='audit_finding'" class="tab-pane fade active show" id="tab-three" role="tabpanel">
+                    <div class="no-fixed-table mb-4">
+                        <div class="cmn-bdr py-2 px-3 d-flex mb-3 align-items-center" *ngIf="DocumentsStore._documentMappingDetails?.findings?.length > 0">
+                            <h6 class="mb-0 w-100">{{'audit_findings' | translate}}</h6>
+                            <div class="text-right ml-2" style="width: 100px;">
+                                <button  *ngIf=" 
+                                DocumentsStore.documentMappingDetailsLoaded && DocumentsStore._documentMappingDetails?.findings?.length > 0 " type="button" (click)="selectFindings()"
+                                    class="btn btn-small" data-toggle="modal" data-target="#choose-process-popup"
+                                    style="margin: 0 !important;">{{'select' | translate}}</button>
+                            </div>
+                        </div>
+                        <!-- <div class="clearfix">
+                            <button type="button" class="btn btn-small float-right mb-2" (click)="selectFindings()"
+                                *ngIf=" AuthStore.getActivityPermission(1600,'FINDINGS_MEETING_PLAN_MAPPING_CREATE') && 
+                                MappingStore.loaded && MappingStore.mappingDetails?.findings?.length > 0 &&
+                                MappingStore.mappingDetails?.meeting_plan_status?.id!=4">{{'select' | translate}}</button>
+                        </div> -->
+                        <table class="table table-bordered ordinary-table cmn-table-style mb-1 word-break"
+                            *ngIf=" DocumentsStore.documentMappingDetailsLoaded && DocumentsStore._documentMappingDetails?.findings?.length > 0">
+                            <tr>
+                                <th class="border-top-0" width="4%">#</th>
+                                <th class="border-top-0" width="51%">{{'title' | translate}}</th>
+                                <th class="border-top-0" width="15%">{{'audit_category' | translate}}</th>
+                                <th class="border-top-0" width="15%">{{'risk' | translate}}</th>
+                                <th class="border-top-0" width="15%">{{'status' | translate}}</th>
+                            </tr>
+                            <tr class="edit-and-delete-main"
+                                *ngFor="let row of findings; let list=index">
+                                <td class="text-center">{{list+1}}</td>
+                                <td >{{row?.title? row?.title: AppStore.noContentText }}
+                                </td>
+                                <td >{{row?.finding_category?.title?row?.finding_category?.title:AppStore.noContentText}}</td>
+                                <td >
+                                    <div class="dot-div {{row?.risk_rating?.label}}-dot">{{row?.risk_rating?.language[0]?.pivot?.title}} </div>
+                                </td>
+                                <td>
+                                    <div  class="edit-option-show">
+                                        <a 
+                                            (click)="deleteFindingsMapping(row.id)"
+                                            [attr.title]="'delete' | translate"><i class="fas fa-trash pointer"></i></a>
+                                    </div>
+                                    <div class="dot-div {{row?.finding_status?.label}}">{{row?.finding_status?.language[0]?.pivot?.title}}</div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <ng-container *mobxAutorun>
+                            <app-no-data
+                                *ngIf="DocumentsStore.documentMappingDetailsLoaded && DocumentsStore._documentMappingDetails?.findings?.length == 0"
+                                [border]='false'></app-no-data>
+                        </ng-container>
+
+                    </div>
+                </div>
+
+                
+
+            </div>
+        </div>
+    </div>
+    <!-- common-tab-md end -->
+
+</div>
+
+
+<!-- <ng-container *mobxAutorun>
+    <div *ngIf="!MappingStore?.loaded">
+        <app-plan-detail-mapping-loader></app-plan-detail-mapping-loader>
+    </div>
+</ng-container> -->
+
+<div class="modal modal-style-1 popup-full-width fade" id="issue-popup" data-keyboard="false" data-backdrop="static"
+    #issueFormModal *mobxAutorun>
+    <app-issues-modal *ngIf="IssueListStore.issue_select_form_modal" [issuesModalTitle]="modalObject">
+    </app-issues-modal>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="process-popup" data-keyboard="false" data-backdrop="static"
+    #processFormModal *mobxAutorun>
+    <app-addprocess *ngIf="DocumentsStore.processes_select_form_modal" [processModalTitle]="modalObject">
+    </app-addprocess>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="risk-popup" data-keyboard="false" data-backdrop="static"
+    #riskFormModal *mobxAutorun>
+    <app-add-risk-mapping-kh *ngIf="DocumentsStore.risk_select_form_modal" [riskModalTitle]="modalObject">
+    </app-add-risk-mapping-kh>
+</div>
+
+
+
+
+<!-- 9.object mapping -->
+<div class="modal modal-style-1 popup-full-width fade" id="finding-popup" data-keyboard="false" data-backdrop="static"
+    #findingFormModal *mobxAutorun>
+    <app-add-audit-finding-modal-kh *ngIf="AuditFindingsStore.finding_select_form_modal"
+    [strategicModalTitle]="modalObject"></app-add-audit-finding-modal-kh>
+</div>
+
+
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="deleteObject"></app-delete-popup>
+</div>
+

@@ -1,0 +1,87 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navBar>
+   <app-sub-menu>-</app-sub-menu>
+   <ul class="nav nav-pills float-left d-none d-lg-block" role="tablist">
+      <li class="nav-item">
+         <a class="nav-link nav-link-show" [routerLink]="['/strategy-management/strategy-mappings']"
+            routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"> {{'strategy_profiles' | translate}}</a>
+      </li>
+   </ul>
+</nav>
+<main class="mt-3 acl-page" *mobxAutorun>
+   <div class="container-fluid">
+      <div class="audit-program-box audit-page-table-main">
+         <div class="row">
+            <div class="col-sm-12 full-width-table">
+               <table *ngIf="StrategyStore.allItems.length > 0 && StrategyStore.loaded"
+                  class="table table-bordered ordinary-table audit-page-table mb-4 table-scroll">
+                  <thead>
+                     <tr>
+                        <th class="border-top-0" width="2%">#</th>
+                        <th class="border-top-0 pointer" width="6%" (click)="sortTitle('strategy_profiles.reference_code')">
+                           <span>{{'ref_id' | translate}}</span>
+                           <img _ngcontent-twv-c17="" *ngIf="StrategyStore.orderItem=='strategy_profiles.reference_code'" [attr.src]="StrategyStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" class="sort-down-pics ml-2">
+                        </th>
+                        <th class="border-top-0 pointer" width="35%" (click)="sortTitle('strategy_profiles.title')">
+                           <span>{{'title' | translate}}</span>
+                           <img _ngcontent-twv-c17="" *ngIf="StrategyStore.orderItem=='strategy_profiles.title'" [attr.src]="StrategyStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" class="sort-down-pics ml-2">
+                        </th>
+                        <th class="border-top-0 pointer" width="22%" (click)="sortTitle('strategy_profiles.duration')">
+                           <span>{{'duration' | translate}}</span>
+                           <img _ngcontent-twv-c17="" *ngIf="StrategyStore.orderItem=='strategy_profiles.duration'"
+                              [attr.src]="StrategyStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" class="sort-down-pics ml-2">
+                        </th>
+                        <th class="border-top-0" width="12%">{{'created_by' | translate}}</th>
+                        <th class="border-top-0" width="12%">{{'department' | translate}}</th>
+                        <th class="border-top-0" width="10%">{{'status' | translate}}</th>
+                     </tr>
+                  </thead>
+                  <tbody>
+                     <tr class="edit-option"
+                        *ngFor="let items of StrategyStore.allItems| paginate: {currentPage:StrategyStore.currentPage, itemsPerPage:StrategyStore.itemsPerPage,totalItems:StrategyStore.totalItems};let num=index "
+                        (click)="gotoDetails(items.id)">
+                        <td>{{(StrategyStore.currentPage - 1) * StrategyStore.itemsPerPage + (num + 1)}}</td>
+                        <td>{{items?.reference_code}}</td>
+                        <td [title]="items?.title">{{items?.title?.length > 70 ? items?.title.substring(0,70)+' ...' : items?.title}}</td>
+                        <td>{{items?.start_date | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}} to {{items?.end_date |
+                           date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</td>
+                        <td>
+                           <div class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                              <img *ngIf="items.created_by_image_token" data-toggle="modal" data-target="#user02" data-ui-class="a-zoom"
+                                 [attr.src]="createImagePreview('user-profile-picture',items.created_by_image_token)"
+                                 width="30px" height="30px" class="rounded-circle rounde-hov details-show-popup"
+                                 onerror="this.src='/assets/images/user-demo2.png'">
+                              <img *ngIf="!items.created_by_image_token" [attr.src]="getDefaultImage('user-logo')" width="30px" height="30px" class="rounded-circle" onerror="this.src='/assets/images/user-demo2.png'">
+                              <div class="pointer">
+                                 <h6>{{items?.created_by_first_name ? items?.created_by_first_name : AppStore.noContentText }} {{items?.created_by_last_name ? items?.created_by_last_name : AppStore.noContentText }}</h6>
+                                 <span>{{items?.created_by_designation ? items?.created_by_designation : AppStore.noContentText}}</span>
+                              </div>
+                           </div>
+                        </td>
+                        <td>{{items?.departments ? items?.departments : AppStore.noContentText}}</td>
+                        <td>
+                           <div [attr.class]="'dot-div '+items.strategy_profile_status_label+'-dot'">{{items?.strategy_profile_status_title}}</div>
+                        </td>
+                     </tr>
+                  </tbody>
+               </table>
+               <ng-container *mobxAutorun>
+                  <div *ngIf="!StrategyStore.loaded">
+                     <app-table-loader></app-table-loader>
+                  </div>
+                  <app-no-data *ngIf="StrategyStore.allItems.length == 0 && StrategyStore.loaded == true"></app-no-data>
+               </ng-container>
+            </div>
+         </div>
+      </div>
+      <div *ngIf="StrategyStore.totalItems>StrategyStore.itemsPerPage" class="col-sm-12">
+         <ul class="pagination justify-content-center mt-3">
+            <div class="list">
+               <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+                  class="my-pagination" (pageChange)="pageChange($event)">
+               </pagination-controls>
+            </div>
+         </ul>
+      </div>
+   </div>
+</main>

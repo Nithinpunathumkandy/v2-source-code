@@ -1,0 +1,474 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navBar>
+   <div class="module-name-block module-name-block-space float-left">
+      <a class="dropdown module-title">{{'documents'|translate}}</a>
+   </div>
+   <app-sub-menu></app-sub-menu>
+</nav>
+
+<main class="user-details-page user-details-special folder-page-main  mt-3">
+
+   <!-- Filter Tag  -->
+   <app-filter-menu></app-filter-menu>
+
+   <div class="container-fluid">
+      <div class="widget">
+         <div class="row">
+            <div class="col-sm-12">
+
+               <div class="d-flex document-new-tabs bg-white">
+                  <!-- Left Side Navigation Menu Starts Here -->
+                  <div class="folder-options pt-2 pb-2">
+                     <ul class="folder-options-main-ul nav nav-tabs">
+                        <li class="nav-item"><a (click)="listDocuments('master',true)" [ngClass]="setClass('master')"
+                              data-toggle="tab"><i class="fal fa-file"></i> {{'master_list' | translate}}</a></li>
+                        <li class="nav-item"><a (click)="listDocuments('private',true)" [ngClass]="setClass('private')"
+                              data-toggle="tab"><i class="fal fa-lock"></i> {{'my_documents' | translate}}</a></li>
+                        <li class="nav-item"><a (click)="listDocuments('public',true)" [ngClass]="setClass('public')"
+                              data-toggle="tab"><i class="fal fa-globe-americas"></i> {{'public' | translate}}</a></li>
+                        <li class="nav-item"><a (click)="listDocuments('shared',true)" [ngClass]="setClass('shared')"
+                              data-toggle="tab"><i class="fal fa-share"></i> {{'shared' | translate}}</a></li>
+                        <li class="nav-item"><a (click)="listDocuments('review',true)" [ngClass]="setClass('review')"
+                              data-toggle="tab"><i class="fal fa-stopwatch"></i> {{'in_review' | translate}}</a></li>
+                        <li  class="nav-item"><a (click)="listDocuments('archive',true)" [ngClass]="setClass('archive')"
+                              data-toggle="tab"><i class="fal fa-stopwatch"></i> {{'archive' | translate}}</a></li>
+                        <li class="nav-item nav-with-icon"><a (click)="showDocumentTypes()" data-toggle="collapse"
+                              data-target="#demo3" class="folder-menu-link collapsed"
+                              [ngClass]="documentTypeList?'folder-menu-link active':'folder-menu-link collapsed'"
+                              aria-expanded="false"><i class="far fa-folder"></i> {{'document_type' | translate}}</a>
+                           <ul class="folder-options-inner-ul collapse nav nav-tabs" id="demo3">
+                              <li *ngFor="let item of DocumentTypeMasterStore.allItems"><a *ngIf="item.is_important"
+                                    (click)="listDocuments('doc_type',true,item.id,item.title)"
+                                    [ngClass]="setClass(item.title,'multiple')" data-toggle="tab">{{item.title}}</a>
+                              </li>
+                           </ul>
+                        </li>
+                        <li class="nav-item"><a (click)="listDocuments('new',true)" [ngClass]="setClass('new')"
+                              data-toggle="tab"><i class="fal fa-file"></i> {{'new' | translate}}</a></li>
+                        <li class="nav-item"><a (click)="listDocuments('recent',true)" [ngClass]="setClass('recent')"
+                              data-toggle="tab"><i class="far fa-clock"></i> {{'recent' | translate}}</a></li>
+                        <li class="nav-item"><a (click)="listDocuments('starred',true)" [ngClass]="setClass('starred')"
+                              data-toggle="tab"><i class="far fa-star"></i> {{'starred' | translate}}</a></li>
+                        <li class="nav-item"><a (click)="listDocuments('trash',true)" [ngClass]="setClass('trash')"
+                              data-toggle="tab"><i class="far fa-trash-alt"></i> {{'trash' | translate}}</a></li>
+                     </ul>
+                  </div>
+                  <!-- Left Side Navigation Menu Ends Here -->
+                  <div class="w-100 p-3">
+                     <!-- BreadCrumb Menu Starts Here -->
+                     <div class="row">
+                        <div class="col-md-12">
+                           <div class="brudcrumb">
+                              <ul class="clearfix">
+                                 <li><a
+                                       (click)="listDocuments(DocumentsStore.selectedSideMenu,true)">{{setBreadCrumbText()}}</a>
+                                 </li>
+                                 <li *ngIf="DocumentsStore.breadCrumbStatus" class="right-arow"><a><i
+                                          class="fas fa-chevron-right"></i></a></li>
+                                 <div *ngFor="let item of DocumentsStore.breadCrumb let indexMain=index">
+                                    <li (click)='getFolderDetails(true,item.id,item,DocumentsStore.listStyle)'> <a>
+                                          {{item.breadCrumbTitle}}</a></li>
+                                    <li *ngIf="DocumentsStore.breadCrumb.length > 1 && checkIndex(item)"
+                                       class="right-arow"><a><i class="fas fa-chevron-right"></i></a></li>
+                                 </div>
+
+                              </ul>
+                           </div>
+                        </div>
+                     </div>
+
+                     <!-- BreadCrumb Menu Ends Here -->
+
+                     <div class="tab-content" class="min-height-750" *mobxAutorun>
+                        <div class="tab-pane fade active show" id="tab-one" role="tabpanel">
+                           <!-- Document Listing Starts -->
+                           <div class="tab-content">
+                              <!-- Grid View Starts -->
+                              <div
+                                 [ngClass]="DocumentsStore.listStyle=='grid'?'tab-pane tab-edit-class active' : 'tab-pane tab-edit-class fade'">
+                                 <div class="bg-white p-3">
+                                    <div class="clearfix d-flex">
+                                       <div class="folder-section">
+                                          <div id="maindiv" *mobxAutorun>
+                                             <div id="dragdiv">
+                                                <!-- Grid Loader -->
+                                                <app-document-list-loader *ngIf="!DocumentsStore.documentsLoaded">
+                                                </app-document-list-loader>
+                                                <!-- No Data Default Image -->
+                                                <app-no-data-list [border]=false [source]="documentEmptyList"
+                                                   *ngIf="DocumentsStore.documentsLoaded && DocumentsStore.documentsList.length == 0">
+                                                </app-no-data-list>
+
+                                                <ul *ngIf="DocumentsStore.documentsLoaded" id="allItems" runat="server"
+                                                   class="folder-loop  clearfix">
+                                                   <!-- folder sec starts -->
+                                                   <li title="{{docs.title}}" style="min-height: 250px!important"
+                                                      *ngFor="let docs of DocumentsStore.documentsList | paginate: {currentPage: DocumentsStore?.currentPage,itemsPerPage: DocumentsStore?.itemsPerPage,totalItems: DocumentsStore?.totalItems} ;let i = index"
+                                                      class="folder-box-document" id="node1"
+                                                      (contextmenu)="openOptions($event,i)">
+                                                      <span *ngIf="!docs.is_folder"
+                                                         class="document-label-folder bg-light-blue">{{docs.document_type_title?docs.document_type_title:'Document'}}</span>
+                                                      <!-- Folder Data Preview-->
+                                                      <a (click)="gotoFolder(docs.is_folder,docs.id,docs.title)"
+                                                         *ngIf="docs.is_folder" class="folder-one">
+                                                         <img class="folder-picher"
+                                                            src="/assets/images/folder-icone.png">
+                                                         <button *ngIf="DocumentsStore.selectedSideMenu!='trash'"
+                                                            type="text"
+                                                            (click)="starDocument(docs.is_folder,docs.is_starred,docs.id)"
+                                                            [ngClass]="docs.is_starred?'btn-folder btn-stars active':'btn-folder btn-stars'"><i
+                                                               class="fas fa-star"></i></button>
+                                                         <span class="icon-indication-folder"><i
+                                                               [ngClass]="docs.document_access_type_icon_class"></i></span>
+                                                         <span class="btn-folder number-folder">{{docs.count}}</span>
+                                                      </a>
+
+
+                                                      <!-- Default Document Preview -->
+                                                      <a (click)="gotoFolder(docs.is_folder,docs.id,docs.title)"
+                                                         *ngIf="!docs.is_folder" class="folder-one folder-documents">
+                                                         <img *ngIf="docs.token"
+                                                            [attr.src]="createImageUrl('document-version',docs.token,119,165)"
+                                                            onerror="this.src='/assets/images/no-image-popup-icon.png'"
+                                                            style="height: 130px;" class="folder-picher">
+                                                         <img *ngIf="!docs.token" style="height: 130px;"
+                                                            src="/assets/images/no-image-popup-icon.png"
+                                                            class="folder-picher">
+                                                         <button *ngIf="DocumentsStore.selectedSideMenu!='trash'"
+                                                            type="text"
+                                                            (click)="starDocument(docs.is_folder,docs.is_starred,docs.id)"
+                                                            [ngClass]="docs.is_starred?'btn-folder btn-stars active':'btn-folder btn-stars'"><i
+                                                               class="fas fa-star"></i></button>
+                                                         <span class="icon-indication-folder"><i
+                                                               [ngClass]="docs.document_access_type_icon_class"></i></span>
+                                                      </a>
+                                                      <p>
+                                                         {{docs.title?.length > 13 ? docs.title.substring(0,13)+' ...' :
+                                                         docs.title }}
+                                                      </p>
+                                                      <h5>{{docs.created_at | date :'MMM d, y'}}</h5>
+                                                      <div class="option-box advanced-option-document"
+                                                         *ngIf="i==activeIndex"
+                                                         [ngStyle]="{display:show?'block':'none'}" #options>
+                                                         <!-- option-box starts -->
+                                                         <ul class="clearfix">
+                                                            <!-- Download Option -->
+                                                            <li *ngIf="!docs.is_folder"><a (click)="downloadDocument(docs,docs.is_folder)"><i
+                                                                     class="fas fa-download"></i> Download</a></li>
+                                                                     <!-- Restore Option -->
+                                                            <li
+                                                               *ngIf="restoreFlag && AuthStore.user.id==docs.created_by">
+                                                               <a
+                                                                  (click)="rightClickMenu('restore',docs.id,docs.is_folder)"><i
+                                                                     class="fas fa-recycle"></i> Restore</a></li>
+                                                                     <!-- Delete Option -->
+                                                            <li *ngIf="checkDeletePermission(docs)">
+                                                               <a
+                                                                  (click)="rightClickMenu('delete',docs.id,docs.is_folder)"><i
+                                                                     class="fas fa-trash-alt"></i>
+                                                                  {{restoreFlag?'Permanent Delete':'Delete'}}</a></li>
+                                                                  <!-- Rename Option -->
+                                                            <li
+                                                               *ngIf="docs.is_folder && DocumentsStore.selectedSideMenu!='trash'">
+                                                               <a
+                                                                  (click)="rightClickMenu('rename',docs.id,docs.is_folder,docs.title)"><i
+                                                                     class="fas fa-edit"></i> Rename</a></li>
+                                                            <li *ngIf="docs.is_folder"><a
+                                                                  (click)="openFolderDetails(docs.id)"><i
+                                                                     class="fas fa-info-circle"></i> Details</a></li>
+                                                             <li *ngIf="!docs.is_folder"><a
+                                                                        (click)="rightClickMenu('share', docs.id,null,null,docs.document_version_id)"><i
+                                                                        class="fas fa-share"></i> {{'share' | translate}}</a>
+                                                             </li>         
+                                                         </ul>
+                                                      </div>
+                                                   </li>
+                                                </ul>
+                                             </div>
+                                          </div>
+                                          <div class="row">
+                                             <!-- Grid View Pagination Starts Here -->
+                                             <div
+                                                *ngIf="DocumentsStore.totalItems > DocumentsStore.itemsPerPage && DocumentsStore?.documentsLoaded"
+                                                class="col-sm-12 ">
+                                                <ul class="pagination justify-content-center mt-3">
+                                                   <div class="list">
+                                                      <pagination-controls (pageChange)="pageChange($event)"
+                                                         class="my-pagination"></pagination-controls>
+                                                   </div>
+                                                </ul>
+                                             </div>
+                                             <!--Grid View Pagination Ends Here -->
+                                          </div>
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+                              <!-- Grid View Ends -->
+                              <!-- Table View Starts -->
+                              <div
+                                 [ngClass]="DocumentsStore.listStyle=='table'?'tab-pane tab-edit-class active' : 'tab-pane tab-edit-class fade'">
+                                 <div class="bg-white">
+                                    <div class="clearfix d-flex">
+                                       <div class="folder-list-page folder-list-page-table">
+
+                                          <div id="maindiv">
+                                             <div id="dragdiv">
+                                                <app-table-loader *ngIf="!DocumentsStore.documentsLoaded">
+                                                </app-table-loader>
+                                                <table
+                                                   class="table table-bordered ordinary-table audit-page-table mb-0 table-scroll"
+                                                   id="allItems" runat="server"
+                                                   *ngIf="DocumentsStore.documentsLoaded && DocumentsStore.documentsList.length > 0">
+                                                   <thead>
+                                                      <tr>
+                                                         <th (click)="setDocumentSort('documents.title')">{{'title' |
+                                                            translate}} <img
+                                                               *ngIf="DocumentsStore.orderItem == 'documents.title'"
+                                                               [attr.src]="DocumentsStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                                               class="sort-down-pics"></th>
+                                                         <th class="text-center"
+                                                            *ngIf="DocumentsStore.selectedSideMenu=='master'"
+                                                            (click)="setDocumentSort('documents.version')">{{'version' |
+                                                            translate}} <img
+                                                               *ngIf="DocumentsStore.orderItem == 'documents.version'"
+                                                               [attr.src]="DocumentsStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                                               class="sort-down-pics"></th>
+                                                         <th *ngIf="DocumentsStore.selectedSideMenu=='master'">
+                                                            {{'kh_next_review_date' | translate}}</th>
+                                                         <th *ngIf="DocumentsStore.selectedSideMenu=='master'">
+                                                            {{'kh_last_review_date' | translate}}</th>
+                                                         <th *ngIf="DocumentsStore.selectedSideMenu=='master'">
+                                                            {{'kh_file_reference' | translate}}</th>
+                                                         <th *ngIf="DocumentsStore.selectedSideMenu=='master'">
+                                                            {{'kh_document_issue_date' | translate}}</th>
+                                                         <th *ngIf="DocumentsStore.selectedSideMenu=='master'">
+                                                            {{'kh_retention_period' | translate}}</th>
+                                                         <th *ngIf="DocumentsStore.selectedSideMenu=='master'">
+                                                            {{'kh_responsibility' | translate}}</th>
+                                                         <th (click)="setDocumentSort('documents.document_type')">
+                                                            {{'document_type' | translate}} <img
+                                                               style="vertical-align: initial;"
+                                                               *ngIf="DocumentsStore.orderItem == 'documents.document_type'"
+                                                               [attr.src]="DocumentsStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                                               class="sort-down-pics"></th>
+                                                         <th (click)="setDocumentSort('documents.size')">{{'size' |
+                                                            translate}} <img style="vertical-align: initial;"
+                                                               *ngIf="DocumentsStore.orderItem == 'documents.size'"
+                                                               [attr.src]="DocumentsStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                                               class="sort-down-pics"></th>
+                                                         <th *ngIf="DocumentsStore.selectedSideMenu!='master'"
+                                                            (click)="setDocumentSort('documents.created_at')">
+                                                            {{'created_at' | translate}} <img
+                                                               style="vertical-align: initial;"
+                                                               *ngIf="DocumentsStore.orderItem == 'documents.created_at'"
+                                                               [attr.src]="DocumentsStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                                               class="sort-down-pics"></th>
+                                                         <th *ngIf="DocumentsStore.selectedSideMenu!='master'"
+                                                            (click)="setDocumentSort('documents.title')">{{'created_by'
+                                                            | translate}} <img
+                                                               *ngIf="DocumentsStore.orderItem == 'documents.created_by_first_name'"
+                                                               [attr.src]="DocumentsStore.orderBy == 'created_by_first_name'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                                               class="sort-down-pics"></th>
+                                                      </tr>
+                                                   </thead>
+                                                   <tbody>
+
+                                                      <tr *ngFor="let docs of DocumentsStore.documentsList | paginate: {currentPage: DocumentsStore?.currentPage,itemsPerPage: DocumentsStore?.itemsPerPage,totalItems: DocumentsStore?.totalItems} ;;let i = index"
+                                                         class="folder-box-document pointer" id="node101"
+                                                         (contextmenu)="openOptions($event,i)">
+                                                         <td class="pointer"
+                                                            (click)="gotoFolder(docs.is_folder,docs.id,docs.title)">
+                                                            <img *ngIf="docs.is_folder"
+                                                               src="/assets/images/folder-icone.png"
+                                                               class="folder-list-view">
+                                                            <img *ngIf="!docs.is_folder"
+                                                               [attr.src]="createImageUrl('document-version',docs.token,13,28)"
+                                                               onerror="this.src='/assets/images/no-image-popup-icon.png'"
+                                                               class="folder-list-view folder-list-view-document">
+                                                            {{docs?.title}}
+                                                            <div class="option-box advanced-option-document"
+                                                               *ngIf="i==activeIndex"
+                                                               [ngStyle]="{display:show?'block':'none'}" #options>
+                                                               <ul class="clearfix">
+                                                                  <!-- Download Option -->
+                                                                  <li *ngIf="!docs.is_folder"><a (click)="downloadDocument(docs)"><i
+                                                                           class="fas fa-download"></i> Download</a>
+                                                                  </li>
+                                                                  <!-- Restore Option -->
+                                                                  <li
+                                                                     *ngIf="restoreFlag && AuthStore.user.id==docs.created_by && docs.document_status_id==1">
+                                                                     <a
+                                                                        (click)="rightClickMenu('restore',docs.id,docs.is_folder)"><i
+                                                                           class="fas fa-recycle"></i> Restore</a></li>
+                                                                  <!-- Delete Option -->
+                                                                  <li
+                                                                     *ngIf="checkDeletePermission(docs)">
+                                                                     <a
+                                                                        (click)="rightClickMenu('delete',docs.id,docs.is_folder)"><i
+                                                                           class="fas fa-trash-alt"></i>
+                                                                        {{restoreFlag?'Permanent Delete':'Delete'}}</a>
+                                                                  </li>
+                                                                  <!-- Rename Option -->
+                                                                  <li *ngIf="docs.is_folder"><a
+                                                                        (click)="rightClickMenu('rename',docs.id)"><i
+                                                                           class="fas fa-edit"></i> {{'rename' |
+                                                                        translate}}</a></li>
+                                                                <li *ngIf="!docs.is_folder"><a
+                                                                           (click)="rightClickMenu('share', docs.id,null,null,docs.document_version_id)"><i
+                                                                    class="fas fa-share"></i> {{'share' | translate}}</a>
+                                                               </ul>
+                                                            </div>
+                                                         </td>
+                                                         <td *ngIf="DocumentsStore.selectedSideMenu=='master'"
+                                                            class="pointer text-center"
+                                                            (click)="gotoFolder(docs.is_folder,docs.id,docs.title)">
+                                                            {{docs.version}}</td>
+                                                         <td (click)="gotoFolder(docs.is_folder,docs.id,docs.title)"
+                                                            *ngIf="DocumentsStore.selectedSideMenu=='master'">
+                                                            {{docs?.document_next_review_date?docs.document_next_review_date:'Not
+                                                            Reviewed'}}</td>
+                                                         <td (click)="gotoFolder(docs.is_folder,docs.id,docs.title)"
+                                                            *ngIf="DocumentsStore.selectedSideMenu=='master'">
+                                                            {{docs?.document_last_review_date?docs.document_last_review_date:'Not
+                                                            Reviewed'}}</td>
+                                                         <td (click)="gotoFolder(docs.is_folder,docs.id,docs.title)"
+                                                            *ngIf="DocumentsStore.selectedSideMenu=='master'">
+                                                            {{docs?.version}}/{{docs?.created_at}}/{{docs?.created_at |
+                                                            date :'MMM d, y'}}</td>
+                                                         <td (click)="gotoFolder(docs.is_folder,docs.id,docs.title)"
+                                                            *ngIf="DocumentsStore.selectedSideMenu=='master'">
+                                                            {{docs?.document_issue_date?docs.document_issue_date:'Not
+                                                            Published'}}</td>
+                                                         <td (click)="gotoFolder(docs.is_folder,docs.id,docs.title)"
+                                                            *ngIf="DocumentsStore.selectedSideMenu=='master'">
+                                                            {{docs?.document_status_type!='expired'?'Ongoing':docs?.document_status_type}}
+                                                         </td>
+                                                         <td (click)="gotoFolder(docs.is_folder,docs.id,docs.title)"
+                                                            *ngIf="(DocumentsStore.selectedSideMenu=='master') && (docs?.review_user_first_name || docs?.review_user_last_name)">
+                                                            {{docs?.review_user_first_name}}
+                                                            {{docs?.review_user_last_name}}</td>
+                                                         <td (click)="gotoFolder(docs.is_folder,docs.id,docs.title)"
+                                                            *ngIf="(DocumentsStore.selectedSideMenu=='master') && (docs?.review_user_first_name==null || docs?.review_user_last_name==null)">
+                                                            No User Mapped</td>
+                                                         <td class="pointer"
+                                                            (click)="gotoFolder(docs.is_folder,docs.id,docs.title)">
+                                                            {{docs.document_type_title?docs.document_type_title:'Document'}}
+                                                         </td>
+                                                         <td (click)="gotoFolder(docs.is_folder,docs.id,docs.title)">
+                                                            {{docs.size/1048576 | number:'0.2-2'}}MB</td>
+                                                         <td class="pointer"
+                                                            *ngIf="DocumentsStore.selectedSideMenu!='master'"
+                                                            (click)="gotoFolder(docs.is_folder,docs.id,docs.title)">
+                                                            {{docs.created_at | date :'MMM d, y'}}</td>
+                                                         <td class="pointer"
+                                                            *ngIf="DocumentsStore.selectedSideMenu!='master'">
+                                                            <div class="d-flex flex-row user-list-sm">
+                                                               <img *ngIf="docs.created_by_image_token"
+                                                                  [attr.src]="createImageUrl('user-profile-picture',docs.created_by_image_token)"
+                                                                  width="30px" height="30px" class="rounded-circle"
+                                                                  onerror="this.src='/assets/images/user-demo2.png'">
+                                                               <img *ngIf="!docs.created_by_image_token"
+                                                                  [attr.src]="getDefaultImage('user-logo')" width="30px"
+                                                                  height="30px" class="rounded-circle"
+                                                                  onerror="this.src='/assets/images/user-demo2.png'">
+                                                               <div>
+                                                                  <h6>
+                                                                     {{docs.created_by_first_name}}&nbsp;{{docs.created_by_last_name}}
+                                                                  </h6>
+                                                                  <span _ngcontent-nws-c590=""
+                                                                     wfd-id="801">{{docs.created_by_designation}}</span>
+
+                                                               </div>
+                                                            </div>
+                                                      </tr>
+
+                                                   </tbody>
+                                                </table>
+                                                <!-- Grid View No Data  -->
+                                                <ng-container>
+                                                   <app-no-data-list [border]=false [source]="documentEmptyList"
+                                                      *ngIf="DocumentsStore.documentsLoaded && DocumentsStore.documentsList.length == 0">
+                                                   </app-no-data-list>
+                                                </ng-container>
+                                             </div>
+                                          </div>
+
+                                          <!-- Table View Pagination Starts -->
+                                          <div class="row">
+                                             <div
+                                                *ngIf="DocumentsStore.totalItems > DocumentsStore.itemsPerPage && DocumentsStore?.documentsLoaded"
+                                                class="col-sm-12 ">
+                                                <ul class="pagination justify-content-center mt-3">
+                                                   <div class="list">
+                                                      <pagination-controls (pageChange)="pageChange($event)"
+                                                         class="my-pagination"></pagination-controls>
+                                                   </div>
+                                                </ul>
+                                             </div>
+                                          </div>
+
+                                          <!-- Table View Pagination Ends -->
+
+                                       </div>
+
+                                    </div>
+                                 </div>
+                              </div>
+                              <!-- !Table View Ends -->
+                           </div><!-- !Document Listing ends -->
+                        </div>
+                     </div>
+
+
+                  </div>
+               </div>
+
+
+
+            </div>
+         </div>
+
+      </div>
+      <!-- ! New Design Ends Here -->
+
+
+
+   </div>
+</main>
+
+<!-- Confirmation Modal Starts -->
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp>
+   <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+<!-- Confirmation Modal Ends -->
+<!-- Folder Rename Starts-->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #folderRename>
+   <app-folder-rename [source]="folderRenameObject" *ngIf="folderRenameObject.status"></app-folder-rename>
+</div>
+<!-- Folder Rename Ends -->
+<!-- Document Search Starts -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #documentSearch>
+   <app-document-search *ngIf="enableSearchPopup"></app-document-search>
+</div>
+<!-- Document Search Ends -->
+<!-- Documents Folder Modal  -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #folderModal>
+   <app-add-folder *ngIf="folderObject.type"></app-add-folder>
+</div>
+<!--  Document Folder Modal End  -->
+<!--  Quick Upload Modal  -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #quickUpload>
+   <app-quick-upload *ngIf="DocumentsStore.quick_upload"></app-quick-upload>
+</div>
+<!--  Quick Upload Modal End  -->
+<!-- Document Folder Details Starts -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #folderDetails>
+   <app-document-folder-details *ngIf="enableFolderDetailsPopup"></app-document-folder-details>
+</div>
+<!-- Document Folder Details Ends -->
+<!-- Document share Model -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #shareDataPopup>
+   <app-share-document-model *ngIf="enableShareDataPopup"></app-share-document-model>
+</div>
+<!-- Document share Model -->

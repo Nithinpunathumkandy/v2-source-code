@@ -1,0 +1,538 @@
+<!-- <div class="modal modal-style-1 popup-full-width fade" id="add-strategic-objective-popup" data-keyboard="false"
+      data-backdrop="static" style="z-index: 999999; overflow-x: hidden; overflow-y: auto;"> -->
+<button type="button" class="close" (click)="cancel()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered">
+  <div class="modal-content">
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <h4 class="modal-title" *ngIf="strategyAreaSource?.type == 'Add'">{{'sm_objective_popup_heading' | translate}}</h4>
+      <h4 class="modal-title" *ngIf="strategyAreaSource?.type == 'Edit'">{{'edit_objective' | translate}}</h4>
+      <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
+    </div>
+    <!-- Modal body -->
+    <div class="modal-body form-body">{{'sm_objective_popup_body_message' | translate}}
+      <p class="head-details">
+      </p>
+      <form [formGroup]="strategicObjectiveForm" *mobxAutorun>
+        <div class="row">
+
+          <div class="col-sm-12" *ngIf="OrganizationModulesStore.checkIndividualSubModule(3200,53001)">
+            <div class="form-group">
+              <label for="name">{{'focus_area' | translate}}</label>
+              
+              <div class="clearfix d-flex">
+                <div class="multiple-plain-ngselect w-100">
+                    <ng-select [items]="StrategyStore.focusAreas"
+                        [placeholder]="'select_focus_area' | translate"
+                        formControlName="strategy_profile_focus_area_ids"
+                        (open)="openFocus()" bindLabel="title" multiple="true">
+                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                            {{item.title?.length > 60 ? (item.title | slice:0:60)+' ...' :
+                            item.title}}<span aria-hidden="true" (click)="clear(item)"
+                                style="border:none;" class="ng-value-icon left">×</span>
+                        </ng-template>
+                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                            {{item.title?.length > 80 ? (item.title | slice:0:80)+' ...' :
+                            item.title}}
+                        </ng-template>
+                    </ng-select>
+                </div>
+            </div>
+             <p class="form-error pt-1" *ngIf="formErrors && formErrors.theme_ids">
+                {{formErrors.strategy_profile_focus_area_ids}}</p>
+
+            </div>
+          </div>
+
+          <div class="col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'objective' | translate}}<span class="form-error">*</span></label>
+              <div class="clearfix d-flex">
+                <div class="multiple-plain-ngselect select-width-plus w-100">
+                  <ng-select [placeholder]="'select_objective' | translate" [multiple]="false" searchable="true"
+                    (open)="getObjectives()" (clear)="getObjectives()" (search)="searchObjective($event)"
+                    formControlName="objective_id">
+                    <ng-option [value]="type.id" *ngFor="let type of ObjectiveMasterStore.allItems">
+                      {{type.title.length > 75 ? type.title.substring(0,75)+'...' : type.title}}
+                    </ng-option>
+                  </ng-select>
+                </div>
+                <button class="btn multi-add-user ml-2" data-toggle="modal" (click)="openObjectiveMasters()"
+                  style="width: 42px;"><i class="fas fa-plus"></i></button>
+              </div>
+              <p class="form-error pt-1" *ngIf="formErrors && formErrors.objective_id">{{formErrors.objective_id}}</p>
+            </div>
+          </div>
+
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'target' | translate}}<span class="form-error">*</span></label>
+              <input type="text" formControlName="target" class="form-control" [placeholder]="'enter_target' | translate">
+              <p class="form-error pt-1" *ngIf="formErrors && formErrors.target">{{formErrors.target}}</p>
+              <p class="form-error pt-1" *ngIf="strategicObjectiveForm?.get('target').invalid && strategicObjectiveForm.value.target">
+                {{'numeric_value' | translate}}</p>
+              <p class="form-error pt-1" *ngIf="strategicObjectiveForm.value.aggregation_type_id == 2 && strategicObjectiveForm.value.target > 100">It should not exceeded 100</p>
+            </div>                        
+          </div>
+
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'target_unit' | translate}}<span class="form-error">*</span></label>
+              <div class="clearfix d-flex">
+                <div class="multiple-plain-ngselect select-width-plus w-100">
+                  <ng-select [placeholder]="'select_target_unit' | translate" [multiple]="false" formControlName="target_unit_id"
+                    bindLabel="title" [items]="UnitMasterStore.allItems" (search)="searchUnit($event)"
+                    (open)="openTargetUnit()" (clear)="openTargetUnit()" (change) = "selectedTargetUnitChange($event)">
+          
+                    <ng-option *ngFor="let type of UnitMasterStore.allItems">
+                      {{type.title}}
+                    </ng-option>
+          
+                  </ng-select>
+                  <!-- <p class="form-error pt-1" *ngIf="strategicObjectiveForm.value.aggregation_type_id == 2 && targetUnitValidation()">It should only select percentage</p> -->
+                  <p class="form-error pt-1" *ngIf="formErrors && formErrors.target_unit_id">{{formErrors.target_unit_id}}</p>
+                </div>
+                <!-- <button class="btn multi-add-user ml-2" data-toggle="modal" (click)=" addNewUnitItem()" style="width: 42px;"><i
+                    class="fas fa-plus"></i></button> -->
+              </div>
+            </div>
+          </div>    
+
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'strategy_objective_type' | translate}}</label>
+              <div class="clearfix d-flex">
+                <div class="multiple-plain-ngselect select-width-plus w-100">
+                  <ng-select [placeholder]="'select_strategy_objective_type' | translate" [multiple]="false" formControlName="strategy_objective_type_id"
+                    bindLabel="title" [items]="StrategyObjectiveTypeMasterStore.allItems" (search)="searchObjectiveType($event)"
+                    (open)="openObjectiveType()" (clear)="openObjectiveType()">        
+                    <ng-option *ngFor="let type of StrategyObjectiveTypeMasterStore.allItems">
+                      {{type.title}}
+                    </ng-option>     
+                  </ng-select>
+                  <p class="form-error pt-1" *ngIf="formErrors && formErrors.strategy_objective_type_id">{{formErrors.strategy_objective_type_id}}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'aggregation_type' | translate}}</label>
+              <div class="clearfix">
+                <div class="multiple-plain-ngselect">
+                  <ng-select [placeholder]="'select_aggregation_type' | translate" [multiple]="false" searchable="true"
+                    formControlName="aggregation_type_id" (open)="getAggrigationType()" (clear)="getAggrigationType()"
+                     (search)="searchAggregationType($event)">
+                    <ng-option [value]="type.id" *ngFor="let type of AggregationTypesMasterStore.allItems">
+                      {{type.aggregation_language_title?.length > 50 ?
+                      type.aggregation_language_title.substring(0,50)+'...' : type.aggregation_language_title}}
+                    </ng-option>
+                  </ng-select>
+                </div>
+              </div>
+              <p class="form-error pt-1" *ngIf="formErrors && formErrors.aggregation_type_id">
+                {{formErrors.aggregation_type_id}}</p>
+            </div>
+          </div>
+
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'minimum_value' | translate}} (%)</label>
+              <div class="plain-select input-add-report">
+                <input type="text" class="form-control" formControlName="minimum"
+                  [placeholder]="'enter_minimum_value' | translate">
+                <p class="form-error pt-1" *ngIf="strategicObjectiveForm?.get('minimum').invalid && strategicObjectiveForm.value.minimum">
+                  {{'numeric_value' | translate}}</p>
+                <p class="form-error pt-1" *ngIf="strategicObjectiveForm.value.aggregation_type_id == 2 && strategicObjectiveForm.value.minimum > 99">
+                  {{'sm_kpi_min_value_validation' | translate}} 99</p>
+
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'maximum_value' | translate}} (%)</label>
+              <div class="plain-select input-add-report">
+                <input type="text" class="form-control" formControlName="maximum"
+                  [placeholder]="'enter_maximum_value' | translate">
+                <p class="form-error pt-1" *ngIf="strategicObjectiveForm?.get('maximum').invalid && strategicObjectiveForm.value.maximum">
+                  {{'numeric_value' | translate}}</p>
+                <p class="form-error pt-1" *ngIf="strategicObjectiveForm.value.aggregation_type_id == 2 && strategicObjectiveForm.value.maximum > 100">
+                  {{'sm_kpi_min_value_validation' | translate}} 100</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-sm-6">
+            <div class="form-group">
+              <label for="name">{{'start_date' | translate}}<span class="form-error">*</span></label>
+              <div class="input-group">
+                <input class="form-control" id="start_date" [placeholder]="'select_start_date' | translate"
+                  name="start_date" ngbDatepicker #s="ngbDatepicker" formControlName="start_date"
+                  [minDate]="{year: 1950, month: 1, day: 1}">
+                <div class="input-group-append">
+                  <button class="btn btn-outline-secondary calendar" (click)="s.toggle()" type="button"><i
+                      class="fas fa-calendar-alt"></i></button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="form-group">
+              <label for="name">{{'end_date' | translate}}<span class="form-error">*</span></label>
+              <div class="input-group">
+                <input class="form-control" id="end_date" [placeholder]="'select_end_date' | translate" name="end_date"
+                  ngbDatepicker #e="ngbDatepicker" formControlName="end_date"
+                  [minDate]="strategicObjectiveForm.value.start_date">
+                <div class="input-group-append">
+                  <button class="btn btn-outline-secondary calendar" (click)="e.toggle()" type="button"><i
+                      class="fas fa-calendar-alt"></i></button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'review_frequency' | translate}}<span class="form-error">*</span></label>
+              <div class="clearfix d-flex">
+                <div class="multiple-plain-ngselect select-width-plus w-100">
+                  <ng-select [placeholder]="'select_review_frequency' | translate" [multiple]="false"
+                    formControlName="strategy_review_frequency_id" bindLabel="title"
+                    [items]="StrategyInitiativeReviewFrequencyMasterStore?.allItems" (open)="openFrequncy()"
+                    (clear)="openFrequncy()">
+                    <ng-option *ngFor="let type of StrategyInitiativeReviewFrequencyMasterStore?.allItems">
+                      {{type.title}}
+                    </ng-option>
+          
+                  </ng-select>
+                  <p class="form-error pt-1" *ngIf="formErrors && formErrors.strategy_review_frequency_id">
+                    {{formErrors.strategy_review_frequency_id}}
+                  </p>
+                </div>
+          
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-6 col-sm-12" *ngIf="StrategyManagementSettingStore?.strategyManagementSettings?.is_weightage">
+            <div class="form-group">
+              <label for="name">{{'strategy_objective_weightage_title' | translate}}<span class="form-error">*</span></label>
+              <input type="text" class="form-control" formControlName="weightage"
+                [placeholder]="'enter_weightage' | translate">
+              <p class="form-error pt-1"
+                *ngIf="strategicObjectiveForm?.get('weightage').invalid && strategicObjectiveForm.value.weightage">
+                Enter a numeric value</p>
+              <p class="form-error pt-1" *ngIf="formErrors && formErrors.weightage">{{formErrors.weightage}}</p>
+            </div>
+          </div>
+          
+          <div class="col-sm-6">
+            <div class="form-group">
+              <label for="name">{{'accountable_user' | translate}}</label>
+              <div class="clearfix">
+                <div class="multiple-plain-ngselect">
+                  <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                    [placeholder]="'select_accountable_user' | translate" formControlName="accountable_user_id"
+                    [multiple]="false" (clear)="getUsers()" (search)="searchUers($event)" [searchFn]="customSearchFn"
+                     multiple="false"
+                    (open)="getUsers()">
+                    <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                      <img *ngIf="item?.image_token" class="ng-select-user-display" height="15" width="15"
+                        [attr.src]="createImagePreview('user-profile-picture',item?.image_token)"
+                        onerror="this.src='/assets/images/user-demo2.png'" />
+                      <img *ngIf="!item?.image_token" class="ng-select-user-display" height="15" width="15"
+                        [attr.src]="getDefaultImage('user-logo')" />
+                      <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,' ') |
+                        titlecase}}</b><span aria-hidden="true" (click)="clear(item)" style="border:none;"
+                        class="ng-value-icon left">×</span>
+                    </ng-template>
+                    <ng-template ng-option-tmp let-item="item" let-index="index">
+                      <div class="user-post-department-pic">
+                        <img *ngIf="item?.image_token" class="ng-select-user-display" height="25" width="25"
+                          [attr.src]="createImagePreview('user-profile-picture',item?.image_token)"
+                          onerror="this.src='/assets/images/user-demo2.png'" />
+                        <img *ngIf="!item?.image_token" class="ng-select-user-display" height="25" width="25"
+                          [attr.src]="getDefaultImage('user-logo')" />
+                      </div>
+                      <div class="user-post-department-div">
+                        <b>{{getStringsFormatted([item.first_name,item.last_name],35,' ') | titlecase}}</b>
+                        <p class="user-post-department-multiple">{{getStringsFormatted([item.designation_title,'
+                          '+item.department],35,',')}}</p>
+                      </div>
+                    </ng-template>
+                  </ng-select>
+                </div>
+              </div>
+              <p class="form-error pt-1" *ngIf="formErrors && formErrors.accountable_user_id">
+                {{formErrors.accountable_user_id}}</p>
+            </div>
+          </div>
+
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'responsible_users' | translate}}<span class="form-error">*</span></label>
+              <div class="clearfix">
+                <div class="dropdown-filter">
+                  <div class="multiple-plain-ngselect">
+                    <ng-select [items]="UsersStore.usersList" bindLabel="email" multiple="true"
+                      formControlName="responsible_user_id" [placeholder]="'select_user' | translate"
+                      (search)="searchUsers($event)" (open)="getUsers()" [searchFn]="customSearchFn">
+                      <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                        <img *ngIf="item.image_token" class="ng-select-user-display" height="15" width="15"
+                          [attr.src]="createImageUrl('user-profile-picture',item.image_token)"
+                          onerror="this.src='/assets/images/user-demo2.png'" />
+                        <img *ngIf="!item.image_token" class="ng-select-user-display" height="15" width="15"
+                          [attr.src]="getDefaultImage('user-logo')" />
+                        <b style="padding-left: 3px">{{getStringsFormatted([item.first_name,item.last_name],50,'
+                          ') | titlecase}}</b><span aria-hidden="true" (click)="clear(item)" style="border: none"
+                          class="ng-value-icon left">×</span>
+                      </ng-template>
+                      <ng-template ng-option-tmp let-item="item" let-index="index">
+                        <div class="user-post-department-pic">
+                          <img *ngIf="item.image_token" class="ng-select-user-display" height="25" width="25"
+                            [attr.src]="createImageUrl('user-profile-picture',item.image_token)"
+                            onerror="this.src='/assets/images/user-demo2.png'" />
+                          <img *ngIf="!item.image_token" class="ng-select-user-display" height="25" width="25"
+                            [attr.src]="getDefaultImage('user-logo')" />
+                        </div>
+                        <div class="user-post-department-div">
+                          <b>{{getStringsFormatted([item.first_name,item.last_name],50,'
+                            ') | titlecase}}</b>
+                          <p class="user-post-department-multiple">
+                            {{getStringsFormatted([item.designation_title,'
+                            '+item.department],30,',')}}
+                          </p>
+                        </div>
+                      </ng-template>
+                    </ng-select>
+                  </div>
+                </div>
+                <p class="form-error pt-1" *ngIf="formErrors && formErrors.responsible_user_id">
+                  {{formErrors.responsible_user_id}}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-6 col-sm-12">
+            <div class="form-group">
+              <label for="name">{{'review_users' | translate}}<span class="form-error">*</span></label>
+              <div class="clearfix">
+                <div class="dropdown-filter">
+                  <div class="multiple-plain-ngselect">
+                    <ng-select [items]="StrategyStore.strategyProfileReviewUser" bindLabel="email" multiple="true" formControlName="review_user_ids"
+                      [placeholder]="'select_review_users' | translate"
+                      [searchFn]="customSearchFn">
+                      <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                        <img *ngIf="item.image_token" class="ng-select-user-display" height="15" width="15"
+                          [attr.src]="createImageUrl('user-profile-picture',item.image_token)"
+                          onerror="this.src='/assets/images/user-demo2.png'" />
+                        <img *ngIf="!item.image_token" class="ng-select-user-display" height="15" width="15"
+                          [attr.src]="getDefaultImage('user-logo')" />
+                        <b style="padding-left: 3px">{{getStringsFormatted([item.first_name,item.last_name],50,'
+                          ') | titlecase}}</b><span aria-hidden="true" (click)="clear(item)" style="border: none"
+                          class="ng-value-icon left">×</span>
+                      </ng-template>
+                      <ng-template ng-option-tmp let-item="item" let-index="index">
+                        <div class="user-post-department-pic">
+                          <img *ngIf="item.image_token" class="ng-select-user-display" height="25" width="25"
+                            [attr.src]="createImageUrl('user-profile-picture',item.image_token)"
+                            onerror="this.src='/assets/images/user-demo2.png'" />
+                          <img *ngIf="!item.image_token" class="ng-select-user-display" height="25" width="25"
+                            [attr.src]="getDefaultImage('user-logo')" />
+                        </div>
+                        <div class="user-post-department-div">
+                          <b>{{getStringsFormatted([item.first_name,item.last_name],50,'
+                            ') | titlecase}}</b>
+                          <p class="user-post-department-multiple">
+                            {{getStringsFormatted([item?.designation?.title,'
+                            '+item?.department?.title],30,',')}}
+                          </p>
+                        </div>
+                      </ng-template>
+                    </ng-select>
+                  </div>
+                </div>
+                <p class="form-error pt-1" *ngIf="formErrors && formErrors.review_user_ids">
+                  {{formErrors.review_user_ids}}</p>
+              </div>
+            </div>
+          </div>   
+          
+            <div class="col-lg-12 col-sm-12">
+              <div class="form-group">
+            
+                <div class="Preview-checkbox clearfix">
+                  <label class="container2 float-left pl-4 mb-0" style="font-size: 15px; padding-top: 2px; display: inline-block;">
+                    <input type="checkbox" [checked]="strategicObjectiveForm.value.is_dashboard" (change)="setTopObjective($event)">
+                    <span class="checkmark mt-1"></span> {{'top_objective'|translate}}?</label>   
+                </div>
+              </div>
+            </div>
+          
+          <!-- <div class="col-sm-6">
+            <div class="form-group">
+              <label for="name">{{'strategy_objective_type' | translate}}</label>
+              <div class="clearfix d-flex">
+                <div class="multiple-plain-ngselect w-100">
+                  <ng-select [items]="StrategyObjectiveTypeMasterStore.allItems"
+                    [placeholder]="'select_strategy_objective_type' | translate" formControlName="strategy_objective_type_id"
+                    (search)="searchTheme($event)" (open)="getTheme()" bindLabel="title" multiple="false">
+                    <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                      {{item.title?.length > 60 ? (item.title | slice:0:60)+' ...' :
+                      item.title}}<span aria-hidden="true" (click)="clear(item)" style="border:none;"
+                        class="ng-value-icon left">×</span>
+                    </ng-template>
+                    <ng-template ng-option-tmp let-item="item" let-index="index">
+                      {{item.title?.length > 80 ? (item.title | slice:0:80)+' ...' :
+                      item.title}}
+                    </ng-template>
+                  </ng-select>
+                </div>
+              </div>
+              <p class="form-error pt-1" *ngIf="formErrors && formErrors.theme_ids">
+                {{formErrors.theme_ids}}</p>
+            </div>
+          </div> -->
+
+          <!-- <div class="col-sm-6" *ngIf = "OrganizationLevelSettingsStore.organizationLevelSettings?.is_subsidiary">
+                      <div class="form-group">
+                          <label for="name">{{'organization' | translate}}<span class="form-error">*</span></label>
+                          <div class="clearfix">
+                              <div class="multiple-plain-ngselect">
+                                  <ng-select [placeholder]="'organization' | translate" [multiple]="false"
+                                      searchable="true" formControlName="organization_ids"
+                                      (search)="searchSubsidiary($event)"
+                                      (clear) = "getSubsidiary();"
+                                      (open)="getSubsidiary()">
+                                      <ng-option [value]="type.id"
+                                          *ngFor="let type of SubsidiaryStore.subsidiaryList">
+                                          {{type.title}}
+                                      </ng-option>
+                                  </ng-select>
+                              </div>
+                          </div>
+                          <p class="form-error pt-1" *ngIf="formErrors && formErrors.organization_ids">{{formErrors.organization_ids}}</p>
+                      </div>
+                  </div>
+                  <div class="col-sm-6" [ngStyle] = "{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_division ? 'none':'block'}">
+                      <div class="form-group">
+                          <label for="name">{{'division' | translate}}<span class="form-error">*</span></label>
+                          <div class="clearfix">
+                              <div class="multiple-plain-ngselect">
+                                  <ng-select  [placeholder]="'division' | translate" [multiple]="false" searchable="true"
+                                      (search)="searchDivision($event)" formControlName="division_ids"                   
+                                      (clear)="getDivision()" 
+                                      (open)="getDivision()">
+                                      <ng-option [value]="type.id" *ngFor="let type of DivisionStore.allItems">
+                                          {{type.title}}
+                                      </ng-option>
+                                  </ng-select>
+                              </div>
+                          </div>
+                          <p class="form-error pt-1" *ngIf="formErrors && formErrors.division_ids">{{formErrors.division_ids}}</p>
+
+                      </div>
+                  </div>
+                  <div class="col-sm-6" [ngStyle] = "{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_department ? 'none':'block'}">
+                      <div class="form-group">
+                          <label for="name">{{'department' | translate}}<span class="form-error">*</span></label>
+                          <div class="clearfix">
+                              <div class="multiple-plain-ngselect">
+                                  <ng-select [placeholder]="'department' | translate" [multiple]="false" searchable="true"
+                                      (search)="searchDepartment($event)" formControlName="department_ids"
+                                      (clear)="getDepartment()" (open)="getDepartment()">
+                                      <ng-option [value]="type.id"
+                                          *ngFor="let type of DepartmentStore.allItems">
+                                          {{type.title}}
+                                      </ng-option>
+                                  </ng-select>
+                              </div>
+                          </div>
+                          <p class="form-error pt-1" *ngIf="formErrors && formErrors.department_ids">{{formErrors.department_ids}}</p>
+                      </div>
+                  </div>
+                  <div class="col-sm-6" [ngStyle] = "{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_section ? 'none':'block'}">
+                      <div class="form-group">
+                          <label for="name">{{'section' | translate}}<span class="form-error">*</span></label>
+                          <div class="clearfix">
+                              <div class="multiple-plain-ngselect">
+                                  <ng-select [placeholder]="'section' | translate" [multiple]="false" searchable="true"
+                                      (search)="searchSection($event)" formControlName="section_ids"
+                                      (clear)="getSection()" (open)="getSection()">
+                                      <ng-option [value]="type.id" *ngFor="let type of SectionStore.allItems">
+                                          {{type.title}}
+                                      </ng-option>
+                                  </ng-select>
+                              </div>
+                          </div>
+                          <p class="form-error pt-1" *ngIf="formErrors && formErrors.section_ids">{{formErrors.section_ids}}</p>
+                      </div>
+                  </div>
+                  <div class="col-sm-6" [ngStyle] = "{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_sub_section ? 'none':'block'}">
+                      <div class="form-group">
+                          <label for="name">{{'sub_section' | translate}}<span class="form-error">*</span></label>
+                          <div class="clearfix">
+                              <div class="multiple-plain-ngselect">
+                                  <ng-select [placeholder]="'sub_section' | translate" [multiple]="false" searchable="true"
+                                      formControlName="sub_section_ids" (clear)="getSubSection()"
+                                      (search)="searchSubSection($event)" (open)="getSubSection()">
+                                      <ng-option [value]="type.id"
+                                          *ngFor="let type of SubSectionStore.allItems">
+                                          {{type.title}}
+                                      </ng-option>
+                                  </ng-select>
+                              </div>
+                          </div>
+                          <p class="form-error pt-1" *ngIf="formErrors && formErrors.sub_section_ids">{{formErrors.sub_section_ids}}</p>
+                      </div>
+                  </div> -->
+          <div class="col-lg-12 col-sm-12">
+            <div class="form-group">
+              <a class="text-light-blue" data-toggle="modal" (click)="organisationChanges()"
+                style="border-bottom: 1px solid;">{{'change_organization_unit' | translate}}<span
+                  class="form-error">*</span></a>
+                    <p class="form-error pt-1" *ngIf="formErrors && formErrors.department_ids">{{formErrors.department_ids}}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="d-block justify-content-left border-0 mt-3">
+              <!-- <button type="button" data-toggle="modal" class="btn btn-active"
+                [disabled]="strategicObjectiveForm.invalid || AppStore.loading" (click)="save()">{{ AppStore.loading ?
+                getButtonText('loading') : getButtonText('save') }}</button> -->
+              <button type="button" data-toggle="modal" class="btn"
+                [disabled]="strategicObjectiveForm.invalid || AppStore.loading" (click)="save(true)">{{ AppStore.loading
+                ? getButtonText('loading') : getButtonText('save_next') }}</button>
+              <button type="button" data-toggle="modal" (click)="cancel()" class="btn">{{ AppStore.loading ?
+                getButtonText('loading') : getButtonText('cancel') }}</button>
+            </div>
+          </div>
+        </div>
+      </form>
+
+    </div>
+    <!-- Modal footer -->
+  </div>
+</div>
+<!-- </div> -->
+<div class="modal modal-style-1 popup-full-width fade" id="add-objective-popup" data-keyboard="false"
+  data-backdrop="static" #objectiveMasterModal>
+  <app-objective-modal *ngIf="objectiveObject.type" [source]="objectiveObject"></app-objective-modal>
+</div>
+
+<!-----------------------Form Modal Start--------------------------->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static"
+  #organisationChangeFormModal *mobxAutorun>
+  <app-organisation-change-modal *ngIf="openModelPopup" [source]="strategicObjectiveForm.value"
+    (organizationChangeEvent)="closeModal($event)"></app-organisation-change-modal>
+</div>
+<!-----------------------Form Modal End--------------------------->
+
+<div class="modal modal-style-1 popup-full-width fade" style="overflow: hidden auto; z-index: 999999;" id="add-objective-popup" data-keyboard="false"
+  data-backdrop="static" #objectivePopupModal>
+  <app-objective-target-breakdown-modal *ngIf="objectivePopupObject.type"></app-objective-target-breakdown-modal>
+</div>

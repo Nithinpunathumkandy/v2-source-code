@@ -1,0 +1,270 @@
+<main class="mt-3 organization-page" *ngIf="TemplateStore.templateDetailsLoaded">
+   <div class="container-fluid">
+      <div class="row user-main-sec">
+         <div class="col-xl-3 col-lg-4 col-md-12 user-side-bar user-side-left work-flow-details-sec-left"
+            #templateSideBar *mobxAutorun>
+            <div class="organization-profile-sidebar p-3">
+               <div class="relative">
+                  <a class="curve-toggle curv-2" (click)="collapseSide()" #curveToggle></a>
+                  <div class="d-flex align-items-center mb-3">
+                     <div class="left-pic-work-flow" *ngFor="let item of TemplateStore.templateDetails?.documents">
+                        <img [attr.src]="createImageUrl('document-template-document',item.token,43,37)"
+                           class="img-fluid">
+                     </div>
+                     <div class="issue-top-sec issuue-new-style p-0 ml-2">
+                        <div class="clearfix pt-2">
+                           <h5 class="d-inline-block cmn-head-style mr-2">
+                              #{{TemplateStore.templateDetails?.reference_code}}<span
+                                 class="draft-tag label-tag-style-tag label-left-arow-tag d-inline-block status-tag-new-one ml-3">Draft</span>
+                           </h5>
+                           <h5 class="cmn-head">{{TemplateStore.templateDetails?.title}}</h5>
+                        </div>
+                     </div>
+                  </div>
+
+                  <div class="mb-1 mt-2">
+                     <h6>{{'document_type' | translate}}</h6>
+                     <label *ngFor="let doc_types of TemplateStore.templateDetails?.document_types" class="outline-tag mb-1">{{doc_types.title}}</label>
+                  </div>
+                  <h6>{{'description' | translate}}</h6>
+                  <p style="white-space: pre-wrap;">{{TemplateStore.templateDetails?.description?TemplateStore.templateDetails?.description:AppStore.noContentText}}</p>
+                  <div class="row">
+                     <div class="col-xl-12">
+                        <!-- <app-user-popup-box [source]="getPopupDetails(TemplateStore.templateDetails)" [showName] = "true"></app-user-popup-box> -->
+                        <hr>
+                        <div class="d-flex flex-row user-list-sm">
+                           <figure>
+                              <img
+                                 [attr.src]="TemplateStore.templateDetails?.created_by.image.token ? createImageUrl(TemplateStore.templateDetails?.created_by.image.token,'user-profile-picture') : getDefaultImage('user-logo')"
+                                 onerror="this.src='/assets/images/user-demo2.png'" width="40px" height="40px"
+                                 class="rounded-circle rounde-hov">
+                           </figure>
+                           <div>
+                              <h6>{{TemplateStore.templateDetails?.created_by.first_name}}&nbsp;{{TemplateStore.templateDetails?.created_by.last_name}}</h6>
+                              <span>{{TemplateStore.templateDetails?.created_by.designation}} | Created on {{TemplateStore.templateDetails?.created_at| date :'medium'}}</span>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+         <div class="col-xl-9 col-lg-8 col-md-12 user-right-details user-right-fill work-flow-details-sec-right" #templateRightDetails>
+            <ng-container>
+               <div class="inner-dtl" [hidden]="!details_loaded" (window:scroll)="onWindowScroll()">
+                  <div class="tab-content">
+                     <!-- Profille -->
+                     <div class="tab-pane bg-white p-3 active" id="profile">
+                        <div class="work-flow-info-tab d-flex">
+                           <div class="form-group has-search">
+                              <span *ngIf="!disableSearch && ContentStore.ContentList.length > 0"
+                                 class="fa fa-search form-control-feedback text-search"></span>
+                              <input *ngIf="!disableSearch && ContentStore.ContentList.length > 0" type="text"
+                                 class="form-control" placeholder="Search">
+                           </div>
+                           <div class="small-tab-icons">
+                              <ul class="nav nav-tabs clearfix" role="navigation">
+                                 <li *ngIf="showPDFButton" class="nav-item"> <a (click)="selectedTab('picture')"
+                                       [ngClass]="[ showPDF?'nav-link active':'nav-link' ]" data-toggle="tab" role="tab"
+                                       aria-controls="lorem" aria-selected="false"><i class="fas fa-file-pdf"></i></a>
+                                 </li>
+                                 <li *ngIf="showContentButton" class="nav-item"> <a (click)="selectedTab('content')"
+                                       [ngClass]="[ showContent?'nav-link active':'nav-link' ]" data-toggle="tab"
+                                       role="tab" aria-controls="ipsum" aria-selected="false"><i
+                                          class="fas fa-list-alt"></i></a>
+                                 </li>
+                              </ul>
+                           </div>
+                        </div>
+
+                        <div class="small-tab-content">
+                           <div class="tab-content">
+                              <!-- !Picture Tab -->
+                              <div [ngClass]="[showPDF?'tab-pane fade active show':'tab-pane fade']" role="tabpanel">
+                                 <div class="work-flow-pdf-preview mt-4" *mobxAutorun>
+                                    <div class="row">
+                                       <div class="col-lg-12 compliance-register-details-pdf-sec">
+                                          <div style="text-align:center">
+                                             <iframe [attr.src]="previewUrl" height="1175px" width="100%"></iframe>
+                                          </div>
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+                              <!-- !Content Tab -->
+                              <div [ngClass]="[showContent?'tab-pane fade active show':'tab-pane fade']"
+                                 role="tabpanel">
+                                 <div class="work-flow-pdf-preview" *mobxAutorun>
+                                    <div class="panel-group panel-drop-sections pt-0" aria-multiselectable="true">
+                                       <div class="panel panel-default" *ngFor="let row of ContentStore.ContentList;let num = index">
+                                          <div class="pointer"
+                                             [ngClass]="row.is_accordion_active == true ? 'panel-heading active' : 'panel-heading'">
+                                             <div class="panel-title">
+                                                <a role="button" data-toggle="collapse" aria-expanded="false"
+                                                   aria-controls="collapseOne" class="collapsed"
+                                                   (click)="setRequestContentAccordion('Request',num,row.id)">
+                                                   <h5 class="width96pc mt-0"> {{row.clause_number}}.{{row.title}}
+                                                      <span class="drop-down-icone"><i class="fas fa-chevron-down"></i></span>
+                                                   </h5>
+                                                </a>
+                                             </div>
+                                          </div>
+                                          <div [ngClass]="row.is_accordion_active == true ? 'panel-collapse collapse show' : 'panel-collapse collapse'">
+                                             <div class="panel-body bg-white pt-2" *ngIf="ContentStore._contentIndivualLoaded">
+                                                <div class="edit-and-delete-main pointer">
+                                                   <!-- !Parent Delete/ADD/PDCA-->
+                                                   <div class="edit-option-show edit-option-show-accodion-right" style="margin: -26px 0 0 0;">
+                                                      <!--[ngStyle]="{'margin':'Request'!='Request'?'-26px 20px 0 0':'-26px 0px 0 0'}"-->
+                                                      <a title="Add Sub Clause" (click)="openForm('Child',row)"><i class="fas fa-plus"></i></a>
+                                                      <a title="Edit" (click)="editContent('Request',row.id)"><i class="fas fa-pen"></i></a>
+                                                      <a title="Delete" (click)="delete('Request',row.id,'Content')"><i class="fas fa-trash"></i></a>
+                                                   </div>
+
+                                                   <div class="small-menu-top-left">
+                                                      <div class="form-group clearfix">
+                                                         <div class="box-cnt-one tab-type-btn-small float-left" [ngStyle]="{'margin':'Request'=='Request'?'-2px 17px 0 0':'-2px 0px 0px 0px'}">
+                                                            <label [ngClass]="row.is_plan==1?'active outline-tag':'outline-tag'" (click)="updatePCDA('Request',row.is_plan,'Plan',row.id)">P</label>
+                                                            <label [ngClass]="row.is_do==1?'active outline-tag':'outline-tag'" (click)="updatePCDA('Request',row.is_do,'Do',row.id)">D</label>
+                                                            <label [ngClass]="row.is_check==1?'active outline-tag':'outline-tag'" (click)="updatePCDA('Request',row.is_check,'Check',row.id)">C</label>
+                                                            <label [ngClass]="row.is_act==1?'active outline-tag':'outline-tag'" (click)="updatePCDA('Request',row.is_act,'Act',row.id)">A</label>
+                                                         </div>
+                                                      </div>
+                                                   </div>
+                                                   <!-- !Parent Data -->
+                                                   <!-- Description -->
+                                                   <div [innerHTML]="row.description | safeHtml"></div>
+                                                </div>
+
+                                                <!-- !Notes Starts-->
+                                                <div class="add-new-plus-round">
+                                                   <h6 class="mt-3">{{'notes' | translate}}
+                                                      <button (click)="openNotesForm('Request',row.id)" type="button" class="btn btn-active add-plus ml-2" style="display: inline-block;">
+                                                         <i class="fa fa-plus"></i>
+                                                      </button>
+                                                   </h6>
+                                                   <div class="delete-bullet-point">
+                                                      <ul class="arrowlist ml-0 pl-0 mt-0 mb-0"
+                                                         *ngFor="let notes of row.notes">
+                                                         <li class="edit-delete-right-space">{{notes.title}}
+                                                            <div class="edit-and-delete-small">
+                                                               <button type="button" (click)="editNotes('Request',notes,row.id)" class="btn-small-icon"><i class="fas fa-pen"></i></button>
+                                                               <button type="button" (click)="delete('Request',notes.id,'notes',row.id)" class="btn-small-icon"><i class="fas fa-trash"></i></button>
+                                                            </div>
+                                                         </li>
+                                                      </ul>
+                                                   </div>
+                                                   <a *ngIf="!(row.notes.length > 0)">{{AppStore.noContentText}}</a>
+                                                </div>
+                                                <!-- !Notes Ends Here -->
+
+                                                <!-- !Child Data Starts Here -->
+                                                <div class="pl-3 mt-1 pt-1"
+                                                   *ngFor="let document_template of ContentStore.ContentIndividualList['children_content']">
+                                                   <div class="accordion-workflow-content edit-option pointer">
+                                                      <div class="edit-option-show-inner pdca-inner-option clearfix"
+                                                         style="margin: -25px 0 0 0;"
+                                                         [ngStyle]="{'padding':'Request'=='Request'?'12px 8px 8px 8px':'12px 0px 8px 8px'}">
+                                                         <div class="float-left">
+                                                            <a (click)="openForm('Child',document_template)"><i class="fas fa-plus"></i></a>
+                                                            <a (click)="editContent('Request',document_template.id)"><i class="fas fa-pen"></i></a>
+                                                            <a (click)="delete('Request',document_template.id,'Content')"><i class="fas fa-trash"></i></a>
+                                                         </div>
+                                                         <div class="inner-pdca float-left">
+                                                            <div class="form-group mb-0 clearfix">
+                                                               <div class="box-cnt-one tab-type-btn-small float-left">
+                                                                  <label [ngClass]="document_template.is_plan==1?'active outline-tag':'outline-tag'"
+                                                                     (click)="updatePCDA('Request',document_template.is_plan,'Plan',document_template.id)">P</label>
+                                                                  <label [ngClass]="document_template.is_do==1?'active outline-tag':'outline-tag'"
+                                                                     (click)="updatePCDA('Request',document_template.is_do,'Do',document_template.id)">D</label>
+                                                                  <label [ngClass]="document_template.is_check==1?'active outline-tag':'outline-tag'"
+                                                                     (click)="updatePCDA('Request',document_template.is_check,'Check',document_template.id)">C</label>
+                                                                  <label [ngClass]="document_template.is_act==1?'active outline-tag':'outline-tag'"
+                                                                     (click)="updatePCDA('Request',document_template.is_act,'Act',document_template.id)">A</label>
+                                                               </div>
+
+                                                            </div>
+                                                         </div>
+                                                      </div>
+
+                                                      <!-- <h6>{{sortClauseNumber(document_template.clause_number)}} <span style="font-weight: normal;">{{document_template.title}}:</span> -->
+                                                      <h6>{{document_template.clause_number}} <span
+                                                            style="font-weight: normal;">{{document_template.title}}:</span>
+                                                      </h6>
+                                                      <div [innerHTML]="document_template.description | safeHtml"></div>
+                                                   </div>
+
+                                                   <!-- ! Notes Starts Here -->
+                                                   <div class="add-new-plus-round">
+                                                      <h6 class="mt-3">{{'notes' | translate}}
+                                                         <button (click)="openNotesForm('Request',document_template.id)" type="button" class="btn btn-active add-plus ml-2" style="display: inline-block;"><i class="fa fa-plus"></i></button>
+                                                      </h6>
+                                                      <div class="delete-bullet-point">
+                                                         <ul class="arrowlist ml-0 pl-0 mt-0 mb-0" *ngFor="let notes of document_template.notes">
+                                                            <li class="edit-delete-right-space">{{notes.title}}
+                                                               <div class="edit-and-delete-small">
+                                                                  <button type="button" (click)="editNotes('Request',notes,document_template.id)" class="btn-small-icon"><i class="fas fa-pen"></i></button>
+                                                                  <button type="button" (click)="delete('Request',notes.id,'notes',row.id)" class="btn-small-icon"><i class="fas fa-trash"></i></button>
+                                                               </div>
+                                                            </li>
+                                                         </ul>
+                                                      </div>
+                                                      <a *ngIf="!(document_template.notes.length > 0)">{{AppStore.noContentText}}</a>
+                                                   </div>
+
+                                                   <!-- !Notes Ends Here  -->
+                                                   <app-cr-child-data [childData]="document_template.children"
+                                                      *ngIf="document_template.children"></app-cr-child-data>
+                                                   <!-- !Child Data Ends Here -->
+                                                </div>
+                                             </div>
+                                          </div>
+                                       </div>
+                                    </div>
+
+                                    <app-no-data *ngIf="ContentStore._contentLoaded && ContentStore.ContentList.length == 0"></app-no-data>
+                                    <div class="text-center mt-3 mb-3" *ngIf="ContentStore._contentLoaded && ContentStore.ContentList.length > 0">
+                                       <a (click)="openForm('Parent')" class="view-more-pestel-box d-inline-block">{{'add_new_clause' | translate}}</a>
+                                    </div>
+                                    <!-- !Add Clause Button && Empty Clause List Ends Here -->
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </ng-container>
+         </div>
+      </div>
+   </div>
+</main>
+<app-external-document-details-loader *ngIf="!TemplateStore.templateDetailsLoaded"></app-external-document-details-loader>
+<div class="side-bar-round" (click)="unCollapseSide()" #sideBarRound>
+   <figure class="w-100 d-block" *ngIf="changeRequestStore.requestdetailsLoaded">
+      <img width="100"
+         [attr.src]="changeRequestStore.requestDetails.created_by.image.token ? createImageUrl('user-profile-picture',changeRequestStore.requestDetails.created_by.image.token):getDefaultImage('user-logo')"
+         class="d-block mx-auto img-fluid rounded-circle" onerror="this.src='/assets/images/user-demo2.png'">
+   </figure>
+</div>
+
+<!--------------------- !Clause Form Modal Starts Here----------->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" id="mainclause" data-backdrop="static" #clauseFormModal>
+   <app-template-main-clause *ngIf="sourceParams" [source]="sourceParams"></app-template-main-clause>
+</div>
+<!-------------------- !Clause Form Modal Ends Here ---------------->
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+<div class="modal modal-style-1 fade" id="delete-popup" #deletePopup>
+   <app-delete-popup [source]="deleteObject"></app-delete-popup>
+</div>
+<!------------------- Delete Confirmation Modal End --------------------------->
+
+<!------------------- Notes Form Start---------------->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" id="notesForm" data-backdrop="static" #notesForm>
+   <app-template-notes *ngIf="NotesParam" [source]="NotesParam"></app-template-notes>
+</div>
+<!------------------- Notes Form End---------------->
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+   <app-kh-template-add *ngIf="templateObject.type" [source]="templateObject"></app-kh-template-add>
+</div>

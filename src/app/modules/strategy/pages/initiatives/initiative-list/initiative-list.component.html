@@ -1,0 +1,261 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navBar>
+   <app-sub-menu>-</app-sub-menu>
+   <ul class="nav nav-pills float-left d-none d-lg-block" role="tablist">
+      <li class="nav-item">
+         <a class="nav-link nav-link-show" [routerLink]="['/strategy-management/strategy-initiatives']"
+            routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">{{'initiatives' | translate}}</a>
+      </li>
+   </ul>
+</nav>
+
+<!-- initiative grid view -->
+<main class="mt-3 acl-page">
+   <div class="container-fluid">
+      <app-filter-menu></app-filter-menu>
+      <!-- <div class="tab-content"> -->
+         <div class="row sm-row" *ngIf="StrategyInitiativeStore.totalItems != 0 && StrategyInitiativeStore.loaded && AuthStore.getActivityPermission(3200,'STRATEGY_INITIATIVE_LIST')">
+            <div class="col-xl-4 col-lg-4 col-sm-6 sm-col pointer"
+               *ngFor="let items of StrategyInitiativeStore.allItems| paginate: {currentPage:StrategyInitiativeStore.currentPage, itemsPerPage:StrategyInitiativeStore.itemsPerPage,totalItems:StrategyInitiativeStore.totalItems};let num=index">
+               
+               <div class="widg-padding-cmn-small bg-white btm-space-10 hover-shadow list-page-grid-box relative edit-and-delete-main">
+                  <div class="edit-option-show" style="margin: 39px 0 0 0; ">
+                     <a *ngIf="AuthStore.getActivityPermission(3200, 'UPDATE_STRATEGY_INITIATIVE')"
+                        (click)="editStrategyInitiative(items.id)"><i class="fas fa-pen" [attr.title]="'edit' | translate" ></i></a>
+                     
+                     <a><i class="far fa-times-circle" (click)="close(items.id)" [attr.title]="'close' | translate"
+                           *ngIf="items.status_title != 'Closed'"></i></a>
+                     <a><i class="fas fa-check pointer" [attr.title]="'activate' | translate" *ngIf="items.strategy_status_id == 2 && StrategyManagementSettingStore?.strategyManagementSettings?.is_activate"
+                           (click)="activate(items.id)"></i></a>
+                     <a><i class="fas fa-ban" [attr.title]="'deactivate' | translate" *ngIf="items.strategy_status_id == 1 && StrategyManagementSettingStore?.strategyManagementSettings?.is_activate" (click)="passive(items.id)"></i></a>
+                     <a *ngIf="AuthStore.getActivityPermission(3200, 'DELETE_STRATEGY_INITIATIVE')" (click)="delete(items.id)"><i
+                           class="fas fa-trash" [attr.title]="'delete' | translate" ></i></a>
+                  </div>
+
+                  <div (click)="gotoDetails(items.id)">
+                     <div [attr.class]="'status-tag-new-two bg-'+items.strategy_initiative_status_label">{{items.status_title}}</div>
+                     <div class="issue-top-sec">
+                        <div class="clearfix">
+                            <h5 class="d-inline-block cmn-head-style label-tag-style mr-2"><span class="issue-smoal-head-text">#{{items.reference_code}}</span> {{items.title.length>17 ? items.title.substring(0,17)+'...' : items.title}}<span class="draft-tag draft-tag-blue label-tag-style-tag label-left-arow-tag d-inline-block status-tag-new-one">{{StrategyManagementSettingStore?.strategyManagementSettings?.is_weightage_fraction
+                              ? (items.score ? items.score : 0) : (items.score ?
+                              (items.score | number : '1.0-0') : 0)}} %</span></h5>
+                        </div>    
+                    </div>
+                     <!-- <div class="d-flex align-items-center mb-3">
+                  
+                        <div class="w-100">
+                           <h5 class="cmn-head-style mb-0">#{{items.reference_code}} | 
+
+                                 <span class="font-weight-600"  [attr.title]="getTitle(items.strategy_initiative_action_title,items.title)">{{getTitle(items.strategy_initiative_action_title,items.title)?.length>17 ? getTitle(items.strategy_initiative_action_title,items.title).substring(0,17)+'...' : getTitle(items.strategy_initiative_action_title,items.title)}}</span>
+
+                              <span class="draft-tag draft-tag-blue label-left-arow-tag"
+                                 style="line-height: 16px; vertical-align: middle; margin-top: -4px; display: inline-block;">
+                                 {{StrategyManagementSettingStore?.strategyManagementSettings?.is_weightage_fraction
+                                 ? (items.score ? items.score : 0) : (items.score ?
+                                 (items.score | number : '1.0-0') : 0)}} %</span>
+                           </h5>
+                        </div>
+                     </div> -->
+                  
+                     <div class="row sm-row">
+                        <div class="col-lg-12 col-sm-12 sm-col">
+                           <!-- <div> -->
+                           <span class="label-work-flow-audit mapping-label mapping-label-green position-unset-label">{{'strategy_profile' |
+                              translate}}</span>
+                           <!-- </div> -->
+                           <p class="mb-2 mt-2" *ngIf="items.strategy_profile_title">{{items.strategy_profile_title.length>30 ?
+                              items.strategy_profile_title.substring(0,30)+'...' : items.strategy_profile_title}}</p>
+                        </div>
+                     </div>
+                     <div class="row sm-row">
+                        <div class="col-lg-6 col-sm-12 sm-col">
+                           <!-- <div class=""> -->
+                              <span class="label-work-flow-audit mapping-label mapping-label-orange position-unset-label">{{'focus_area' |
+                                 translate}}</span>
+                           <!-- </div> -->
+                           <ul class="arrowlist mb-0 p-0 mt-2 arrowlist-orange" *ngIf="items?.strategy_profile_focus_areas?.length > 0"
+                              style="min-height: 52px;">
+                              <li *ngFor="let focus of items?.strategy_profile_focus_areas;let i = index">
+                                 <span *ngIf="i<2" class="elips-1">{{focus?.focus_area?.title}}</span>
+                              </li>
+                           </ul>
+                           <!-- <ul class="m-0 p-0" *ngIf="items?.strategy_profile_focus_areas?.length == 0">
+                                             <li>
+                                                <app-context-no-data [sourceData] = "getNoDataSource('center','No Focus Area Found')"></app-context-no-data>
+                                             </li>
+                                          </ul> -->
+                           <ng-container *ngIf="items?.strategy_profile_focus_areas?.length == 0">
+                              <div class="d-flex align-items-center " style="min-height: 52px;">
+                                 <div class="pl-1">
+                                    <p class="mb-0 elips-1">{{'common_nodata_title' | translate}} </p>
+                                 </div>
+                              </div>
+                           </ng-container>
+                        </div>
+                        <div class="col-lg-6 col-sm-12 sm-col">
+                           <!-- <div class="label-back-line-stg"> -->
+                              <span class="label-work-flow-audit mapping-label mapping-label-pink position-unset-label">{{'objective' |
+                                 translate}}</span>
+                           <!-- </div> -->
+                           <ul class="arrowlist mb-0 p-0 mt-2 arrowlist-pink" *ngIf="items?.strategy_profile_objectives?.length > 0" style="min-height: 52px;">
+                              <li *ngFor="let objective of items?.strategy_profile_objectives;let i = index">
+                                 <span *ngIf="i<2" class="elips-1">{{objective?.objective?.title}}</span>
+                              </li>
+                           </ul>
+                           <!-- <ul class="m-0 p-0" *ngIf="items?.strategy_profile_objectives?.length == 0">
+                                             <li>
+                                                <app-context-no-data [sourceData] = "getNoDataSource('center','No Objective Found')"></app-context-no-data>
+                                             </li>
+                                          </ul> -->
+                           <ng-container *ngIf="items?.strategy_profile_objectives?.length == 0">
+                              <div class="d-flex align-items-center " style="min-height: 52px;">
+                                 <div class="pl-1">
+                                    <p class="mb-0 elips-1">{{'common_nodata_title' | translate}} </p>
+                                 </div>
+                              </div>
+                           </ng-container>
+                        </div>
+                  
+                     </div>
+                  
+                  </div>
+                  <div class="row user-list-sm-pdg-remove">
+                     <div class="col-xl-12">
+                        <hr class="mb-2">
+                        <div class="d-flex flex-row user-list-sm align-items-center">  
+                           <app-user-popup-box [source]="getPopupDetails(items)" [showName]="true"
+                              [activateButtons]="false"></app-user-popup-box>
+                        </div>
+                     </div>
+                  </div>
+
+               </div>
+            </div>
+         </div>
+      <!-- </div> -->
+      <ng-container *mobxAutorun>
+         <div *ngIf="!StrategyInitiativeStore.loaded">
+            <!-- <app-profile-list-loader></app-profile-list-loader> -->
+            <app-strategy-grid-view-loader></app-strategy-grid-view-loader>
+         </div>
+         <app-no-data *ngIf="StrategyInitiativeStore.allItems.length == 0 && StrategyInitiativeStore.loaded "></app-no-data>
+      </ng-container>
+      <div *ngIf="StrategyInitiativeStore.totalItems>StrategyInitiativeStore.itemsPerPage && StrategyInitiativeStore.loaded" class="col-sm-12">
+         <ul class="pagination justify-content-center mt-3">
+            <div class="list">
+               <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+                  class="my-pagination" (pageChange)="pageChange($event)">
+               </pagination-controls>
+            </div>
+         </ul>
+      </div>
+   </div>
+</main>
+<!-- initiative grid view end-->
+
+
+<!-- initiative list view start-->
+<!-- <main class="mt-3 acl-page" *mobxAutorun>
+   <div class="container-fluid">
+      <app-filter-menu></app-filter-menu>
+      <div class="audit-program-box audit-page-table-main">
+         <div class="row">
+            <div class="col-sm-12 full-width-table">
+
+               <table
+                  *ngIf=" StrategyInitiativeStore.loaded && StrategyInitiativeStore.allItems.length > 0 && AuthStore.getActivityPermission(3200, 'STRATEGY_INITIATIVE_LIST')"
+                  class="table table-bordered ordinary-table audit-page-table mb-4 table-scroll">
+                  <thead>
+                     <tr>
+                        <th class="border-top-0" width="2%">#</th>
+                        <th class="border-top-0" width="6%" (click)="sortTitle('strategy_initiatives.reference_code')">
+                           <span>{{'ref_id' | translate}}</span>
+                           <img _ngcontent-twv-c17=""
+                              *ngIf="StrategyInitiativeStore.orderItem=='strategy_initiatives.reference_code'"
+                              [attr.src]="StrategyInitiativeStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                              class="sort-down-pics ml-2 " style="cursor: pointer;">
+                        </th>
+                        <th class="border-top-0" width="31%" (click)="sortTitle('strategy_initiatives.title')">
+                           <span>{{'title' | translate}}</span>
+                           <img _ngcontent-twv-c17=""
+                              *ngIf="StrategyInitiativeStore.orderItem=='strategy_initiatives.title'"
+                              [attr.src]="StrategyInitiativeStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                              class="sort-down-pics ml-2" style="cursor: pointer;">
+                        </th>
+                        <th class="border-top-0" width="28%" *ngIf="OrganizationModulesStore.checkIndividualSubModule(3200,53101)">{{'strategy_profile' | translate}}</th>
+
+                        <th class="border-top-0" width="22%" (click)="sortTitle('strategy_initiatives.duration')">
+                           <span>{{'duration' | translate}}</span>
+                           <img _ngcontent-twv-c17=""
+                              *ngIf="StrategyInitiativeStore.orderItem=='strategy_initiatives.duration'"
+                              [attr.src]="StrategyInitiativeStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                              class="sort-down-pics ml-2" style="cursor: pointer;">
+                        </th>
+                        <th class="border-top-0" width="12%">{{'status' | translate}}</th>
+                     </tr>
+                  </thead>
+                  <tbody>
+                     <tr (click)="gotoDetails(data)"
+                        *ngFor="let data of StrategyInitiativeStore.allItems| paginate: {currentPage:StrategyInitiativeStore.currentPage, itemsPerPage:StrategyInitiativeStore.itemsPerPage,totalItems:StrategyInitiativeStore.totalItems};let num = index"
+                        class="pointer edit-and-delete-main">
+                        <td>{{(StrategyInitiativeStore.currentPage - 1) * StrategyInitiativeStore.itemsPerPage + (num +
+                           1)}}</td>
+                        <td>{{data.reference_code}}</td>
+                        <td>{{data.strategy_initiative_action_title ? data.strategy_initiative_action_title : ''}}
+                           {{data.title ? data.title : AppStore.noContentText }}</td>
+                        <td *ngIf="OrganizationModulesStore.checkIndividualSubModule(3200,53101)">{{data?.strategy_profile_title}}</td>
+                        <td>{{data.start_date | date:
+                           OrganizationGeneralSettingsStore.organizationSettings?.date_format}} to {{data.end_date |
+                           date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}} </td>
+                        <td>
+                           <div ng [attr.class]="'dot-div '+data?.strategy_initiative_status_label+'-dot'">
+                              {{data.status_title ? data.status_title : 'New' }}</div>
+                           <div class="edit-option-show" style="margin: 30px 0 0 0; ">
+                              <a *ngIf="AuthStore.getActivityPermission(3200, 'UPDATE_STRATEGY_INITIATIVE')"
+                                 (click)="editStrategyInitiative(data.id)"><i class="fas fa-pen"></i></a>
+                              
+                              <a><i class="far fa-times-circle" (click)="close(data.id)"
+                                    *ngIf="data.status_title != 'Closed'"></i></a>
+                              <a><i class="fas fa-check pointer" *ngIf="data.strategy_status_id == 2 && StrategyManagementSettingStore?.strategyManagementSettings?.is_activate"
+                                    (click)="activate(data.id)"></i></a>
+                              <a><i class="fas fa-ban" *ngIf="data.strategy_status_id == 1 && StrategyManagementSettingStore?.strategyManagementSettings?.is_activate" (click)="passive(data.id)"></i></a>
+                              <a *ngIf="AuthStore.getActivityPermission(3200, 'DELETE_STRATEGY_INITIATIVE')" (click)="delete(data.id)"><i
+                                    class="fas fa-trash"></i></a>
+                           </div>
+                        </td>
+                     </tr>
+                  </tbody>
+               </table>
+
+               <p class="float-right bold"
+                  *ngIf="StrategyInitiativeStore.loaded && StrategyInitiativeStore.totalItems > 0">{{'total_Items' | translate}}: {{StrategyInitiativeStore?.totalItems}}</p>
+
+               <ng-container *mobxAutorun>
+                  <div *ngIf="!StrategyInitiativeStore.loaded">
+                     <app-profile-list-loader></app-profile-list-loader>
+                  </div>
+                  <app-no-data *ngIf="StrategyInitiativeStore.allItems.length == 0 && StrategyInitiativeStore.loaded ">
+                  </app-no-data>
+               </ng-container>
+
+               <div *ngIf="StrategyInitiativeStore.totalItems>StrategyInitiativeStore.itemsPerPage" class="col-sm-12">
+                  <ul class="pagination justify-content-center mt-3">
+                     <div class="list">
+                        <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+                           class="my-pagination" (pageChange)="pageChange($event)">
+                        </pagination-controls>
+                     </div>
+                  </ul>
+               </div>
+
+            </div>
+         </div>
+      </div>
+   </div>
+</main> -->
+<!-- initiative list view -->
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+   <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>

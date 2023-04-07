@@ -1,0 +1,692 @@
+<div #plainDev></div>
+
+<nav class="edit-bar" data-toggle="affix" #navBar>
+
+   <app-breadcrumb-menu></app-breadcrumb-menu>
+   <app-sub-menu></app-sub-menu>
+   <div style="
+    position: relative;
+    right: -4px;
+    top: 29px;">
+      <ul class="nav nav-pills edit-icons float-right d-none d-xl-block" role="tablist">
+         <li>
+            <button type="button" class="btn btn-small btn-resolve" (click)="gotoIncident()">Go to Incident</button>
+         </li>
+      </ul>
+   </div>
+
+</nav>
+
+<main class="mt-3">
+   <div class="container-fluid">
+      <div *mobxAutorun>
+
+         <div class="row" *ngIf="IncidentInvestigationStore.individualLoaded && IncidentInvestigationStore.investigationItemDetails">
+            <div class="col-sm-12 col-lg-8 padding-right-0">
+               <div class="bg-white widg-padding-cmn edit-and-delete-main">
+                  <div class="min-height-64">
+                  <div class="edit-option-show" style="margin: 32px -6px 0 0;">
+                     <a class="pointer" [attr.title]="'investigation_update_history'|translate" (click)="openHistoryModal()"><i
+                        class="fas fa-history"></i></a>
+                     <a class="pointer" *ngIf="IncidentInvestigationStore.investigationItemDetails?.incident_investigation_status?.type != 'closed' && AuthStore.user?.id == IncidentStore.investigatorsDetails?.investigation_leader?.id"
+                        [attr.title]="'close_investigation'|translate" (click)="openUpdateModal()">
+                        <i class="fas fa-pen"></i></a>
+
+                  </div>
+                  <div class="issue-top-sec">
+                     <div class="clearfix">
+                        <!-- <h5 class="d-inline-block cmn-head-style label-tag-style"><span class="issue-smoal-head-text">#0003</span> Fire blast at canteen <span class="draft-tag label-tag-style-tag label-left-arow-tag" style="line-height: 16px; vertical-align: middle; margin-top: -4px; display: inline-block;"> Personal Injury</span></h5> -->
+
+                        <h5 class="d-inline-block cmn-head-style label-tag-style"><span
+                              class="issue-smoal-head-text">#{{IncidentInvestigationStore.investigationItemDetails?.incident?.reference_code}}</span>
+                           {{IncidentInvestigationStore.investigationItemDetails?.title}}<span
+                           [ngClass]="'draft-tag draft-tag-'+IncidentInvestigationStore.investigationItemDetails?.incident_investigation_status?.label + ' label-tag-style-tag label-left-arow-tag ml-3'">
+                              {{IncidentInvestigationStore.investigationItemDetails?.incident_investigation_status?.languages[0].pivot.title}}</span>
+                        </h5>
+                     </div>
+                     <div class="clearfix">
+                        <p *ngIf = "IncidentInvestigationStore.investigationItemDetails?.incident_at && IncidentInvestigationStore.investigationItemDetails?.incident_at != '0000-00-00 00:00:00'" 
+                        [ngClass]="IncidentInvestigationStore.investigationItemDetails?.description ? 'label-tag-style mb-2' : 'label-tag-style mb-3'"><i class="fas fa-calendar-alt date-pics-two"></i>
+                           {{
+                           IncidentInvestigationStore.investigationItemDetails?.incident_at | date :
+                           OrganizationGeneralSettingsStore.organizationSettings?.date_time_format}}
+                        </p>
+                        <p *ngIf = "!IncidentInvestigationStore.investigationItemDetails?.incident_at || IncidentInvestigationStore.investigationItemDetails?.incident_at == '0000-00-00 00:00:00'" 
+                        [ngClass]="IncidentInvestigationStore.investigationItemDetails?.description ? 'label-tag-style mb-2' : 'label-tag-style mb-3'"><i class="fas fa-calendar-alt date-pics-two"></i>
+                           {{AppStore.noContentText}}
+                        </p>
+                     </div>
+                     <p *ngIf="IncidentInvestigationStore.investigationItemDetails?.description"> {{IncidentInvestigationStore.investigationItemDetails?.description}}</p>
+
+                  </div>
+
+                  <div class="row">
+                     <div class="col-lg-4 col-sm-6">
+                        <h6>{{'reported_date_time' | translate}}</h6>
+                        <p *ngIf = "IncidentInvestigationStore.investigationItemDetails?.reported_at && IncidentInvestigationStore.investigationItemDetails?.reported_at != '0000-00-00 00:00:00'" >{{IncidentInvestigationStore.investigationItemDetails?.reported_at | date :
+                           OrganizationGeneralSettingsStore.organizationSettings?.date_time_format}}</p>
+                        <p *ngIf = "!IncidentInvestigationStore.investigationItemDetails?.reported_at || IncidentInvestigationStore.investigationItemDetails?.reported_at == '0000-00-00 00:00:00'" >{{AppStore.noContentText}}</p>
+                     </div>
+                     <div class="col-lg-4 col-sm-6">
+                        <h6>{{'category' | translate}} </h6>
+                        <p>{{ IncidentInvestigationStore.investigationItemDetails?.investigation_categories.length > 0 ?
+                           IncidentInvestigationStore.investigationItemDetails?.investigation_categories[0].title :
+                           AppStore.noContentText}}</p>
+                     </div>
+                     <div class="col-lg-4 col-sm-6">
+                        <h6>{{'incident_sub_category' | translate}}</h6>
+                        <p>{{IncidentInvestigationStore.investigationItemDetails?.investigation_sub_categories.length >
+                           0 ?
+                           IncidentInvestigationStore.investigationItemDetails?.investigation_sub_categories[0]?.title :
+                           AppStore.noContentText}}</p>
+                     </div>
+                     <div class="col-lg-4 col-sm-6">
+                        <div class="label-and-user-pic">
+                           <h6>{{'reported_by' | translate}}</h6>
+                           <div class="d-flex flex-row user-list-sm">
+                              <app-user-popup-box
+                                 [source]=" getCreatedByPopupDetails(IncidentInvestigationStore.investigationItemDetails?.reported_by,IncidentInvestigationStore.investigationIncidentObjects?.reported_by)">
+                              </app-user-popup-box>
+                           </div>
+                           <!-- <div
+                              class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg"> -->
+                              <!-- <img src="images/round-7.png" class="rounded-circle rounde-hov details-show-popup" width="35px" height="35px"> -->
+
+                              <!-- <div class="pointer">
+                                 <h6 class="text-14">{{IncidentInvestigationStore.investigationItemDetails?.reported_by?.first_name}}
+                                    {{IncidentInvestigationStore.investigationItemDetails?.reported_by?.last_name}}</h6>
+                                 <span>{{IncidentInvestigationStore.investigationItemDetails?.reported_by?.designation}}</span>
+                              </div>
+                           </div> -->
+                        </div>
+                     </div>
+                     <div class="col-lg-4 col-sm-6">
+                        <h6>{{'invoved_party' | translate}}</h6>
+                        <p>{{IncidentInvestigationStore.investigationItemDetails?.stakeholders.length > 0 ?
+                           IncidentInvestigationStore.investigationItemDetails?.stakeholders[0]?.title :
+                           AppStore.noContentText}}</p>
+                     </div>
+                     <div class="col-lg-4 col-sm-6"
+                        *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_subsidiary">
+                        <h6>{{'subsidiary' | translate}}</h6>
+                        <p>{{IncidentInvestigationStore.investigationItemDetails?.organizations.length > 0 ?
+                           IncidentInvestigationStore.investigationItemDetails?.organizations[0]?.title :
+                           AppStore.noContentText}}</p>
+                     </div>
+                     <!-- <div class="col-lg-4 col-sm-6" *ngIf = "OrganizationLevelSettingsStore.organizationLevelSettings?.is_branch">
+                        <h6 >{{'branch' | translate}}</h6>
+                        <p >{{IncidentInvestigationStore.investigationItemDetails?.branches ? IncidentInvestigationStore.investigationItemDetails?.branches[0]?.title : AppStore.noContentText}}</p>
+                     </div> -->
+                     <div class="col-lg-4 col-sm-6"
+                        *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_division">
+                        <h6>{{'division' | translate}}</h6>
+                        <p>{{IncidentInvestigationStore.investigationItemDetails?.divisions.length > 0 ?
+                           IncidentInvestigationStore.investigationItemDetails?.divisions[0]?.title :
+                           AppStore.noContentText}}</p>
+                     </div>
+                     <div class="col-lg-4 col-sm-6"
+                        *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_department">
+                        <h6>{{'department' | translate}}</h6>
+                        <p>{{IncidentInvestigationStore.investigationItemDetails?.departments.length > 0 ?
+                           IncidentInvestigationStore.investigationItemDetails?.departments[0]?.title :
+                           AppStore.noContentText}}</p>
+                     </div>
+                     <div class="col-lg-4 col-sm-6"
+                        *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_section">
+                        <h6>{{'section' | translate}}</h6>
+                        <p>{{IncidentInvestigationStore.investigationItemDetails?.sections.length > 0
+                           ?IncidentInvestigationStore.investigationItemDetails?.sections[0]?.title :
+                           AppStore.noContentText}}</p>
+                     </div>
+                     <div class="col-lg-4 col-sm-6"
+                        *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_sub_section">
+                        <h6>{{'sub_section' | translate}}</h6>
+                        <p>{{IncidentInvestigationStore.investigationItemDetails?.sub_sections.length > 0 ?
+                           IncidentInvestigationStore.investigationItemDetails?.sub_sections[0]?.title :
+                           AppStore.noContentText}}</p>
+                     </div>
+                     <div class="col-lg-4 col-sm-6">
+                        <h6>{{'action_taken' | translate}}</h6>
+                        <p>{{IncidentInvestigationStore.investigationItemDetails?.action?
+                           IncidentInvestigationStore.investigationItemDetails?.action : AppStore.noContentText}}</p>
+                     </div>
+                     <div class="col-lg-4 col-sm-6">
+                        <h6>{{'incident_root_cause' | translate}} </h6>
+                        <p
+                           *ngIf="IncidentInvestigationStore.investigationItemDetails?.investigation_root_causes.length == 0">
+                           {{AppStore.noContentText}}</p>
+
+                        <p
+                           *ngFor="let data of IncidentInvestigationStore.investigationItemDetails?.investigation_root_causes">
+                           {{data.title}}</p>
+                     </div>
+                     <div class="col-lg-4 col-sm-6">
+                        <h6>{{'were_safe_work_practices_being_used' | translate}}</h6>
+                        <p *ngIf="IncidentInvestigationStore.investigationItemDetails?.is_safe_work == 1">Yes</p>
+                        <p *ngIf="IncidentInvestigationStore.investigationItemDetails?.is_safe_work == 0">No</p>
+
+                     </div>
+                     <div class="col-lg-4 col-sm-6">
+                        <h6>{{'incident_damage_types' | translate}}</h6>
+                        <p>{{IncidentInvestigationStore.investigationItemDetails?.incident_damage_type?.title ?
+                           IncidentInvestigationStore.investigationItemDetails?.incident_damage_type?.title :
+                           AppStore.noContentText }}</p>
+                     </div>
+                     <div class="col-lg-4 col-sm-6">
+                        <h6>{{'incident_damage_severity' | translate}}</h6>
+                        <p>{{ IncidentInvestigationStore.investigationItemDetails?.incident_damage_severity?.title ?
+                           IncidentInvestigationStore.investigationItemDetails?.incident_damage_severity?.title :
+                           AppStore.noContentText }}</p>
+                     </div>
+
+                  </div>
+
+                  <div class="row">
+                     <div class=" col-sm-12  edit-and-delete-main">
+                        
+                        <h6>{{'incident_investigations' | translate}}
+                           <button class="btn smbtn-pad ml-2 btn-small" data-toggle="modal" data-target="#add-inscope"
+                              (click)="addInvestigationPoint()">{{'add' | translate}}</button>
+                        </h6>
+
+                        <ul class="arrowlist pl-0 mt-2">
+                           <li *ngIf="IncidentInvestigationStore.investigationItemDetails?.points.length==0">
+                              {{AppStore.noContentText}}</li>
+                           <li *ngFor="let data of IncidentInvestigationStore.investigationItemDetails?.points"
+                              class="clearfix">{{data.description}}
+                              <div class="edit-and-delete-small">
+                              <button type="button"
+                                 *ngIf="AuthStore.getActivityPermission(1900,'DELETE_INCIDENT_INVESTIGATION_POINT') && IncidentInvestigationStore.investigationItemDetails?.incident_investigation_status?.type != 'closed'"
+                                 (click)="deleteInvestigations(data)" class="btn-small-icon"
+                                 style="border: none;"><i class="fas fa-trash"></i></button></div>
+                           </li>
+                        </ul>
+                     </div>
+                     <div class=" col-sm-12 edit-option">
+                        <h6>{{'significant_observations' | translate}}
+                           <button class="btn smbtn-pad ml-2 btn-small" data-toggle="modal" data-target="#add-inscope"
+                              (click)="addInvestigationObservation()">{{'add' | translate}}</button>
+                        </h6>
+      
+                        <ul class="arrowlist pl-0 mt-2">
+                           <li *ngIf="IncidentInvestigationStore.investigationItemDetails?.observations.length==0">
+                              {{AppStore.noContentText}}</li>
+                           <li *ngFor="let data of IncidentInvestigationStore.investigationItemDetails?.observations"
+                              class="clearfix">{{data.description}}
+                              <div class="edit-and-delete-small">
+                              <button type="button"
+                                 *ngIf="AuthStore.getActivityPermission(1900,'DELETE_INCIDENT_INVESTIGATION_OBSERVATION') && IncidentInvestigationStore.investigationItemDetails?.incident_investigation_status?.type != 'closed'"
+                                 (click)="deleteObservations(data)" class="btn-small-icon"
+                                 style="border: none;"><i class="fas fa-trash"></i></button></div>
+      
+                           </li>
+                        </ul>
+                     </div>
+                     <div class=" col-sm-12 edit-option">
+                        <h6>{{'recommendations' | translate}}
+                           <button class="btn smbtn-pad ml-2 btn-small" data-toggle="modal" data-target="#add-inscope"
+                              (click)="addInvestigationRecommendation()">{{'add' | translate}}</button>
+                        </h6>
+      
+                        <ul class="arrowlist pl-0 mt-2">
+                           <li *ngIf="IncidentInvestigationStore.investigationItemDetails?.recommendations.length==0">
+                              {{AppStore.noContentText}}</li>
+                           <div *ngFor="let data of IncidentInvestigationStore.investigationItemDetails?.recommendations">
+                              <li class="clearfix">{{data.description}}
+                                 <div class="edit-and-delete-small">
+                                 <button type="button"
+                                    *ngIf="AuthStore.getActivityPermission(1900,'DELETE_INCIDENT_INVESTIGATION_RECOMMENDATION') && IncidentInvestigationStore.investigationItemDetails?.incident_investigation_status?.type != 'closed'"
+                                    (click)="deleteRecommendations(data)" class="btn-small-icon"
+                                    style="border: none;"><i class="fas fa-trash"></i></button></div>
+                              </li>
+                           </div>
+                        </ul>
+                     </div>
+                     <div class=" col-sm-12 edit-option">
+                        <h6>{{'references' | translate}}
+                           <button class="btn smbtn-pad ml-2 btn-small" data-toggle="modal" data-target="#add-inscope"
+                              (click)="addInvestigationRefrence()">{{'add' | translate}}</button>
+                        </h6>
+      
+                        <ul class="arrowlist pl-0 mt-2">
+                           <li *ngIf="IncidentInvestigationStore.investigationItemDetails?.references.length==0">
+                              {{AppStore.noContentText}}</li>
+                           <li *ngFor="let data of IncidentInvestigationStore.investigationItemDetails?.references"
+                              class="clearfix">{{data.description}}
+                              <div class="edit-and-delete-small">
+                              <button type="button"
+                                 *ngIf="AuthStore.getActivityPermission(1900,'DELETE_INCIDENT_INVESTIGATION_REFERENCE') && IncidentInvestigationStore.investigationItemDetails?.incident_investigation_status?.type != 'closed'"
+                                 (click)="deleteReference(data)" class="btn-small-icon"
+                                 style="border: none;"><i class="fas fa-trash"></i></button></div>
+      
+                           </li>
+                        </ul>
+                     </div>
+                  </div>
+
+                  <div class="row ">
+                     <div class="col-sm-12">
+                        <h6>{{'evidence' | translate}}</h6>
+                        <p *ngIf="IncidentInvestigationStore.investigationItemDetails?.documents?.length==0">
+                           {{AppStore.noContentText}}</p>
+                        <div class="thumb-pics-bg thumb-pics-col-4 thumb-pics-fix-text clearfix"
+                           *ngIf="IncidentInvestigationStore.investigationItemDetails?.documents?.length > 0">
+                           <div [ngClass]="AuthStore.getActivityPermission(1900,'PREVIEW_INCIDENT_INVESTIGATION_DOCUMENT_FILE') ? 'thumb-pics pointer' : 'thumb-pics'"
+                              *ngFor="let doc of IncidentInvestigationStore.investigationItemDetails?.documents"
+                              (click)="AuthStore.getActivityPermission(1900,'PREVIEW_INCIDENT_INVESTIGATION_DOCUMENT_FILE') ? viewIncidentDocument(doc) : ''">
+                              <div class="upload-pics edit-option">
+                                 <div class="browse-form-pic"
+                                    [ngStyle]="{'background': 'url(' + createImageUrl('investigation-item',doc.token) + '), url(' + getDefaultImage('no-preview') + ') no-repeat 0 0 / cover '}">
+                                 </div>
+                                 <div class="browse-form-name clearfix">
+                                    <div class="float-left">
+                                       <h6 [attr.title]="doc.title">
+                                          {{doc.title.length > 13 ? doc.title.substring(0,13)+'
+                                          ...': doc.title}}
+                                       </h6>
+                                       <span>{{doc.size/1048576 | number:'0.2-2'}}MB</span>
+                                    </div>
+                                    <div class="browse-logo">
+                                       <img *ngIf="checkExtension(doc.ext,'image') != -1"
+                                          src="/assets/images/md-jpg.png">
+                                       <img *ngIf="checkExtension(doc.ext,'doc') != -1"
+                                          src="/assets/images/word-icone.png">
+                                       <img *ngIf="checkExtension(doc.ext,'pdf') != -1"
+                                          src="/assets/images/pdf-icone.png">
+                                       <img *ngIf="checkExtension(doc.ext,'excel') != -1"
+                                          src="/assets/images/excel-icone.png">
+                                       <img *ngIf="checkExtension(doc.ext,'video') != -1"
+                                          src="/assets/images/md-video.png">
+                                       <img *ngIf="checkExtension(doc.ext,'audio') != -1"
+                                          src="/assets/images/md-audio.png">
+                                       <img *ngIf="checkExtension(doc.ext,'ppt') != -1" src="/assets/images/md-ppt.png">
+                                    </div>
+                                 </div>
+                                 <div class="edit-option-show-inner" style="margin: 0 -9px 0 0;" [attr.title]="'download_document' | translate"
+                                    *ngIf="AuthStore.getActivityPermission(1900,'DOWNLOAD_INCIDENT_INVESTIGATION_DOCUMENT')">
+                                    <a><i class="fas fa-download"
+                                          (click)="downloadInvestigationDocument('downloadIncidentDocument',doc)"></i></a>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+                  <div class="row">
+                     <div class="col-sm-12">
+                        <hr class="mb-2">
+                        <div class="d-flex flex-row user-list-sm">
+                           <app-user-popup-box
+                              [source]=" getCreatedByPopupDetails(IncidentInvestigationStore.investigationItemDetails?.created_by,IncidentInvestigationStore.investigationItemDetails?.created_at)">
+                           </app-user-popup-box>
+                           <!-- <img src="images/user-gate.jpg" width="30px" height="30px" class="rounded-circle">
+                          <div>
+                            <h6>Mohammed Shihabudheen</h6>
+                            <span>Project Manger | Created on jan 31,2020 11:41:AM</span>
+                          </div> -->
+                        </div>
+                     </div>
+                  </div>
+
+
+
+
+
+
+
+
+
+               </div>
+            </div>
+            <div class="col-sm-12 col-lg-4 ">
+
+               <div class="bg-white widg-padding-cmn-small mb-3">
+                  <div class="edit-and-delete-main">
+                     <div
+                        *ngIf="AuthStore.getActivityPermission(1900,'CREATE_INCIDENT_INVESTIGATION_INVOLVED_USER') && IncidentInvestigationStore.investigationItemDetails?.incident_investigation_status?.type != 'closed'"
+                        class="edit-option-show" style="margin: 60px -15px 0 0;">
+                        <a (click)="addInvolvedPersonDetails()"><i class="fas fa-plus"></i></a>
+                     </div>
+                     <h5 class="cmn-head-style text-left">{{'person_involved' | translate}}</h5>
+                     <hr class="mt-0 mb-3">
+                     <h6 class="text-left">{{'employee' | translate}}</h6>
+                     <div class="row" *ngIf="IncidentInvestigationStore.investigationItemDetails?.investigation_involved_users?.length > 0">
+                        <div class=" col-lg-6 col-sm-12 text-left"
+                           *ngFor="let involved of IncidentInvestigationStore.investigationItemDetails?.investigation_involved_users; let isLast=last">
+                           <div class="label-and-user-pic edit-option">
+                              <div
+                                 *ngIf="AuthStore.getActivityPermission(1900,'DELETE_INCIDENT_INVESTIGATION_INVOLVED_USER') && IncidentInvestigationStore.investigationItemDetails?.incident_investigation_status?.type != 'closed'"
+                                 class="edit-option-show-inner" style="margin: 5px -15px 0 0; ">
+                                 <!-- edit-and-delete starts -->
+                                 <a (click)="deleteInvolvedPerson(involved)"><i class="fas fa-trash"></i></a>
+                              </div>
+
+                              <div
+                                 class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                                 <app-user-popup-box [source]="assignUserValues(involved)" [showName]="true">
+                                 </app-user-popup-box>
+
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                     <p class="trxt-left" *ngIf="IncidentInvestigationStore.investigationItemDetails?.investigation_involved_users?.length == 0">
+                        {{AppStore.noContentText}}
+                     </p>
+                  </div>
+                  <div class="edit-and-delete-main">
+                     <div
+                        *ngIf="AuthStore.getActivityPermission(1900,'CREATE_INCIDENT_INVESTIGATION_INVOLVED_OTHER_USER') && IncidentInvestigationStore.investigationItemDetails?.incident_investigation_status?.type != 'closed'"
+                        class="edit-option-show" style="margin: 13px -15px 0 0;">
+                        <a (click)="addInvolvedPersonOtherDetails()"><i class="fas fa-plus"></i></a>
+                     </div>
+                     <h6 class="text-left mt-3">{{'others' | translate}}</h6>
+                     <div *ngIf="IncidentInvestigationStore.investigationItemDetails.involved_other_users?.length > 0">
+                        <div *ngFor="let data of involvedOthers()"
+                        class="name-and-position name-and-position-bdr cmn-bdr text-left edit-option">
+                        <div
+                           *ngIf="AuthStore.getActivityPermission(1900,'DELETE_INCIDENT_INVESTIGATION_INVOLVED_OTHER_USER') && IncidentInvestigationStore.investigationItemDetails?.incident_investigation_status?.type != 'closed'"
+                           class="edit-option-show-inner" style="margin: 8px 0 0 0;">
+                           <a (click)="deleteInvolvedOtherPerson(data)"><i class="fas fa-trash"></i></a>
+                        </div>
+                        <div class="row">
+                           <div class="col-sm-12">
+                              <!-- <h6 >Description</h6> -->
+                              <p *ngIf="data.remarks">{{data.remarks}} </p>
+                           </div>
+                           <div class="col-sm-12">
+                              <h6>{{data.name ? data.name : AppStore.noContentText }} </h6>
+                              <p> {{data.mobile ? data.mobile : AppStore.noContentText}}</p>
+                           </div>
+                           <div class="col-sm-6 col-lg-6">
+                              <h6 >Gender</h6>
+                              <p>{{data.gender ? data.gender : AppStore.noContentText}}</p>
+                           </div>
+                           <div class="col-sm-6 col-lg-6">
+                              <h6 >Age</h6>
+                              <p>{{data.age ? data.age : AppStore.noContentText }}</p>
+                           </div>
+                           <div class="col-sm-12 col-lg-6">
+                              <h6 >Designation</h6>
+                              <p>{{data.designation ? data.designation: AppStore.noContentText}}</p>
+                           </div>
+                           <div class="col-sm-12">
+                              <h6 >Email</h6>
+                              <span>{{data.email ? data.email : AppStore.noContentText}}</span>
+                           </div>
+                           <div class="col-sm-12">
+                              <h6 >Company Name</h6>
+                              <p>{{data.company ? data.company : AppStore.noContentText }}</p>
+                           </div>
+                        </div>
+                     </div>
+                     </div>
+                    <p class="text-left" *ngIf="IncidentInvestigationStore.investigationItemDetails.involved_other_users?.length == 0">
+                       {{AppStore.noContentText}}
+                    </p>
+                  </div>
+                  <a class="view-more-pestel-box text-center"
+                     *ngIf="IncidentInvestigationStore.investigationItemDetails?.involved_other_users.length > 2"
+                     data-toggle="modal" data-target="#others-popup" (click)="openOtherInvolvedPerson()">{{'view_more' |
+                     translate}}</a>
+
+               </div>
+
+
+               <div class="bg-white widg-padding-cmn-small mb-3">
+                  <div class="edit-and-delete-main">
+                     <div
+                        *ngIf="AuthStore.getActivityPermission(1900,'CREATE_INCIDENT_INVESTIGATION_WITNESS_USER') && IncidentInvestigationStore.investigationItemDetails?.incident_investigation_status?.type != 'closed'"
+                        class="edit-option-show-inner" style="margin: 64px -15px 0 0;">
+                        <a (click)="addInvolvedWitnessPersonDetails()"><i class="fas fa-plus"></i></a>
+                     </div>
+                     <h5 class="cmn-head-style text-left">{{'witness' | translate}}</h5>
+                     <hr class="mt-0 mb-3">
+
+                     <h6 class="text-left">{{'employee' | translate}}</h6>
+
+                     <!-- <ul class="arci-user-tab-dtl workflow-lst-pics-loop clearfix user-pic-mr-remove">
+                        <li class="rounde-hov-bg user-delete-div" *ngFor = "let witness of IncidentInvestigationStore.investigationItemDetails?.investigation_witness_users; let isLast=last">
+                          <span *ngIf="AuthStore.getActivityPermission(1900,'DELETE_INCIDENT_INVESTIGATION_WITNESS_USER') && IncidentInvestigationStore.investigationItemDetails?.incident_investigation_status?.type != 'closed'" (click)="deleteInvolvedWitnessPerson(witness)" class="user-delete-btn"><i class="fas fa-trash"></i></span>
+                         <app-user-popup-box [source]="assignUserValues(witness)" [showName] = "false" ></app-user-popup-box> 
+                        </li>
+                       
+                    </ul> -->
+                     <div class="row" *ngIf="IncidentInvestigationStore.investigationItemDetails?.investigation_witness_users?.length > 0">
+                        <div class=" col-lg-6 col-sm-12 text-left"
+                           *ngFor="let witness of IncidentInvestigationStore.investigationItemDetails?.investigation_witness_users; let isLast=last">
+                           <div class="label-and-user-pic edit-option">
+                              <div
+                                 *ngIf="AuthStore.getActivityPermission(1900,'DELETE_INCIDENT_INVESTIGATION_WITNESS_USER') && IncidentInvestigationStore.investigationItemDetails?.incident_investigation_status?.type != 'closed'"
+                                 class="edit-option-show-inner" style="margin: 5px -15px 0 0; ">
+                                 <!-- edit-and-delete starts -->
+                                 <a (click)="deleteInvolvedWitnessPerson(witness)"><i class="fas fa-trash"></i></a>
+                              </div>
+
+                              <div
+                                 class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                                 <app-user-popup-box [source]="assignUserValues(witness)" [showName]="true">
+                                 </app-user-popup-box>
+
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                     <p class="text-left" *ngIf="IncidentInvestigationStore.investigationItemDetails?.investigation_witness_users?.length == 0">
+                        {{AppStore.noContentText}}
+                     </p>
+                  </div>
+                  <div class="edit-and-delete-main">
+                     <div
+                        *ngIf="AuthStore.getActivityPermission(1900,'CREATE_INCIDENT_INVESTIGATION_WITNESS_OTHER_USER') && IncidentInvestigationStore.investigationItemDetails?.incident_investigation_status?.type != 'closed'"
+                        class="edit-option-show" style="margin: 14px -15px 0 0;">
+                        <a (click)="addInvolvedWitnessPersonOtherDetails()"><i class="fas fa-plus"></i></a>
+                     </div>
+                     <h6 class="text-left mt-3">{{'others' | translate}}</h6>
+                     <div  *ngIf="IncidentInvestigationStore.investigationItemDetails.witness_other_users?.length > 0">
+                        <div *ngFor="let data of othersWitness()"
+                        class="name-and-position name-and-position-bdr cmn-bdr text-left edit-option">
+                        <div
+                           *ngIf="AuthStore.getActivityPermission(1900,'DELETE_INCIDENT_INVESTIGATION_WITNESS_OTHER_USER') && IncidentInvestigationStore.investigationItemDetails?.incident_investigation_status?.type != 'closed'"
+                           class="edit-option-show-inner" style="margin: 5px -2px 0 0;">
+                           <a (click)="deleteInvolvedWitnessOtherPerson(data)"><i class="fas fa-trash"></i></a>
+                        </div>
+                        <div class="row">
+                           <div class="col-sm-12">
+                              <!-- <h6 >Description</h6> -->
+                              <p *ngIf="data.remarks">{{data.remarks}} </p>
+                           </div>
+                           <div class="col-sm-12">
+                              <h6>{{data.name ? data.name : AppStore.noContentText }} </h6>
+                              <p> {{data.mobile ? data.mobile : AppStore.noContentText}}</p>
+                           </div>
+
+                           <div class="col-sm-12 col-lg-6">
+                              <h6 >Designation</h6>
+                              <p>{{data.designation ? data.designation: AppStore.noContentText}}</p>
+                           </div>
+                           <div class="col-sm-12">
+                              <h6 >Email</h6>
+                              <p>{{data.email ? data.email : AppStore.noContentText}}</p>
+                           </div>
+                           <div class="col-sm-12">
+                              <h6 >Company Name</h6>
+                              <p>{{data.company_name? data.company_name: AppStore.noContentText }}</p>
+                           </div>
+                        </div>
+                     </div>
+                     </div>
+                     <p class="text-left" *ngIf="IncidentInvestigationStore.investigationItemDetails.witness_other_users?.length == 0">
+                        {{AppStore.noContentText}}
+                     </p>
+                  </div>
+                  <a class="view-more-pestel-box text-center"
+                     *ngIf="IncidentInvestigationStore.investigationItemDetails?.witness_other_users.length > 2"
+                     data-toggle="modal" data-target="#others-popup" (click)="openOthersWitnessModel()">{{'view_more' |
+                     translate}}</a>
+
+               </div>
+
+
+
+
+
+            </div>
+         </div>
+         <ng-container *mobxAutorun>
+            <app-investigation-details-loader *ngIf="!IncidentInvestigationStore.individualLoaded">
+            </app-investigation-details-loader>
+        </ng-container>
+ 
+         <!-- <ng-container *mobxAutorun>
+            <app-no-data [border]='false' *ngIf="!IncidentInvestigationStore.investigationItemDetails && !IncidentInvestigationStore.individualLoaded"></app-no-data>
+        </ng-container> -->
+
+      </div>
+   </div>
+</main>
+
+<app-add-incident-investigations-modal></app-add-incident-investigations-modal>
+<app-add-significant-observations></app-add-significant-observations>
+<app-add-recommendations-modal></app-add-recommendations-modal>
+<app-add-references-modal></app-add-references-modal>
+<app-involved-person-modal></app-involved-person-modal>
+<app-witness-person-modal></app-witness-person-modal>
+<app-add-person-involved-modal></app-add-person-involved-modal>
+<app-add-witness-modal></app-add-witness-modal>
+<app-others-details-modal [source]="IncidentStore.othersData"></app-others-details-modal>
+<app-add-incident-title></app-add-incident-title>
+<app-add-type-of-damage></app-add-type-of-damage>
+<app-add-incident-category></app-add-incident-category>
+<app-add-sub-incident-category></app-add-sub-incident-category>
+<app-add-incident-reported-by></app-add-incident-reported-by>
+<app-add-incident-involved-party></app-add-incident-involved-party>
+<app-add-incident-subsidiary></app-add-incident-subsidiary>
+<app-add-incident-divisions></app-add-incident-divisions>
+<app-add-incident-department></app-add-incident-department>
+<app-add-incident-sub-section></app-add-incident-sub-section>
+<app-add-incident-section></app-add-incident-section>
+<app-add-incident-action-taken></app-add-incident-action-taken>
+<app-add-incident-description></app-add-incident-description>
+<app-add-incident-at></app-add-incident-at>
+<app-add-reported-date></app-add-reported-date>
+<app-add-incident-evidence></app-add-incident-evidence>
+<app-add-incident-location></app-add-incident-location>
+<!-- calling add investigation modal -->
+<ng-container *mobxAutorun>
+   <div class="modal modal-style-1 popup-full-width small-step-form-popup fade show" *ngIf="controlObject.type"
+      data-keyboard="false" data-backdrop="static" #addInvestigation>
+      <app-investigation-add [source]="addOrEdit" [sources]="editPage">
+
+      </app-investigation-add>
+
+   </div>
+</ng-container>
+
+
+<!-- calling others modal -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #othersPopup>
+   <app-others-details-modal [source]="otherUsers">
+
+   </app-others-details-modal>
+
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup" data-keyboard="false"
+   data-backdrop="static" #filePreviewModal *mobxAutorun>
+   <button type="button" class="close" data-dismiss="modal" (click)="closePreviewModal($event)"><i
+         class="lni-close"></i><span>esc</span></button>
+   <app-incident-preview-modal *ngIf="previewObject" [source]="previewObject" (close)="closePreviewModal($event)">
+   </app-incident-preview-modal>
+</div>
+
+<div class="modal modal-style-1 popup-full-width  fade " *ngIf="pointsObject.type" data-keyboard="false"
+   data-backdrop="static" #addInvestigationPoints>
+   <app-add-investigation-details>
+
+   </app-add-investigation-details>
+</div>
+<div class="modal modal-style-1 popup-full-width  fade " *ngIf="recomendationsObject.type" data-keyboard="false"
+   data-backdrop="static" #addInvestigationRecommendations>
+   <app-add-recommentions>
+
+   </app-add-recommentions>
+</div>
+<div class="modal modal-style-1 popup-full-width  fade " *ngIf="ObservationsObject.type" data-keyboard="false"
+   data-backdrop="static" #addInvestigationObservations>
+   <app-add-observations>
+
+   </app-add-observations>
+</div>
+<div class="modal modal-style-1 popup-full-width  fade " *ngIf="referencesObject.type" data-keyboard="false"
+   data-backdrop="static" #addInvestigationReference>
+   <app-add-reference>
+
+   </app-add-reference>
+</div>
+
+<div class="modal modal-style-1 popup-full-width  fade " *ngIf="involvedPersonObject.type" data-keyboard="false"
+   data-backdrop="static" #personInvolvedDetails>
+   <app-involved-person-details [source]="page">
+
+   </app-involved-person-details>
+</div>
+
+<div class="modal modal-style-1 popup-full-width  fade " *ngIf="involvedOtherPersonObject.type" data-keyboard="false"
+   data-backdrop="static" #personInvolvedOtherDetails>
+   <app-involved-person-other-details [source]="page">
+
+   </app-involved-person-other-details>
+</div>
+
+<div class="modal modal-style-1 popup-full-width  fade " *ngIf="involvedWitnessPersonObject.type" data-keyboard="false"
+   data-backdrop="static" #personWitnessInvolvedDetails>
+   <app-involved-witness-person-details [source]="page">
+
+   </app-involved-witness-person-details>
+</div>
+
+<div class="modal modal-style-1 popup-full-width  fade " *ngIf="involvedWitnessOtherPersonObject.type"
+   data-keyboard="false" data-backdrop="static" #personWitnessInvolvedOtherDetails>
+   <app-involved-witness-person-other-details [source]="page">
+
+   </app-involved-witness-person-other-details>
+</div>
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+   <app-delete-popup [source]="deleteObject"></app-delete-popup>
+</div>
+
+<div class="modal modal-style-1 popup-full-width  fade " *ngIf="updatedModelObject.type" data-keyboard="false"
+   data-backdrop="static" #updateProgress>
+   <app-investigation-progress-update>
+
+   </app-investigation-progress-update>
+</div>
+
+<div class="modal modal-style-1 popup-full-width  fade " *ngIf="historyModelObject.type" data-keyboard="false"
+   data-backdrop="static" #history>
+   <app-investigation-history-modal>
+
+   </app-investigation-history-modal>
+</div>
+
+<ng-container>
+   <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #commentModal>
+      <app-incident-workflow-comment-popup *ngIf="IncidentInvestigationWorkflowStore.commentForm">
+      </app-incident-workflow-comment-popup>
+   </div>
+</ng-container>
+
+<div class="modal modal-style-1 popup-full-width fade" id="process-popup" data-keyboard="false" data-backdrop="static"
+   #workflowHistory *mobxAutorun>
+   <app-incident-investigation-workflow-history *ngIf="workflowHistoryOpened == true">
+   </app-incident-investigation-workflow-history>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="process-popup" data-keyboard="false" data-backdrop="static"
+   #workflowModal *mobxAutorun>
+   <app-incident-investigation-workflow *ngIf="workflowModalOpened == true"></app-incident-investigation-workflow>
+</div>

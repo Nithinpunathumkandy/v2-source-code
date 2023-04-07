@@ -1,0 +1,503 @@
+
+<button type="button" class="close" (click)="cancel()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header">
+            <h4 class="modal-title" *ngIf = "complianceRegisterObjectSource.type == 'Add'">{{'compliance_reg_form_header' | translate}}</h4>
+            <h4 class="modal-title" *ngIf = "complianceRegisterObjectSource.type != 'Add'">{{'compliance_reg_form_edit_header' | translate}}</h4>
+           
+            <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
+        </div>
+        <!-- Modal body -->
+        <div class="modal-body form-body">
+
+            <p class="head-details">{{'compliance_reg_form_description' | translate}}</p>
+
+            <form [formGroup]="form" *mobxAutorun>
+                <label for="name" class="label-style mb-0"> {{'compliance_reg_form_select_document' | translate}}</label>
+                           
+                <div class="scroll-documents" #uploadArea>
+                    <div class="row m-0 upload-section" style="padding-top: 0">
+                        <div class="col-lg-4 col-sm-4 costmz-logo-new mt-2">
+
+                            <div class="question-circle-inp"  style="margin-right: 7px;">
+                                <i class="far fa-question-circle"></i>
+                                <div class="message-password-inp">
+                                    <p class="mb-0">{{'allowed_file_types' | translate}}
+                                        {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}</p>
+                                </div>
+                            </div>
+                            <div class="form-group form-group-upload">
+                                <div class="darag-dropifile-upload">
+                                    <div class="d-flex justify-content-center align-items-center text-center">
+                                        <div>
+                                            <img src="assets/images/drag-pic.png" class="drag-pic-files">
+                                            <div class="drag-file-name"> {{'drag_drop_file_here' | translate}} </div>
+                                            <div class="upload-btn-wrapper">
+                                                <input type="file" id="file" multiple name="myfile"
+                                                    (change)="onFileChange($event,'brochure')"
+                                                    [accept]="checkAcceptFileTypes('brochure')" 
+                                                    [disabled] = "checkLogoIsUploading()"
+                                                    />
+                                                <button class="btn">{{'browse_files' | translate}}</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- <p style="color: red;">
+                                </p> -->
+                            </div>
+                        </div>
+
+                        <div [ngClass]="files.success? 'col-sm-4 col-lg-4 up-pic-cf mt-2 hide_loader' : 'col-sm-4 col-lg-4 up-pic-cf mt-2'"
+                            *ngFor="let files of fileUploadsArray">
+                            <div class="upload-pics edit-option file-upload-loader">
+                                <circle-progress class="browse-form-pic" [percent]=files.uploadProgress
+                                    [title]=files.uploadProgress>
+                                </circle-progress>
+                            </div>
+                        </div>
+                        <!-- [ngClass]="ComplianceRegisterStore.docDetails ? 'col-sm-3 col-lg-3 up-pic-cf mt-2 ':'col-sm-3 col-lg-3 up-pic-cf mt-2'" -->
+                        <div [ngClass]="ComplianceRegisterStore.docDetails?.is_deleted ? 'col-sm-4 col-lg-4 up-pic-cf mt-2 image_deleted':'col-sm-4 col-lg-4 up-pic-cf mt-2'" *ngIf = "ComplianceRegisterStore.docDetails" >
+                           
+                            <div class="upload-pics edit-option">
+                                <div *ngIf="ComplianceRegisterStore.docDetails" class="browse-form-pic"
+                                    [ngStyle]="{'background': 'url(' + ComplianceRegisterStore.docDetails?.preview_url + ') no-repeat 0 0 / cover'}">
+                                </div>
+                                <div class="browse-form-name clearfix">
+                                    <div class="float-left">
+                                        <h6>{{ComplianceRegisterStore.docDetails?.name.length>15?ComplianceRegisterStore.docDetails?.name.substring(0,15)+' ...':ComplianceRegisterStore.docDetails?.name}}</h6>
+                                        <span>{{ComplianceRegisterStore.docDetails?.size/1048576 | number:'0.2-2'}}MB</span>
+                                    </div>
+                                    <div class="browse-logo">
+                                        <img *ngIf="checkExtension(ComplianceRegisterStore.docDetails?.ext,'excel') != -1"
+                                            src="/assets/images/md-xl.png">
+                                        <img *ngIf="checkExtension(ComplianceRegisterStore.docDetails?.ext,'image') != -1"
+                                            src="/assets/images/md-jpg.png">
+                                        <img *ngIf="checkExtension(ComplianceRegisterStore.docDetails?.ext,'doc') != -1"
+                                            src="/assets/images/md-doc.png">
+                                        <img *ngIf="checkExtension(ComplianceRegisterStore.docDetails?.ext,'pdf') != -1"
+                                            src="/assets/images/md-pdf.png">
+                                    </div>
+                                </div>
+                                <div class="edit-option-show">
+                                    <a (click)="removeDocument(ComplianceRegisterStore.docDetails?.token)"><i class="fas fa-trash"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label>{{'compliance_reg_form_title' | translate}}<span class="form-error">*</span></label>
+                            <input type="text" 
+                                   formControlName="title" 
+                                   class="form-control"
+                                   [attr.placeholder]="'compliance_reg_form_title_placeholder' | translate" >
+                            <p style="color: red;" *ngIf="formErrors"> {{formErrors.title}}</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'compliance_reg_form_type_of_compliance' | translate}}<span class="form-error">*</span></label>
+                            <div class="clearfix d-flex">
+                                <div class="multiple-plain-ngselect w-100">
+                                    <!-- [items] = "ComplianceTypeMasterStore.allItems" -->
+                                    <ng-select 
+                                        [placeholder]="'select_type_of_compliances' | translate" 
+                                        [multiple]="false"
+                                        [items] = "ComplianceTypeMasterStore.allItems"
+                                        formControlName="compliance_document_type_ids"
+                                        (open)="getComplianceDocumentType()" 
+                                        (search)="searchComplianceDocumentType($event)"
+                                        bindLabel="title"
+                                        >
+                                        <!-- <ng-option [value]="compliance_document_type_ids" *ngFor="let compliance_document_type_ids of ComplianceTypeMasterStore.allItems">
+                                            {{compliance_document_type_ids.title.length > 25 ? compliance_document_type_ids.title.substring(0,25)+' ...' : compliance_document_type_ids.title}}
+                                        </ng-option> -->
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            {{item.title.length > 25 ? item.title.substring(0,25)+' ...' : item.title}}
+                                            <span aria-hidden="true" (click)="clear(item)"
+                                               style="border:none;" class="ng-value-icon left">×</span>
+                                         </ng-template>
+                                         <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            {{item.title.length > 25 ? item.title.substring(0,25)+' ...' : item.title}}
+                                         </ng-template>
+                                        
+                                    </ng-select>
+                                    <p  class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.compliance_document_type_ids"> {{formErrors.compliance_document_type_ids}} 
+                                    </p>
+                                </div>
+                                <button class="btn multi-add-user ml-2" style="width: 42px;" (click)="complianceDocumentTypeAdd()" *ngIf = "AuthStore.getActivityPermission(1250,'CREATE_COMPLIANCE_DOCUMENT_TYPE')"><i class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'compliance_reg_form_compliance_areas' | translate}}<span class="form-error">*</span></label>
+                            <div class="clearfix d-flex">
+                                <div class="multiple-plain-ngselect w-100">
+                                    
+                                    <!-- [items] = "ComplianceAreaMasterStore.allItems" -->
+                                    <ng-select 
+                                        [placeholder]="'select_compliance_areas' | translate" 
+                                        [multiple]="true"
+                                        [items] = "ComplianceAreaMasterStore.allItems"
+                                        formControlName="compliance_area_ids"
+                                        (open)="getComplianceArea()" 
+                                        (search)="searchComplianceArea($event)"
+                                        (change) = "complianceAreaChanged($event)"
+                                        bindLabel="title"
+                                        >
+                                       <!-- <ng-option [value]="compliance_area_ids" *ngFor="let compliance_area_ids of ComplianceAreaMasterStore.allItems">
+                                            {{compliance_area_ids.title.length > 25 ? compliance_area_ids.title.substring(0,25)+' ...' : compliance_area_ids.title}}
+                                        </ng-option> -->
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            {{item.title.length > 25 ? item.title.substring(0,25)+' ...' : item.title}}
+                                            <span aria-hidden="true" (click)="clear(item)"
+                                               style="border:none;" class="ng-value-icon left">×</span>
+                                         </ng-template>
+                                         <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            {{item.title.length > 25 ? item.title.substring(0,25)+' ...' : item.title}}
+                                         </ng-template>
+                                        
+                                    </ng-select>
+                                    <p  class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.compliance_area_ids"> {{formErrors.compliance_area_ids}} 
+                                    </p>
+                                </div>
+                                <button class="btn multi-add-user ml-2" style="width: 42px;" (click)="complianceAreaAdd()" *ngIf = "AuthStore.getActivityPermission(1250,'CREATE_COMPLIANCE_AREA')"><i class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <span style="float: right;"><p class="text-grey mb-0">{{form?.value.description != null ? form?.value.description?.length : 0}}
+                                {{'characters' | translate}}</p></span>
+                            <label>{{'compliance_reg_form_descriptions' | translate}}</label>
+                            <textarea class="form-control" rows="3" id="description"
+                            [attr.placeholder]="'compliance_reg_form_descriptions_placeholder' | translate" formControlName="description"></textarea>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label>{{'compliance_reg_form_compliance_source' | translate}}</label>
+                            <input type="text" 
+                                   formControlName="compliance_source" 
+                                   class="form-control"
+                                   [attr.placeholder]="'enter_compliance_source' | translate" 
+                                   id="compliance_source" >
+                            <p style="color: red;" *ngIf="formErrors && formErrors.compliance_source"> {{formErrors.compliance_source}}</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'compliance_reg_form_compliance_section' | translate}}<span class="form-error">*</span></label>
+                            <div class="clearfix d-flex">
+                                <div class="multiple-plain-ngselect w-100">
+                                    <!-- [items] = "ComplianceSectionMasterStore.allItems" -->
+                                    <ng-select 
+                                        [placeholder]="'select_compliance_sections' | translate" 
+                                        [multiple]="true"
+                                        [items] = "ComplianceSectionMasterStore.allItems"
+                                        formControlName="compliance_section_ids"
+                                        (open)="getSections()" 
+                                        (search)="searchSections($event)"
+                                        bindLabel="title"
+                                        >
+                                        <!-- <ng-option [value]="compliance_section_ids" *ngFor="let compliance_section_ids of ComplianceSectionMasterStore.allItems">
+                                            {{compliance_section_ids.title.length > 25 ? compliance_section_ids.title.substring(0,25)+' ...' : compliance_section_ids.title}}
+                                        </ng-option> -->
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            {{item.title.length > 25 ? item.title.substring(0,25)+' ...' : item.title}}
+                                            <span aria-hidden="true" (click)="clear(item)"
+                                               style="border:none;" class="ng-value-icon left">×</span>
+                                         </ng-template>
+                                         <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            {{item.title.length > 25 ? item.title.substring(0,25)+' ...' : item.title}}
+                                         </ng-template>
+                                        
+                                    </ng-select>
+                                    <p  class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.compliance_section_ids"> {{formErrors.compliance_section_ids}} 
+                                    </p>
+                                </div>
+                                <button class="btn multi-add-user ml-2" style="width: 42px;" (click)="sectionsAdd()" *ngIf = "AuthStore.getActivityPermission(1250,'CREATE_COMPLIANCE_SECTION')"><i class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'compliance_reg_form_frequency' | translate}}<span class="form-error">*</span></label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect">
+                                    <!-- (change) = "frequencyChange()" -->
+                                    <ng-select 
+                                        [placeholder]="'select_frequency' | translate" 
+                                        [multiple]="false"
+                                        [items] = "ComplianceFrequencyMasterStore.allItems"
+                                        formControlName="compliance_frequency_id"
+                                        (open)="getFrequency()" 
+                                        (search)="searchFrequency($event)"
+                                        bindLabel="compliance_frequency_language_title"
+                                        >
+                                        <ng-option [value]="compliance_frequency_id.id" *ngFor="let compliance_frequency_id of ComplianceRegisterStore.allItems">
+                                            {{compliance_frequency_id.compliance_frequency_language_title}}
+                                        </ng-option>
+                                      
+                                    </ng-select>
+                                    <p  class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.compliance_frequency_id"> {{formErrors.compliance_frequency_id}} 
+                                    </p>
+                                </div>
+                               
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'compliance_reg_form_issue_date' | translate}}<span class="form-error">*</span></label>
+                            <!-- (dateSelect)="frequencyChange()" -->
+                            <div class="input-group date-picker">
+                               <input class="form-control cal4" formControlName="issue_date"
+                                   placeholder="yyyy-mm-dd"  (click)="startDateInput.toggle()"
+                                   id="start" ngbDatepicker #startDateInput="ngbDatepicker">
+           
+                               <div class="input-group-append">
+                                   <button class="btn btn-outline-secondary calendar"
+                                       (click)="startDateInput.toggle()" type="button"><i
+                                           class="fas fa-calendar-alt"></i></button>
+                               </div>
+                           </div>
+                           <p  class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.issue_date">{{formErrors.issue_date}}</p>
+                          </div>
+                    </div>
+                    <div class="col-lg-4 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'compliance_reg_form_expiry_date' | translate}}<span class="form-error">*</span></label>
+                            
+                            <div class="input-group date-picker">
+                               <input class="form-control cal4" formControlName="expiry_date"
+                                   placeholder="yyyy-mm-dd"
+                                   [minDate]="form.value.issue_date ? {year: this.form.value.issue_date.year, month: this.form.value.issue_date.month, day: this.form.value.issue_date.day} : '' " 
+                                   (click)="targetDateInput.toggle()"
+                                   id="target" ngbDatepicker #targetDateInput="ngbDatepicker">
+                      
+                               <div class="input-group-append">
+                                   <button class="btn btn-outline-secondary calendar"
+                                       (click)="targetDateInput.toggle()" type="button"><i
+                                           class="fas fa-calendar-alt"></i></button>
+                               </div>
+                           </div>
+                           <p  class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.expiry_date">{{formErrors.expiry_date}}</p>
+                                   </div>
+                    </div>
+                    <ng-container  *ngIf="OrganizationGeneralSettingsStore?.organizationSettings?.is_ms_type">
+                        <div class="col-lg-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="name">{{'sa1_date' | translate}}</label>
+                                <!-- (dateSelect)="frequencyChange()" -->
+                                <div class="input-group date-picker">
+                                   <input class="form-control cal4" formControlName="sa1"
+                                       placeholder="yyyy-mm-dd"  (click)="sa1DateInput.toggle()"
+                                       id="sa1" ngbDatepicker #sa1DateInput="ngbDatepicker">
+               
+                                   <div class="input-group-append">
+                                       <button class="btn btn-outline-secondary calendar"
+                                           (click)="sa1DateInput.toggle()" type="button"><i
+                                               class="fas fa-calendar-alt"></i></button>
+                                   </div>
+                               </div>
+                               <p  class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.sa1">{{formErrors.sa1}}</p>
+                              </div>
+                        </div>
+                        <div class="col-lg-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="name">{{'sa2_date' | translate}}</label>
+                                <div class="input-group date-picker">
+                                   <input class="form-control cal4" formControlName="sa2"
+                                       placeholder="yyyy-mm-dd"
+                                       (click)="sa2DateInput.toggle()"
+                                       id="sa2" ngbDatepicker #sa2DateInput="ngbDatepicker">
+                          
+                                   <div class="input-group-append">
+                                       <button class="btn btn-outline-secondary calendar"
+                                           (click)="sa2DateInput.toggle()" type="button"><i
+                                               class="fas fa-calendar-alt"></i></button>
+                                   </div>
+                               </div>
+                               <p  class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.sa2">{{formErrors.sa2}}</p>
+                                       </div>
+                        </div>
+                    </ng-container>
+                    
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <a class="text-light-blue" data-toggle="modal" (click)="organisationChanges()" style="border-bottom: 1px solid;">{{'change_organization_unit' | translate}}</a>
+                         </div>
+                    </div>
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label>{{'compliance_reg_form_accountable_user' | translate}}</label>
+                            <div class="clearfix">
+                               <div class="multiple-plain-ngselect">
+                                  <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                                  [placeholder]="'compliance_form_accountable_user_placeholder'| translate" [multiple]="false"
+                                     formControlName="review_user_id" (search)="searchUsers($event)"
+                                     (open)="getResponsibleUsers()" [searchFn]="customSearchFn">
+                                     <!-- <ng-option [value]="compliance_responsible_user_ids.id" *ngFor="let compliance_responsible_user_ids of ComplianceRegisterStore.allItems" >
+                                         {{compliance_responsible_user_ids.title}}
+                                     </ng-option> -->
+                                     <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                        <img *ngIf="item.image_token" height="15" width="15"
+                                           [attr.src]="createImagePreview('user-profile-picture',item.image_token)" />
+                                        <img *ngIf="!item.image_token" height="15" width="15"
+                                           [attr.src]="getDefaultImage()" />
+                                        <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}
+                                         </b>
+                                         <!-- <span aria-hidden="true" (click)="clear(item)"
+                                           style="border:none;" class="ng-value-icon left">×</span> -->
+                                     </ng-template>
+                                     <ng-template ng-option-tmp let-item="item" let-index="index">
+                                        <div class="user-post-department-pic">
+                                           <img *ngIf="item.image_token" height="25" width="25"
+                                              [attr.src]="createImagePreview('user-profile-picture',item.image_token)" />
+                                           <img *ngIf="!item.image_token" height="25" width="25"
+                                              [attr.src]="getDefaultImage()" />
+                                        </div>
+                                        <div class="user-post-department-div">
+                                           <b>{{getStringsFormatted([item.first_name,item.last_name],35,' ') | titlecase}}</b>
+                                           <p class="user-post-department-multiple">{{getStringsFormatted([item.designation_title,' '+item.department],35,',')}}</p>
+                                        </div>
+                                     </ng-template>
+                                  </ng-select>
+                                  <p style="color: red;"
+                                     *ngIf="formErrors && formErrors.review_user_id">
+                                     {{formErrors.review_user_id}}</p>
+                               </div>
+                            </div>
+                         </div>
+                    </div>
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label for="name">{{'compliance_reg_form_product' | translate}}</label>
+                            <div class="clearfix d-flex">
+                                <div class="multiple-plain-ngselect w-100">
+                                    <ng-select [placeholder]="'select_product'| translate" [multiple]="false" 
+                                        formControlName="product_id"
+                                        bindLabel="title" (search)="searchProduct($event)" 
+                                        (clear)="getProducts()" (open)="getProducts()">
+                                        <ng-option [value]="row.id"
+                                            *ngFor="let row of BusinessProductsStore.productDetails">
+                                            {{row.title}}
+                                        </ng-option>
+                                    </ng-select>
+                                    <p class="pt-1" style="color: red;"
+                                        *ngIf="formErrors && formErrors.product_id">
+                                        {{formErrors.product_id[0]}}
+                                    </p>
+                                </div>      
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label>{{'compliance_reg_form_responsible_user' | translate}} <span class="form-error">*</span></label>
+                            <div class="clearfix">
+                               <div class="multiple-plain-ngselect">
+                                  <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                                  [placeholder]="'select_responsible_users'| translate" [multiple]="true"
+                                     formControlName="compliance_responsible_user_ids" (search)="searchUsers($event)"
+                                     (open)="getResponsibleUsers()" [searchFn]="customSearchFn">
+                                     <!-- <ng-option [value]="compliance_responsible_user_ids.id" *ngFor="let compliance_responsible_user_ids of ComplianceRegisterStore.allItems" >
+                                         {{compliance_responsible_user_ids.title}}
+                                     </ng-option> -->
+                                     <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                        <img *ngIf="item.image_token" height="15" width="15"
+                                           [attr.src]="createImagePreview('user-profile-picture',item.image_token)" />
+                                        <img *ngIf="!item.image_token" height="15" width="15"
+                                           [attr.src]="getDefaultImage()" />
+                                        <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}
+                                         </b><span aria-hidden="true" (click)="clear(item)"
+                                           style="border:none;" class="ng-value-icon left">×</span>
+                                     </ng-template>
+                                     <ng-template ng-option-tmp let-item="item" let-index="index">
+                                        <div class="user-post-department-pic">
+                                           <img *ngIf="item.image_token" height="25" width="25"
+                                              [attr.src]="createImagePreview('user-profile-picture',item.image_token)" />
+                                           <img *ngIf="!item.image_token" height="25" width="25"
+                                              [attr.src]="getDefaultImage()" />
+                                        </div>
+                                        <div class="user-post-department-div">
+                                           <b>{{getStringsFormatted([item.first_name,item.last_name],35,' ') | titlecase}}</b>
+                                           <p class="user-post-department-multiple">{{getStringsFormatted([item.designation_title,' '+item.department],35,',')}}</p>
+                                        </div>
+                                     </ng-template>
+                                  </ng-select>
+                                  <p style="color: red;"
+                                     *ngIf="formErrors && formErrors.compliance_responsible_user_ids">
+                                     {{formErrors.compliance_responsible_user_ids}}</p>
+                               </div>
+                            </div>
+                         </div>
+                    </div>
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <span style="float: right;"><p class="text-grey mb-0">{{form?.value.comment != null ? form?.value.comment?.length : 0}}
+                                {{'characters' | translate}}</p></span>
+                            <label>{{'compliance_reg_form_comment' | translate}}</label>
+                            <textarea class="form-control" rows="3" id="comment"
+                            [attr.placeholder]="'compliance_reg_form_comment_placeholder' | translate" formControlName="comment"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="clearfix"></div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="d-block justify-content-left border-0 mt-3">
+                            <button type="submit" class="btn btn-active" (click)="save()"
+                                [disabled]="form.invalid || AppStore.loading">{{  AppStore.loading  ? getButtonText('loading') : getButtonText('save') }}</button>
+                            <button type="button" data-toggle="modal" data-target="#signal-lost"
+                                class="btn" (click)="save(true)"
+                                [disabled]="form.invalid || AppStore.loading">{{  AppStore.loading  ? getButtonText('loading') : getButtonText('save_close') }}</button>
+                            <button type="button" data-toggle="modal" data-target="#error-message"
+                                class="btn"
+                                (click)="cancel()">{{  AppStore.loading  ? getButtonText('loading') : getButtonText('cancel') }}</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <!-- || !ComplianceRegisterStore.docDetails -->
+        </div>
+        <!-- Modal footer -->
+    </div>
+</div>
+
+<!-- compliance area add Modal part -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #addComplianceArea>
+    <app-compliance-area-modal>
+    </app-compliance-area-modal>
+</div>
+
+<!-- compliance section add Modal part -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #addComplianceSection>
+    <app-compliance-section-modal>
+    </app-compliance-section-modal>
+</div>
+
+<!-- compliance type add Modal part -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #addComplianceType>
+    <app-compliance-type-modal>
+    </app-compliance-type-modal>
+</div> 
+
+
+<!-----------------------Form Modal Start--------------------------->
+<div  class="modal modal-style-1 popup-full-width fade"  data-keyboard="false"
+data-backdrop="static" #organisationChangeFormModal *mobxAutorun>
+<app-organisation-change-modal *ngIf = "openModelPopup" [source] = "form.value" 
+(organizationChangeEvent)="closeModal($event)"></app-organisation-change-modal>
+</div>
+<!-----------------------Form Modal End--------------------------->
+

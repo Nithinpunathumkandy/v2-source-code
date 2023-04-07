@@ -1,0 +1,108 @@
+
+    <button type="button" class="close" (click)="closeFormModal()"><i class="lni-close"></i><span>{{'esc' | translate }}</span></button>
+    <div class="modal-dialog modal-lg modal-dialog-centered" *ngIf="MasterListDocumentStore?.documentHistoryLoaded">
+      <div class="modal-content" *mobxAutorun>
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h4 class="modal-title">{{'document_history' | translate }}</h4>
+        </div>
+        <!-- Modal body -->
+        <div class="modal-body form-body">
+          <p class="head-details">{{'document_history_message' | translate}}</p>
+
+          <div class="row">
+             <div class="col-sm-12" *ngIf="MasterListDocumentStore?.documentHistoryLoaded && MasterListDocumentStore.documentHistory.length>0">
+                <div class="compliance-history-box cmn-bdr widg-padding-cmn-small pb-2 mb-3"
+                   *ngFor="let history of MasterListDocumentStore.documentHistory; let index=index">
+                   <div class="row align-items-center mb-3">
+                      <div class="col-lg-6 col-md-6 col-6">
+                         <div class="d-flex flex-row user-list-sm p-0">
+                           <img *ngIf="history?.created_by?.token"
+                           [attr.src]="createImagePreview('user-profile-picture',history?.created_by?.token)"
+                           width="40px" height="40px" class="rounded-circle">
+                        <img *ngIf="!history?.created_by?.token" [attr.src]="getDefaultImage('user-logo')"
+                           width="40px" height="40px" class="rounded-circle">
+                        <div>
+                           <h6>{{history.created_by?.first_name}}&nbsp;
+                              {{history.created_by?.last_name}}</h6>
+                           <span>
+                              {{history.created_by_designation?history.created_by_designation:'Admin'}}
+                              | {{'created_on' | translate }}
+                              {{getTimezoneFormatted(history.created_at) | date:
+                              OrganizationGeneralSettingsStore.organizationSettings?.date_time_format}}</span>
+
+                        </div>
+                        </div>
+                      </div>
+                   </div>
+                   <p style="white-space: pre-wrap;">{{history?.comment ? history?.comment:AppStore.noContentText}} </p>
+                      <h6 class="" *ngIf="history?.document_version">{{'documents' | translate}}</h6>          
+                                <div class="thumb-pics-bg thumb-pics-col-3 thumb-pics-fix-text clearfix edit-and-delete-main"  *ngIf="history?.document_version">
+                                    <div class="thumb-pics" 
+                                                   >
+                                                   <!-- (click) =  "viewDocument('document-version',history?.document_version,history?.document)" -->
+                                                    <div class="upload-pics upload-pics-small edit-option"
+                                                  >
+                                                        <div class="browse-form-pic"
+                                                            [ngStyle]="{'background': 'url(' + createImageUrl('document-version',history?.document_version.token) + '), url(' + getDefaultImage('no-preview') + ') no-repeat 0 0 / cover '}">
+                                                        </div>
+                                                        <div class="browse-form-name clearfix">
+                                                            <div class="float-left">
+                                                                <h6 [attr.title]="history?.document_version?.title">
+                                                                    {{history?.document_version?.title?.length > 25 ? history?.document_version?.title?.substring(0,25)+' ...': history?.document_version?.title}}
+                                                                </h6>
+                                                                <span>{{history?.document_version?.size/1048576 | number:'0.2-2'}}MB</span>
+                                                            </div>
+                                                            <div class="browse-logo">
+                                                                <img *ngIf="checkExtension(history?.document_version.ext,'image') != -1"
+                                                                    src="/assets/images/md-jpg.png">
+                                                                <img *ngIf="checkExtension(history?.document_version.ext,'doc') != -1"
+                                                                    src="/assets/images/word-icone.png">
+                                                                <img *ngIf="checkExtension(history?.document_version.ext,'pdf') != -1"
+                                                                    src="/assets/images/pdf-icone.png">
+                                                                <img *ngIf="checkExtension(history?.document_version.ext,'excel') != -1"
+                                                                    src="/assets/images/excel-icone.png">
+                                                                <img *ngIf="checkExtension(history?.document_version.ext,'video') != -1"
+                                                                    src="/assets/images/md-video.png">
+                                                                <img *ngIf="checkExtension(history?.document_version.ext,'audio') != -1"
+                                                                    src="/assets/images/md-audio.png">
+                                                                <img *ngIf="checkExtension(history?.document_version.ext,'ppt') != -1"
+                                                                    src="/assets/images/md-ppt.png">
+                                                            </div>
+                                                        </div>
+                                                        <!-- <div class="edit-option-show-inner" style="margin: 0 -8px 0 0;">
+                                                            <a><i class="fas fa-download" [attr.title]="'download' | translate"
+                                                                    (click)="downloadComplianceStatusDocument('compliance-status-document',history,d)"></i></a>
+                                                        </div> -->
+                                                    </div>
+                                                </div>
+                
+                                        </div>
+
+                </div>
+             </div>
+             <div class="col-sm-12"
+             *ngIf="MasterListDocumentStore.documentHistoryLoaded && MasterListDocumentStore.documentHistory.length==0">
+             <app-no-data-list [height]="true" [source]="historyEmptyList" [border]=true>
+             </app-no-data-list>
+            </div>
+          </div>
+        </div>
+        <!-- Modal footer --> 
+      </div>
+    </div>
+  <!-- </div> -->
+  <ng-container *mobxAutorun>
+    <div *ngIf="!MasterListDocumentStore?.documentHistoryLoaded">
+        <app-master-document-review-history-loader></app-master-document-review-history-loader>
+    </div>
+ </ng-container>
+
+<!-- preview component for image preview -->
+<div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup" data-keyboard="false"
+    data-backdrop="static" #filePreviewModal>
+    <app-preview
+        *ngIf="openPreview"
+        [source]="previewObject">
+    </app-preview>
+</div>

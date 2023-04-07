@@ -1,0 +1,92 @@
+<div class="tab-pane" id="change-request">
+    <div class="row">
+         <div class="col-sm-12">
+            <div class="full-width-table mb-3">
+             <table *ngIf="AuthStore.getActivityPermission(3700,'PROJECT_MONITOR_CHANGE_REQUEST_LIST') && ProjectChangeRequestStore.loaded && ProjectChangeRequestStore.allItems.length > 0" class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                 <thead>
+                     <tr>
+                         <th class="border-top-0 text-center" width="2%">#</th>
+                         <th class="border-top-0" width="12%">{{'ref_no' | translate}} </th>
+                         <th class="border-top-0" width="32%">{{'requested_by' | translate}}</th>
+                         <th class="border-top-0" width="34%">{{'department' | translate}}</th>
+                         <th class="border-top-0 text-center" width="8%">{{'version' | translate}}</th>
+                         <th class="border-top-0 text-center" width="10%">{{'status' | translate}}</th>
+                     </tr>
+                 </thead>
+                 <tbody>
+                     <tr *ngFor="let items of ProjectChangeRequestStore.allItems| paginate: {currentPage:ProjectChangeRequestStore.currentPage, itemsPerPage:ProjectChangeRequestStore.itemsPerPage,totalItems:ProjectChangeRequestStore.totalItems};let num=index" class="pointer edit-and-delete-main" (click)="gotoChangeRequestDetails(items)">
+                         <td class="text-center">{{(ProjectChangeRequestStore.currentPage - 1) * ProjectChangeRequestStore.itemsPerPage + (num + 1)}}</td>
+                         <td >{{items.project_change_request_reference_code?items.project_change_request_reference_code : 'NA' }}</td>
+                         
+                         <td>
+                            <div *ngIf="items?.created_by_first_name" class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                                <img *ngIf="items.created_by_image_token" data-toggle="modal" data-target="#user02" data-ui-class="a-zoom"
+                                [attr.src]="createImagePreview('user-profile-picture',items.created_by_image_token)"
+                                width="30px" height="30px" class="rounded-circle rounde-hov details-show-popup"
+                                onerror="this.src='/assets/images/user-demo2.png'">
+                             <img *ngIf="!items.created_by_image_token" [attr.src]="getDefaultImage('user-logo')" width="30px" height="30px" class="rounded-circle" onerror="this.src='/assets/images/user-demo2.png'">                                                    <!-- user-dtl-popup start -->
+                                <!-- user-dtl-popup end -->
+                                <div class="pointer" >
+                                    <h6>{{items?.created_by_first_name}} {{items?.created_by_last_name}}</h6>
+                                    <span>{{items.created_by_designation ? items.created_by_designation : AppStore.noContentText}}</span>
+                                </div>
+
+                            </div>
+                         </td>
+                         <td >{{items.created_by_department ? items.created_by_department :AppStore.noContentText  }}</td>
+                         <td class="text-center" >V{{items.version_no}}</td>
+                         <td class="text-center">
+                             <div [attr.class]="'dot-div '+items?.label" > {{items.project_monitor_change_request_status_language_title}}</div>
+                             <div *ngIf="ProjectMonitoringStore.individualDetails?.project_monitoring_status?.type =='approved'"
+                             class="edit-option-show">
+                                 <!-- edit-and-delete starts -->
+                                 <a *ngIf="AuthStore.getActivityPermission(3700,'UPDATE_PROJECT_MONITOR_CHANGE_REQUEST')" (click)="editChangeRequest(items.id)"><i class="fas fa-pen"></i></a>
+                                 <a *ngIf="AuthStore.getActivityPermission(3700,'DELETE_PROJECT_MONITOR_CHANGE_REQUEST')" (click)="delete(items.id)"><i class="fas fa-trash"></i></a>
+                             </div>
+                             <!-- edit-and-delete end -->
+                         </td>
+                     </tr>
+                    
+
+
+                 </tbody>
+             </table>
+            </div>
+             <ng-container *mobxAutorun>
+                <div *ngIf="!ProjectChangeRequestStore.loaded">
+                   <app-project-monitoring-list-loader></app-project-monitoring-list-loader>
+               </div>
+                <app-no-data *ngIf = "ProjectChangeRequestStore.allItems.length == 0 && ProjectChangeRequestStore.loaded == true"></app-no-data>
+              </ng-container>
+         </div>
+         <div *ngIf="ProjectChangeRequestStore.totalItems>ProjectChangeRequestStore.itemsPerPage && ProjectChangeRequestStore.loaded && ProjectChangeRequestStore.allItems.length > 0"
+            class="col-sm-12">
+            <ul class="pagination justify-content-center mt-3">
+                <div class="list">
+                    <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"  class="my-pagination" (pageChange)="pageChange($event)">
+                    </pagination-controls>
+                </div>
+            </ul>
+        </div>
+     </div>
+ </div>
+
+ <!-- <div class="modal modal-style-1 popup-full-width fade"  data-keyboard="false"
+data-backdrop="static" #addChangeReq>
+
+</div> -->
+
+<!-- <ng-container > -->
+    <div class="modal modal-style-1 popup-full-width fade " 
+       data-keyboard="false" data-backdrop="static" #addChangeReq>
+       <app-change-request-items [source] ="changeRequestObject" *ngIf="changeRequestObject.type">
+    </app-change-request-items>
+ 
+    </div>
+ <!-- </ng-container> -->
+
+ <!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+  </div>

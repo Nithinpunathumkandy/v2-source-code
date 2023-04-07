@@ -1,0 +1,688 @@
+<button type="button" class="close" (click)="cancel()"><i class="lni-close"></i><span>{{'esc' |
+    translate}}</span></button>
+
+<div class="modal-dialog modal-lg modal-dialog-centered" style="max-width: 1000px; width:100%;">
+    <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header">
+            <h4 *ngIf="!MsAuditPlansStore.editFlag" class="modal-title">{{'new_ms_audit_plan' | translate}}</h4>
+            <h4 *ngIf="MsAuditPlansStore.editFlag" class="modal-title">{{'edit_ms_audit_plan' | translate}}</h4>
+        </div>
+        <!-- Modal body -->
+        <div class="modal-body form-body">
+            <p>{{'ms_audit_plan_descptions' | translate}}</p>
+            <form [formGroup]="form" *mobxAutorun>
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label for="name"> {{'ms_audit_program' | translate}}</label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect">
+                                    <ng-select [placeholder]="'select_ms_audit_program' | translate" 
+                                        [multiple]="false"
+                                        [readonly]="disableProgram"
+                                        [items]=" MsAuditProgramsStore?.allItems" formControlName="ms_audit_program_id"
+                                        bindLabel="title" (open)="getMsAuditProgram()"
+                                        (change)="getSingleMsAuditProgram()"
+                                        (search)="searchMsAuditProgram($event)">
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            {{item?.ms_audit_program_title?.length > 100 ? (item.ms_audit_program_title | slice:0:100)+' ...' : item.ms_audit_program_title}}
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            {{item?.ms_audit_program_title?.length > 100 ? (item.ms_audit_program_title | slice:0:100)+' ...' : item.ms_audit_program_title}}
+                                        </ng-template>
+                                    </ng-select>
+                                    <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.ms_audit_program_id">
+                                        {{formErrors.ms_audit_program_id}}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label for="name"> {{'pre_plan' | translate}}<span  *ngIf="!MsAuditPlansStore.editFlag" class="form-error">*</span></label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect">
+                                    <ng-select [placeholder]="'select_pre_plan' | translate" 
+                                        [multiple]="false"
+                                        [readonly]="disablePreplan"
+                                        [items]="prePlanList" formControlName="preplan"
+                                        bindLabel="title" (open)="getMsAuditPrePlan()"
+                                        (change)="getSingleMsAuditPrePlan()"
+                                        (search)="getMsAuditPrePlan($event)">
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            {{item?.title?.length > 100 ? (item.title | slice:0:100)+' ...' : item.title}}
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            {{item?.title?.length > 100 ? (item.title | slice:0:100)+' ...' : item.title}}
+                                        </ng-template>
+                                    </ng-select>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                        <!-- <div class="form-group">
+                            <label for="name">{{'title' | translate}}<span class="form-error">*</span></label>
+                            <div class="plain-select input-add-report">
+                                <input type="text" class="form-control" [placeholder]="'title_of_the_ms_audit_plan' | translate" formControlName="title">
+                                <p class="form-error" *ngIf="formErrors"> {{formErrors.title}}</p>
+                            </div>
+                        </div> -->
+                    </div>
+
+                    <!-- <div class="col-lg-12 col-sm-12">
+                        <div class="form-group">
+                            <a class="text-light-blue" data-toggle="modal" (click)="organisationChanges()"
+                                style="border-bottom: 1px solid;">{{'change_organization_unit' | translate}}</a>
+                        </div>
+                    </div> -->
+
+
+
+
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label for="name"> {{'audit_mode' | translate}}<span class="form-error">*</span> </label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect">
+                                    <ng-select [placeholder]="'select_audit_mode' | translate" 
+                                        [multiple]="false"
+                                        [items]="MsAuditModesMasterStore.msAuditModes" formControlName="ms_audit_mode_id"
+                                        bindLabel="title" (open)="getMsAuditModes()"
+                                        (search)="searchMsAuditModes($event)">
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            {{item?.title?.length > 100 ? (item.title | slice:0:100)+' ...' : item.title}}
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            {{item?.title?.length > 100 ? (item.title | slice:0:100)+' ...' : item.title}}
+                                        </ng-template>
+                                    </ng-select>
+                                    <p class="pt-1 form-error ng-star-inserted" style="color: red;" *ngIf="formErrors && formErrors.ms_audit_mode_id">
+                                        {{formErrors.ms_audit_mode_id}}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- <div class="col-sm-6">
+                        <div class="form-group">
+                            <label for="name"> {{'team' | translate}}<span class="form-error">*</span> </label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect">
+                                    <ng-select [placeholder]="'select_team' | translate" 
+                                        [multiple]="false"
+                                        [items]="MsAuditTeamStore.allItems" formControlName="team_id"
+                                        bindLabel="title" (open)="getMsAuditTream()"
+                                        (change)="changeTeam()"
+                                        (search)="searchMsAuditTream($event)">
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            {{item?.title?.length > 100 ? (item.title | slice:0:100)+' ...' : item.title}}
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            {{item?.title?.length > 100 ? (item.title | slice:0:100)+' ...' : item.title}}
+                                        </ng-template>
+                                    </ng-select>
+                                    <p class="pt-1 form-error ng-star-inserted" style="color: red;" *ngIf="formErrors && formErrors.team_id">
+                                        {{formErrors.team_id}}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div> -->
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label for="name">{{'audit_leader' | translate}}<span
+                                    class="form-error">*</span></label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect">
+                                    <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                                        [placeholder]="'select_audit_leader'|translate" [searchFn]="customSearchFn"
+                                        formControlName="lead_auditor_id" (clear)="getUsers()"
+                                        (search)="searchUsers($event)" (open)="getUsers()">
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            <img class="ng-select-user-display"
+                                                *ngIf="item.image?.token||item.image_token" height="15" width="15"
+                                                onerror = "this.src='/assets/images/user-demo2.png'"
+                                                [attr.src]="item.image?.token?createImageUrl(item.image?.token):createImageUrl(item.image_token)" />
+                                            <img class="ng-select-user-display"
+                                                *ngIf="!item.image?.token && !item.image_token" height="15" width="15"
+                                                onerror = "this.src='/assets/images/user-demo2.png'"
+                                                [attr.src]="getDefaultImage()" />
+                                            <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],30,'
+                                                ') | titlecase}}</b><span aria-hidden="true" (click)="clear(item)"
+                                                style="border:none;" class="ng-value-icon left">×</span>
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            <div class="user-post-department-pic">
+                                                <img class="ng-select-user-display"
+                                                    *ngIf="item.image?.token || item.image_token" height="25" width="25"
+                                                    onerror = "this.src='/assets/images/user-demo2.png'"
+                                                    [attr.src]="item.image?.token?createImageUrl(item.image?.token):createImageUrl(item.image_token)" />
+                                                <img class="ng-select-user-display"
+                                                    *ngIf="!item.image?.token && !item.image_token" height="25"
+                                                    onerror = "this.src='/assets/images/user-demo2.png'"
+                                                    width="25" [attr.src]="getDefaultImage()" />
+                                            </div>
+                                            <div class="user-post-department-div">
+                                                <b>{{getStringsFormatted([item.first_name,item.last_name],30,' ') |
+                                                    titlecase}}</b>
+                                                <p class="user-post-department-multiple">
+                                                    {{getStringsFormatted([item.designation_title,'
+                                                    '+item.department],30,',')}}</p>
+                                            </div>
+                                        </ng-template>
+                                    </ng-select>
+                                </div>
+                            </div>
+                            <p class="form-error pt-1" *ngIf="formErrors&&formErrors.lead_auditor_id">
+                                {{formErrors.lead_auditor_id}}</p>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label> {{'auditors' | translate}}<span
+                                class="form-error">*</span> </label>
+                            <div class="clearfix d-flex">
+                                <div class="multiple-plain-ngselect w-100">
+                                    <ng-select #select [items]="UsersStore.usersList" bindLabel="email"
+                                        labelForId="auditor_ids" [placeholder]="'select_auditors' | translate"
+                                        multiple="true" formControlName="auditor_ids" [closeOnSelect]="false"
+                                        [searchFn]="customSearchFn" (change)="searchListclickValueClear(select)"
+                                        (search)="searchUsers($event)" (clear)="getUsers()" (open)="getUsers()">
+
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            <img *ngIf="item.image_token || item.image" class="ng-select-user-display"
+                                                height="15" width="15"
+                                                [attr.src]="item.image_token ? createImagePreview('user-profile-picture',item.image_token) : createImagePreview('user-profile-picture',item.image.token)"
+                                                onerror="this.src='/assets/images/user-demo2.png'" />
+                                            <img *ngIf="!item.image_token && !item.image" class="ng-select-user-display"
+                                            onerror = "this.src='/assets/images/user-demo2.png'"
+                                                height="15" width="15" [attr.src]="getDefaultImage()" />
+                                            <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],30,'
+                                                ') | titlecase}}</b><span aria-hidden="true" (click)="clear(item)"
+                                                style="border:none;" class="ng-value-icon left">×</span>
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            <div class="user-post-department-pic">
+                                                <img *ngIf="item.image_token || item.image"
+                                                    class="ng-select-user-display" height="15" width="15"
+                                                    [attr.src]="item.image_token ? createImagePreview('user-profile-picture',item.image_token) : createImagePreview('user-profile-picture',item.image.token)"
+                                                    onerror="this.src='/assets/images/user-demo2.png'" />
+                                                <img *ngIf="!item.image_token && !item.image"
+                                                onerror = "this.src='/assets/images/user-demo2.png'"
+                                                    class="ng-select-user-display" height="15" width="15"
+                                                    [attr.src]="getDefaultImage()" />
+                                            </div>
+                                            <div class="user-post-department-div">
+                                                <b>{{getStringsFormatted([item.first_name,item.last_name],30,' ') |
+                                                    titlecase}}</b>
+                                                <p class="user-post-department-multiple">
+                                                    {{getStringsFormatted([item.designation_title,'
+                                                    '+item.department],30,',')}}</p>
+                                            </div>
+                                        </ng-template>
+                                    </ng-select>
+                                    <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.auditor_ids">
+                                        {{formErrors.auditor_ids}}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- <div class="col-sm-6">
+                        <div class="form-group">
+                            <label for="name">{{'auditee_leader' | translate}}<span
+                                    class="form-error">*</span></label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect">
+                                    <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                                        [placeholder]="'select_auditee_leader'|translate" [searchFn]="customSearchFn"
+                                        formControlName="lead_auditee_id" (clear)="getUsers()"
+                                        (search)="searchUsers($event)" (open)="getUsers()">
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            <img class="ng-select-user-display"
+                                                *ngIf="item.image?.token||item.image_token" height="15" width="15"
+                                                [attr.src]="item.image?.token?createImageUrl(item.image?.token):createImageUrl(item.image_token)" />
+                                            <img class="ng-select-user-display"
+                                                *ngIf="!item.image?.token && !item.image_token" height="15" width="15"
+                                                [attr.src]="getDefaultImage()" />
+                                            <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],30,'
+                                                ') | titlecase}}</b><span aria-hidden="true" (click)="clear(item)"
+                                                style="border:none;" class="ng-value-icon left">×</span>
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            <div class="user-post-department-pic">
+                                                <img class="ng-select-user-display"
+                                                    *ngIf="item.image?.token || item.image_token" height="25" width="25"
+                                                    [attr.src]="item.image?.token?createImageUrl(item.image?.token):createImageUrl(item.image_token)" />
+                                                <img class="ng-select-user-display"
+                                                    *ngIf="!item.image?.token && !item.image_token" height="25"
+                                                    width="25" [attr.src]="getDefaultImage()" />
+                                            </div>
+                                            <div class="user-post-department-div">
+                                                <b>{{getStringsFormatted([item.first_name,item.last_name],30,' ') |
+                                                    titlecase}}</b>
+                                                <p class="user-post-department-multiple">
+                                                    {{getStringsFormatted([item.designation_title,'
+                                                    '+item.department],30,',')}}</p>
+                                            </div>
+                                        </ng-template>
+                                    </ng-select>
+                                </div>
+                            </div>
+                            <p class="form-error pt-1" *ngIf="formErrors&&formErrors.lead_auditee_id">
+                                {{formErrors.lead_auditee_id}}</p>
+                        </div>
+                    </div> -->
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label for="name"> {{'department' | translate}}<span class="form-error">*</span></label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect">
+                                    <ng-select [items]="DepartmentMasterStore.allItems"
+                                        [placeholder]="'select_departments' | translate" multiple="true"
+                                        formControlName="department_id" 
+                                       
+                                        (search)="searchDepartment($event)" (open)="getDepartment()"
+                                        bindLabel="title">
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            {{item?.title?.length > 60 ? (item.title | slice:0:60)+' ...' :
+                                            item.title}}<span aria-hidden="true" (click)="clear(item)"
+                                                style="border:none;" class="ng-value-icon left">×</span>
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            {{item?.title?.length > 80 ? (item.title | slice:0:80)+' ...' :
+                                            item.title}}
+                                        </ng-template>
+                                        <!-- <ng-option [value]="type" *ngFor="let type of AuditItemTypeMasterStore.allItems">
+                                        {{type.title.length > 80 ? type.title.substring(0,80)+' ...' : type.title}}
+                                    </ng-option> -->
+                                    </ng-select>
+                                    <p class="pt-1" style="color: red;"
+                                        *ngIf="formErrors && formErrors.department_ids">
+                                        {{formErrors.department_ids}}
+                                    </p>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- <div class="col-sm-12">
+                        <div class="form-group">
+                            <label> {{'auditees' | translate}} <span
+                                class="form-error">*</span></label>
+                            <div class="clearfix d-flex">
+                                <div class="multiple-plain-ngselect w-100">
+                                    <ng-select #select [items]="UsersStore.usersList" bindLabel="email"
+                                        labelForId="auditee_ids" [placeholder]="'select_auditees' | translate"
+                                        multiple="true" formControlName="auditee_ids" [closeOnSelect]="false"
+                                        [searchFn]="customSearchFn" (change)="searchListclickValueClear(select)"
+                                        (search)="searchUsers($event)" (clear)="getUsers()" (open)="getUsers()">
+
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            <img *ngIf="item.image_token || item.image" class="ng-select-user-display"
+                                                height="15" width="15"
+                                                [attr.src]="item.image_token ? createImagePreview('user-profile-picture',item.image_token) : createImagePreview('user-profile-picture',item.image.token)"
+                                                onerror="this.src='/assets/images/user-demo2.png'" />
+                                            <img *ngIf="!item.image_token && !item.image" class="ng-select-user-display"
+                                            onerror = "this.src='/assets/images/user-demo2.png'"
+                                                height="15" width="15" [attr.src]="getDefaultImage()" />
+                                            <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],30,'
+                                                ') | titlecase}}</b><span aria-hidden="true" (click)="clear(item)"
+                                                style="border:none;" class="ng-value-icon left">×</span>
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            <div class="user-post-department-pic">
+                                                <img *ngIf="item.image_token || item.image"
+                                                    class="ng-select-user-display" height="15" width="15"
+                                                    [attr.src]="item.image_token ? createImagePreview('user-profile-picture',item.image_token) : createImagePreview('user-profile-picture',item.image.token)"
+                                                    onerror="this.src='/assets/images/user-demo2.png'" />
+                                                <img *ngIf="!item.image_token && !item.image"
+                                                onerror = "this.src='/assets/images/user-demo2.png'"
+                                                    class="ng-select-user-display" height="15" width="15"
+                                                    [attr.src]="getDefaultImage()" />
+                                            </div>
+                                            <div class="user-post-department-div">
+                                                <b>{{getStringsFormatted([item.first_name,item.last_name],30,' ') |
+                                                    titlecase}}</b>
+                                                <p class="user-post-department-multiple">
+                                                    {{getStringsFormatted([item.designation_title,'
+                                                    '+item.department],30,',')}}</p>
+                                            </div>
+                                        </ng-template>
+                                    </ng-select>
+                                    <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.auditee_ids">
+                                        {{formErrors.auditee_ids}}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div> -->
+
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label for="name"> {{'open_audit_plan_date_time' | translate}}<span class="form-error">*</span></label>
+                            <div class="input-group date-picker">
+                                <input class="form-control cal4" formControlName="start_date" 
+                                    
+                                    placeholder="yyyy-mm-dd"
+                                    [owlDateTime]="dt1"
+                                    [owlDateTimeTrigger]="dt1"
+                                   
+                                   
+                                    >
+    
+                                    <owl-date-time [hour12Timer]="true" #dt1></owl-date-time>
+                                    <div class="input-group-append">
+                                        <button [owlDateTimeTrigger]="dt1" class="btn btn-outline-secondary calendar"
+                                            type="button"><i class="fas fa-calendar-alt"></i></button>
+                                    </div>
+                            </div>
+                            <p class="pt-1 form-error ng-star-inserted" style="color: red;" *ngIf="formErrors && formErrors.start_date"> {{formErrors.start_date}}</p>
+                             <!-- <p class="pt-1 form-error ng-star-inserted" style="color: red;" *ngIf="checkDatePast(form.value.start_date) && form.value.start_date">{{'date_validation'|translate}} </p>  -->
+                        </div>
+                    </div>
+    
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label for="name"> {{'close_audit_plan_date_time' | translate}}<span class="form-error">*</span></label>
+                            <div class="input-group date-picker">
+                                <input class="form-control cal4" formControlName="end_date" placeholder="yyyy-mm-dd"
+                                   
+                                    [owlDateTime]="dt2"
+                                    [owlDateTimeTrigger]="dt2"
+                                    
+                                    >
+    
+                                <owl-date-time [hour12Timer]="true" #dt2></owl-date-time>
+                                <div class="input-group-append">
+                                    <button [owlDateTimeTrigger]="dt2" class="btn btn-outline-secondary calendar"
+                                        type="button"><i class="fas fa-calendar-alt"></i></button>
+                                </div>
+                            </div>
+                            <p class="pt-1 form-error ng-star-inserted" style="color: red;" *ngIf="formErrors && formErrors.end_date"> {{formErrors.end_date}} </p>
+                            <!-- <p class="pt-1 form-error ng-star-inserted" style="color: red;" *ngIf="checkDatePast(form.value.end_date) && form.value.end_date">{{'date_validation'|translate}} </p>  -->
+                        </div>
+                    </div>
+
+                    <!-- <div class="col-sm-12">
+                        <div class="form-group mb-2">
+                            <label class="m-0 mt-2">{{'audit_procedure' | translate}} <span class="form-error">*</span></label>
+                            <button 
+                            (click)="selectProcesses()" 
+                            *ngIf="ProcessStore?.selectedProcessesList.length>0"
+                            data-toggle="modal" data-target="#choose-pros" type="button" class="btn btn-small float-right">{{'choose_procedure' | translate}}</button>
+                        </div>
+                        <div  *ngIf="ProcessStore?.selectedProcessesList.length>0" class="audit-form-table w-100 not-fixed-table mb-3">
+                            <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll ">
+                                <thead>
+                                    <tr>
+                                        <th class="border-top-0" width="2%">#</th>
+                                        <th class="border-top-0" width="9%">{{'ref_id' | translate}}
+                                        </th>
+                                        <th class="border-top-0" width="25%">{{'group' |
+                                            translate}}</th>
+                                        <th class="border-top-0" width="51%">{{'audit_procedure' | translate}} 
+                                        </th>
+                                        <th class="border-top-0" width="16%">{{'category' | translate}}</th>
+                                        <th class="border-top-0" width="12%">{{'department' |
+                                            translate}}</th>
+                                         <th class="border-top-0" width="19%">{{'risk_rating' |
+                                            translate}}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="cursor-pointer edit-and-delete-main"
+                                        *ngFor="let selected of ProcessStore?.selectedProcessesList; let list=index">
+                                        <td class="text-center">{{list+1}}</td>
+                                        <td>{{selected.reference_code}}</td>
+                                        <td>{{selected.process_group_title}}</td>
+                                        <td> {{selected.title}}
+                                        </td>
+                                        <td>
+                                            {{selected.process_category_title? selected.process_category_title:AppStore.noContentText}}
+                                        </td>
+                                        <td>
+                                            {{selected.department? selected.department :AppStore.noContentText}}
+                                            <div class="edit-option-show" >
+                                                <a [attr.title]="'delete'|translate" (click)="deleteProcesses(selected)"
+                                                ><i class="fas fa-trash pointer"></i></a>
+                                            </div>
+                                        </td>
+                                       
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mb-3">
+                            <app-no-data *ngIf="ProcessStore?.selectedProcessesList.length == 0" [height]="true" [border]="true">
+                            </app-no-data>
+                        </div>
+                    </div> -->
+
+
+                    <div class="col-lg-12 col-sm-12" *ngIf="OrganizationGeneralSettingsStore?.organizationSettings?.is_ms_type">
+                        <div class="form-group">
+                            <label for="name"> {{'ms_type' | translate}}<span class="form-error">*</span></label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect">
+                                    <ng-select [placeholder]="'select_ms_types' | translate"
+                                        [items]="programMstypes" multiple="true"
+                                        (change)="getScope()"
+                                        formControlName="ms_type_organization_ids" (open)="getMsType()"
+                                        (search)="searchMsType($event)" bindLabel="ms_type_title">
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            <label class="mb-0">{{item?.ms_type_title?.length > 60 ?
+                                                (item.ms_type_title | slice:0:60)+' ...' : item.ms_type_title}}<span
+                                                    style="color: #7c7a7a;">V
+                                                    {{item.ms_type_version_title}}</span></label><span
+                                                aria-hidden="true" (click)="clear(item)" style="border:none;"
+                                                class="ng-value-icon left">×</span>
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            <label class="mb-0">{{item?.ms_type_title?.length > 80 ?
+                                                (item.ms_type_title | slice:0:80)+' ...' : item.ms_type_title}}<span
+                                                    style="color: #7c7a7a;">V
+                                                    {{item.ms_type_version_title}}</span></label>
+                                        </ng-template>
+                                    </ng-select>
+                                    <p class="pt-1" style="color: red;"
+                                        *ngIf="formErrors && formErrors.ms_type_organization_ids">
+                                        {{formErrors.ms_type_organization_ids}}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- <div class="col-sm-12">
+                        <div class="form-group">
+                            <label for="name"> {{'checklist_title' | translate}}<span class="form-error">*</span> </label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect">
+                                    <ng-select [placeholder]="'select_checklist_title' | translate" 
+                                        [multiple]="false"
+                                        [items]="AuditChecklistGroupMasterStore?.auditChecklistGroup" formControlName="checklist_group_id"
+                                        bindLabel="title" (open)="getCheckListTitle()"
+                                        (search)="searchCheckLsitTitle($event)">
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            {{item?.title?.length > 100 ? (item.title | slice:0:100)+' ...' : item.title}}
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            {{item?.title?.length > 100 ? (item.title | slice:0:100)+' ...' : item.title}}
+                                        </ng-template>
+                                    </ng-select>
+                                    <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.checklist_group_id">
+                                        {{formErrors.checklist_group_id}}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-12" *ngIf="MsAuditCheckListStore._msAuditCheckLists.length>0">
+                        <div class="form-group">
+                            <label class="mb-1">{{'checklist' | translate}} <span class="form-error">*</span></label>
+                            <div class="custom-control white-cbox custom-checkbox" *ngFor="let item of MsAuditCheckListStore.msAuditChecckLists[0]?.checklists">
+                                <input #child
+                                    type="checkbox"
+                                    [checked]="checked(item)"
+                                    (change)="checkListChecked(item.id, $event.target.checked)" 
+                                    class="custom-control-input" 
+                                    [id]="item.id" 
+                                    [name]="item.id">
+                                <label class="custom-control-label align-label-check smoothe-slide font-normal" [for]="item.id">{{item.title}}</label>
+                            </div>
+                        </div>
+
+                    </div> -->
+
+                    <!-- <div class="col-sm-6">
+                        <div class="form-group add-kpi-textarea">
+                            <label for="name"> {{'audit_scope' | translate}}</label>
+                            <span class="float-right">
+                                <p class="text-grey mb-0">{{form?.value.scope != null ?
+                                    form?.value.scope?.length : 0}}
+                                    {{'characters' | translate}}</p>
+                            </span>
+                            <textarea class="form-control" rows="11" id="comment1" formControlName="scope"
+                                [placeholder]="'write_a_short_scope_of_the_ms_audit_plan' | translate"></textarea>
+                            <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.scope">
+                                {{formErrors.scope}}
+                            </p>
+                        </div>
+                    </div> -->
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <div class="form-group add-kpi-textarea">
+                                <span style="float: right;" class="text-grey">{{form?.value.scope != null ? getScopeLength() : 0}} {{'characters' | translate}}</span>
+                                <label for="scope">{{'audit_scope' | translate}}</label>
+                                <ckeditor id="scope" (change)="descriptionValueChange($event)" [editor]="Editor"  [config]="config" formControlName="scope"></ckeditor>
+                                <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.scope}}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- <div class="col-sm-12">
+                        <div class="form-group">
+                            <div class="form-group add-kpi-textarea">
+                                <span style="float: right;" class="text-grey">{{form?.value.objective != null ? getObjectiveLength() : 0}} {{'characters' | translate}}</span>
+                                <label for="objective">{{'audit_objective' | translate}}</label>
+                                <ckeditor id="objective" (change)="descriptionValueChange($event)" [editor]="Editor" [config]="config" formControlName="objective"></ckeditor>
+                                <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.objective}}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <div class="form-group add-kpi-textarea">
+                                <span style="float: right;" class="text-grey">{{form?.value.criteria != null ? getCriteriaLength() : 0}} {{'characters' | translate}}</span>
+                                <label for="criteria">{{'audit_criteria' | translate}}</label>
+                                <ckeditor id="criteria" (change)="descriptionValueChange($event)" [editor]="Editor" [config]="config" formControlName="criteria"></ckeditor>
+                                <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.criteria}}</p>
+                            </div>
+                        </div>
+                    </div> -->
+
+
+
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group add-new-plus-round">
+                            <label for="name">{{'objectives' | translate}}<button (click)="objectiveAdd()"
+                                    type="button" class="btn btn-active add-plus ml-2"
+                                    style="display: inline-block;"><i class="fa fa-plus"> </i></button></label>
+                            <div class="delete-bullet-point">
+                                <ul class="arrowlist ml-0 pl-0 mt-0 mb-0">
+                                    <li
+                                        *ngFor="let objective of MsAuditPlanObjectiveMasterStore._selectedMsAuditPlanObjectiveAll">
+                                        {{objective.title}}
+                                        <button (click)="deleteObjective(objective);" type="button"
+                                            class="btn btn-small float-right btn-small-delete"
+                                            style="border: none;"><i class="fas fa-trash"></i></button>
+                                    </li>
+
+                                </ul>
+                            </div> 
+                             <p *ngIf="MsAuditPlanObjectiveMasterStore._selectedMsAuditPlanObjectiveAll.length==0">
+                                {{AppStore.noContentText}}</p> 
+                            
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group add-new-plus-round mt-2">
+
+                            <label for="name">{{'criteria' | translate}}<button (click)="criteriaAdd()"
+                                    type="button" class="btn btn-active add-plus ml-2"
+                                    style="display: inline-block;"><i class="fa fa-plus"> </i></button></label>
+                            <div class="delete-bullet-point">
+                                <ul class="arrowlist ml-0 pl-0 mt-0 mb-0">
+                                    <li
+                                        *ngFor="let criteria of MsAuditPlanCriteriaMasterStore._selectedMsAuditPlanCriteriaAll">
+                                        {{criteria.title}}
+                                        <button (click)="deleteCriteria(criteria);" type="button"
+                                            class="btn btn-small float-right btn-small-delete"
+                                            style="border: none;"><i class="fas fa-trash"></i></button>
+                                    </li>
+
+                                </ul>
+                            </div>
+                            <p *ngIf="MsAuditPlanCriteriaMasterStore._selectedMsAuditPlanCriteriaAll.length==0">
+                                {{AppStore.noContentText}}</p>
+                            <p class="pt-1" style="color: red;"
+                                *ngIf="formErrors && formErrors.meeting_criterion_ids">
+                                {{formErrors.meeting_criterion_ids}}</p>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="d-block justify-content-left border-0 mt-3">
+                            <button type="submit" class="btn btn-active" (click)="save()"
+                                [disabled]="form.invalid || AppStore.loading ">{{ AppStore.loading ?
+                                getButtonText('loading') : getButtonText('save') }}</button>
+                            <button type="button" data-toggle="modal" data-target="#signal-lost" class="btn"
+                                (click)="save(true)" [disabled]="form.invalid  || AppStore.loading">{{ AppStore.loading ?
+                                getButtonText('loading') : getButtonText('save_close') }}</button>
+                            <button type="button" data-toggle="modal" data-target="#error-message" class="btn"
+                                (click)="cancel()">{{ AppStore.loading ? getButtonText('loading') :
+                                getButtonText('cancel') }}</button>
+                        </div>
+                    </div>
+                </div>
+                                
+            </form>
+        </div>
+        <!-- Modal footer -->
+    </div>
+</div>
+<!----------------------- Organization form modal starts here --------------------------->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static"
+    #organisationChangeFormModal *mobxAutorun>
+    <app-organisation-change-modal *ngIf="openModelPopup" [source]="OrganizationLevelObject.values"
+        (organizationChangeEvent)="closeOrganizationModal($event)"></app-organisation-change-modal>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="process-popup" data-keyboard="false" data-backdrop="static"
+    #processFormModal *mobxAutorun>
+    <app-addprocess *ngIf="ProcessStore.processes_form_modal" [processModalTitle]="modalObject">
+    </app-addprocess>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" *mobxAutorun style="z-index:99999;overflow: auto;"
+    data-keyboard="false" data-backdrop="static" #addCriteria>
+    <app-audit-plan-criteria-objective *ngIf="MsAuditPlansStore.criteria_form_modal">
+    </app-audit-plan-criteria-objective>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" *mobxAutorun style="z-index:99999;overflow: auto;"
+    data-keyboard="false" data-backdrop="static" #addObjective>
+    <app-audit-plan-objective-mapping *ngIf="MsAuditPlansStore.objectives_form_modal">
+    </app-audit-plan-objective-mapping>
+</div>

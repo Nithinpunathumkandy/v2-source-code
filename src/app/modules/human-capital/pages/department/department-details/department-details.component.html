@@ -1,0 +1,144 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" scrollPoint #navBar>
+   <app-breadcrumb-menu></app-breadcrumb-menu>
+   <app-sub-menu></app-sub-menu>
+   <!-- <app-sub-menu-drop-down></app-sub-menu-drop-down> -->
+</nav>
+
+<main class="audit-program-details-page mt-3" *mobxAutorun>
+   <div class="container-fluid">
+      <ng-container *mobxAutorun>
+         <div *ngIf="!DepartmentMasterStore?.individualLoaded">
+             <app-division-loader></app-division-loader>
+         </div>
+      </ng-container>
+      <div class="row" *ngIf="DepartmentMasterStore?.individualLoaded">
+         <div class="col-sm-12">
+            <div class="widget">
+               <div class="row">
+                  <div class="col-sm-12 col-lg-8 padding-right-0">
+                     <div class="bg-white widg-padding-cmn">
+                        <div class="min-height-64">
+                           <div class="issue-top-sec">
+                              <div class="clearfix">
+                                 <h5 class="d-inline-block cmn-head-style label-tag-style"><span
+                                       class="issue-smoal-head-text">#{{DepartmentMasterStore?.individualDepartmentId?.code}}</span>{{DepartmentMasterStore?.individualDepartmentId?.title}}<span
+                                       
+                                       [ngClass]="DepartmentMasterStore?.individualDepartmentId?.status?.label ? getStatusColorKey() : ''">{{DepartmentMasterStore?.individualDepartmentId?.status?.title[0]?.pivot?.title}}</span>
+                                 </h5>
+                              </div>                              
+                              <p>{{'department_descptions_hc'| translate}}</p>
+                           </div>
+                           <div class="row">
+                              <div class="col-lg-4 col-sm-6">
+                                 <h6>{{'organization'| translate}}</h6>
+                                 <p>{{DepartmentMasterStore?.individualDepartmentId?.organization?.title}}</p>
+                              </div>
+                              <div class="col-lg-4 col-sm-6" *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_division">
+                                 <h6>{{'division'| translate}}</h6>
+                                 <p>{{DepartmentMasterStore?.individualDepartmentId?.division?.title ? DepartmentMasterStore?.individualDepartmentId?.division?.title : AppStore.noContentText}}</p>
+                              </div>
+                           </div>
+                           <div class="row align-items-center mb-3">
+                              <div class="col-lg-6 col-sm-4">
+                                 <h6 class="mb-0 pt-2 pb-2">{{'users'| translate}}</h6>
+                              </div>
+                              <div class="col-lg-6 col-sm-8"
+                              *ngIf=" DepartmentMasterStore?.userList?.length != 0 || selectedUser">
+                                 <form class="form-control issue-select-process-search bg-white search-popup-new">
+                                    <input type="text" [(ngModel)]="selectedUser" (input)="filterUsers()"
+                                       placeholder="Search.." name="search" class="search-process">
+                                    <button type="submit" style="width: 40px;"><i class="fa fa-search"></i></button>
+                                 </form>
+                              </div>
+                           </div>
+                           <div class="row sm-row">
+                              <div class="col-lg-4 col-sm-6 sm-col"
+                                 *ngFor="let user of DepartmentMasterStore?.userList | paginate: {currentPage:DepartmentMasterStore.currentUserPage, itemsPerPage:DepartmentMasterStore.itemsPerPageUser,totalItems:DepartmentMasterStore.totalUserItems};let mIndex = index">
+                                 <div class="name-and-position name-and-position-bdr cmn-bdr">
+                                    <div class="label-and-user-pic mb-0">
+                                       <app-user-popup-box [source]="getUserList(user)" [showName]="true">
+                                       </app-user-popup-box>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                           <ng-container *mobxAutorun>
+                              <app-context-no-data *ngIf=" DepartmentMasterStore?.userList?.length == 0" [sourceData] = "getNoDataSource('left')"></app-context-no-data>
+                           </ng-container>
+                           <div class="row">
+                              <div
+                                 *ngIf="DepartmentMasterStore?.totalUserItems>DepartmentMasterStore.itemsPerPageUser && DepartmentMasterStore.loaded == true"
+                                 class="col-sm-12">
+                                 <ul class="pagination justify-content-center mt-3">
+                                    <div class="list">
+                                       <pagination-controls [previousLabel]="'previous' | translate"
+                                          [nextLabel]="'next' | translate" (pageChange)="pageChange($event)"
+                                          class="my-pagination"></pagination-controls>
+                                    </div>
+                                 </ul>
+                              </div>
+                           </div>
+                        </div>
+                        <div class="row">
+                           <div class="col-xl-12">
+                              <hr class="mb-2">
+                              <div class="d-flex flex-row user-list-sm pb-0">
+                                 <app-user-popup-box
+                                    [source]="getUserDetails(DepartmentMasterStore?.individualDepartmentId?.created_by, DepartmentMasterStore?.individualDepartmentId?.created_at )">
+                                 </app-user-popup-box>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+                  <div class="col-sm-12 col-lg-4">
+                     <div class="bg-white widg-padding-cmn-small mb-3">
+                        <h6>{{'total_count'| translate}}</h6>
+                        <hr class="mt-0 mb-3">
+                        <div class="row sm-row">
+                           <div 
+                              [class]="OrganizationLevelSettingsStore.organizationLevelSettings?.is_section ? 'col-lg-6 col-sm-4 col-4 cmn-bdr-right':'col-lg-12 col-sm-4 col-4'">
+                              <div class="text-center">
+                                 <h3 class="big-text-one">{{DepartmentMasterStore.totalUserItems}}</h3>
+                                 <p class="mb-0">{{'total_users'| translate}}</p>
+                              </div>
+                           </div>
+                           <div class="col-lg-6 col-sm-4 col-4"  [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_section ? 'none':'block'}">
+                              <div class="text-center">
+                                 <h3 class="big-text-one">
+                                    {{DepartmentMasterStore?.individualDepartmentId?.sections.length}}</h3>
+                                 <p class="mb-0">{{'total_section'| translate}}</p>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                     <div *ngIf="DepartmentMasterStore?.individualDepartmentId?.head" class="bg-white widg-padding-cmn-small mb-3">
+                        <h6>{{'department_head'| translate}}</h6>
+                        <hr class="mt-0 mb-3">
+                        <div class="label-and-user-pic mb-0">
+                           <div class="d-flex flex-row user-list-sm pb-0">
+                              <app-user-popup-box
+                                 [source]="getUserDetails(DepartmentMasterStore?.individualDepartmentId?.head)">
+                              </app-user-popup-box>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+</main>
+
+<!-- Modal part -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+   <app-department-modal *ngIf="departmentObject.type" [source]="departmentObject">
+   </app-department-modal>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+   <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>

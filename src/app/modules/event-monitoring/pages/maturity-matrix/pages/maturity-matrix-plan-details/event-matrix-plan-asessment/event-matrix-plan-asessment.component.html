@@ -1,0 +1,202 @@
+
+    
+    <div class="container-fluid" *mobxAutorun>
+      <div class="row">
+         <div class="col-sm-12 pl-0 pr-0">
+           <app-maturity-matrix-list-loader *ngIf="!MaturityMatrixPlanStore.matrixAsessmentLoaded"></app-maturity-matrix-list-loader>
+          
+            <!-- <app-no-data *ngIf="MaturityMatrixPlanStore?._matrixAsessment?.length==0  && MaturityMatrixPlanStore.matrixAsessmentLoaded == true"></app-no-data> -->
+            <ng-container *ngIf="MaturityMatrixPlanStore?._matrixAsessment">
+              <app-no-data *ngIf="MaturityMatrixPlanStore?._matrixAsessment?.length==0  && MaturityMatrixPlanStore.matrixAsessmentLoaded == true"></app-no-data>
+            </ng-container>
+          
+          
+            <div class="tab-content" >
+               <!-- Profille -->
+               <div class="tab-pane active" id="info" *ngIf="MaturityMatrixPlanStore?._matrixAsessment">
+
+                    <div class="bg-white line-tab cmn-bdr-bottom">
+                      <div class="row">
+                        <div class="col-md-12">
+                            <ul class="nav nav-tabs float-left">
+                                <li class="nav-item" *ngFor="let row of MaturityMatrixPlanStore?._matrixAsessment;let i=index"> 
+                                        <a 
+                                        [attr.href]="'#'+row.id" (click)="changeIndex(i,row?.id)" [ngClass]="{'active': selectedIndex==i}" class="nav-link" 
+                                      data-toggle="tab" role="tab" aria-controls="lorem" aria-selected="false">
+                                      {{row?.event_maturity_type}}
+                                    </a>
+                                      </li>
+                            </ul>
+                        </div>
+                    </div>
+                  </div>
+                   <div class="tab-content tab-content-body bg-white p-3 border-none mt-2">
+                    <div class="tab-pane" [attr.id]="row.id" 
+                    [ngClass]="{'active show': selectedIndex==typeIndex}" *ngFor="let row of MaturityMatrixPlanStore?._matrixAsessment;let typeIndex=index" >
+
+                    <div class="row sm-row maturity-matrix-table-remove-scroll">
+                      <div class="col-lg-4 col-sm-12 sm-col" *ngFor="let range of row?.event_maturity_range;let rangeIndex=index">
+                         <div class="ceo-db-table-one-main dam-finding-table-db bg-white maturity-matrix-table">
+                            <table class="ceo-db-table-one">
+                               <tr>
+                                  <th style="width: 100%;" [ngClass]="{'maturity-matrix-red': range.id === 1,'maturity-matrix-yellow': range.id === 2 ,'maturity-matrix-green': range.id === 3}" 
+                                  class=" text-white">{{range?.title}}</th>
+                               </tr>
+                               <tr *ngFor="let param of range?.event_maturity_parameters; let paramIndex=index">
+                                  <td  [ngClass]="{'maturity-matrix-light-red': range.id === 1,
+                                  'maturity-matrix-light-yellow': range.id === 2 ,
+                                  'maturity-matrix-light-green': range.id === 3}" >
+                                     <div class="d-flex">
+                                      <span *ngIf="param?.is_completed && param?.is_enabled" class="text-green text-18" style="width: 28px; margin-top: -2px;"><i class="far fa-check-circle"></i></span>
+                                      <label [ngStyle]="{'opacity': (param?.is_enabled && checkUserPermission()) ? '1' : '0.5', 'pointer-events': (param?.is_enabled && checkUserPermission()) ? 'inherit' : 'none'}" *ngIf="!param?.is_completed" class="container2 float-left" style="margin-top: 2px; padding-left: 22px; width: 28px;">
+                                        <input  (change)="checkParameter(param?.assessment_id,paramIndex,row?.id)" type="checkbox" [disabled]="!param?.is_enabled">
+                                        <span class="checkmark"></span>
+                                     </label>
+                                          <div class="w-100">{{param?.title?param?.title:AppStore.noContentText}}   </div>
+                                     </div>
+                                  </td>
+                               </tr>
+
+                               <tr *ngIf=" range?.event_maturity_parameters.length==0">
+                                <td  [ngClass]="{'maturity-matrix-light-red': range.id === 1,
+                                'maturity-matrix-light-yellow': range.id === 2 ,
+                                'maturity-matrix-light-green': range.id === 3}" >
+                                   <div class="d-flex">
+                                   
+                                        <div class="w-100">  {{AppStore.noContentText}}</div>
+                                        
+                                   </div>
+                                </td>
+                             </tr>
+                               
+                            </table>
+                         </div>
+                      </div>
+
+                 </div>
+                  </div>
+
+                  <!-- <div class="row mb-4">
+                            <div class="col-xl-2 col-lg-2 col-tab-small padding-right-0">
+                              <div class=" issues-tab right-tech-tab">
+                                <ul class="nav nav-tabs nav-tabs--vertical nav-tabs--left vertical-tab" role="navigation">
+                                  <li class="nav-item" *ngFor="let row of MaturityMatrixPlanStore?._matrixAsessment;let i=index"> 
+                                     <a 
+                                     [attr.href]="'#'+row.id" (click)="changeIndex(i,row?.id)" [ngClass]="{'active': selectedIndex==i}" class="nav-link" 
+                                   data-toggle="tab" role="tab" aria-controls="lorem" aria-selected="false">
+                                   {{row?.event_maturity_type}}
+                                </a>
+                                  </li>
+                                 
+                                </ul>
+                              </div>
+                            </div>
+                    
+                    
+                            <div class="col-xl-10 col-lg-10 padding-left-0">
+                              <div class="tab-content bg-white cmn-bdr p-3">
+                                <div class="tab-pane fade" [ngClass]="{'active show': selectedIndex==typeIndex}" *ngFor="let row of MaturityMatrixPlanStore?._matrixAsessment;let typeIndex=index" 
+                                [attr.id]="row.id" role="tabpanel">
+                                    <div class="tab-inner-ca">
+                                          <div [ngClass]="{'minimal': range.title === 'Minimal','improving': range.title === 'Improving' ,'engaged': range.title === 'Engaged'}"
+                                           class="row  no-gutters mb-2" *ngFor="let range of row?.event_maturity_range;let rangeIndex=index">
+                                            <div class="col-lg-3">
+                                              <div class="left-text">
+                                                 <div class="mid">{{range.title?range.title:AppStore.noContentText}}</div>  
+                                              </div>
+                                            </div>
+                                            <div class="col-lg-9">
+                                             
+
+                                             <div class="text d-flex" *ngFor="let param of range.event_maturity_parameters; let paramIndex=index">
+                                              <span *ngIf="param?.is_completed && param?.is_enabled" class="text-green text-18" style="width: 28px; margin-top: -2px;"><i class="far fa-check-circle"></i></span>
+                                              <label [ngStyle]="{'opacity': param?.is_enabled ? '1' : '0.5', 'pointer-events': param?.is_enabled ? 'inherit' : 'none'}" *ngIf="!param?.is_completed" class="container2 float-left" style="margin-top: 2px; padding-left: 22px; width: 28px;">
+                                                <input  (change)="checkParameter($event,param?.assessment_id)" type="checkbox" [disabled]="!param?.is_enabled">
+                                               
+                                                <span class="checkmark"></span>
+                                             </label>
+                                               <div class="w-100"> {{param?.title?param?.title:AppStore.noContentText}}   </div>
+                                               <div class="text w-100" *ngIf="range.event_maturity_parameters.length==0">
+                                                {{AppStore.noContentText}}
+                                              </div>
+                                              </div>
+                                              
+                                            </div>
+                                           </div>
+                                         
+                                       
+
+
+
+
+                                    </div>
+                                </div>
+
+                                
+              
+                              </div>
+                            </div>
+                          </div> -->
+                  
+               </div>
+               
+              
+               
+            </div>
+
+            <div class="row sm-row mt-3">
+             
+              <div class="col-lg-12 col-sm-12 sm-col ">
+                  <div class="bg-white widg-padding-cmn btm-space-10 ceo-db-aut-four">
+                      <h5 class="cmn-head-style m-0">{{'overview_matrix_asessment'|translate}}</h5>
+                      <hr>
+                      
+                      <div class="row">
+                          <div class="col-lg-9">
+                            <div class="dpt-pic-ceo w-100" *ngIf="!noAsessmentData">
+                              <div id="asessmentMatrix" style="width: 100%; height: 250px"></div>
+                          </div>
+                          <div class="dpt-pic-ceo w-100" *ngIf="noAsessmentData" style="width: 100%; height: 250px">
+                              <app-no-chart-data [source]="asessmentPieNo">
+                              </app-no-chart-data>
+                          </div>
+                        </div>
+                        <div class="col-sm-3 col-lg-3">
+                          <div class="form-group">
+                            <label for="name">{{'event_maturity_matrix_type' | translate}}</label>
+                            <div class="clearfix">
+                              <div class="multiple-plain-ngselect ">
+                                <ng-select
+                                    [placeholder]="'select_event_maturity_matrix_type' | translate"
+                                    [multiple]="false"
+                                    [(ngModel)] = "eventMaturityMatrixTypeId"
+                                    (search) = "searchMaturityMatrixType($event)"
+                                    (clear) = "getMatrixTypeSelect()"
+                                    (change) = "chageMatrixType()"
+                                    >
+                                    <ng-option [value]="type.id" *ngFor="let type of EventMaturityMatrixTypeMasterStore?.eventMatrixType" >
+                                        {{type?.event_maturity_matrix_type_title?.length > 80 ? type?.event_maturity_matrix_type_title.substring(0,80)+' ...' : type?.event_maturity_matrix_type_title}}
+                                    </ng-option>
+                                  </ng-select>
+                                  
+                              </div>
+                          </div>
+                        </div>
+                        </div>
+                      </div>
+                      
+                          
+                      
+                  </div>
+              </div>
+              
+          </div>
+         </div>
+      </div>
+   </div>
+
+   <!-- cancel popup -->
+<div class="modal modal-style-1 fade" id="delete-popup" #cancelPopup data-backdrop="static" data-keyboard="false">
+  <app-delete-popup [source]="confirmationObject"></app-delete-popup>
+</div>
+<!-- cancel popup -->

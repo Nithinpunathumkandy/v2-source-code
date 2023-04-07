@@ -1,0 +1,106 @@
+<main class="mt-3 control-list-page">
+    <app-filter-menu></app-filter-menu>
+    <div class="container-fluid">
+        <div class="audit-program-box audit-page-table-main"> 
+            <div class="row" *mobxAutorun>
+                <div class="col-sm-12">
+                    <div class="full-width-table">
+                        <table
+                                    class="table table-bordered ordinary-table audit-page-table mb-4 table-scroll"
+                                    *ngIf="ProjectTasksStore.totalItems != 0 && ProjectTasksStore.loaded">
+                                    <thead>
+                                        <tr>
+                                            <th class="border-top-0" width="3%">#</th>
+                                            <th class="border-top-0" width="52%">{{'title'|translate}}</th>
+                                            <th class="border-top-0" width="11%">{{'priority'|translate}}</th>
+                                            <th class="border-top-0" width="18%">{{'assignee'|translate}}</th>
+                                            <th class="border-top-0" width="10%">{{'status'|translate}}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="edit-and-delete-main"
+                                        *ngFor="let row of ProjectTasksStore.allItems| paginate: {currentPage:ProjectTasksStore.currentPage, itemsPerPage:ProjectTasksStore.itemsPerPage,totalItems:ProjectTasksStore.totalItems};let num=index "
+                                        (click)="AuthStore.getActivityPermission(100,'TASK_DETAILS') ? gotoDetailsPage(row.id) : ''">
+                                            <td class="pointer">
+                                                {{(ProjectTasksStore.currentPage - 1) * ProjectTasksStore.itemsPerPage +
+                                                    (num + 1)}}
+                                            </td>
+                                            <td class="pointer" >{{row?.title ? row?.title : AppStore.noContentText}}
+                                            </td>
+                                            <td class="pointer" >{{row?.task_priority_title ? row?.task_priority_title : AppStore.noContentText}} </td>
+                                            <td class="pointer" >
+                                                    <div
+                                    class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                                    <img *ngIf="row.responsible_user_image_token" data-toggle="modal" data-target="#user02"
+                                        data-ui-class="a-zoom"
+                                        [attr.src]="createImagePreview('user-profile-picture',row.responsible_user_image_token)"
+                                        width="30px" height="30px" class="rounded-circle rounde-hov details-show-popup"
+                                        onerror="this.src='/assets/images/user-demo2.png'">
+                                    <img *ngIf="!row.responsible_user_image_token" [attr.src]="getDefaultImage('user-logo')"
+                                        width="30px" height="30px" class="rounded-circle"
+                                        onerror="this.src='/assets/images/user-demo2.png'">
+                                    <div class="pointer">
+                                        <h6>{{row.responsible_user_first_name ? row.responsible_user_first_name : AppStore.noContentText
+                                            }} {{row.responsible_user_last_name ? row.responsible_user_last_name :
+                                            AppStore.noContentText }}</h6>
+                                        <!-- <span>{{row.created_by_designation ? row.created_by_designation :
+                                            AppStore.noContentText}}</span> -->
+                                    </div>
+                                </div>
+                                            </td>
+                                            <td>
+                                                <div >{{row?.status}}</div>
+                                                <div class="edit-option-show" style="margin: 33px 0 0 0; ">
+                                                    <!-- edit-and-delete starts -->
+                                                            <a *ngIf="AuthStore.getActivityPermission(1600,'UPDATE_TASK')"
+                                                            (click)="editTasks(row.id)" [attr.title]="'edit' | translate"><i
+                                                                class="fas fa-pen"></i></a>
+                                                            <a *ngIf="AuthStore.getActivityPermission(1600,'DELETE_TASK')"
+                                                            (click)="delete(row.id)" [attr.title]="'delete' | translate"><i class="fas fa-trash"></i></a>
+                                                </div>
+                                                <!-- edit-and-delete end -->
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                </div>
+                    <ng-container *mobxAutorun>
+                        <div *ngIf="!ProjectTasksStore.loaded">
+                            <app-table-loader></app-table-loader>
+                        </div>
+                    </ng-container>
+
+                    <ng-container>
+                        <app-no-data *ngIf="ProjectTasksStore.loaded && ProjectTasksStore?.allItems.length==0"
+                            [border]=false>
+                        </app-no-data>
+                    </ng-container>
+
+
+                    <div *ngIf="ProjectTasksStore.totalItems>ProjectTasksStore.itemsPerPage"
+                        class="col-sm-12">
+                        <ul class="pagination justify-content-center mt-3">
+                            <div class="list">
+                                <pagination-controls  class="my-pagination" [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate" (pageChange)="pageChange($event)">
+                                </pagination-controls>
+                            </div>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-----------------------Form Modal--------------------------->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+<app-pm-task-modal *ngIf = "projectTasksObject.type" [source]="projectTasksObject">
+</app-pm-task-modal> 
+</div>
+<!-----------------------Form Modal--------------------------->
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+<app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+<!------------------- Delete Confirmation Modal Start --------------------------->

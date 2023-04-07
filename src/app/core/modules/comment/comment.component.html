@@ -1,0 +1,144 @@
+<div id="sidebar-wrapper2-inner-3" [ngClass]="AppStore.commentBoxOpen ? 'side-bar inner-chating-aria bg-white audit-report-chat-box-main active' : 'side-bar inner-chating-aria bg-white audit-report-chat-box-main'">
+    <div class="chat-box-header inner-chat-head clearfix">
+        <h6>{{'comments' | translate}}</h6>
+        <div class="chat-right-side">
+            <ul class="chat-menu-section clearfix">
+                <li><a (click) = "cancel()">
+                        <i class="lni-close chat-box-close"></i>
+                    </a></li>
+            </ul>
+        </div>
+
+    </div>
+    <div class="audit-report-chat-popup-inner" *mobxAutorun>
+        <div class="audit-report-chat-popup-inner-height" #scroll>
+            <div class="row chat-cnt-audit-report">
+                <div class="col-sm-12">
+                    <div class="chat-message clearfix" *ngIf="CommentStore.commentsLoaded && CommentStore.comments.length == 0">
+                        <div class="msg-gif-one mx-auto" style="text-align: center;">
+                            <img src="assets/images/chat-open-pic.svg" class="img-fluid">
+                            <h5 class="cmn-head-style">{{'comments' | translate}}</h5>
+                            <p>{{'empty_comment_message' | translate}}</p>
+                        </div>
+                    </div>
+                    <div class="chat-box-loop-report" *ngFor = "let comments of CommentStore.comments">
+                        <div class="d-flex mb-1">
+                            <img *ngIf="comments.created_by.image_token"
+                                [attr.src]="createImagePreview('user-profile-picture',comments.created_by.image_token)"
+                                width="35px" height="35px" class="mCS_img_loaded" onerror = "this.src='/assets/images/user-demo2.png'">
+                            <img *ngIf="!comments.created_by.image_token"
+                                [attr.src]="getDefaultImage('user-logo')"
+                                width="35px" height="35px" class="mCS_img_loaded" onerror = "this.src='/assets/images/user-demo2.png'">
+                            <div class="ml-2 w-100">
+                                <h6 class="mb-0">{{comments.created_by.first_name}} {{comments.created_by.last_name}}</h6>
+                                <span class="small-text">{{getTimezoneFormatted(comments.created_at) | date:
+                                    OrganizationGeneralSettingsStore.organizationSettings?.date_time_format }}</span>
+
+                                <div class="paragraph-texts-loop">
+                                    <p>{{comments.comment}}</p>
+                                </div>
+
+                                <div class="reply-control-sec p-0 mt-1">
+                                    <div class="reply-control-sec-btns">
+                                        <!-- <span class="comment-btns-cmn comment-btns-msg reply-msg-sec-bg-color"><i class="fas fa-reply-all"></i>Replay</span> -->
+                                        <span *ngIf = "comments.comment_status.type != 'resolved'" [ngClass]="selectedCommentId == comments.id ? 'comment-btns-cmn comment-btns-msg reply-msg-sec-bg-color active' : 'comment-btns-cmn comment-btns-msg'" (click) = "replyClicked(comments.id)"><i
+                                                class="fas fa-reply-all"></i>{{'reply' | translate}}</span>
+                                        <span class="comment-btns-cmn comment-btns-msg" *ngIf = "comments.comment_status.type != 'resolved'" (click) = "resolveClicked(comments.id)"><i
+                                                class="fas fa-clipboard-check"></i>{{'resolve' | translate}}</span>
+                                        <!-- <span class="comment-btns-cmn comment-btns-msg" *ngIf = "comments.comment_status.type != 'archive'" (click) = "archiveClicked(comments.id)"><i
+                                                class="fas fa-clipboard-check"></i>{{'archive' | translate}}</span> -->
+                                        <span class="comment-btns-cmn comment-btns-msg" *ngIf = "comments.comment_status.type == 'resolved'" (click) = "reopenClicked(comments.id)"><i
+                                            class="fas fa-clipboard-check"></i>{{'reopen' | translate}}</span>
+                                    </div>
+                                    <div *ngIf = "selectedCommentId == comments.id" class="reply-msg-sec-small reply-msg-sec-bg-color mr-2 mb-2">
+                                        <div class="form-group mb-0">
+                                            <textarea class="form-control" rows="2"
+                                                id="comment" [(ngModel)] = "replyComment"></textarea>
+                                                <button  type="submit" class="btn-send-chat btn-active float-right mt-2 mr-2 mb-2" style="cursor: pointer;" (click)="sendMessage(comments.id)">Send
+                                                </button>
+                                                <div class="clearfix"></div>
+                                        </div>
+                                    </div>
+                                    <div class="reply-control-sec p-0" *ngIf = "comments.reply.length > 0">
+
+                                        <div class="reply-msg-sec-small reply-msg-sec-main reply-msg-sec-bg-color mb-2" *ngFor = "let replys of comments.reply">
+                                            <div class="replay-msg-space">
+                                                <div class="d-flex mb-1">
+                                                    <!-- <img src="images/round-9.png" style="width: 35px; height: 35px;"
+                                                        class="mCS_img_loaded"> -->
+                                                    <img *ngIf="replys.created_by.image_token"
+                                                        [attr.src]="createImagePreview('user-profile-picture',replys.created_by.image_token)"
+                                                        width="35px" height="35px" class="mCS_img_loaded" onerror = "this.src='/assets/images/user-demo2.png'">
+                                                    <img *ngIf="!replys.created_by.image_token"
+                                                        [attr.src]="getDefaultImage('user-logo')"
+                                                        width="35px" height="35px" class="mCS_img_loaded" onerror = "this.src='/assets/images/user-demo2.png'">
+                                                    <div class="ml-2 w-100">
+                                                        <h6 class="mb-0">{{replys.created_by.first_name}} {{replys.created_by.last_name}}</h6>
+                                                        <span class="small-text">{{getTimezoneFormatted(replys.created_at) | date:
+                                                            OrganizationGeneralSettingsStore.organizationSettings?.date_time_format }}</span>
+
+                                                        <div class="paragraph-texts-loop">
+                                                            <p>{{replys.comment}}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                            <div class="reply-control-sec-btns">
+                                                <!-- <span class="comment-btns-cmn comment-btns-msg reply-msg-sec-bg-color"><i class="fas fa-reply-all"></i>Replay</span> -->
+                                                <span *ngIf = "replys.comment_status.type != 'resolved'" [ngClass]="selectedCommentId == replys.id ? 'comment-btns-cmn comment-btns-msg reply-msg-sec-bg-color active' : 'comment-btns-cmn comment-btns-msg'" (click) = "replyClicked(replys.id)"><i
+                                                        class="fas fa-reply-all"></i>{{'reply' | translate}}</span>
+                                                <span class="comment-btns-cmn comment-btns-msg" *ngIf = "replys.comment_status.type != 'resolved'" (click) = "resolveClicked(replys.id)"><i
+                                                        class="fas fa-clipboard-check"></i>{{'resolve' | translate}}</span>
+                                                <!-- <span class="comment-btns-cmn comment-btns-msg" *ngIf = "replys.comment_status.type != 'archive'" (click) = "archiveClicked(replys.id)"><i
+                                                    class="fas fa-clipboard-check"></i>{{'archive' | translate}}</span> -->
+                                                <span class="comment-btns-cmn comment-btns-msg" *ngIf = "replys.comment_status.type == 'resolved'" (click) = "reopenClicked(replys.id)"><i
+                                                    class="fas fa-clipboard-check"></i>{{'reopen' | translate}}</span>
+                                            </div>
+                                            <div *ngIf = "selectedCommentId == replys.id" class="reply-msg-sec-small reply-msg-sec-bg-color">
+                                                <div class="form-group mb-0">
+                                                    <textarea class="form-control" rows="2"
+                                                        id="comment" [(ngModel)] = "replyComment"></textarea>
+                                                        <button  type="submit" class="btn-send-chat btn-active float-right mt-2 mr-2 mb-2" style="cursor: pointer;" (click)="sendMessage(comments.id)">Send
+                                                        </button>
+                                                        <div class="clearfix"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+
+
+                                    </div>
+
+
+                                </div>
+
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <hr class="mt-0 mb-0">
+        <div class="btn-sec-audit-chat-msg">
+            <div class="reply-msg-sec-small reply-msg-sec-bg-color">
+                <div class="form-group mb-0">
+                    <textarea class="form-control lite-color-textarea resize-none" rows="2" id="comment" [(ngModel)] = "comment"
+                        placeholder="Write us"></textarea>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="d-block justify-content-left border-0 mt-3">
+                        <button data-toggle="modal" [disabled]="!comment || AppStore.loading" type="button"
+                            class="btn btn-active" (click) = "sendComment()">{{'send' | translate}}</button>
+                        <button type="button" class="btn close-audit-report-chat-popup" (click) = "cancel()">{{'cancel' | translate}}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

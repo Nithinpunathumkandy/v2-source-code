@@ -1,0 +1,257 @@
+<button type="button" class="close" (click)="cancel()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header">
+            <h4 class="modal-title" *ngIf="timeTrackerSource.type=='Add'">{{'add_time_tracker' | translate}}</h4>
+            <h4 class="modal-title" *ngIf="timeTrackerSource.type=='Edit'">{{'edit_time_tracker' | translate}}</h4>
+           
+        </div>
+        <!-- Modal body -->
+        <div class="modal-body form-body">
+          <!-- <p class="head-details">{{'event_budget_form_brief'| translate}}</p> -->
+          <form [formGroup]="form" >
+          <div class="row">
+            <div class="col-lg-12 col-sm-12">
+               <div class="form-group">
+                  <label for="name">{{'date' | translate}}<sup>*</sup></label>
+                  <div class="input-group date-picker cal-time">
+                    <div class="input-group date-picker">
+                       <input  class="form-control" formControlName="date"
+                          [owlDateTime]="dt1" [owlDateTimeTrigger]="dt1"
+                          [placeholder]="'date'| translate">
+                       <owl-date-time [pickerType]="'calendar'" #dt1></owl-date-time>
+                       <div class="input-group-append">
+                          <button [owlDateTimeTrigger]="dt1"
+                             class="btn btn-outline-secondary calendar" type="button"><i
+                                class="fas fa-calendar-alt"></i></button>
+                       </div>
+
+                    </div>
+                 </div>
+                 <p class="form-error pt-1" *ngIf="formErrors && formErrors.date">{{formErrors.date}}</p>
+                </div>
+            </div>
+            <div class="col-lg-6 col-sm-6">
+               <div class="form-group">
+                  <label>{{'project' | translate}}<sup>*</sup></label>
+                  <div class="clearfix">
+                     <div class="multiple-plain-ngselect">
+                     <ng-select 
+                        [readonly]="!timeTrackerSource.redirect"
+                        [placeholder]="'select_project' | translate" 
+                        formControlName="project_id" 
+                        bindValue="id" 
+                        [items]="projectStore?.projectList"
+                        (clear) = "getAllProjects('')"
+                        (open) = "getAllProjects('')"
+                        (search) = "getAllProjects($event)"
+                        bindLabel="title">
+                        <!-- <ng-option [value]="item"  *ngFor="let item of projectStore?.projectList">
+                            
+                            {{item.title}}
+                        </ng-option> -->
+                    </ng-select>
+                     </div>
+                  </div>
+                  <p class="form-error pt-1" *ngIf="formErrors && formErrors.project_id">{{formErrors.project_id}}</p>
+               </div>
+            </div>
+
+                <div class= "col-lg-6 col-sm-6">
+               <div class="form-group">
+                   <label for="name">{{'resource' | translate}} <sup>*</sup></label>
+                   <div class="clearfix">
+                    <div class="multiple-plain-ngselect">
+                        <ng-select
+                        [items]="UsersStore.usersList"
+                        formControlName = "resource_id"
+                        bindLabel = "email"
+                        labelForId = "id"
+                        [placeholder]="'select_resource' | translate"
+                      
+                        (search) = "searchUers($event)"
+                        (clear) = "getUsers()"
+                        (open) = "getUsers()"
+                        [searchFn]="customSearchFn">
+                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                           <img *ngIf = "item.image_token" class="ng-select-user-display" height="15" width="15" [attr.src]="createImagePreview('user-profile-picture',item.image_token)" onerror = "this.src='/assets/images/user-demo2.png'"/>
+                           <img *ngIf = "!item.image_token" class="ng-select-user-display" height="15" width="15" [attr.src]="getDefaultImage('user-logo')"/>
+                           <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b><span aria-hidden="true" (click) = "clear(item)" style="border:none;" class="ng-value-icon left">×</span>
+                        </ng-template>
+                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                           <div class="user-post-department-pic">
+                              <img *ngIf = "item.image_token" class="ng-select-user-display" height="25" width="25" [attr.src]="createImagePreview('user-profile-picture',item.image_token)" onerror = "this.src='/assets/images/user-demo2.png'"/>
+                              <img *ngIf = "!item.image_token" class="ng-select-user-display" height="25" width="25" [attr.src]="getDefaultImage('user-logo')"/>
+                           </div>
+                           <div class="user-post-department-div">
+                              <b>{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b>
+                              <p class="user-post-department-multiple">{{getStringsFormatted([item.designation_title,' '+item.department],50,',')}}</p>
+                           </div>
+                        </ng-template>
+                     </ng-select>
+                    </div>
+                   </div>
+                   <p class="form-error pt-1" *ngIf="formErrors && formErrors.resource_id">{{formErrors.resource_id}}</p>
+                 </div>
+           </div>
+
+
+          
+                            <div class="col-lg-6 col-sm-6">
+               <div class="form-group">
+                  <label>{{'activity' | translate}}<sup>*</sup></label>
+                  <div class="clearfix">
+                    <div class="multiple-plain-ngselect">
+                        <ng-select 
+                          [items]="TimeTrackerStore?.timeTrackersActivity"
+                            [placeholder]="'select_activity' | translate" 
+                            (search) = "getAllProjectsTimeTrackerActivity($event)"
+                            (clear) = "getAllProjectsTimeTrackerActivity('')"
+                            (open) = "getAllProjectsTimeTrackerActivity('')"
+                            formControlName="project_time_tracker_activity_id" 
+                            bindLabel="project_time_tracker_activity_language_title">
+                            <!-- <ng-option [value]="item"  *ngFor="let item of TimeTrackerStore?.timeTrackersActivity">
+                            
+                                {{item.project_time_tracker_activity_language_title}}
+                            </ng-option> -->
+                          </ng-select>
+                        </div>
+                  </div>
+                  <p class="form-error pt-1" *ngIf="formErrors && formErrors.project_time_tracker_activity_id">{{formErrors.project_time_tracker_activity_id}}</p>
+               </div>
+            </div>
+
+                        <div class="col-lg-6 col-sm-6">
+               <div class="form-group">
+                  <label for="name">Hours<sup>*</sup></label>
+                  <input (keypress)="numberOnly($event)" type="text" placeholder="eg:8" formControlName="hours"  class="form-control">
+                  <p class="form-error pt-1" *ngIf="formErrors && formErrors.hours">{{formErrors.hours}}</p>
+                  
+               </div>
+            </div>
+
+     
+
+
+
+      
+            <div class="col-sm-12">
+                 <div class="form-group">
+                    <label for="name">Comments<sup>*</sup></label>
+             <textarea class="form-control" rows="5" formControlName="comment" id="comment" [placeholder]="'comments'| translate"></textarea>
+             <p class="form-error pt-1" *ngIf="formErrors && formErrors.comment">{{formErrors.comment}}</p>
+                 </div>
+            </div>
+                        <!-- <div class="col-sm-12">
+                     <div class="form-group">
+                  <label>Time logs (19/12/2022)</label>
+                    <div class="no-fixed-table">
+                                          <table class="table table-bordered ordinary-table cmn-table-style mb-2">
+                                              <tr>
+                                                  <th class="border-top-0" width="2%">#</th>
+                                        
+                                                  <th class="border-top-0" width="40%">Resource</th>
+                                                  <th class="border-top-0" width="15%">Hours</th>
+                                                  <th class="border-top-0" width="40%">Added by</th>
+                                
+                                              </tr>
+                                              <tr>
+                                                  <td>1</td>
+                                                 
+                                                  <td class="pointer" onclick="window.location='task-details.php';">
+                    <div class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                       <img src="images/round-5.png" width="30px" height="30px" class="rounded-circle rounde-hov">
+                      
+                       <div class="user-dtl-popup user-dtl-popup-right box-user-dtl-new" style="display: none;">
+                          <div class="user-dtl-popup-head">
+                             <a href="users.php" class="close-user-popup"><i class="lni-close"></i></a>
+                             <div class="user-detail-smol-dtl clearfix">
+                                <img src="images/round-5.png" class="rounded-circle user-pic-new">
+                                <span class="online-user online"></span>
+                                <div class="user-details">
+                                   <h6>Sam Jhon</h6>
+                                   <span>HTML Developer</span>
+                                </div>
+                             </div>
+                          </div>
+                          <ul>
+                             <li><a href="#"><i class="fas fa-user"></i> Audit Leader</a></li>
+                             <li><a href="#"><i class="fas fa-phone"></i> 980 9946 365</a></li>
+                             <li><a href="#"><i class="fas fa-envelope"></i> farooque@excelledia.com</a></li>
+                          </ul>
+                          <div class="btn-bg-popup">
+                             <button type="button" data-toggle="modal" data-target="#signal-lost" class="btn ordinary-btn mr-3 btn-active">Send Email</button>
+                             <button type="button" data-toggle="modal" data-target="#signal-lost" class="btn ordinary-btn mr-3">View Detail</button>
+                          </div>
+                       </div>
+                      
+                       <div class="pointer">
+                          <h6>Sam Jhon</h6>
+                          <span>HTML Developer</span>
+                       </div>
+                    </div>
+                  </td>
+                                                  <td>20Hrs</td>
+                                                  <td class="pointer" onclick="window.location='task-details.php';">
+                    <div class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                       <img src="images/round-5.png" width="30px" height="30px" class="rounded-circle rounde-hov">
+                      
+                       <div class="user-dtl-popup user-dtl-popup-right box-user-dtl-new" style="display: none;">
+                          <div class="user-dtl-popup-head">
+                             <a href="users.php" class="close-user-popup"><i class="lni-close"></i></a>
+                             <div class="user-detail-smol-dtl clearfix">
+                                <img src="images/round-5.png" class="rounded-circle user-pic-new">
+                                <span class="online-user online"></span>
+                                <div class="user-details">
+                                   <h6>Anwar V</h6>
+                                   <span>Project Manager</span>
+                                </div>
+                             </div>
+                          </div>
+                          <ul>
+                             <li><a href="#"><i class="fas fa-user"></i> Audit Leader</a></li>
+                             <li><a href="#"><i class="fas fa-phone"></i> 980 9946 365</a></li>
+                             <li><a href="#"><i class="fas fa-envelope"></i> farooque@excelledia.com</a></li>
+                          </ul>
+                          <div class="btn-bg-popup">
+                             <button type="button" data-toggle="modal" data-target="#signal-lost" class="btn ordinary-btn mr-3 btn-active">Send Email</button>
+                             <button type="button" data-toggle="modal" data-target="#signal-lost" class="btn ordinary-btn mr-3">View Detail</button>
+                          </div>
+                       </div>
+                       
+                       <div class="pointer">
+                          <h6>Sam Jhon</h6>
+                          <span>Super Admin</span>
+                       </div>
+                    </div>
+                  </td>
+                                                
+                                              </tr>
+                                 
+                                              
+                                          </table>
+                                      </div>
+            </div>
+
+       
+         </div> -->
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="d-block justify-content-left border-0 mt-3">
+                    <button type="submit" class="btn btn-active" (click)="save()"
+                        [disabled]="form.invalid || AppStore.loading">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save') }}</button>
+                    <button type="button" data-toggle="modal" data-target="#signal-lost"
+                        class="btn" (click)="save(true)"
+                        [disabled]="form.invalid || AppStore.loading">{{  AppStore.loading  ? getButtonText('loading') : getButtonText('save_close') }}</button>
+                    <button type="button" data-toggle="modal" data-target="#error-message"
+                        class="btn"
+                        (click)="cancel()">{{  AppStore.loading  ? getButtonText('loading') : getButtonText('cancel')}}</button>
+                </div>
+            </div>
+        </div>
+    </form>
+        <!-- Modal footer --> 
+      </div>
+    </div>

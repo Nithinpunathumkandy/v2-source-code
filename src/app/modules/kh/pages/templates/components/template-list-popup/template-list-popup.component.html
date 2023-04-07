@@ -1,0 +1,93 @@
+    <!-- choose-template-popup Start -->
+    <button type="button" class="close" (click)="cancel()" data-dismiss="modal"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+    <div class="modal-dialog modal-xl">
+       <div class="modal-content">
+          <!-- Modal Header -->
+          <div class="modal-header">
+             <h4 class="modal-title">{{'choose_template' | translate}}</h4>
+          </div>
+          <!-- Modal body -->
+          <div class="modal-body form-body" *mobxAutorun>
+             <p class="head-details">{{'kh_template_description' | translate}}
+             </p>    
+             <div class="row" *ngIf="TemplateStore.templatesLoaded && TemplateStore.templateList.length > 0 && AuthStore.getActivityPermission(700,'DOCUMENT_TEMPLATE_LIST')">
+                <div class="col-xl-3 col-lg-4 col-sm-6"  *ngFor="let templates of TemplateStore.templateList | paginate: {currentPage: TemplateStore?.currentPage,itemsPerPage: TemplateStore?.itemsPerPage,  totalItems: TemplateStore?.totalItems};let num = index">
+                   <div class="workflow-lst-box template-list">
+                      <h6 class="workflow-lst-box-head bg-main div-middle" style="min-height: 46px;">
+                         <label class="container2 float-left" style="margin-top: -7px; padding-left: 22px;">
+                            <input type="checkbox" (click)="checkActiveTemplate(templates)" [checked]="activeFile?.id==templates.id">
+                            <span class="checkmark"></span>
+                         </label><span class="issue-smoal-head-text">#{{templates.reference_code}}</span>{{templates.title.length > 15 ?templates.title.substring(0,10)+'...':templates.title}} </h6>
+                      <div class="workflow-lst-content p-0">
+                         <div class="box-inner-overflow">
+                            <div class="template-pic-box" *ngIf="!(templates.documents.length > 0)" [ngStyle]="{'background': ' url(' + getDefaultImage('no-preview') + ') no-repeat 0 0 / cover'}" >
+                               <div class="box-light-shadow"></div>
+                            </div>
+                             <div class="template-pic-box" *ngIf="templates.documents.length > 0" [ngStyle]="{'background': 'url(' + createImageUrl(templates.documents[0].token,'document-template-document') + ') , url(' + getDefaultImage('no-preview') + ') no-repeat 0 0 / cover'}" >
+                               <div class="box-light-shadow"></div>
+                            </div>
+                          </div>
+
+                             <div class="box-cnt-one mt-2 pl-2 pr-2"> 
+                              <h6>{{'document_type' | translate}}</h6>
+                              <ng-container *ngFor="let doc_types of templates.document_type ; let i=index">
+                               <label style="padding: 6px 8px !important;" *ngIf="i<2" class="outline-tag mb-1" [title]="doc_types.title">{{(doc_types.title.length>8)? (doc_types.title | slice:0:8)+'..':(doc_types.title)}}</label>                                  
+                              </ng-container>
+                              <label style="padding: 6px 8px !important;" *ngIf="templates.document_type.length > 2" class="outline-tag mb-1 pointer" data-toggle="modal" data-target="#outline-tag-more-popup" (click)="openDoctype($event,templates.document_type)">View more</label>                                    
+                             </div>                                                       
+                         <div class="row mb-1 pl-2 pr-2">
+                            <div class="col-xl-12">
+                             <hr class="mb-2 mt-2">
+                               <div class="d-flex flex-row user-list-sm align-items-center">
+                                 <img width="30px" height="30px" [attr.src] = "templates.created_by.image.token ? createImageUrl(templates.created_by.image.token,'user-profile-picture') : getDefaultImage('user-logo')" class="rounded-circle">
+                                 <div>
+                                   <h6>{{templates.created_by.first_name}}&nbsp;{{templates.created_by.last_name}}</h6>
+                                   <span>{{templates.created_by.designation}} | Created on {{templates.created_at | date:'medium'}}</span>
+                                 </div>
+                               </div>
+                             </div>
+                          </div>
+                      
+                      </div>
+                   </div>
+                </div>
+                <div *ngIf="TemplateStore.totalItems > TemplateStore.itemsPerPage && TemplateStore?.templatesLoaded" class="col-sm-12">
+                    <ul class="pagination justify-content-center mt-3">
+                      <div class="list">
+                        <pagination-controls (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+                      </div>
+                    </ul>
+                  </div>
+             </div>
+
+             <ng-container *mobxAutorun>
+                <app-no-data *ngIf = "TemplateStore.templatesLoaded && TemplateStore.templateList.length == 0"></app-no-data>
+              </ng-container>           
+             <div class="row mt-3">
+                <div class="col-sm-12">
+                    <div class="d-block justify-content-left border-0 mt-3">
+                        <button type="button" class="btn btn-active" [disabled]="activeFile==null" (click)="saveActiveTemplate()">{{'open' | translate}}</button>
+                        <button type="button" (click)="dismissModal()" class="btn mr-2">{{'cancel' | translate}}</button>
+                    </div>
+                </div>
+            </div>
+             
+          </div>
+          <!-- Modal footer -->
+       </div>
+    </div>
+ <!-- choose-template-popup End -->
+
+ <!-- ---------------------Form Modal------------------------- -->
+<!-- <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #templateFormModal>
+ 
+   <app-kb-template-add *ngIf = "templateObject.type" [source]="templateObject" ></app-kb-template-add>
+ 
+ </div> -->
+ <!--------------------- Ends Here---------------------------- -->
+
+ <!-- ---------------------View more Modal------------------------- -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #docTypeModal> 
+   <app-document-type-popup *ngIf= "docTypeObject.type" [source]="docTypeObject.values" ></app-document-type-popup> 
+ </div>
+ <!--------------------- Ends Here---------------------------- -->

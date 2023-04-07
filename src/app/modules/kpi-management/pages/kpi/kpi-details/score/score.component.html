@@ -1,0 +1,124 @@
+<div class="row" *mobxAutorun>
+    <div class="col-sm-12 full-width-table">
+
+        <table class="table table-bordered ordinary-table table-hover issue-list-table-org mb-4"
+            *ngIf="KpiScoreStore?.loaded && KpiScoreStore.allItems.length > 0 && AuthStore.getActivityPermission(5356,'KPI_MANAGEMENT_KPI_SCORE_LIST')">
+            <thead>
+                <tr>
+                    <th class="border-top-0 " width="3%">#</th>
+                    <th class="border-top-0" width="34%" (click)="sortTitle('kpi_management_kpi_scores.date')">
+                        <span>{{'month' | translate}} &amp; {{'year' | translate}}</span>
+                        <img _ngcontent-twv-c17="" style="margin-left: 6px;" *ngIf="KpiScoreStore.orderItem=='kpi_management_kpi_scores.date'"
+                        [attr.src]="KpiScoreStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" 
+                        class="sort-down-pics">
+                    </th>
+                    <th class="border-top-0" width="6%" (click)="sortTitle('kpi_management_kpi_scores.score')">
+                        <span>{{'score' | translate}}</span>
+                        <img _ngcontent-twv-c17="" style="margin-left: 6px;" *ngIf="KpiScoreStore.orderItem=='kpi_management_kpi_scores.score'"
+                        [attr.src]="KpiScoreStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" 
+                        class="sort-down-pics">
+                    </th>
+                    <th class="border-top-0 issue-list-org-tab-three pointer" style="width:15%" (click)="sortTitle('updated_user.first_name')">
+                        <span>{{'updated_by' | translate}}</span>
+                        <img _ngcontent-twv-c17="" style="margin-left: 6px;" *ngIf="KpiScoreStore.orderItem=='updated_user.first_name'"
+                        [attr.src]="KpiScoreStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" 
+                        class="sort-down-pics">
+                    </th>
+                    <th class="border-top-0 issue-list-org-tab-three pointer" style="width:15%" (click)="sortTitle('review_user.first_name')">
+                        <span>{{'reviewed_by' | translate}}</span>
+                        <img _ngcontent-twv-c17="" style="margin-left: 6px;" *ngIf="KpiScoreStore.orderItem=='review_user.first_name'"
+                        [attr.src]="KpiScoreStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                        class="sort-down-pics">
+                    </th>
+                    <th class="border-top-0" width="10%">{{'status' | translate}}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <ng-container *mobxAutorun>
+                <tr *ngFor="
+                            let row of KpiScoreStore?.allItems
+                            | paginate
+                                : {
+                                currentPage: KpiScoreStore?.currentPage,
+                                itemsPerPage: KpiScoreStore?.itemsPerPage,
+                                totalItems: KpiScoreStore?.totalItems
+                                };
+                            let num = index" class="cursor-pointer tr-action edit-and-delete-main"
+                            (click)="getDetails(row.id)"  >
+                    <td style="text-align: center;" style="padding:0.75rem"> {{
+                        (KpiScoreStore?.currentPage - 1) *
+                        KpiScoreStore?.itemsPerPage +
+                        (num + 1)}}
+                    </td>
+                    <td style="padding:0.75rem">{{ row.date| date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</td>
+                    <td class="text-center" style="padding:0.75rem">{{row.score? row.score:0}}</td>
+                    <td style="padding:0.75rem" >
+                        <div *ngIf="row.updated_by_first_name" class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg p-0">
+                            <img [attr.src]="row.updated_by_image_token?createImageUrl('user-profile-picture',row.updated_by_image_token):'/assets/images/user-demo.png'"
+                                class="rounded-circle rounde-hov" 
+                                width="35px" height="35px"
+                                onerror = "this.src='/assets/images/user-demo2.png'"> 
+                            <div class="pointer new-size-text text-left">
+                                <p class="mb-0">{{row.updated_by_first_name}} {{row.updated_by_last_name}}  </p>
+                                <span>{{row.updated_by_designation}}</span>
+                            </div>
+                        </div>
+                        <ng-container *ngIf="!row.updated_by_first_name">{{ AppStore.noContentText }}</ng-container>
+                    </td>
+                    <td style="padding: 0.75rem;">
+                        <div *ngIf="row.reviewed_by_first_name" class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg p-0">
+                            <img [attr.src]="row.created_by_image_token?createImageUrl('user-profile-picture',row.reviewed_by_image_token):'/assets/images/user-demo.png'"
+                            class="rounded-circle rounde-hov" 
+                            width="35px" height="35px"
+                            onerror = "this.src='/assets/images/user-demo2.png'"> 
+                            <div class="pointer new-size-text text-left">
+                                <p class="mb-0">{{row.reviewed_by_first_name}} {{row.reviewed_by_last_name}}  </p>
+                                <span>{{row.reviewed_by_designation}}</span>
+                            </div>
+                        </div>
+                        <ng-container *ngIf="!row.reviewed_by_first_name">{{ AppStore.noContentText }}</ng-container>
+                    </td>
+                    <td style="padding:0.75rem" class="text-center">
+                        <div  [attr.class]="'dot-div '+row.kpi_management_kpi_score_status_label+'-dot'">
+                            {{row.kpi_management_kpi_score_status_title }}
+                        </div>
+                        <div *ngIf="workFlowUpdateButtonDisable(row)" class="edit-option-show edit-option-full-time-show">
+                            <a *ngIf="AuthStore.getActivityPermission(5356,'UPDATE_KPI_MANAGEMENT_KPI_SCORE')" 
+                                (click)="updateScoreOpenModal(row)" 
+                                [attr.title]="'update'|translate">
+                                <i class="fas fa-edit"></i></a>
+                        </div>
+                    </td>
+                </ng-container>
+            </tbody>
+        </table>
+        <p class="float-right" *ngIf="KpiScoreStore?.loaded && KpiScoreStore.totalItems > 0"><b>{{'total_Items' |
+                translate}}:{{KpiScoreStore?.totalItems}}</b></p>
+        <ng-container *mobxAutorun>
+            <div *ngIf="!KpiScoreStore?.loaded">
+                <app-kpi-list-loader></app-kpi-list-loader>
+            </div>
+        </ng-container>
+
+        <ng-container *mobxAutorun>
+            <app-no-data *ngIf="KpiScoreStore?.loaded && KpiScoreStore?.allItems.length == 0" [border]='false'>
+            </app-no-data>
+        </ng-container>
+
+        <div *ngIf="KpiScoreStore.totalItems > KpiScoreStore.itemsPerPage && KpiScoreStore?.loaded"
+            class="col-sm-12">
+            <ul class="pagination justify-content-center mt-3">
+                <div class="list">
+                <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+                    (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+                </div>
+            </ul>
+        </div>
+
+    </div>
+</div>
+
+<!--work flow model -->
+<div class="modal modal-style-1 popup-full-width fade" *mobxAutorun #updateScoreModal>
+    <app-score-modal *ngIf="scoreModal" [source]="popupScorueObject" [crubPath]="crubPath"></app-score-modal>
+</div>

@@ -1,0 +1,115 @@
+<button type="button" class="close" data-dismiss="modal" (click)="cancel()"><i class="lni-close"></i><span>{{'esc' |
+        translate}}</span></button>
+<div class="modal-dialog modal-xl modal-dialog-centered" *mobxAutorun>
+    <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header">
+            <h4 class="modal-title">{{'compliance_mapping_title' | translate}} {{complianceModalTitle?.component | translate}}</h4>
+
+        </div>
+        <!-- Modal body -->
+        <div class="modal-body form-body add-profie-org-pup">
+            <p class="head-details">{{'compliance_mapping_modal_message' | translate}} {{complianceModalTitle?.component | translate}}</p>
+            <div class="row">
+                <div class="col-sm-12 col-lg-6">
+                    <div class="form-group">
+                        <label for="name">{{'search' | translate}}</label>
+                        <form class="form-control issue-select-process-search bg-white search-popup-new"
+                            (submit)="searchLocation($event)">
+                            <input type="text" [(ngModel)]="searchText" [placeholder]="'search' | translate"
+                                name="search" (keyup)="searchLocation($event)" class="search-process"
+                                autocomplete="off">
+                            <a class="search-clear-btn" (click)="clear()" *ngIf="searchText">X</a>
+                            <button type="submit" (click)="searchLocation($event)" style="width: 40px;"><i
+                                    class="fa fa-search"></i></button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="audit-form-table w-100">
+                <table class="table table-bordered ordinary-table table-hover issue-list-table-org mb-1">
+                    <thead>
+                        <tr>
+                            <th class="border-top-0 issue-list-org-tab-one" width="5%">
+                                <div class="container2">
+                                    <label><input class="pointer" type="checkbox" id="selectall"
+                                            (change)="selectAlllocations($event)" />
+                                        <span class="checkmark"></span>#</label>
+
+                                </div>
+                            </th>
+
+                            <th style="width: 50%;" class="border-top-0 issue-list-org-tab-three">
+                                <!-- (click)="sortTitle('compliance_register_title.title')" -->
+                                <span>{{'title' | translate}}</span>&nbsp;
+                                <!-- <img *ngIf="ComplianceRegisterStore.orderItem=='compliance_register_title.title'"
+                            [attr.src]="ComplianceRegisterStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" 
+                            class="sort-down-pics"> -->
+                            </th>
+
+                            <th class="border-top-0 " style="width: 10%;">{{'section' | translate}}</th>
+                            <th class="border-top-0 issue-list-org-tab-three" style="width: 15%;">
+                                <!-- (click)="sortTitle('document_versions.expiry_date')" -->
+                                <span>{{'expiry_date' | translate }}</span>&nbsp;
+                                <!-- <img *ngIf="ComplianceRegisterStore.orderItem=='document_versions.expiry_date'"
+                            [attr.src]="ComplianceRegisterStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" 
+                            class="sort-down-pics"> -->
+                            </th>
+                            <th class="border-top-0 " style="width: 10%;">{{'frequency' | translate}}</th>
+                            <th style="width: 10%; text-align: center;">{{'status' | translate}}</th>
+                        </tr>
+                    </thead>
+                    <ng-container *mobxAutorun>
+                        <tr class="edit-and-delete-main"
+                            *ngFor="let row of ComplianceRegisterStore.allItems | paginate: {currentPage:ComplianceRegisterStore?.currentPage, itemsPerPage:ComplianceRegisterStore?.itemsPerPage,totalItems:ComplianceRegisterStore?.totalItems}; let num = index">
+                            <td style="text-align: center;">
+                                <div class="container2">
+                                    <label><input class="pointer" type="checkbox" [checked]="locationPresent(row.id)"
+                                            (change)="locationSelected(row)" class="case" name="case" />
+                                        <span class="checkmark"></span>{{(ComplianceRegisterStore.currentPage - 1) *
+                                        ComplianceRegisterStore.itemsPerPage + (num + 1)}}</label>
+                                </div>
+                            </td>
+                            <td>{{row.title}}</td>
+
+                            <td>{{row.document_compliance_section ? row.document_compliance_section :
+                                AppStore.noContentText}}</td>
+
+                            <td>{{row.expiry_date | date:
+                                OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                <p *ngIf="!row.expiry_date">{{AppStore.noContentText}}</p>
+                            </td>
+
+                            <td>{{row.compliance_frequency_title ? row.compliance_frequency_title :
+                                AppStore.noContentText}}</td>
+
+                            <td class="text-center" style="padding:0.75rem;">
+                                <div *ngIf="row.compliance_status_title" [attr.class]="'dot-div '+row.compliance_status_label">{{row.compliance_status_title}}</div>
+                            </td>
+                        </tr>
+                    </ng-container>
+
+                </table>
+                <app-no-data-list
+                    *ngIf="ComplianceRegisterStore?.loaded && ComplianceRegisterStore.allItems.length == 0"
+                    [source]="emptyStrategicObjectives"></app-no-data-list>
+
+            </div>
+            <div *ngIf="ComplianceRegisterStore.totalItems>ComplianceRegisterStore.itemsPerPage" class="col-sm-12">
+                <ul class="pagination justify-content-center mt-3">
+                    <div class="list">
+                        <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+                            (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+                    </div>
+                </ul>
+            </div>
+            <div class="d-block justify-content-left border-0 mt-5">
+                <button type="button" data-toggle="modal" class="btn mr-3 btn-active" (click)="save()"
+                    [disabled]="selectedStrat.length==0">{{AppStore.loading?getButtonText('loading'):getButtonText('add')}}</button>
+                <button type="button" data-toggle="modal" class="btn mr-3" (click)="save(true)"
+                    [disabled]="selectedStrat.length==0">{{AppStore.loading?getButtonText('loading'):getButtonText('add_close')}}</button>
+                <button type="button" data-toggle="modal" class="btn mr-2"
+                    (click)="cancel()">{{AppStore.loading?getButtonText('loading'):getButtonText('cancel')}}</button>
+            </div>
+        </div>
+    </div>

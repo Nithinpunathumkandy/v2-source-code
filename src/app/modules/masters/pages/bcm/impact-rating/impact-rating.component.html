@@ -1,0 +1,80 @@
+<div class="widget bg-white">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item pointer" [routerLink]="['/masters/bcm']"><a>{{'bcm' | translate}}</a></li>
+            <li class="breadcrumb-item active">{{'impact_rating' | translate}}</li>
+        </ol>
+    </nav>
+    <table class="table-master table" *ngIf="BiaRatingStore?.loaded && BiaRatingStore.BiaRatingDetails.length > 0">
+        <tr>
+            <th style="width: 10%; text-align: center;">{{'sl' | translate}}</th>
+            <th (click)="sortTitle('bia_impact_ratings.level')" class="border-top-0 issue-list-org-tab-three pointer" style="width: 30%;"><span>{{'level' | translate}}</span>
+                <img _ngcontent-twv-c17="" *ngIf="BiaRatingStore.orderItem=='bia_impact_ratings.level'" class="sort-down-pics pl-2" 
+                [attr.src]="BiaRatingStore.orderBy=='desc' ? 
+                'assets/images/sort-up.png' : BiaRatingStore.orderBy=='asc' ? 
+                'assets/images/sort-down.png' : 'assets/images/sort-empty.png'">
+
+
+            </th>
+
+            <th>{{ 'impact_rating' | translate  }}</th>
+            <th style="width: 15%;">{{'status' | translate}}</th>
+        </tr>
+        <ng-container *mobxAutorun>
+            <tr class="edit-and-delete-main" *ngFor="let row of BiaRatingStore?.BiaRatingDetails | paginate: {currentPage:BiaRatingStore?.currentPage, itemsPerPage:BiaRatingStore?.itemsPerPage,totalItems:BiaRatingStore?.totalItems}; let num = index">
+                <td style="text-align: center;">{{(BiaRatingStore?.currentPage - 1) * BiaRatingStore?.itemsPerPage + (num + 1)}}</td>
+                <td>
+                    <div>
+                        {{row.level}}
+                    </div>
+                </td>
+                <td>{{ row.rating }}</td>
+                <td style="padding:0.75rem;" >
+                    <div [attr.class]="'dot-div '+row.status_label">{{row.status}}</div>
+                    <div class="edit-option-show">
+                        <!-- edit-and-delete starts -->
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'UPDATE_BIA_IMPACT_RATING')" (click)="editBiaRating(row.id)"><i class="fas fa-pen"></i></a>
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'DELETE_BIA_IMPACT_RATING')" (click)="deleteBiaRating(row.id)"><i class="fas fa-trash"></i></a>
+                        <a *ngIf="row.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(1100,'ACTIVATE_BIA_IMPACT_RATING')" (click)="activate(row.id)" title="Activate"><i
+                            class="fas fa-check pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.activeStatusId && AuthStore.getActivityPermission(1100,'DEACTIVATE_BIA_IMPACT_RATING')" (click)="deactivate(row.id)" title="Deactivate"><i
+                            class="fas fa-ban pointer"></i></a>
+                    </div><!-- edit-and-delete end -->
+                </td>           
+            </tr>
+        </ng-container>
+    </table>
+    <p class="float-right" *ngIf="BiaRatingStore?.loaded && BiaRatingStore.totalItems > 0"><b>{{'total_Items' | translate}}:{{BiaRatingStore?.totalItems}}</b></p>
+
+    <ng-container *mobxAutorun>
+        <div *ngIf="!BiaRatingStore.loaded">
+            <app-table-loader></app-table-loader>
+        </div>
+        <app-no-data *ngIf = "BiaRatingStore.BiaRatingDetails.length == 0 && BiaRatingStore.loaded == true"></app-no-data>
+   
+    </ng-container>
+
+
+    <div *ngIf="BiaRatingStore.totalItems>BiaRatingStore.itemsPerPage" class="col-sm-12">
+        <ul class="pagination justify-content-center mt-3">
+            <div class="list">
+                <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate" (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls> 
+            </div>
+        </ul>
+    </div>
+</div>
+<!-- New modal -->
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #ratingModal>
+    <app-bia-rating-new *ngIf = "biaRatingObject.type" [source] = "biaRatingObject"></app-bia-rating-new>  
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+<div class="modal modal-style-1 email-popup-new fade" data-backdrop="static" data-keyboard="false"
+  id="email-notification-popup" #mailConfirmationPopup>
+  <app-mail-send-popup [source] = "mailConfirmationData"></app-mail-send-popup>
+</div>

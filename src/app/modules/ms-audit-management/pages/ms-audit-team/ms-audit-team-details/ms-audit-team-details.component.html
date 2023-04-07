@@ -1,0 +1,127 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navBar>
+    <app-breadcrumb-menu></app-breadcrumb-menu>
+    <ul class="nav nav-pills float-left d-none d-lg-block" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link nav-link-show"
+                [routerLink]="['/ms-audit-management/ms-teams/' + MsAuditTeamStore.msAuditTeamsId]"
+                *ngIf="AuthStore.getActivityPermission(900,'MS_TEAM_DETAILS')" routerLinkActive="active"
+                [routerLinkActiveOptions]="{exact: true}">{{'info' | translate}}</a>
+        </li>
+    </ul>
+    <app-sub-menu></app-sub-menu>
+</nav>
+
+<main class="mt-3" *ngIf="MsAuditTeamStore?.individualLoaded">
+    <div class="container-fluid widget">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="bg-white widg-padding-cmn mb-3">
+                    <div class="widget-body-light profile-widg-padding tab-content-body border-none p-0 min-height-64">
+                        <div class="row">
+                            <div class="col-lg-4 col-xl-4 col-sm-4">
+                                <div class="organization-profile-sidebar p-0">
+                                    <div class="profile-img  align-items-center d-flex customer-logo-cls">
+                                        <figure class="w-100 d-block">
+                                            <img  *ngIf="MsAuditTeamStore.msAuditTeamDetails?.image_token" [attr.src]="MsAuditTeamStore.msAuditTeamDetails?.image_token ? createImageUrl(MsAuditTeamStore.msAuditTeamDetails.image_token) : getDefaultImage('no-data')"
+                                                onerror="this.src='/assets/images/placeholder.png'"
+                                                class="d-block mx-auto img-fluid" />
+                                                <app-context-no-data *ngIf="!MsAuditTeamStore.msAuditTeamDetails?.image_token" [sourceData] = "{
+                                                    noData:'no_icon_found', border: false, imageAlign: 'center'
+                                                }"></app-context-no-data>
+                                        </figure>
+                                       
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-8 col-xl-8 col-sm-8">
+                                <div class="row">
+                                    <!-- <div class="col-md-12 col-sm-12">
+                                        <h6>{{'title' | translate}}</h6>
+                                        <p>{{MsAuditTeamStore.msAuditTeamDetails?.title}}</p>
+                                    </div> -->
+
+                                    <div class="col-lg-6 col-sm-6">
+                                        <div class="label-and-user-pic">
+                                            <h6>{{'audit_leader' | translate}}</h6>
+                                            <app-user-popup-box
+                                                [source]="assignUserValues(MsAuditTeamStore?.msAuditTeamDetails?.team_lead,'audit_leader')">
+                                            </app-user-popup-box>
+                                            <div *ngIf="!MsAuditTeamStore?.msAuditTeamDetails?.team_lead">
+                                                {{AppStore.noContentText}}</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6 col-sm-6" *ngIf="MsAuditTeamStore.msAuditTeamDetails.ms_audit_category">
+                                        <div class="label-and-user-pic">
+                                            <h6>{{'audit_category' | translate}}</h6>
+                                            
+                                            <div >
+                                                {{MsAuditTeamStore.msAuditTeamDetails.ms_audit_category?.language[0]?.pivot?.title}}</div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <div class="row">
+                                    <!-- <div class="col-md-6 col-sm-6">
+                                        <h6>{{'status' | translate}}</h6>
+                                        <p class="dot-div-new font-normal"
+                                        [ngClass]="MsAuditTeamStore.msAuditTeamDetails?.status.label? MsAuditTeamStore.msAuditTeamDetails.status.label : ''">
+                                            {{MsAuditTeamStore.msAuditTeamDetails.status.title[0].pivot.title}}</p>
+                                    </div> -->
+                                    <div class="col-sm-12">
+                                        <!-- <div class="label-and-user-pic"> -->
+                                            <h6>{{'auditors' | translate}}</h6>
+                                            <div class="row">
+                                                <div class="col-lg-4 col-sm-6"
+                                                    *ngFor="let member of MsAuditTeamStore?.msAuditTeamDetails?.team_members">
+                                                <div class="label-and-user-pic">
+                                                    <app-user-popup-box
+                                                        [source]="assignUserValues(member,'team_members')">
+                                                    </app-user-popup-box>
+                                                </div>
+                                                </div>
+                                            </div>
+                                            <div *ngIf="!MsAuditTeamStore?.msAuditTeamDetails?.team_members">
+                                                {{AppStore.noContentText}}</div>
+                                        <!-- </div> -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xl-12">
+                            <hr class="mb-2">
+                            <ng-container *ngIf="MsAuditTeamStore.msAuditTeamDetails?.created_by.first_name">
+                                <app-user-popup-box
+                                    [source]=" getEmployeePopupDetails( MsAuditTeamStore.msAuditTeamDetails?.created_by, MsAuditTeamStore.msAuditTeamDetails?.created_at )">
+                                </app-user-popup-box>
+                            </ng-container>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+       
+    </div>
+</main>
+
+
+<ng-container *mobxAutorun>
+    <div *ngIf="!MsAuditTeamStore?.individualLoaded">
+        <app-ms-audit-teams-details-loader></app-ms-audit-teams-details-loader>
+    </div>
+ </ng-container>
+
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+    <app-add-team *ngIf="msAuditTeamObject.type" [source]="msAuditTeamObject"></app-add-team>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>

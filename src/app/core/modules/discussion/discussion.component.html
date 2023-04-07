@@ -1,0 +1,144 @@
+<!-- inner chat starts -->
+
+
+<div id="sidebar-wrapper2-inner" class="side-bar inner-chating-aria bg-white" [ngClass]="{active: AppStore.discussionBoxOpen, 'chat-box-full-screen': AppStore.discussionBoxLarge}" *mobxAutorun>
+     <!-- <ng-container *ngIf="DiscussionBotStore.messagesLoaded"> -->
+    <div class="chat-box-header inner-chat-head clearfix">
+        <h6>{{'discussion' | translate}}</h6>
+        <div class="chat-right-side">
+            <ul class="chat-menu-section clearfix">
+                <li>
+                    <a (click)="refreshChat()"><i class="fas fa-redo"></i></a>
+                </li>
+                <li>
+                    <a class="chat-box-full-screen" (click)="discussionLargeClicked($event)">
+                        <img src="/assets/images/chat-full-screen.png" class="chat-icones-head full-screen-icone">
+                        <img src="/assets/images/chat-smoal-screen.png" class="chat-icones-head smoal-screen-icone">
+                    </a>
+                </li>
+                <li>
+                    <a (click)="messageClosed($event)">
+                        <i class="lni-close chat-box-close"></i>
+                    </a>
+                </li>
+               
+            </ul>
+        </div>
+
+    </div>
+    <div id="sidebar-content " *ngIf="DiscussionBotStore.messagesLoaded">
+
+        <div class="chat-box" *mobxAutorun>
+
+            <div class="clearfix"></div>
+            <div id="document" #scroll [scrollTop]="scroll.scrollHeight" class="chating-area cust-scrol" >
+                <!-- <p style="text-align: center;" *ngIf="DiscussionBotStore.isScrolledUp == true">Loading history...</p> -->
+                <div *ngIf="DiscussionBotStore.discussionMessage['total'] == 0" class="chat-open-pic text-center">
+                    <img src="../../../../assets/images/chat-open-pic.svg" class="img-fluid">
+                    <h5 class="cmn-head-style">{{'discussion' | translate}}</h5>
+                    <p>{{'chat_box_content' | translate}}</p>
+                </div>
+                <div class="chat-msg-sec d-flex mb-3"   
+       
+                 *ngFor = "let messages of DiscussionBotStore.discussionMessage['data']" >
+                    <div class="chat-user-pic">
+                        <img *ngIf="messages.created_by.image_token"
+                            [attr.src]="createImagePreview('user-profile-picture',messages.created_by.image_token)"
+                            width="30px" height="30px" class="rounded-circle" onerror = "this.src='/assets/images/user-demo2.png'">
+                        <img *ngIf="!messages.created_by.image_token"
+                            [attr.src]="getDefaultImage('user-logo')"
+                            width="30px" height="30px" class="rounded-circle" onerror = "this.src='/assets/images/user-demo2.png'">
+                    </div>
+                    <!-- <div class="w-100 pl-2">
+                        <h6>Antony Park <time>9:35:am</time></h6>
+                        <div class="chat-msg-sec-pic edit-option">
+                            <div class="edit-option-show-inner" style="margin-top: 18px;">
+                                <a href="#"><i class="fas fa-download"></i></a>
+                            </div>
+                            <span class="file-name">image.jpg</span>
+                            <img src="/assets/images/visual.jpg" class="w-100">
+                        </div>
+                    </div> -->
+                    
+                    <div class="w-100 pl-2" >
+                        <h6>{{messages.created_by.first_name}}&nbsp;{{messages.created_by.last_name}} <time>{{messages.created_by.created_at | date:
+                            OrganizationGeneralSettingsStore.organizationSettings?.date_time_format}}</time>
+                            </h6>
+                        <p style="white-space: break-spaces;">{{messages.message}}</p> 
+                        <div *ngIf="messages.documents">
+                        <div class="chat-msg-sec-pic edit-option" *ngFor="let imageData of messages.documents">
+                            <div class="edit-option-show-inner" style="margin-top: 18px;">
+                                <a ><i class="fas fa-download" (click)="downloadThumbanil(messages.id,imageData.id,imageData)"></i></a>
+                            </div>
+                            <span  class="file-name">{{imageData?.title}}</span>
+                            <img (click)="viewAuditDocument(messages.id,imageData.id,imageData)" [attr.src]="createThumbanilPreview(imageData?.token)" class="w-100 img-fluid" style="height: 120px;">
+                        </div>
+                    </div>
+                    </div>
+
+                   
+                </div>
+                <div class="chat-message clearfix" *ngIf="showLoader==true" >
+                        
+                    <!-- <img src="assets/images/robo-animate-head-small.gif" width="42px" height="42px" class="rounded-circle float-left mt-2  ml-2"> -->
+                    <div class="msg-left">
+                        <time></time> <img src="assets/images/loading.gif" style="width: 70px;">
+                    </div>
+                </div>
+                
+
+            </div>
+        </div>
+
+        <div class="chating-block chating-block-single cmn-bdr-top">
+            <div class="form-group chat-input">
+                <div class="d-flex align-items-center controls-and-chat-sec-main bg-white">
+                    <textarea class="form-control" [placeholder]="'write_a_comment'|translate" [ngModelOptions]="{standalone: true}" [(ngModel)] = "discussionMessage"></textarea>
+                
+                    <div class="controls-sec-chat" [ngClass]="{'send':showLoader == false, 'sending':showLoader == true}" >
+                        <span class="paperclip-type-inp">
+                            <input  type="file" id="file" (change)="onFileChange($event,'support-file')" />
+                            <label for="file" class="btn-1"><i class="fas fa-paperclip"></i></label>
+                        </span>
+                        <button  type="submit" class="btn-send-chat btn-active" style="cursor: pointer;" (click)="sendMessage()" [disabled]="!discussionMessage">{{getButtonText(buttonLabel)}}
+                        </button>
+                        <!-- <button *ngIf="buttonLabel == true" type="submit" class="btn-send-chat btn-active" style="cursor: pointer;" (click)="sendMessage()">{{'sending' | translate}}
+                        </button> -->
+                    </div>
+                </div>
+                <div class="upload-file-chat-main clearfix">
+                    <div [ngClass]="files.success? 'col-sm-2 up-pic-cf mt-2 hide_loader' : 'col-sm-2 up-pic-cf mt-2'"
+                    *ngFor="let files of fileUploadsArray">
+                    <div class="upload-pics edit-option upload-file-chats" style="margin-top: 4px;">
+
+                       <circle-progress class="upload-file-chats" [percent]=files.uploadProgress
+                          [title]=files.uploadProgress>
+                       </circle-progress>
+                    </div>
+                 </div>
+                    <div class="upload-file-chat" *ngFor="let b of DiscussionBotStore.docDetails">
+                        <img [src]="b?.preview">
+                        <span (click)="removeDocument(b.token)">X</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<!-- </ng-container> -->
+    <ng-container *ngIf="!DiscussionBotStore.messagesLoaded">
+        <app-discussion-box-loader></app-discussion-box-loader>
+    </ng-container>
+</div>
+<!-- inner chat end -->
+
+<!-- file preview modal call -->
+
+
+
+<div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup" data-keyboard="false"
+    data-backdrop="static" #filePreviewModal *mobxAutorun style="z-index: 1000000;">
+    <button type="button" class="close" data-dismiss="modal" (click)="closePreviewModal($event)"><i
+            class="lni-close"></i><span>esc</span></button>
+    <app-chat-thumbnail-preview *ngIf="previewObject" [source]="previewObject" (close)="closePreviewModal($event)">
+    </app-chat-thumbnail-preview>
+</div>

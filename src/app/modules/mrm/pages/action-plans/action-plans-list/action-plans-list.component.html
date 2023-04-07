@@ -1,0 +1,144 @@
+<div #plainDev></div>
+<div class="bg-white">
+   <nav class="edit-bar" data-toggle="affix" #navBar>
+      <app-sub-menu>-</app-sub-menu>
+      <div class="module-name-block module-name-block-space float-left">
+         <a class="dropdown module-title">{{'action_plans'|translate}}</a>
+      </div>
+   </nav>
+</div>
+<main class="mt-3 control-list-page" *mobxAutorun>
+
+   <div class="container-fluid">
+      <app-filter-menu></app-filter-menu>
+      <div class="audit-program-box audit-page-table-main">
+         <div class="row">
+            <div class="col-sm-12">
+               <div class="full-width-table mb-3">
+                  <table class="table table-bordered ordinary-table table-hover issue-list-table-org mb-1"
+                     *ngIf="ActionPlansStore?.loaded && ActionPlansStore.allItems.length > 0 && AuthStore.getActivityPermission(1600,'MEETING_ACTION_PLAN_LIST')">
+                     <thead>
+                        <tr>
+                           <th class="border-top-0 text-center" width="3%">#</th>
+                           <th class="border-top-0 " width="11%"> {{'ref_id' | translate}} </th>
+                           <th class="border-top-0 pointer" width="31%"
+                              (click)="sortTitle('meeting_action_plans.title')">
+                              <span>{{'title' | translate}}</span>
+                              <img _ngcontent-twv-c17="" style="margin-left: 6px;"
+                                 *ngIf="ActionPlansStore.orderItem=='meeting_action_plans.title'"
+                                 [attr.src]="ActionPlansStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                 class="sort-down-pics">
+                           </th>
+                           <th class="border-top-0 " width="15%">{{'responsible_user' | translate}} </th>
+                           <th class="border-top-0 pointer" width="15%"
+                              (click)="sortTitle('meeting_action_plans.start_date')">
+                              <span>{{'start_date' | translate}} </span>
+                              <img _ngcontent-twv-c17="" style="margin-left: 6px;"
+                                 *ngIf="ActionPlansStore.orderItem=='meeting_action_plans.start_date'"
+                                 [attr.src]="ActionPlansStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                 class="sort-down-pics">
+                           </th>
+                           <th class="border-top-0 pointer" width="15%"
+                              (click)="sortTitle('meeting_action_plans.target_date')">
+                              <span>{{'target_date' | translate}} </span>
+                              <img _ngcontent-twv-c17="" style="margin-left: 6px;"
+                                 *ngIf="ActionPlansStore.orderItem=='meeting_action_plans.target_date'"
+                                 [attr.src]="ActionPlansStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                 class="sort-down-pics">
+                           </th>
+                           <th class="border-top-0 text-center" width="10%">{{'status' | translate}}</th>
+                        </tr>
+                     </thead>
+                     <tbody>
+                        <ng-container *mobxAutorun>
+                           <tr *ngFor="
+                        let row of ActionPlansStore?.allItems
+                        | paginate
+                           : {
+                              currentPage: ActionPlansStore?.currentPage,
+                              itemsPerPage: ActionPlansStore?.itemsPerPage,
+                              totalItems: ActionPlansStore?.totalItems
+                              };
+                        let num = index" class="cursor-pointer tr-action edit-and-delete-main"
+                              (click)="getDetails(row.id)">
+                              <td style="text-align: center;"> {{
+                                 (ActionPlansStore?.currentPage - 1) *
+                                 ActionPlansStore?.itemsPerPage +
+                                 (num + 1)}}</td>
+                              <td style="padding:0.75rem">{{row.reference_code}}</td>
+                              <td style="padding:0.75rem">{{row.title}}</td>
+                              <td style="padding:0.75rem">
+                                 <div
+                                    class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg p-0">
+                                    <img
+                                       [attr.src]="row.responsible_user_image_token? createImageUrl(row.responsible_user_image_token):'/assets/images/user-demo.png'"
+                                       class="rounded-circle rounde-hov" width="35px" height="35px">
+                                    <div class="pointer new-size-text text-left">
+                                       <p class="mb-0">{{row.responsible_user_first_name}}
+                                          {{row.responsible_user_last_name}} </p>
+                                       <span>{{row.responsible_user_designation_title}}</span>
+                                    </div>
+                                 </div>
+                              </td>
+                              <td>{{row.start_date | date:
+                                 OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</td>
+                              <td>{{row.target_date | date:
+                                 OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</td>
+                              <td style="padding:0.75rem" class="text-center">
+                                 <div [attr.class]="'dot-div '+row.meeting_action_plan_status_label">
+                                    {{row.meeting_action_plan_status_language_title}}
+                                 </div>
+                                 <div class="edit-option-show" *ngIf="row.meeting_action_plan_statuses_id==1">
+                                    <a [attr.title]="'edit'|translate"
+                                       *ngIf="row.meeting_action_plan_statuses_id==1 && AuthStore.getActivityPermission(1600,'UPDATE_MEETING_ACTION_PLAN')"
+                                       (click)="edit(row.id)"><i class="fas fa-pen pointer"></i></a>
+                                    <a [attr.title]="'delete'|translate"
+                                       *ngIf="row.meeting_action_plan_statuses_id==1 && AuthStore.getActivityPermission(1600,'DELETE_MEETING_ACTION_PLAN')"
+                                       (click)="delete(row.id)"><i class="fas fa-trash pointer"></i></a>
+                                 </div>
+                              </td>
+                           </tr>
+                        </ng-container>
+                     </tbody>
+                  </table>
+                  <p class="float-right" *ngIf="ActionPlansStore?.loaded && ActionPlansStore.totalItems > 0">
+                     <b>{{'total_Items' | translate}}:{{ActionPlansStore?.totalItems}}</b></p>
+                  <ng-container *mobxAutorun>
+                     <div *ngIf="!ActionPlansStore?.loaded">
+                        <app-action-plan-list-loader></app-action-plan-list-loader>
+                     </div>
+                  </ng-container>
+
+                  <ng-container *mobxAutorun>
+                     <app-no-data *ngIf="ActionPlansStore?.loaded && ActionPlansStore?.allItems.length == 0"
+                        [border]='false'></app-no-data>
+                  </ng-container>
+
+                  <div *ngIf="ActionPlansStore.totalItems > ActionPlansStore.itemsPerPage && ActionPlansStore?.loaded"
+                     class="col-sm-12">
+                     <ul class="pagination justify-content-center mt-3">
+                        <div class="list">
+                           <pagination-controls [previousLabel]="'previous' | translate"
+                              [nextLabel]="'next' | translate" (pageChange)="pageChange($event)"
+                              class="my-pagination"></pagination-controls>
+                        </div>
+                     </ul>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+</main>
+
+
+
+<!-----------------------Form Modal--------------------------->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+   <app-action-plans-add *ngIf="actionPlansObject.type" [source]="actionPlansObject"></app-action-plans-add>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+   <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>

@@ -1,0 +1,271 @@
+<!-- <div class="modal modal-style-1 popup-full-width fade" id="focus-area-choose-popup" data-keyboard="false"
+      data-backdrop="static" style="z-index: 999999; overflow-x: hidden; overflow-y: auto;"> -->
+<button type="button" class="close" (click)="cancel()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered" *mobxAutorun>
+   <div class="modal-content">
+      <!-- Modal Header -->
+      <div class="modal-header">
+         <h4 class="modal-title">{{'focus_area' | translate}}</h4>
+         <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
+      </div>
+      <!-- Modal body -->
+      <div class="modal-body form-body">
+         <p class="head-details">{{'focus_area_modal_title' | translate}}
+         </p>
+         <form [formGroup]="focusForm" *mobxAutorun>
+            <div class="row">
+
+               <div class="col-sm-12" *ngIf="StrategyStore.induvalStrategyProfile?.themes?.length > 0">
+                  <div class="form-group">
+                     <label for="name">{{'strategy_theme' | translate}}</label>
+                     <!-- <div class="clearfix d-flex">
+                        <div class="multiple-plain-ngselect w-100">
+                           <ng-select [items]="StrategyStore.induvalStrategyProfile?.themes"
+                              [placeholder]="'strategy_profile_select_theme_placeholder' | translate"
+                              formControlName="theme_ids" (search)="searchTheme($event)" (open)="getTheme()"
+                              bindLabel="title" [multiple]="false">
+                              <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                 {{item.title?.length > 60 ? (item.title | slice:0:60)+' ...' :
+                                 item.title}}<span aria-hidden="true" (click)="clear(item)" style="border:none;"
+                                    class="ng-value-icon left">×</span>
+                              </ng-template>
+                              <ng-template ng-option-tmp let-item="item" let-index="index">
+                                 {{item.title?.length > 80 ? (item.title | slice:0:80)+' ...' :
+                                 item.title}}
+                              </ng-template>
+                           </ng-select>
+                        </div>
+                     </div> -->
+                     <div class="clearfix d-flex">
+                        <div class="multiple-plain-ngselect w-100">
+                            <ng-select [items]="StrategyStore.induvalStrategyProfile?.themes"
+                                [placeholder]="'strategy_profile_select_theme_placeholder' | translate"
+                                formControlName="theme_ids" (search)="searchTheme($event)"
+                                (open)="getTheme()" bindLabel="title" multiple="true">
+                                <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                    {{item.title?.length > 60 ? (item.title | slice:0:60)+' ...' :
+                                    item.title}}<span aria-hidden="true" (click)="clear(item)"
+                                        style="border:none;" class="ng-value-icon left">×</span>
+                                </ng-template>
+                                <ng-template ng-option-tmp let-item="item" let-index="index">
+                                    {{item.title?.length > 80 ? (item.title | slice:0:80)+' ...' :
+                                    item.title}}
+                                </ng-template>
+                            </ng-select>
+                        </div>
+                    </div>
+                     <p class="form-error pt-1" *ngIf="formErrors && formErrors.theme_ids">
+                        {{formErrors.theme_ids}}</p>
+                  </div>
+               </div>
+
+               <div class="col-sm-12">
+                  <div class="form-group">
+                     <label for="name">{{'focus_area' | translate}}<span class="form-error">*</span></label>
+                     <div class="clearfix d-flex">
+                        <div class="multiple-plain-ngselect select-width-plus w-100">
+                           <ng-select [placeholder]="'select_focus_area' | translate" [multiple]="false"
+                              searchable="true" formControlName="focus_area_id" (search)="searchFocusArea($event)"
+                              (open)="getFocusAreas()" (clear)="getFocusAreas()">
+                              <ng-option [value]="type.id" *ngFor="let type of FocusAreaMasterStore.allItems">
+                                 {{type.title?.length > 50 ? type.title.substring(0,50)+'...' : type.title}}
+                              </ng-option>
+                           </ng-select>
+                           <p style="color: red;" *ngIf="formErrors && formErrors.focus_area_id">
+                              {{formErrors.focus_area_id}}</p>
+                        </div>
+                        <button class="btn multi-add-user ml-2" data-toggle="modal" (click)="openFocusAreaMasters()"
+                           style="width: 42px;"><i class="fas fa-plus"></i></button>
+                     </div>
+                  </div>
+               </div>
+
+               <div class="col-sm-6" *ngIf="StrategyManagementSettingStore?.strategyManagementSettings?.is_weightage">
+                  <div class="form-group">
+                     <label>{{'strategy_focus_area_weightage_title' | translate}}<span class="form-error">*</span></label>
+                     <input type="text" class="form-control" formControlName="weightage"
+                        (change)="weightageChange($event.target.value)" [placeholder]="'enter_weightage' | translate">
+                     <p class="form-error pt-1"
+                        *ngIf="focusForm?.get('weightage').invalid && focusForm.value.weightage">
+                        Enter a numeric value</p>
+                     <p style="color: red;" *ngIf="formErrors&&formErrors.weightage"> {{formErrors.weightage}}</p>
+                  </div>
+               </div>
+
+               <div class="col-sm-6">
+                  <div class="form-group">
+                     <label for="name">{{'accountable_user' | translate}}<span class="form-error">*</span></label>
+                     <div class="clearfix">
+                        <div class="multiple-plain-ngselect">
+                           <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                              [placeholder]="'select_accountable_user' | translate" formControlName="accountable_user_id"
+                              [multiple]="false" (clear)="getUsers()" (search)="searchUers($event)" multiple="false"
+                              (open)="getUsers()" [searchFn]="customSearchFn">
+                              <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                 <img *ngIf="item?.image_token" class="ng-select-user-display" height="15" width="15"
+                                    [attr.src]="createImagePreview('user-profile-picture',item?.image_token)"
+                                    onerror="this.src='/assets/images/user-demo2.png'" />
+                                 <img *ngIf="!item?.image_token" class="ng-select-user-display" height="15" width="15"
+                                    [attr.src]="getDefaultImage('user-logo')" />
+                                 <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,'
+                                    ') |
+                                    titlecase}}</b><span aria-hidden="true" (click)="clear(item)" style="border:none;"
+                                    class="ng-value-icon left">×</span>
+                              </ng-template>
+                              <ng-template ng-option-tmp let-item="item" let-index="index">
+                                 <div class="user-post-department-pic">
+                                    <img *ngIf="item?.image_token" class="ng-select-user-display" height="25" width="25"
+                                       [attr.src]="createImagePreview('user-profile-picture',item?.image_token)"
+                                       onerror="this.src='/assets/images/user-demo2.png'" />
+                                    <img *ngIf="!item?.image_token" class="ng-select-user-display" height="25" width="25"
+                                       [attr.src]="getDefaultImage('user-logo')" />
+                                 </div>
+                                 <div class="user-post-department-div">
+                                    <b>{{getStringsFormatted([item.first_name,item.last_name],35,' ') | titlecase}}</b>
+                                    <p class="user-post-department-multiple">
+                                       {{getStringsFormatted([item.designation_title,'
+                                       '+item.department],35,',')}}</p>
+                                 </div>
+                              </ng-template>
+                           </ng-select>
+                        </div>
+                     </div>
+                     <p class="form-error pt-1" *ngIf="formErrors && formErrors.accountable_user_id">
+                        {{formErrors.accountable_user_id}}</p>
+                  </div>
+               </div>       
+
+               <div class="col-sm-12">
+                  <!-- <div class="form-group">
+                     <label>{{'notes' | translate}}</label>
+                     <div>
+                        <div class="custom-control custom-checkbox d-inline-block mr-4"
+                           *ngFor="let notes of StrategyStore.profileNotes;let mIndex = index">
+                           <input type="checkbox" class="custom-control-input" id="customCheck" name="example1"
+                              [attr.checked]="profileNotesChecked(notes)" (change)="getProfileNotes(notes)">
+                           <label class="custom-control-label" ></label>
+                           <span class="custom-control-label" (click)="openNoteDetails(notes.id)">{{notes.title}}</span>
+                        </div>
+                     </div>
+                  </div> -->
+                  <div class="form-group mb-0">
+                     <label>{{'horizon_scanning' | translate}}</label>
+                  </div>
+                  <p *ngIf="StrategyStore.profileNotes?.length == 0">{{AppStore.noContentText}}</p>
+                  <div class="mb-3" *ngIf="StrategyStore.profileNotes?.length > 0">
+                     <div class=" mr-4 d-flex" *ngFor=" let notes of StrategyStore.profileNotes;let mIndex=index">
+                        <label class="container2 float-left" style="margin-top: 2px; padding-left: 22px;">
+                           <input type="checkbox" [attr.checked]="profileNotesChecked(notes)" (change)="getProfileNotes(notes)">
+                           <span class="checkmark"></span>
+                        </label>
+                        <span class="text-black text-14 link-text" (click)="openNoteDetails(notes.id)">{{notes.title}}</span>
+                     </div>
+                  </div>
+                  <!-- <div *ngIf="AuthStore.getActivityPermission(3200, 'STRATEGY_PROFILE_NOTES_LIST')"
+                     class="panel-group panel-drop-sections pt-0" id="jd" role="tablist" aria-multiselectable="true">
+                     <div class="panel panel-default " *ngFor="let notes of StrategyStore.profileNotes;let mIndex = index">
+                        <div [ngClass]="selectedIndex == mIndex ? 'panel-heading active' : 'panel-heading'" role="tab" id="headingOne">
+                           <div class="panel-title">
+                              <a role="button" aria-expanded="false" aria-controls="collapseOne" class="collapsed"
+                                 (click)="selectedIndexChange(mIndex,notes.id)">
+                                 <h5 class="width96pc mt-0"> {{notes.title}} <span class="drop-down-icone"><i
+                                          class="fas fa-chevron-down"></i></span> </h5>
+                              </a>
+                           </div>
+                        </div>
+                        <div
+                           [ngClass]="selectedIndex == mIndex ? 'drop-detail-sec panel-collapse collapse show' : 'drop-detail-sec panel-collapse collapse'"
+                           role="tabpanel" aria-labelledby="headingOne">
+                           <div class="panel-body bg-white edit-and-delete-main">
+                              <div class="edit-option-show" style="margin: -18px 25px 0 0;">
+                                 
+                                 <a *ngIf="AuthStore.getActivityPermission(3200, 'UPDATE_STRATEGY_PROFILE_NOTE')"
+                                    (click)="editNotes(notes.id)"><i class="fas fa-pen"></i></a>
+                                 <a *ngIf="AuthStore.getActivityPermission(3200, 'DELETE_STRATEGY_PROFILE_NOTE')"
+                                    (click)="deleteProfileNotes(notes.id)"><i class="fas fa-trash"></i></a>
+                              </div>
+               
+               
+                              <div class="row" *ngIf="swot_availability">
+                                 <div class="col-sm-12">
+                                    <h5 class="cmn-head-style">{{'swot_analys' | translate}}</h5>
+                                 </div>
+                                 <ng-container *ngFor="let cate of StrategyStore.noteDetails?.category">
+                                    <div *ngIf="cate.is_swot == 1" class="col-xl-4 col-lg-6 col-sm-12">
+                                       <div>
+                                          <h5 [ngStyle]="{'color': cate.color_code }">{{cate.title}}</h5>
+                                          <ul class="arrowlist mt-0 p-0">
+                                             <li *ngFor="let issues of cate?.issue">{{issues.title}}</li>
+                                          </ul>
+                                       </div>
+                                    </div>
+                                 </ng-container>
+                              </div>
+                              <div class="row" *ngIf="pestel_availabale">
+                                 <div class="col-sm-12">
+                                    <h5 class="cmn-head-style">{{'pestel_analysis' | translate}}</h5>
+                                 </div>
+                                 <ng-container *ngFor="let cate of StrategyStore.noteDetails?.category">
+                                    <div *ngIf="cate.is_pestel == 1" class="col-xl-4 col-lg-6 col-sm-12">
+                                       <div>
+                                          <h5 [ngStyle]="{'color': cate.color_code }" class="brown-text-color">{{cate.title}}</h5>
+                                          <ul class="arrowlist mt-0 p-0">
+                                             <li *ngFor="let issues of cate?.issue">{{issues.title}}</li>
+                                          </ul>
+                                       </div>
+                                    </div>
+                                 </ng-container>
+                              </div>
+               
+               
+                           </div>
+                        </div>
+                     </div>
+                  </div>                         -->
+               </div>
+
+               <div class="col-lg-12 col-sm-12">
+                  <div class="form-group">
+                     <a class="text-light-blue" data-toggle="modal" (click)="organisationChanges()" style="border-bottom: 1px solid;">{{'change_organization_unit' | translate}}<span class="form-error">*</span></a>
+                  </div>
+               </div>
+
+            </div>           
+
+            <div class="row">
+               <div class="col-sm-12">
+                  <div class="d-block justify-content-left border-0 mt-3">
+                     <button type="button" data-toggle="modal" class="btn btn-active"
+                        [disabled]="focusForm.invalid || AppStore.loading" (click)="save()">{{ AppStore.loading ?
+                        getButtonText('loading') : getButtonText('save') }}</button>
+                     <button type="button" data-toggle="modal" class="btn"
+                        [disabled]="focusForm.invalid|| AppStore.loading" (click)="save(true)">{{ AppStore.loading ?
+                        getButtonText('loading') : getButtonText('save_close') }}</button>
+                     <button type="button" data-toggle="modal" (click)="cancel()" class="btn">{{ AppStore.loading ?
+                        getButtonText('loading') : getButtonText('cancel') }}</button>
+                  </div>
+               </div>
+            </div>
+         </form>
+      </div>
+      <!-- Modal footer -->
+   </div>
+</div>
+<!-- </div> -->
+<div class="modal modal-style-1 popup-full-width fade" id="add-focus-area-choose-popup" data-keyboard="false"
+   data-backdrop="static" #focusAreaMasterModal>
+   <app-focus-area-modal *ngIf="focusAreaObject.type" [source]="focusAreaObject"></app-focus-area-modal>
+</div>
+
+ <!-----------------------Form Modal Start--------------------------->
+ <div  class="modal modal-style-1 popup-full-width fade"  data-keyboard="false"
+ data-backdrop="static" #organisationChangeFormModal *mobxAutorun>
+ <app-organisation-change-modal *ngIf = "openModelPopup" [source] = "focusForm.value" 
+ (organizationChangeEvent)="closeModal($event)"></app-organisation-change-modal>
+</div>
+<!-----------------------Form Modal End--------------------------->
+
+<div class="modal modal-style-1 popup-full-width fade" id="note-choose-popup" data-keyboard="false"
+   data-backdrop="static" #noteModal>
+   <app-strategy-profile-focus-area-note *ngIf="noteObject.id" [source]="noteObject"></app-strategy-profile-focus-area-note>
+</div>

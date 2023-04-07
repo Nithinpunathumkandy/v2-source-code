@@ -1,0 +1,638 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #editBar>
+   <app-breadcrumb-menu></app-breadcrumb-menu>
+   <app-sub-menu></app-sub-menu>
+</nav>
+<main class="mt-3 organization-page tab-btns-five">
+   <div class="container-fluid">
+      <div class="organization-form-page" *mobxAutorun>
+         <!-- [ngStyle] = "{'display':!showForm ? 'none' : 'block'}"  -->
+         <div [ngStyle] = "{'display':!showForm ? 'none' : 'block'}">
+            <form id="regForm" [formGroup]="form"
+               class="organization-multi-stup-form issue-multi-stup-form multi-stup-form-common">
+               <!-- Circles which indicates the steps of the form: -->
+               <div id="header-sroll-form" class="form-indicates-sec clearfix" #formSteps>
+                  <span class="step pointer" *ngIf="is_duration"
+                     (click)="changeStep(0,[])"><span class="multi-form-nbr">{{is_duration ? '1' : '0'}}</span>{{'em_cr_duration' | translate}}</span>
+                  <span class="step pointer" *ngIf="is_budget"
+                     (click)="changeStep(1,['duration'])"><span class="multi-form-nbr">{{is_duration && is_budget? '2' : '1'}}</span>{{'em_cr_budget' | translate}}</span>
+                  <span class="step pointer" *ngIf="is_scopeofwork"
+                     (click)="changeStep(getTabNumerScope()-1,['duration','budget'])"><span class="multi-form-nbr">{{getTabNumerScope()}}</span>{{'em_cr_scope_of_work' | translate}}</span>
+                  <span class="step pointer" *ngIf="is_status"
+                     (click)="changeStep(getTabNumberOfBudget()-1,['duration','budget','scope'])"><span class="multi-form-nbr">{{getTabNumberOfBudget()}}</span>{{'em_cr_status' | translate}}</span>
+               </div>
+               <!-- One "tab" for each step in the form: -->
+               <div class="tab" id="duration" *ngIf="is_duration">
+                  <!-- tab start -->
+                  <div class="mb-5">
+
+                     <div class="row">
+                        <div class="col-lg-6 col-sm-12">
+                           <h6>{{'em_cr_existing_date' | translate}}</h6>
+                           <hr class="mt-0">
+
+                           <div class="row">
+                              <div class="col-sm-6">
+                                 <div class="form-group">
+                                    <label for="name">{{'em_start_date' | translate}}</label>
+                                    <p>{{EventsStore.eventDetails?.start_date | date:
+                                       OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</p>
+                                 </div>
+                              </div>
+                              <div class="col-sm-6">
+                                 <div class="form-group">
+                                    <label for="name">{{'em_end_date' | translate}}</label>
+                                    <p>{{EventsStore.eventDetails?.end_date | date:
+                                       OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</p>
+                                 </div>
+                              </div>
+                           </div>
+
+                        </div>
+                        <div class="col-lg-6 col-sm-12">
+                           <h6>{{'em_cr_new_date' | translate}}</h6>
+                           <hr class="mt-0">
+
+                           <div class="row">
+                              <div class="col-sm-6">
+                                 <div class="form-group">
+                                    <label for="name">{{'em_cr_start_date' | translate}}<span class="form-error">*</span></label>
+                                    <div class="input-group date-picker cal-time">
+                                       <div class="input-group date-picker">
+                                          <input class="form-control" formControlName="new_start_date"
+                                             [owlDateTime]="dt1" [owlDateTimeTrigger]="dt1"
+                                             [placeholder]="'em_cr_start_date_placeholder'| translate">
+                                          <owl-date-time [hour12Timer]="true" #dt1></owl-date-time>
+                                          <div class="input-group-append">
+                                             <button [owlDateTimeTrigger]="dt1"
+                                                class="btn btn-outline-secondary calendar" type="button"><i
+                                                   class="fas fa-calendar-alt"></i></button>
+                                          </div>
+
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+                              <div class="col-sm-6">
+                                 <div class="form-group">
+                                    <label for="name">{{'em_cr_end_date' | translate}}<span class="form-error">*</span></label>
+                                    <div class="input-group date-picker cal-time">
+                                       <div class="input-group date-picker">
+                                          <input class="form-control" formControlName="new_end_date" [owlDateTime]="dt2"
+                                             [owlDateTimeTrigger]="dt2" [min]="form.value.new_start_date"
+                                             [placeholder]="'em_cr_end_date_placeholder'| translate">
+                                          <owl-date-time [hour12Timer]="true" #dt2></owl-date-time>
+                                          <div class="input-group-append">
+                                             <button [owlDateTimeTrigger]="dt2"
+                                                class="btn btn-outline-secondary calendar" type="button"><i
+                                                   class="fas fa-calendar-alt"></i></button>
+                                          </div>
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+
+                        </div>
+                     </div>
+
+                     <div class="form-group">
+                        <label for="name">{{'em_cr_justification' | translate}}<span class="form-error">*</span></label>
+                        <textarea class="form-control" formControlName="justification_event_date" rows="3" id="comment"
+                           [attr.placeholder]="'em_cr_justification_placeholder' | translate"></textarea>
+                     </div>
+
+                     <label for="name" class="label-style mb-0">{{'evidence' | translate}}</label>
+                     <div class="row m-0 upload-section" style="padding-top: 0">
+                        <div class="col-sm-4 col-lg-3 costmz-logo-new mt-2">
+                           <div class="question-circle-inp" style="margin-right: 7px;">
+                              <i class="far fa-question-circle"></i>
+                              <div class="message-password-inp">
+                                 <p class="mb-0">{{'allowed_file_types' | translate}}
+                                    {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                                 </p>
+                              </div>
+                           </div>
+                           <div class="form-group form-group-upload">
+                              <div class="darag-dropifile-upload">
+                                 <div class="d-flex justify-content-center align-items-center text-center">
+                                    <div class="drag-file-sec">
+                                       <img src="assets/images/drag-pic.png" class="drag-pic-files">
+                                       <div class="drag-file-name">Select or Upload Your File Here</div>
+                                          <div class="upload-btn-wrapper">
+                                            
+                                            <button (click)="openFileUploadModal('duration')" type="button" class="btn">{{'browse_files' |
+                                             translate}}</button>
+                                          </div>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                        <div *ngFor="let docs of durationFiles ;let i = index" [ngClass]="docs?.is_deleted ? 'col-sm-4 col-lg-3 up-pic-cf mt-2 image_deleted' : 'col-sm-4 col-lg-3 up-pic-cf mt-2'">
+                           
+                           <div class="upload-pics edit-option" data-toggle="modal">
+                              <div *ngIf="docs.id && !docs.preview" class="browse-form-pic"
+                                 [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                              </div>
+                              <div *ngIf="docs.preview" class="browse-form-pic"
+                                 [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">
+                              </div>
+                              <div class="browse-form-name clearfix">
+                                 <div class="float-left">
+                                    <h6>
+                                       {{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                    </h6>
+                                    <span *ngIf="docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-book"></i></span>
+                                    <span *ngIf="!docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-laptop"></i></span>
+                                    <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                                 </div>
+                                 <div class="browse-logo">
+                                    <img *ngIf="checkExtension(docs.ext,'image') != -1" class="folder-picher"
+                                       src="/assets/images/jpg-icone.png">
+                                    <img *ngIf="checkExtension(docs.ext,'doc') != -1" class="folder-picher"
+                                       src="/assets/images/word-icone.png">
+                                    <img *ngIf="checkExtension(docs.ext,'pdf') != -1" class="folder-picher"
+                                       src="/assets/images/pdf-icone.png">
+                                    <img *ngIf="checkExtension(docs.ext,'excel') != -1" class="folder-picher"
+                                       src="/assets/images/excel-icone.png">
+                                    <img *ngIf="checkExtension(docs.ext,'video') != -1" class="folder-picher"
+                                       src="/assets/images/md-video.png">
+                                    <img *ngIf="checkExtension(docs.ext,'audio') != -1" class="folder-picher"
+                                       src="/assets/images/md-audio.png">
+                                    <img *ngIf="checkExtension(docs.ext,'ppt') != -1" class="folder-picher"
+                                       src="/assets/images/md-ppt.png">
+                                 </div>
+                              </div>
+                              <div class="edit-option-show">
+                                 <a (click)="removeDocument(docs,'duration')"><i class="fas fa-trash"></i></a>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div><!-- tab end -->
+               <div class="tab" id="budget" *ngIf="is_budget">
+                  <!-- tab start -->
+                  <h2 class="fs-title mb-0">{{'event_budget' | translate}}<button type="button" data-toggle="modal" data-target="#add-budget-popup"
+                        (click)="addBudgets()" class="btn btn-small ml-2">{{'add' | translate}}</button> </h2>
+                        <br>
+                  <div class="mb-5">
+                     <div class="row">
+                        <div class="col-sm-12">
+                           <div class="table-w-100 not-fixed-table mb-3">
+                              <table class="table table-bordered ordinary-table audit-page-table mb-1 text-center">
+                                 <thead>
+                                    <tr>
+                                       <th class="border-top-0" width="4%">#</th>
+                                       <th class="border-top-0" width="16%">{{'year' | translate}}</th>
+                                       <th class="border-top-0" width="40%">{{'existing_budget' | translate}}</th>
+                                       <th class="border-top-0" width="40%">{{'new_budget' | translate}}</th>
+                                    </tr>
+                                 </thead>
+                                 <tbody>
+                                    <tr class="edit-and-delete-main"
+                                       *ngFor="let amt of EventChangeRequestStore.budgets;let num = index">
+                                       <td [ngStyle]="{color: (amt.type=='deleted' && amt.status == 'existing')? 'red' : (amt.status == 'new' || amt.status == 'cr') ? 'green' : ''}">{{num+1}}</td>
+                                       <td [ngStyle]="{color: (amt.type=='deleted' && amt.status == 'existing')? 'red' : (amt.status == 'new' || amt.status == 'cr') ? 'green' : ''}">{{amt.year}}</td>
+                                       <td [ngStyle]="{color: (amt.type=='deleted' && amt.status == 'existing')? 'red' : (amt.status == 'new' || amt.status == 'cr') ? 'green' : ''}">{{amt.amount}}
+                  
+                                       </td>
+                                       <td>
+                                          <div class="form-group mb-0"><input [readOnly]="amt.type=='deleted'" type="text"
+                                                [(ngModel)]="amt.newAmount" [ngModelOptions]="{standalone: true}"
+                                                class="form-control ng-pristine ng-valid ng-touched"></div>
+                                          <div *ngIf="amt.type !='deleted'" class="edit-option-show">
+                                             <!-- edit-and-delete starts -->
+                                             <a (click)="delete(amt)"><i class="fas fa-trash"></i></a>
+                                          </div>
+                                       </td>
+                                    </tr>
+                                    <tr>
+                                       <td colspan="2">{{'total' | translate}}</td>
+                                       <td>{{getExistingTotal()}}</td>
+                                       <td>{{getNewAmountTotal()}}<span
+                                               [ngClass]="getNewAmountTotal() >= getExistingTotal() ? 'text-green' : 'text-red'">(
+                                               {{getNewAmountTotal() > getExistingTotal() ? '+'
+                                               : ''}} {{getNewAmountTotal() -
+                                               getExistingTotal()}} )</span></td>
+                                   </tr>
+                                 </tbody>
+                              </table>
+                  
+                           </div>
+                        </div>
+                        <div class="col-sm-12">
+                           <div class="form-group">
+                              <label for="name">{{'justification' | translate}}<span class="form-error">*</span></label>
+                              <textarea formControlName="justification_event_budget" class="form-control"
+                                 rows="3" id="comment" [attr.placeholder]="'em_cr_justification_placeholder' | translate"></textarea>
+                           </div>
+                        </div>
+                     </div>
+                     <label for="name" class="label-style mb-0">{{'evidence' | translate}}</label>
+                     <div class="row m-0 upload-section" style="padding-top: 0">
+                        <div class="col-sm-4 col-lg-3 costmz-logo-new mt-2">
+                           <div class="question-circle-inp" style="margin-right: 7px;">
+                              <i class="far fa-question-circle"></i>
+                              <div class="message-password-inp">
+                                 <p class="mb-0">{{'allowed_file_types' | translate}}
+                                    {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                                 </p>
+                              </div>
+                           </div>
+                           <div class="form-group form-group-upload">
+                              <div class="darag-dropifile-upload">
+                                 <div class="d-flex justify-content-center align-items-center text-center">
+                                    <div class="drag-file-sec">
+                                       <img src="assets/images/drag-pic.png" class="drag-pic-files">
+                                       <div class="drag-file-name">Select or Upload Your File Here</div>
+                                          <div class="upload-btn-wrapper">
+                                            
+                                            <button (click)="openFileUploadModal('budget')" type="button" class="btn">{{'browse_files' |
+                                             translate}}</button>
+                                          </div>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                        <div *ngFor="let docs of budgetFiles ;let i = index" [ngClass]="docs?.is_deleted ? 'col-sm-4 col-lg-3 up-pic-cf mt-2 image_deleted' : 'col-sm-4 col-lg-3 up-pic-cf mt-2'">
+                         
+                              <div class="upload-pics edit-option" data-toggle="modal">
+                                <div *ngIf="docs.id && !docs.preview" class="browse-form-pic"
+                                  [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                                </div>
+                                <div *ngIf="docs.preview" class="browse-form-pic"
+                                  [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">
+                                </div>
+                                <div class="browse-form-name clearfix">
+                                  <div class="float-left">
+                                    <h6>
+                                      {{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                    </h6>
+                                    <span *ngIf="docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-book"></i></span>
+                                    <span *ngIf="!docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-laptop"></i></span>
+                                    <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                                  </div>
+                                  <div class="browse-logo">
+                                    <img *ngIf="checkExtension(docs.ext,'image') != -1" class="folder-picher"
+                                      src="/assets/images/jpg-icone.png">
+                                    <img *ngIf="checkExtension(docs.ext,'doc') != -1" class="folder-picher"
+                                      src="/assets/images/word-icone.png">
+                                    <img *ngIf="checkExtension(docs.ext,'pdf') != -1" class="folder-picher"
+                                      src="/assets/images/pdf-icone.png">
+                                    <img *ngIf="checkExtension(docs.ext,'excel') != -1" class="folder-picher"
+                                      src="/assets/images/excel-icone.png">
+                                    <img *ngIf="checkExtension(docs.ext,'video') != -1" class="folder-picher"
+                                      src="/assets/images/md-video.png">
+                                    <img *ngIf="checkExtension(docs.ext,'audio') != -1" class="folder-picher"
+                                      src="/assets/images/md-audio.png">
+                                    <img *ngIf="checkExtension(docs.ext,'ppt') != -1" class="folder-picher"
+                                      src="/assets/images/md-ppt.png">
+                                  </div>
+                                </div>
+                                <div class="edit-option-show">
+                                  <a (click)="removeDocument(docs,'budget')"><i class="fas fa-trash"></i></a>
+                                </div>
+                              </div>
+                        </div>
+                        
+                     </div>
+                  </div>
+               </div><!-- tab end -->
+               <div class="tab" id="scope" *ngIf="is_scopeofwork">
+                  <!-- tab start -->
+                  <h2 class="fs-title mb-0">{{'event_scope' | translate}}
+                     <!-- <button type="button" data-toggle="modal"
+                        data-target="#add-event-scope-popup" class="btn btn-small ml-2">Add</button>  -->
+                     </h2>
+                     <br>
+                  <div class="row">
+                     <div class="col-sm-12">
+                        <div class="form-group">
+                           <label>{{'em_scope' | translate}}</label>
+                           <div class="clearfix d-flex">
+                              <input type="text" [(ngModel)]="inScope" [ngModelOptions]="{standalone: true}" class="form-control w-100"
+                              [attr.placeholder]="'em_scope_placeholder' | translate">
+                              <button (click)="addInscope()" type="button" class="btn multi-add-user ml-2" style="width: 42px;"><i
+                                    class="fas fa-plus"></i></button>
+                           </div>
+                           <ul class="arrowlist mt-1 p-0">
+                              <ng-container *ngFor="let inscope of inScopes">
+                                 <li><span [ngClass]="inscope.is_deleted ? 'text-red' : inscope.type == 'new' ? 'text-green' : ''">
+                                    <del *ngIf="inscope.is_deleted">{{inscope.title}}</del>
+                                    <span *ngIf="!inscope.is_deleted">{{inscope.title}}</span>
+                                 
+                                 </span>
+                                    <button *ngIf="!inscope.is_deleted" (click)="deleteIn(inscope)" type="button" class="btn btn-small float-right btn-small-delete"
+                                       style="border: none;"><i class="fas fa-trash"></i></button>
+                                 </li>
+                              </ng-container>
+                           </ul>
+                  
+                           <div class="col-md-6 text-left">
+                              <ng-container *mobxAutorun>
+                                 <app-context-no-data *ngIf="inScopes.length == 0" [sourceData]="noDataSourceInscope">
+                                 </app-context-no-data>
+                              </ng-container>
+                           </div>
+                  
+                        </div>
+                     </div>
+                     <div class="col-sm-12">
+                        <div class="form-group">
+                           <label>{{'em_exclusion' | translate}}</label>
+                           <div class="clearfix d-flex">
+                              <input type="text" [(ngModel)]="outScope" [ngModelOptions]="{standalone: true}" class="form-control w-100"
+                              [attr.placeholder]="'em_exclusion_placeholder' | translate">
+                              <button (click)="addOutScope()" type="button" class="btn multi-add-user ml-2" style="width: 42px;"><i
+                                    class="fas fa-plus"></i></button>
+                           </div>
+                           <ul class="arrowlist mt-1 p-0">
+                              <ng-container *ngFor="let outscope of outScopes">
+                                 <li><span [ngClass]="outscope.is_deleted ? 'text-red' : outscope.type == 'new' ? 'text-green' : ''">
+
+                                    <del *ngIf="outscope.is_deleted">{{outscope.title}}</del>
+                                    <span *ngIf="!outscope.is_deleted">{{outscope.title}}</span>
+                                 </span>
+                                    <button *ngIf="!outscope.is_deleted" (click)="deleteOut(outscope)" type="button" class="btn btn-small float-right btn-small-delete"
+                                       style="border: none;"><i class="fas fa-trash"></i></button>
+                                 </li>
+                              </ng-container>
+                           </ul>
+                           <div class="col-md-6 text-left">
+                              <ng-container *mobxAutorun>
+                                 <app-context-no-data *ngIf="outScopes.length == 0" [sourceData]="noDataSourceOutScope">
+                                 </app-context-no-data>
+                              </ng-container>
+                           </div>
+                        </div>
+                     </div>
+                     <div class="col-sm-12">
+                        <div class="form-group">
+                           <label>{{'em_assumption' | translate}}</label>
+                           <div class="clearfix d-flex">
+                              <input type="text" [(ngModel)]="assumption" [ngModelOptions]="{standalone: true}" class="form-control w-100"
+                                 [attr.placeholder]="'em_assumption_placeholder' | translate">
+                              <button (click)="addAssumption()" type="button" class="btn multi-add-user ml-2" style="width: 42px;"><i
+                                    class="fas fa-plus"></i></button>
+                           </div>
+                           <ul class="arrowlist mt-1 p-0">
+                              <ng-container *ngFor="let assumption of assumptions">
+                                 <li><span [ngClass]="assumption.is_deleted ? 'text-red' : assumption.type == 'new' ? 'text-green' : ''">
+                                    <del *ngIf="assumption.is_deleted">{{assumption.title}}</del>
+                                    <span *ngIf="!assumption.is_deleted">{{assumption.title}}</span>
+                                 </span>
+                                    <button *ngIf="!assumption.is_deleted" (click)="deleteAssumption(assumption)" type="button"
+                                       class="btn btn-small float-right btn-small-delete" style="border: none;"><i
+                                          class="fas fa-trash"></i></button>
+                                 </li>
+                              </ng-container>
+                           </ul>
+                           <div class="col-md-6 text-left">
+                              <ng-container *mobxAutorun>
+                                 <app-context-no-data *ngIf="assumptions.length == 0" [sourceData]="noDataSourceAssumption">
+                                 </app-context-no-data>
+                              </ng-container>
+                           </div>
+                        </div>
+                     </div>
+                     <div class="col-sm-12">
+                        <div class="form-group">
+                           <label for="name">{{'em_cr_justification' | translate}}<span class="form-error">*</span></label>
+                           <textarea class="form-control" formControlName="justification_event_scope" rows="3" id="comment"
+                           [attr.placeholder]="'em_cr_justification_placeholder' | translate"></textarea>
+                        </div>
+                     </div>
+                  </div>
+                  <label for="name" class="label-style mb-0">{{'evidence' | translate}}</label>
+                     <div class="row m-0 upload-section" style="padding-top: 0">
+                        <div class="col-sm-4 col-lg-3 costmz-logo-new mt-2">
+                           <div class="question-circle-inp" style="margin-right: 7px;">
+                              <i class="far fa-question-circle"></i>
+                              <div class="message-password-inp">
+                                 <p class="mb-0">{{'allowed_file_types' | translate}}
+                                    {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                                 </p>
+                              </div>
+                           </div>
+                           <div class="form-group form-group-upload">
+                              <div class="darag-dropifile-upload">
+                                 <div class="d-flex justify-content-center align-items-center text-center">
+                                    <div class="drag-file-sec">
+                                       <img src="assets/images/drag-pic.png" class="drag-pic-files">
+                                       <div class="drag-file-name">Select or Upload Your File Here</div>
+                                          <div class="upload-btn-wrapper">
+                                           
+                                            <button (click)="openFileUploadModal('scope')" type="button" class="btn">{{'browse_files' |
+                                             translate}}</button>
+                                          </div>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                        <div *ngFor="let docs of scopeFiles ;let i = index" [ngClass]="docs?.is_deleted ? 'col-sm-4 col-lg-3 up-pic-cf mt-2 image_deleted' : 'col-sm-4 col-lg-3 up-pic-cf mt-2'">
+                          
+                              <div class="upload-pics edit-option" data-toggle="modal">
+                                <div *ngIf="docs.id && !docs.preview" class="browse-form-pic"
+                                  [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                                </div>
+                                <div *ngIf="docs.preview" class="browse-form-pic"
+                                  [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">
+                                </div>
+                                <div class="browse-form-name clearfix">
+                                  <div class="float-left">
+                                    <h6>
+                                      {{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                    </h6>
+                                    <span *ngIf="docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-book"></i></span>
+                                    <span *ngIf="!docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-laptop"></i></span>
+                                    <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                                  </div>
+                                  <div class="browse-logo">
+                                    <img *ngIf="checkExtension(docs.ext,'image') != -1" class="folder-picher"
+                                      src="/assets/images/jpg-icone.png">
+                                    <img *ngIf="checkExtension(docs.ext,'doc') != -1" class="folder-picher"
+                                      src="/assets/images/word-icone.png">
+                                    <img *ngIf="checkExtension(docs.ext,'pdf') != -1" class="folder-picher"
+                                      src="/assets/images/pdf-icone.png">
+                                    <img *ngIf="checkExtension(docs.ext,'excel') != -1" class="folder-picher"
+                                      src="/assets/images/excel-icone.png">
+                                    <img *ngIf="checkExtension(docs.ext,'video') != -1" class="folder-picher"
+                                      src="/assets/images/md-video.png">
+                                    <img *ngIf="checkExtension(docs.ext,'audio') != -1" class="folder-picher"
+                                      src="/assets/images/md-audio.png">
+                                    <img *ngIf="checkExtension(docs.ext,'ppt') != -1" class="folder-picher"
+                                      src="/assets/images/md-ppt.png">
+                                  </div>
+                                </div>
+                                <div class="edit-option-show">
+                                  <a (click)="removeDocument(docs,'scope')"><i class="fas fa-trash"></i></a>
+                                </div>
+                              </div>
+                          
+                        </div>
+                        
+                     </div>
+               </div><!-- tab end -->
+               <div class="tab" id="status" *ngIf="is_status">
+                  <!-- tab start -->
+                  <h2 class="fs-title mb-0">{{'em_status' | translate}}</h2>
+                  <!-- <p class="mb-4">Lorem ipsum is a dummy text of printing and type setting industry </p> -->
+                  <br>
+                  <div class="mb-5">
+
+                     <div class="row">
+                        <div class="col-sm-12">
+                           <div class="form-group">
+                              <label for="name">{{'status' | translate}}</label>
+                              <div class="clearfix d-flex">
+                                 <div class="multiple-plain-ngselect w-100">
+                                   <ng-select [placeholder]="'select_status' | translate" [multiple]="false" formControlName="new_event_status_id"
+                                      (clear)="getStatuses()"(open)="getStatuses()">
+                                     <ng-option [value]="status.id" *ngFor="let status of allowedStatus">
+                                         {{status?.event_status_language_title?.length > 80 ? status?.event_status_language_title?.substring(0,80)+' ...' : status?.event_status_language_title }}
+                                      </ng-option>
+                 
+                                   </ng-select>
+                                 </div>
+                               </div> 
+                           </div>
+                        </div>
+                        <div class="col-sm-12">
+                           <div class="form-group">
+                              <label for="name">{{'em_cr_justification' | translate}}</label>
+                              <textarea class="form-control" rows="3" id="comment" formControlName="justification_event_status"
+                              [attr.placeholder]="'em_cr_justification_placeholder' | translate"></textarea>
+                           </div>
+                        </div>
+                     </div>
+
+                     <label for="name" class="label-style mb-0">{{'evidence' | translate}}</label>
+                     <div class="row m-0 upload-section" style="padding-top: 0">
+                        <div class="col-sm-4 col-lg-3 costmz-logo-new mt-2">
+                           <div class="question-circle-inp" style="margin-right: 7px;">
+                              <i class="far fa-question-circle"></i>
+                              <div class="message-password-inp">
+                                 <p class="mb-0">{{'allowed_file_types' | translate}}
+                                    {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                                 </p>
+                              </div>
+                           </div>
+                           <div class="form-group form-group-upload">
+                              <div class="darag-dropifile-upload">
+                                 <div class="d-flex justify-content-center align-items-center text-center">
+                                    <div class="drag-file-sec">
+                                       <img src="assets/images/drag-pic.png" class="drag-pic-files">
+                                       <div class="drag-file-name">Select or Upload Your File Here</div>
+                                          <div class="upload-btn-wrapper">
+                                            
+                                            <button (click)="openFileUploadModal('status')" type="button" class="btn">{{'browse_files' |
+                                             translate}}</button>
+                                          </div>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                        <div *ngFor="let docs of statusFiles ;let i = index" [ngClass]="docs?.is_deleted ? 'col-sm-4 col-lg-3 up-pic-cf mt-2 image_deleted' : 'col-sm-4 col-lg-3 up-pic-cf mt-2'">
+                           
+                              <div class="upload-pics edit-option" data-toggle="modal">
+                                <div *ngIf="docs.id && !docs.preview" class="browse-form-pic"
+                                  [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                                </div>
+                                <div *ngIf="docs.preview" class="browse-form-pic"
+                                  [ngStyle]="{'background': 'url(' + docs?.preview + ') no-repeat 0 0 / cover'}">
+                                </div>
+                                <div class="browse-form-name clearfix">
+                                  <div class="float-left">
+                                    <h6>
+                                      {{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}.{{docs.ext}}
+                                    </h6>
+                                    <span *ngIf="docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-book"></i></span>
+                                    <span *ngIf="!docs.is_kh_document" class="mr-2 cmn-clr"><i class="fas fa-laptop"></i></span>
+                                    <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                                  </div>
+                                  <div class="browse-logo">
+                                    <img *ngIf="checkExtension(docs.ext,'image') != -1" class="folder-picher"
+                                      src="/assets/images/jpg-icone.png">
+                                    <img *ngIf="checkExtension(docs.ext,'doc') != -1" class="folder-picher"
+                                      src="/assets/images/word-icone.png">
+                                    <img *ngIf="checkExtension(docs.ext,'pdf') != -1" class="folder-picher"
+                                      src="/assets/images/pdf-icone.png">
+                                    <img *ngIf="checkExtension(docs.ext,'excel') != -1" class="folder-picher"
+                                      src="/assets/images/excel-icone.png">
+                                    <img *ngIf="checkExtension(docs.ext,'video') != -1" class="folder-picher"
+                                      src="/assets/images/md-video.png">
+                                    <img *ngIf="checkExtension(docs.ext,'audio') != -1" class="folder-picher"
+                                      src="/assets/images/md-audio.png">
+                                    <img *ngIf="checkExtension(docs.ext,'ppt') != -1" class="folder-picher"
+                                      src="/assets/images/md-ppt.png">
+                                  </div>
+                                </div>
+                                <div class="edit-option-show">
+                                  <a (click)="removeDocument(docs,'status')"><i class="fas fa-trash"></i></a>
+                                </div>
+                              </div>
+                        </div>
+                     </div>
+                  </div>
+
+
+               </div><!-- tab end -->
+
+               <div style="overflow:auto;">
+                  <div class="form-next-page-btns" style="float:left;">
+                     <button class="btn btn-active" type="button" id="nextBtn" (click)="nextPrev(1,true)"
+                     [disabled]="AppStore.loading || validateItems()">{{getButtonText(nextButtonText)}}</button>
+                     <button class="btn" type="button" id="saveBtn"
+                            [disabled]="AppStore.loading || validateItems()">{{getButtonText('save')}}</button>
+                     <button class="btn" type="button" id="prevBtn" (click)="nextPrev(-1)"
+                        [disabled]="AppStore.loading">{{getButtonText(previousButtonText)}}</button>
+                     <button class="btn" type="button" (click)="cancelClicked()">{{getButtonText('cancel')}}</button>
+                  </div>
+               </div>
+
+            </form>
+         </div>
+
+         <div [ngStyle] = "{'display':!showForm ? 'block' : 'none'}">
+            <app-table-loader></app-table-loader>
+         </div>
+
+
+
+      </div>
+
+
+
+
+
+
+
+   </div>
+</main>
+<!------------------- Delete Confirmation Modal Start --------------------------->
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+   <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #newBudget>
+   <app-add-event-budget [source]="newBudgetObject" *ngIf="newBudgetObject.type">
+   </app-add-event-budget>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="add-actionplan-popup" data-keyboard="false" data-backdrop="static" #newScope>
+   <app-event-cr-scope [source] = "newScopeObject" *ngIf = "newScopeObject.type"></app-event-cr-scope>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="add-actionplan-popup" data-keyboard="false" data-backdrop="static" #budget>
+   <app-event-cr-budget [source] = "budgetObject" *ngIf = "budgetObject.type"></app-event-cr-budget>
+
+</div>
+
+<!-- * Documetn Attach/Upload Common Component Starts Here -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #fileUploadModal>
+   <app-file-upload-popup *ngIf="fileUploadPopupStore.openPopup"></app-file-upload-popup>
+ </div>

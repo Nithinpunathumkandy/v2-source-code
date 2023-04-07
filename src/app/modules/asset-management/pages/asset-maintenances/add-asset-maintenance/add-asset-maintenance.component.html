@@ -1,0 +1,778 @@
+<!-- <main class="mt-3 organization-page" *mobxAutorun> -->
+  <!-- <div class="container-fluid"> -->
+    <div class="organization-form-page">
+      <form id="maintenanceForm" [formGroup]="maintenanceForm"
+        class="organization-multi-stup-form multi-stup-form-common" action="/action_page.php">
+        <!-- Circles which indicates the steps of the form: -->
+        <div id="header-sroll-form" class="form-indicates-sec clearfix" #formSteps>
+          <span class="step"><span class="multi-form-nbr" (click)="changeStep(0)">1</span>Maintenance Details</span>
+          <span class="step"><span class="multi-form-nbr" (click)="changeStep(1)">2</span>Maintenance schedule</span>
+          <!--<span class="step"><span class="multi-form-nbr">3</span>Shut-down Details</span>-->
+          <span class="step"><span class="multi-form-nbr" (click)="changeStep(2)">3</span>Preview & Save</span>
+        </div>
+        <!-- One "tab" for each step in the form: -->
+        <div class="tab">
+
+          <!--time picker ends-->
+          <div class="row">
+            <div class="col-sm-12" *ngIf="AssetMaintenanceStore?.maintananceMainTab">
+              <div class="form-group">
+                <label for="name">{{'asset_mt_form_asset' | translate}} <sup>* </sup></label>
+                <div class="multiple-plain-ngselect w-100">
+                  <ng-select [placeholder]="'asset_mt_form_asset_placeholder' | translate" [multiple]="false" searchable="true"
+                    formControlName="asset_id" (search)="searchAsset($event)" (clear)="getAsset()" (open)="getAsset()">
+                    <ng-option *ngFor="let asset of AssetRegisterStore.allItems" [value]="asset.id">
+                      #{{asset.reference_code}} - {{asset.title}}</ng-option>
+
+                  </ng-select>
+                </div>
+                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.asset_id">
+                  {{formErrors.asset_id}}</p>
+              </div>
+            </div>
+
+
+            <div class="col-sm-12">
+              <div class="form-group">
+                <label for="name">{{'asset_mt_form_title' | translate}} <sup>*</sup></label>
+                <div class="plain-select input-add-report">
+                  <input type="text" class="form-control" formControlName="title" [placeholder]="'asset_mt_form_title_placeholder'| translate">
+                  <p class="form-error pt-1"
+                    *ngIf="maintenanceForm?.value.title && maintenanceForm?.value.title.length > 500 && !formErrors">
+                    {{'maximum_500_characters'|translate}}</p>
+                  <p class="form-error pt-1" *ngIf="formErrors && formErrors.title">
+                    {{formErrors.title}}</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-sm-12">
+              <div class="form-group">
+                <label for="name">{{'asset_mt_form_description' | translate}}</label>
+                <textarea class="form-control " rows="3" id="comment" formControlName="description"
+                [placeholder]="'asset_mt_form_description_placeholder'| translate"></textarea>
+                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.description">
+                  {{formErrors.description}}</p>
+              </div>
+            </div>
+
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label for="name">{{'asset_mt_form_category' | translate}} <sup>* </sup></label>
+                <div class="multiple-plain-ngselect w-100">
+                  <ng-select [placeholder]="'asset_mt_form_category_placeholder'| translate" [multiple]="false" searchable="true"
+                    formControlName="asset_maintenance_category_id" (search)="searchMaintenanceCategory($event)"
+                    (clear)="getMaintenanceCategory()" (open)="getMaintenanceCategory()">
+                    <ng-option *ngFor="let cat of AssetMaintenanceCategoriesMasterStore.allItems" [value]="cat.id">
+                      {{cat.title}}</ng-option>
+
+                  </ng-select>
+                </div>
+                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.asset_maintenance_category_id">
+                  {{formErrors.asset_maintenance_category_id}}</p>
+              </div>
+            </div>
+
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label for="name">{{'asset_mt_form_type' | translate}} <sup>*</sup></label>
+                <div class="multiple-plain-ngselect w-100">
+                  <ng-select [placeholder]="'asset_mt_form_type_placeholder' | translate" [multiple]="false" searchable="true"
+                    formControlName="asset_maintenance_type_id" (search)="searchMaintenanceType($event)"
+                    (clear)="getMaintenanceType()" (open)="getMaintenanceType()">
+                    <ng-option *ngFor="let type of AssetMaintenanceTypesMasterStore.allItems" [value]="type.id">
+                      {{type.title}}</ng-option>
+
+                  </ng-select>
+                </div>
+                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.asset_maintenance_type_id">
+                  {{formErrors.asset_maintenance_type_id}}</p>
+              </div>
+            </div>
+
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label for="name">{{'asset_mt_form_guarantee_warranty' | translate}}
+
+
+                </label>
+
+
+                <div class="custom-control pt-2 custom-radio">
+                  <input type="radio" class="custom-control-input" id="customRadio1" name="is_guarantee"
+                    value="guarantee" (click)="changeGuaranteeWarranty('guarantee')"
+                    [checked]="maintenanceForm.value.is_guarantee?true:false" #customRadio1>
+                  <label class="custom-control-label" for="customRadio1" style="padding-top: 2px;">{{'asset_mt_form_guarantee' | translate}}</label>
+
+                  <span class="pl-5"><input type="radio" class="custom-control-input" id="customRadio2"
+                      name="is_warranty" value="warranty" (click)="changeGuaranteeWarranty('warranty')"
+                      [checked]="maintenanceForm.value.is_warranty?true:false" #customRadio2>
+                    <label class="custom-control-label" for="customRadio2" style="padding-top: 2px;">
+                      {{'asset_mt_form_type_warranty' | translate}}</label></span>
+                </div>
+
+                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.is_warranty">
+                  {{formErrors.is_warranty}}</p>
+                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.guarantee">
+                  {{formErrors.guarantee}}</p>
+              </div>
+            </div>
+
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label for="name" style="display: inline-block;">{{'asset_mt_form_period' | translate}} 
+                  <sup>*</sup>
+                </label>
+                <div class="two-text-box-join">
+                  <span>
+                    <input type="number" class="form-control text-box-1 input-number" formControlName="warranty_year"
+                    [placeholder]="'asset_mt_form_year_placeholder' | translate" >
+                  </span>
+                  <input type="number" min="0" max="12" class="form-control text-box-2 input-number" formControlName="warranty_month"
+                  [placeholder]="'asset_mt_form_month_placeholder' | translate">
+                </div>
+
+                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.warranty_year">
+                  {{formErrors.warranty_year}}</p>
+              </div>
+            </div>
+          </div>
+
+
+        </div>
+        <!-- tab end -->
+        <!-- tab start -->
+        <div class="tab">
+
+          <div class="row">
+            <div class="col-sm-6 col-lg-6">
+              <div class="form-group">
+                <label for="name">{{'asset_mt_form_frequency' | translate}}  <sup>* </sup></label>
+                <div class="multiple-plain-ngselect w-100">
+                  <ng-select [placeholder]="'asset_mt_form_frequency_placeholder' | translate" [multiple]="false" searchable="true"
+                    formControlName="asset_maintenance_schedule_frequency_id" [disabled]="AssetMaintenanceStore?.individualMaintenanceDetails?.is_schedule_updated"
+                    (search)="searchMaintenanceScheduleFrequency($event)" (clear)="getMaintenanceScheduleFrequency()"
+                    (open)="getMaintenanceScheduleFrequency()" (change)="getFrequencyData()">
+                    <ng-option *ngFor="let frequency of AssetMaintenanceScheduleFrequencyMasterStore.allItems"
+                      [value]="frequency.id">
+                      {{frequency.title}}</ng-option>
+
+                  </ng-select>
+                  <p class="form-error pt-1" *ngIf="formErrors&&formErrors.asset_maintenance_schedule_frequency_id">
+                    {{formErrors.asset_maintenance_schedule_frequency_id}}</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-6 col-sm-6">
+              <!-- <div class="form-group">
+                            <label for="name">{{'asset_mt_form_maintenance_cost' | translate}}
+                            <sup>*</sup>
+                            </label>
+                            <div class="price-icon-inp d-flex">
+                            <span>{{OrganizationGeneralSettingsStore?.organizationSettings?.currency}}</span>
+                            <input type="number" formControlName="total_cost" class="form-control input-number" min="0" [placeholder]="'asset_mt_form_maintenance_cost_placeholder' | translate">
+                            </div>
+                            <p class="form-error pt-1" *ngIf="formErrors&&formErrors.total_cost">
+                              {{formErrors.total_cost}}</p>
+                            </div> -->
+              <div class="form-group">
+                <label>{{'asset_mt_form_maintenance_cost' | translate}}<sup>*</sup></label>
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text bg-white"
+                      id="basic-addon1">{{OrganizationGeneralSettingsStore?.organizationSettings?.currency}}</span>
+                  </div>
+                  <input type="number" formControlName="total_cost" class="form-control input-number" min="0"
+                    [placeholder]="'asset_mt_form_maintenance_cost_placeholder' | translate">
+                </div>
+                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.total_cost">
+                  {{formErrors.total_cost}}</p>
+              </div>
+            
+            
+            
+            </div>
+          </div>
+
+          <div class="row" *ngIf="frequencyDataCount==1">
+            <div [ngClass]="getMaintenanceTypeData()=='external'?'col-lg-6 col-sm-6':'col-lg-12 col-sm-6'">
+              <div class="form-group">
+                <label for="name">{{'asset_mt_form_title' | translate}} <sup>*</sup></label>
+                <div class="plain-select input-add-report">
+                  <input type="text" class="form-control" formControlName="schedule_title"
+                    (keyup)="setFrequencyShutdownData('title',$event,0)" [placeholder]="'asset_mt_form_schedule_title_placeholder' | translate">
+                </div>
+              </div>
+            </div>
+
+            <div [ngClass]="getMaintenanceTypeData()=='external'?'col-sm-6 col-lg-3':'col-sm-6 col-lg-6'">
+              <div class="form-group">
+                <label for="name">{{'asset_mt_form_date' | translate}} <sup>*</sup></label>
+                <div class="input-group input-clear-btn-main">
+                  <!-- <div class="input-clear-btn-main"> -->
+                  <input formControlName="scheduled_date" class="form-control bg-white" [placeholder]="'asset_mt_form_date_placeholder'| translate"
+                    id="scheduled_date" [readonly]="true"
+                    (dateSelect)="setFrequencyShutdownData('scheduled_date',$event,0)" ngbDatepicker
+                    #scheduledDate="ngbDatepicker">
+                  <span aria-hidden="true" *ngIf="AssetMaintenanceStore.frequencyShutdownData[0]?.scheduled_date"
+                    (click)="clear('scheduled_date',0)" style="border:none;" class="input-clear-btn">×</span>
+                  <!-- </div> -->
+
+                  <div class="input-group-append">
+                    <button class="btn btn-outline-secondary calendar" (click)="scheduledDate.toggle()" type="button"><i
+                        class="fas fa-calendar-alt"></i></button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="col-lg-6 col-sm-12" *ngIf="getMaintenanceTypeData()=='internal'">
+              <div class="form-group">
+                <label for="name">{{'asset_mt_form_responsible_user' | translate}} <sup>*</sup></label>
+
+                <div class="clearfix">
+                  <div class="multiple-plain-ngselect">
+                    <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                      [placeholder]="'asset_mt_form_responsible_user_placeholder'|translate" formControlName="user_ids" [multiple]="true"
+                      (clear)="getUsers()" (search)="searchUers($event)" (open)="getUsers()" [searchFn]="customSearchFn"
+                      (change)="setFrequencyShutdownData('responsible',$event,0)">
+                      <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                        <img class="ng-select-user-display" *ngIf="item.image?.token||item.image_token" height="15"
+                          width="15"
+                          [attr.src]="item.image?.token?createImageUrl(item.image?.token):createImageUrl(item.image_token)" />
+                        <img class="ng-select-user-display" *ngIf="!item.image?.token && !item.image_token" height="15"
+                          width="15" [attr.src]="getDefaultImage('user-logo')" />
+                        <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,' ') |
+                          titlecase}}</b><span aria-hidden="true" (click)="clear(item)" style="border:none;"
+                          class="ng-value-icon left">×</span>
+                      </ng-template>
+
+                      <ng-template ng-option-tmp let-item="item" let-index="index">
+                        <div class="user-post-department-pic">
+                          <img class="ng-select-user-display" *ngIf="item.image?.token || item.image_token" height="25"
+                            width="25"
+                            [attr.src]="item.image?.token?createImageUrl(item.image?.token):createImageUrl(item.image_token)" />
+                          <img class="ng-select-user-display" *ngIf="!item.image?.token && !item.image_token"
+                            height="25" width="25" [attr.src]="getDefaultImage('user-logo')" />
+                        </div>
+                        <div class="user-post-department-div">
+                          <b>{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b>
+                          <p class="user-post-department-multiple">
+                            {{getStringsFormatted([item.designation_title,' '+item.department],50,',')}}</p>
+                        </div>
+                      </ng-template>
+                    </ng-select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-12 col-lg-3" *ngIf="getMaintenanceTypeData()=='external'">
+              <div class="form-group">
+                <label>{{'asset_mt_form_supplier_name' | translate}}<sup>*</sup>
+                </label>
+                <div class="clearfix d-flex">
+                  <div class="multiple-plain-ngselect w-100">
+                    <ng-select [placeholder]="'asset_mt_form_supplier_name_placeholder' | translate" [multiple]="false" searchable="true"
+                      formControlName="supplier_id" (search)="searchSupplier($event)" (clear)="getSupplier()"
+                      (open)="getSupplier()" [closeOnSelect]="true" autocomplete="new-password"
+                      (change)="setFrequencyShutdownData('supplier',$event,0)">
+                      <ng-option *ngFor="let supplier of SuppliersMasterStore.allItems" [value]="supplier.id">
+                        {{supplier.contact_name}}</ng-option>
+                      <!-- <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                {{item.title?.length > 60 ? (item.title | slice:0:60)+' ...' :
+                                item.title}}<span aria-hidden="true" (click)="clear(item)" style="border:none;" class="ng-value-icon left">×</span>
+                            </ng-template>
+                            <ng-template ng-option-tmp let-item="item" let-index="index">
+                                {{item.title?.length > 80 ? (item.title | slice:0:80)+' ...' :
+                                item.title}}
+                            </ng-template> -->
+                    </ng-select>
+                  </div>
+                  <button class="btn multi-add-user ml-2" style="width: 42px;" (click)="addSupplier()"
+                    *ngIf="AuthStore.getActivityPermission(100,'CREATE_SUPPLIER')"><i class="fas fa-plus"></i></button>
+                </div>
+
+              </div>
+            </div>
+
+            <div class="col-sm-12">
+              <div [ngClass]="AssetMaintenanceStore.frequencyShutdownData[0]?.is_shutdown?'form-group add-kpi-textarea edit-and-delete-main pointer':'form-group add-kpi-textarea'">
+                <div class="custom-control white-cbox  custom-checkbox d-inline-block">
+                  <input type="checkbox" class="custom-control-input" id="radio-120" name="radio-120"
+                    (change)="setFrequencyShutdownData('schedule',$event,0)"
+                    [checked]="AssetMaintenanceStore.frequencyShutdownData[0]?.is_shutdown?true:false">
+                  <label class="custom-control-label align-label-check  font-normal mr-0" for="radio-120"
+                    data-toggle="modal">&nbsp;</label>
+                </div><label for="name">{{'asset_mt_form_shutdown_required' | translate}}
+
+                </label>
+                <div class="edit-option-show" style="margin: 18px -15px 0 0;"
+                *ngIf="AssetMaintenanceStore.frequencyShutdownData[0]?.is_shutdown">
+                <a (click)="addShutdown(0)"><i class="fas fa-plus"></i></a>
+              </div>
+              <p class="form-error pt-1" *ngIf="formErrors&&formErrors.asset_maintenance_schedules">
+                  {{formErrors.asset_maintenance_schedules}}</p>
+              </div>
+
+              <!--------accordion starts------>
+
+              <div class="panel-group panel-drop-sections pt-0" id="jd" role="tablist" aria-multiselectable="true" *ngIf="AssetMaintenanceStore.frequencyShutdownData[0]?.is_shutdown && AssetMaintenanceStore.frequencyShutdownData[0]?.asset_maintenance_schedule_shutdowns?.length>0">
+                <div class="panel panel-default">
+                  <div [ngClass]="shutdownOpened?'panel-heading active':'panel-heading'" role="tab" id="headingOne" (click)="setShutdownAccordion()">
+                    <div class="panel-title">
+                      <a role="button" data-toggle="collapse" href="#ceo504" aria-expanded="false"
+                        aria-controls="collapseOne" class="collapsed">
+
+                        <h5 class="width96pc mt-0"> {{'asset_mt_form_shutdown' | translate}} <span class="drop-down-icone"><i
+                              class="fas fa-chevron-down"></i></span> </h5>
+                      </a>
+                    </div>
+                  </div>
+                  <div id="ceo504" *ngIf="shutdownOpened"
+                    class="drop-detail-sec panel-collapse collapse"
+                    role="tabpanel" aria-labelledby="headingOne" data-parent="#ceo504">
+                   
+                    <div class="panel-body bg-white">
+                      <div class="drop-detail-sec">
+
+                        <div>
+                          <!--<h6>Shutdown Details</h6>-->
+                          <ul class="arrowlist pl-0 mt-0 mb-0 subheadings-border-right" *ngIf="AssetMaintenanceStore.frequencyShutdownData[0]?.asset_maintenance_schedule_shutdowns?.length>0">
+                            <li class="clearfix mb-2" *ngFor="let shutdown of AssetMaintenanceStore.frequencyShutdownData[0]?.asset_maintenance_schedule_shutdowns"><a>
+                                <h5 class="mb-0 font-normal">{{shutdown.title}}
+                                  <!-- <span
+                                    class="outline-tag active ml-1"
+                                    style="padding: 2px 3px; font-size: 11px;">New</span> -->
+                                  </h5>
+                                <p style="white-space: pre-line;">{{shutdown.start_date | date : OrganizationGeneralSettingsStore.organizationSettings?.date_format}} - {{shutdown.end_date | date : OrganizationGeneralSettingsStore.organizationSettings?.date_format}}<span class="border-right"></span> <span
+                                    class="pl-2">{{'asset_mt_form_daily_downtime' | translate}} ({{shutdown.start_date+' '+shutdown.downtime_from| date: 'hh:mm aa'}} to {{shutdown.end_date+' '+shutdown.downtime_to| date: 'hh:mm aa'}})</span><br>
+                                  {{shutdown.description}}</p>
+                              </a></li>
+
+                           
+                          </ul>
+
+                         
+                        </div>
+
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+
+            </div>
+
+          </div>
+          <!-- <hr> -->
+
+          <div class="row" *ngIf="frequencyDataCount>1">
+            <div class="col-sm-12">
+
+
+              <!--------accordion starts------>
+
+              <div class="panel-group panel-drop-sections pt-0" id="jd" role="tablist" aria-multiselectable="true">
+                <div [ngClass]="checkAccordionIndexPresent(num)?'panel panel-default reject':'panel panel-default'"
+                  *ngFor="let row of AssetMaintenanceStore.frequencyShutdownData;let num=index">
+                  <div [ngClass]="currentScheduleIndex==num?'panel-heading active':'panel-heading'" role="tab" id="headingOne">
+                    <div class="panel-title">
+                      <a role="button" data-toggle="collapse" [attr.href]="'#ceo'+num" aria-expanded="false"
+                        aria-controls="collapseOne" class="collapsed" (click)="setMaintenanceIndex(num)">
+
+                        <h5 class="width96pc mt-0"> {{row.frequency_title?row.frequency_title:''}} <span class="drop-down-icone"><i
+                              class="fas fa-chevron-down"></i></span> </h5>
+                      </a>
+                    </div>
+                  </div>
+                  <div [attr.id]="'ceo'+num" *ngIf="currentScheduleIndex==num" class="drop-detail-sec panel-collapse collapse" role="tabpanel"
+                    aria-labelledby="headingOne" [attr.data-parent]="'#ceo'+num" >
+                    <div class="panel-body bg-white edit-and-delete-main">
+                      <div class="edit-option-show" style="margin: -18px 24px 0 0;">
+                        <a (click)="confirmDelete(num)"><i class="fas fa-trash"></i></a>
+                      </div>
+                      <div class="drop-detail-sec">
+
+                        <div>
+                          <!--<h6>Shutdown Details</h6>-->
+                          <div class="row">
+                            <div
+                              [ngClass]="getMaintenanceTypeData()=='external'?'col-lg-6 col-sm-6':'col-lg-12 col-sm-6'">
+                              <div class="form-group">
+                                <label for="name">{{'asset_mt_form_title' | translate}} <sup>*</sup></label>
+                                <div class="plain-select input-add-report">
+                                  <input type="text" class="form-control" formControlName="schedule_title"
+                                    (keyup)="setFrequencyShutdownData('title',$event,num)"
+                                    [placeholder]="'asset_mt_form_schedule_title_placeholder' | translate">
+                                </div>
+                              </div>
+                            </div>
+
+                            <div
+                              [ngClass]="getMaintenanceTypeData()=='external'?'col-sm-6 col-lg-3':'col-sm-6 col-lg-6'">
+                              <div class="form-group">
+                                <label for="name">{{'asset_mt_form_date' | translate}} <sup>*</sup></label>
+                                <div class="input-group input-clear-btn-main">
+                                  <!-- <div class="input-clear-btn-main"> -->
+                                  <input formControlName="scheduled_date" class="form-control bg-white"
+                                    [placeholder]="'asset_mt_form_date_placeholder' | translate" id="scheduled_date" [readonly]="true"
+                                    (dateSelect)="setFrequencyShutdownData('scheduled_date',$event,num)" ngbDatepicker
+                                    #scheduledDate="ngbDatepicker">
+                                  <span aria-hidden="true" *ngIf="row.scheduled_date"
+                                    (click)="clear('scheduled_date',num)" style="border:none;"
+                                    class="input-clear-btn">×</span>
+                                  <!-- </div> -->
+
+                                  <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary calendar" (click)="scheduledDate.toggle()"
+                                      type="button"><i class="fas fa-calendar-alt"></i></button>
+                                  </div>
+                                </div>
+                              </div>
+
+                            </div>
+
+                            <div class="col-lg-6 col-sm-12" *ngIf="getMaintenanceTypeData()=='internal'">
+                              <div class="form-group">
+                                <label for="name">{{'asset_mt_form_responsible_user' | translate}} <sup>*</sup></label>
+
+                                <div class="clearfix">
+                                  <div class="multiple-plain-ngselect">
+                                    <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                                      [placeholder]="'asset_mt_form_responsible_user_placeholder'|translate" formControlName="user_ids"
+                                      [multiple]="false" (clear)="getUsers()" (search)="searchUers($event)"
+                                      [multiple]="true" (open)="getUsers()" [searchFn]="customSearchFn"
+                                      (change)="setFrequencyShutdownData('responsible',$event,num)">
+                                      <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                        <img class="ng-select-user-display" *ngIf="item.image?.token||item.image_token"
+                                          height="15" width="15"
+                                          [attr.src]="item.image?.token?createImageUrl(item.image?.token):createImageUrl(item.image_token)" />
+                                        <img class="ng-select-user-display"
+                                          *ngIf="!item.image?.token && !item.image_token" height="15" width="15"
+                                          [attr.src]="getDefaultImage('user-logo')" />
+                                        <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,'
+                                          ') | titlecase}}</b><span aria-hidden="true" (click)="clear(item)"
+                                          style="border:none;" class="ng-value-icon left">×</span>
+                                      </ng-template>
+
+                                      <ng-template ng-option-tmp let-item="item" let-index="index">
+                                        <div class="user-post-department-pic">
+                                          <img class="ng-select-user-display"
+                                            *ngIf="item.image?.token || item.image_token" height="25" width="25"
+                                            [attr.src]="item.image?.token?createImageUrl(item.image?.token):createImageUrl(item.image_token)" />
+                                          <img class="ng-select-user-display"
+                                            *ngIf="!item.image?.token && !item.image_token" height="25" width="25"
+                                            [attr.src]="getDefaultImage('user-logo')" />
+                                        </div>
+                                        <div class="user-post-department-div">
+                                          <b>{{getStringsFormatted([item.first_name,item.last_name],50,' ') |
+                                            titlecase}}</b>
+                                          <p class="user-post-department-multiple">
+                                            {{getStringsFormatted([item.designation_title,' '+item.department],50,',')}}
+                                          </p>
+                                        </div>
+                                      </ng-template>
+                                    </ng-select>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div class="col-sm-12 col-lg-3" *ngIf="getMaintenanceTypeData()=='external'">
+                              <div class="form-group">
+                                <label>{{'asset_mt_form_supplier_name' | translate}} <sup>*</sup>
+                                </label>
+                                <div class="clearfix d-flex">
+                                  <div class="multiple-plain-ngselect w-100">
+                                    <ng-select [placeholder]="'asset_mt_form_supplier_name_placeholder' | translate" [multiple]="false"
+                                      searchable="true" formControlName="supplier_id" (search)="searchSupplier($event)"
+                                      (clear)="getSupplier()" (open)="getSupplier()" [closeOnSelect]="true"
+                                      autocomplete="new-password"
+                                      (change)="setFrequencyShutdownData('supplier',$event,num)">
+                                      <ng-option *ngFor="let supplier of SuppliersMasterStore.allItems"
+                                        [value]="supplier.id">
+                                        {{supplier.contact_name}}</ng-option>
+                                      <!-- <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                {{item.title?.length > 60 ? (item.title | slice:0:60)+' ...' :
+                                item.title}}<span aria-hidden="true" (click)="clear(item)" style="border:none;" class="ng-value-icon left">×</span>
+                            </ng-template>
+                            <ng-template ng-option-tmp let-item="item" let-index="index">
+                                {{item.title?.length > 80 ? (item.title | slice:0:80)+' ...' :
+                                item.title}}
+                            </ng-template> -->
+                                    </ng-select>
+                                  </div>
+                                  <button class="btn multi-add-user ml-2" style="width: 42px;" (click)="addSupplier()"
+                                    *ngIf="AuthStore.getActivityPermission(100,'CREATE_SUPPLIER')"><i
+                                      class="fas fa-plus"></i></button>
+                                </div>
+
+                              </div>
+                            </div>
+                          </div>
+
+
+                          <div
+                            [ngClass]="AssetMaintenanceStore.frequencyShutdownData[num]?.is_shutdown?'form-group add-kpi-textarea edit-and-delete-main':'form-group add-kpi-textarea'">
+                            <div class="custom-control white-cbox  custom-checkbox d-inline-block">
+                              <input type="checkbox" class="custom-control-input" id="radio-121" name="radio-121"
+                                (change)="setFrequencyShutdownData('schedule',$event,num)"
+                                [checked]="AssetMaintenanceStore.frequencyShutdownData[num]?.is_shutdown?true:false">
+                              <label class="custom-control-label align-label-check  font-normal mr-0" for="radio-121"
+                                data-toggle="modal">&nbsp;</label>
+                            </div><label for="name">Shutdown Required or Not ?
+
+                            </label>
+                            <div class="edit-option-show" style="margin: 18px -15px 0 0;"
+                              *ngIf="AssetMaintenanceStore.frequencyShutdownData[num]?.is_shutdown">
+                              <a (click)="addShutdown(num)"><i class="fas fa-plus"></i></a>
+                            </div>
+                          </div>
+
+
+
+                          <ul class="arrowlist pl-0 mt-0 mb-0 subheadings-border-right" *ngIf="AssetMaintenanceStore.frequencyShutdownData[num]?.asset_maintenance_schedule_shutdowns?.length>0">
+                            <li class="clearfix mb-2" *ngFor="let shutdown of AssetMaintenanceStore.frequencyShutdownData[num]?.asset_maintenance_schedule_shutdowns"><a>
+                                <h5 class="mb-0 font-normal">{{shutdown.title}}
+                                  <!-- <span
+                                    class="outline-tag active ml-1"
+                                    style="padding: 2px 3px; font-size: 11px;">New</span> -->
+                                  </h5>
+                                <p style="white-space: pre-line;">{{shutdown.start_date | date : OrganizationGeneralSettingsStore.organizationSettings?.date_format}} - {{shutdown.end_date | date : OrganizationGeneralSettingsStore.organizationSettings?.date_format}}<span class="border-right"></span> <span
+                                    class="pl-2">{{'asset_mt_form_daily_downtime' | translate}} ({{shutdown.start_date+' '+shutdown.downtime_from| date: 'hh:mm aa'}} to {{shutdown.end_date+' '+shutdown.downtime_to| date: 'hh:mm aa'}})</span><br>
+                                  {{shutdown.description}}</p>
+                              </a></li>
+
+                           
+                          </ul>
+                        </div>
+
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              <!--------accordion ends---------->
+
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="tab">
+          <!-- tab start -->
+          <div class=" widget-body-light issuue-new-style">
+            <div class="row">
+              <div class="col-sm-12 col-lg-12">
+                <div class="row">
+                  <div class="col-md-12">
+                    <div class="issue-top-sec">
+                      <div class="clearfix ">
+                        <h5 class="d-inline-block cmn-head-style label-tag-style mr-2"><span
+                            class="issue-smoal-head-text">#{{AssetMaintenanceStore?.individualMaintenanceDetails?.reference_code}}</span>{{AssetMaintenanceStore?.individualMaintenanceDetails?.title}}<span
+                            class="draft-tag label-tag-style-tag label-left-arow-tag d-inline-block status-tag-new-one ml-3">{{AssetMaintenanceStore?.individualMaintenanceDetails?.asset_maintenance_status?.language[0]?.pivot?.title}}</span>
+                        </h5>
+                      </div>
+
+                      <p style="white-space: pre-line;">{{AssetMaintenanceStore?.individualMaintenanceDetails?.description}}</p>
+                    </div>
+                  </div>
+
+
+
+                  <div class="col-lg-3 col-sm-6">
+                    <h6>{{'asset_mt_form_category' | translate}}</h6>
+                    <p>{{AssetMaintenanceStore?.individualMaintenanceDetails?.asset_maintenance_category?.title}}</p>
+                  </div>
+
+                  <div class="col-lg-3 col-sm-6">
+                    <h6>{{'asset_mt_form_type' | translate}}</h6>
+                    <p>{{AssetMaintenanceStore?.individualMaintenanceDetails?.asset_maintenance_type?.language[0]?.pivot?.title}}</p>
+                  </div>
+
+                  <div class="col-lg-3 col-sm-6">
+                    <h6>{{'asset_mt_form_guarantee_warranty' | translate}}</h6>
+                    <p>{{AssetMaintenanceStore.individualMaintenanceDetails?.warranty_year?AssetMaintenanceStore.individualMaintenanceDetails?.warranty_year+'yrs':''}} {{AssetMaintenanceStore.individualMaintenanceDetails?.warranty_month?AssetMaintenanceStore.individualMaintenanceDetails?.warranty_month+'months':''}} {{AssetMaintenanceStore.individualMaintenanceDetails?.is_warranty?'Warranty':'Guarantee'}}</p>
+                  </div>
+
+                  <div class="col-lg-3 col-sm-6">
+                    <h6>{{'asset_mt_form_maintenance_cost' | translate}}</h6>
+                    <p>{{OrganizationGeneralSettingsStore?.organizationSettings?.currency}}{{AssetMaintenanceStore.individualMaintenanceDetails?.total_cost}}</p>
+                  </div>
+
+                  <div class="col-sm-12 col-lg-12">
+                    <div class="issue-top-sec">
+                      <div class="clearfix ">
+                        <h6 class="d-inline-block cmn-head-style label-tag-style mr-2">{{'asset_mt_form_maintenance_schedule' | translate}}<span
+                            class="draft-tag label-tag-style-tag label-left-arow-tag d-inline-block status-tag-new-one ml-3">{{AssetMaintenanceStore.individualMaintenanceDetails?.asset_maintenance_schedule_frequency?.language[0]?.pivot?.title}}</span>
+                        </h6>
+                      </div>
+                    </div>
+                    <!--------accordion starts------>
+
+                    <div class="panel-group panel-drop-sections pt-0" id="jd" role="tablist"
+                      aria-multiselectable="true" *ngIf="AssetMaintenanceStore.frequencyShutdownData[0]?.is_shutdown == true">
+                      <div class="panel panel-default" *ngFor="let schedule of AssetMaintenanceStore.frequencyShutdownData;let num=index">
+                        <div [ngClass]="currentScheduleIndex==num?'panel-heading active':'panel-heading'" role="tab" id="headingOne" (click)="setMaintenanceIndex(num)">
+                          <div class="panel-title">
+                            <a role="button" data-toggle="collapse" [attr.href]="'#ceopreview'+num" aria-expanded="false"
+                              aria-controls="collapseOne" class="collapsed">
+
+                              <h5 class="width96pc mt-0  cmn-head-style "><span class="issue-smoal-head-text">{{schedule.title}}
+                                  </span>
+                                <span>
+                                  <p class="mb-0"><i class="fas fa-calendar-alt date-pics-two"></i> {{getScheduledDate(schedule.scheduled_date)| date : OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</p>
+                                </span>
+                                <!--<span class="draft-tag label-tag-style-tag label-left-arow-tag d-inline-block status-tag-new-one ml-3">Ongoing</span>--><span
+                                  class="drop-down-icone"><i class="fas fa-chevron-down"></i></span>
+                              </h5>
+                            </a>
+                          </div>
+                        </div>
+                        <div [attr.id]="'ceopreview'+num" *ngIf="currentScheduleIndex==num" class="drop-detail-sec panel-collapse collapse" role="tabpanel"
+                          aria-labelledby="headingOne" [attr.data-parent]="'#ceopreview'+num" >
+                          <div class="panel-body bg-white pb-0">
+                            <div class="drop-detail-sec">
+                              <div class="row">
+                                <!-- <div class="col-lg-3 col-sm-12">
+                                  <h6>Department</h6>
+                                  <p>IT Department</p>
+                                </div> -->
+
+                                <div class="col-lg-9 col-sm-12" *ngIf="getMaintenanceTypeData()=='internal'">
+                                  <h6>{{'asset_mt_form_responsible_user' | translate}}</h6>
+                                  <div class="row">
+                                    <div class="col-lg-3 col-sm-6" *ngFor="let responsible of schedule.user_ids; let i = index">
+                                        <div class="label-and-user-pic">
+                                
+                                  <!-- <ul *ngIf="schedule.user_ids?.length > 0"
+                                    class="arci-user-tab-dtl workflow-lst-pics-loop clearfix mb-2 d-inline-block">
+                                    <li class="rounde-hov-bg"
+                                        *ngFor="let responsible of schedule.user_ids; let i = index"> -->
+                                        <app-user-popup-box
+                                            [source]="getCreatedByPopupDetails(responsible)"
+                                            [showName]="true" [activateButtons]="false">
+                                        </app-user-popup-box>
+                                    <!-- </li>
+                                </ul> -->
+                                  </div>
+                                  </div>
+                                <div
+                                    *ngIf="schedule.user_ids?.length == 0">
+                                    {{AppStore.noContentText}}</div>
+
+
+                                </div>
+                              </div>
+
+                              <div class="col-lg-9 col-sm-12" *ngIf="getMaintenanceTypeData()=='external'">
+                                <h6>{{'asset_mt_form_supplier' | translate}}</h6>
+                                <div class="row">
+                                  <div class="col-lg-3 col-sm-6">
+                                      <div class="label-and-user-pic">
+                              
+                                <!-- <ul *ngIf="schedule.user_ids?.length > 0"
+                                  class="arci-user-tab-dtl workflow-lst-pics-loop clearfix mb-2 d-inline-block">
+                                  <li class="rounde-hov-bg"
+                                      *ngFor="let responsible of schedule.user_ids; let i = index"> -->
+                                      <app-user-popup-box
+                                          [source]="getCreatedByPopupDetails(schedule.supplier_id,true)"
+                                          [showName]="true">
+                                      </app-user-popup-box>
+                                  <!-- </li>
+                              </ul> -->
+                                </div>
+                                </div>
+                              <div
+                                  *ngIf="schedule.supplier_id==null">
+                                  {{AppStore.noContentText}}</div>
+
+
+                              </div>
+                            </div>
+                              </div>
+
+                              <div *ngIf="schedule.asset_maintenance_schedule_shutdowns?.length>0">
+                                <h6>{{'asset_mt_form_shutdown_details' | translate}}</h6>
+                                <ul class="arrowlist pl-0 mt-0 mb-0 subheadings-border-right">
+                                  <li class="clearfix mb-2" *ngFor="let shutdown of schedule.asset_maintenance_schedule_shutdowns"><a>
+                                      <h5 class="mb-0 font-normal">{{shutdown.title}}
+                                        <!-- <span
+                                          class="outline-tag active ml-1"
+                                          style="padding: 2px 3px; font-size: 11px;">New</span> -->
+                                        </h5>
+                                      <p>{{shutdown.start_date}} - {{shutdown.end_date}}<span class="border-right"></span> <span
+                                          class="pl-2">Daily Downtime ({{shutdown.start_date+' '+shutdown.downtime_from| date: 'hh:mm aa'}} to {{shutdown.end_date+' '+shutdown.downtime_to| date: 'hh:mm aa'}})</span><br>
+                                        {{shutdown.description}}</p>
+                                    </a></li>
+
+                                 
+                                </ul>
+                              </div>
+
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      
+
+                    </div>
+
+                    <!--------accordion ends---------->
+
+                  </div>
+
+                </div>
+              </div>
+
+
+            </div>
+
+          </div>
+        </div>
+        <!-- tab end -->
+        <div style="overflow:auto;">
+          <div class="form-next-page-btns" style="float:left;">
+            <button class="btn btn-active form-next-btn " type="button" id="nextBtn" [disabled]="AppStore?.loading || !checkFormObject()"
+            (click)="nextPrev(1)">{{AppStore.loading ?
+            getButtonText('loading') : getButtonText(nextButtonText)}}</button>
+            <button class="btn" type="button" id="prevBtn" (click)="nextPrev(-1)">{{AppStore.loading ?
+              getButtonText('loading') : getButtonText(previousButtonText)}}</button>
+              <button class="btn" type="button" (click)="confirmCancel()">{{AppStore.loading ?
+                getButtonText('loading') : getButtonText('cancel')}}</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  <!-- </div> -->
+<!-- </main> -->
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+<div class="modal modal-style-1 fade" id="delete-popup" #cancelPopup data-backdrop="static" data-keyboard="false">
+  <app-delete-popup [source]="cancelObject"></app-delete-popup>
+</div>
+<!------------------- Delete Confirmation Modal End --------------------------->
+
+<div class="modal modal-style-1 popup-full-width fade" style="overflow: auto scroll;" data-keyboard="false"
+  data-backdrop="static" #supplierModal>
+
+  <app-suppliers-modal *ngIf="supplierObject.type" [source]="supplierObject">
+
+  </app-suppliers-modal>
+
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="shut-down-details-popup" data-keyboard="false"
+  data-backdrop="static" #shutdownModal>
+  <app-maintenance-shutdown *ngIf="shutdownObject.type" [source]="shutdownObject"></app-maintenance-shutdown>
+</div>

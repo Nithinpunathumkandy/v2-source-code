@@ -1,0 +1,947 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navigationBar>
+    <app-breadcrumb-menu></app-breadcrumb-menu>
+    <app-sub-menu></app-sub-menu>
+</nav>
+<main class="mt-3 organization-page tab-btns-five">
+    <div class="container-fluid">
+        <div class="organization-form-page" *mobxAutorun>
+            <form id="regForm" class="organization-multi-stup-form" [formGroup]="form">
+                <!-- Circles which indicates the steps of the form: -->
+                <div id="header-sroll-form" class="form-indicates-sec clearfix" #formSteps>
+                    <span class="step pointer" (click)="changeStep(0)"><span class="multi-form-nbr">1</span>{{'bc_strategy' | translate}}</span>
+                    <span class="step pointer" (click)="changeStep(1)"><span class="multi-form-nbr">2</span>{{'solution_assesment' | translate}}</span>
+                    <span class="step pointer" (click)="changeStep(2)"><span class="multi-form-nbr">3</span>{{'preview_save' | translate}}</span>
+                </div>
+                <!-- One "tab" for each step in the form: -->
+                <div class="tab">
+                    <!-- tab start -->
+
+                    <div class="row">
+                        <div class="col-lg-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="name">{{'bc_type' | translate}}<span
+                                        class="form-error">*</span></label>
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect select-width-plus">
+                                        <ng-select 
+                                        [placeholder]="'select_bc_type'| translate"
+                                            [multiple]="false" searchable="true" bindLabel="title" bindValue="id"
+                                            formControlName="business_continuity_strategy_type_id"
+                                            (change)="getDescription()"
+                                            (search)="searchBcContinuityStrategyType($event)"
+                                            (clear)="getBcContinuityStrategyType()"
+                                            (open)="getBcContinuityStrategyType()" autocomplete="new-password">
+                                            <ng-option [value]="type.id"
+                                                *ngFor="let type of BcsTypesMasterStore.allItems">
+                                                {{type.title}}
+                                            </ng-option>
+                                        </ng-select>
+                                        <p class="form-error pt-1"
+                                            *ngIf="formErrors && formErrors.business_continuity_strategy_type_id">
+                                            {{formErrors.business_continuity_strategy_type_id}}</p>
+                                    </div>
+                                    <button class="btn multi-add-user" (click)="addBcsType()"><i
+                                            class="fas fa-plus"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="name">{{'risks' | translate}} <span class="form-error">*</span></label>
+                                <div class="clearfix w-100">
+                                    <div class="multiple-plain-ngselect">
+                                        <ng-select [placeholder]="'select_risks'| translate" multiple="true" searchable="true"
+                                            bindLabel="title" bindValue="id" formControlName="risk_ids"
+                                            (search)="searchRisks($event)" (clear)="getRisks()" (open)="getRisks()"
+                                            autocomplete="new-password"
+                                            (add) = "getRiskTreatments($event)"
+                                            (remove) = "clearRiskTreatments($event)">
+                                            <ng-option [value]="risk.id" *ngFor="let risk of BcmRiskAssessmentStore.BcmRiskList">
+                                                {{risk.title}}
+                                            </ng-option>
+                                        </ng-select>
+                                        <p class="form-error pt-1" *ngIf="formErrors && formErrors.risk_ids">
+                                            {{formErrors.risk_ids}}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="name">{{'description' | translate}}</label>
+                                <textarea formControlName="type_description" class="form-control" disabled rows="4"
+                                    id="comment" [placeholder]="'enter_business_continuity_strategy_type_description_placeholder'| translate"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-12 col-sm-12">
+                            <div class="form-group">
+                                <label>{{'solutions' | translate}} <span class="form-error">*</span></label>
+                                <div class="clearfix d-flex">
+                                    <input type="text" [(ngModel)]="solution" [ngModelOptions]="{standalone: true}"
+                                        class="form-control" [placeholder]="'enter_solutions_placeholder'| translate" />
+                                    <a *ngIf="solution">
+                                        <button class="btn multi-add-user ml-2" (click)="addSolution()"
+                                            style="width: 80px;">Add to List</button>
+                                    </a>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors && formErrors.solutions">
+                                    {{formErrors.solutions}}</p>
+
+                                <ul class="arrowlist pl-0 mt-2">
+                                    <ng-container *ngFor="let solution of solutionsArray">
+                                        <li class="clearfix">
+                                            {{solution?.title}}
+                                            <button type="button" title="Delete Solution"
+                                                (click)="deleteSolution(solution)"
+                                                class="btn btn-small float-right btn-small-delete"
+                                                style="border: none;"><i class="fas fa-trash"></i></button>
+                                        </li>
+                                    </ng-container>
+
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6 col-sm-12">
+                            <div class="form-group  mt-4">
+                                <a class="text-light-blue" data-toggle="modal" (click)="organisationChanges()"
+                                    style="border-bottom: 1px solid;">{{'change_organization_unit' | translate}}<span
+                                        class="form-error">*</span></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab">
+                    <!-- tab start -->
+
+                    <div class="row" *mobxAutorun>
+                        <div class="col-lg-12 col-sm-12">
+                            <div class="form-group">
+                                <label>{{'solutions' | translate}} </label>
+
+                                <div class="mt-1" *ngIf="BcmStrategyStore.single_loaded">
+                                    <!-- common-tab-md starts -->
+                                    <div class="common-tab-md clearfix">
+                                        <div class="tab-common-left-md">
+                                            <div class="issues-tab">
+                                                <!-- tab menu start -->
+                                                <ul class="nav nav-tabs nav-tabs--vertical nav-tabs--left vertical-tab"
+                                                    role="navigation">
+                                                    <li class="nav-item"
+                                                        *ngFor="let solution of BcmStrategyStore._singleStrategies.solutions; let $i = index">
+                                                        <a (click)="getBcmSolutions(solution.id)"
+                                                            [ngClass]="BcmStrategyStore.showId == solution.id ? 'nav-link active show':'nav-link'"
+                                                            data-toggle="tab" role="tab" aria-controls="lorem"
+                                                            aria-selected="false" data-original-title="" title="">
+                                                            {{solution?.title}}
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                            <!-- tab menu end -->
+                                        </div>
+
+                                        <div class="tab-common-left-content-m cmn-bdr">
+                                            <ng-container
+                                                *ngFor="let solutionDetails of BcmStrategyStore._singleStrategies.solutions;let num=index">
+                                                <div class="tab-content"
+                                                    *ngIf="solutionDetails.id==BcmStrategyStore.showId">
+                                                    <div class="tab-pane fade active show" id="risk-treatment-tab-one"
+                                                        role="tabpanel">
+                                                        <div class="bg-white pt-3 pb-3">
+                                                            <div class="row issuue-new-style">
+                                                                <h5
+                                                                    class="d-inline-block cmn-head-style label-tag-style">
+                                                                    <span
+                                                                        class="issue-smoal-head-text">#{{solutionDetails?.reference_code}}</span>
+                                                                    {{solutionDetails?.title}} <span
+                                                                        class="draft-tag label-tag-style-tag label-left-arow-tag d-inline-block draft-tag-{{solutionDetails?.business_continuity_strategy_solution_status?.label}} status-tag-new-one ml-3">{{solutionDetails?.business_continuity_strategy_solution_status?.language[0]?.pivot?.title}}</span>
+                                                                </h5>
+
+                                                                <div class="row mt-3">
+
+
+                                                                    <!-- <div class="col-lg-6 col-sm-12">
+                                                                        <div class="form-group">
+                                                                            <label>Score</label>
+                                                                            <div class="clearfix d-flex">
+                                                                                <input type="number"
+                                                                                    [ngModelOptions]="{standalone: true}"
+                                                                                    [(ngModel)]="solutionDetails['score'+num]"
+                                                                                    class="form-control"
+                                                                                    placeholder="Score" />
+                                                                                    
+                                                                            </div>
+                                                                            <p class="form-error pt-1">
+                                                                                {{solutionDetails.score_error}}</p>
+                                                                        </div>
+                                                                    </div> -->
+                                                                    <div class="col-lg-12 col-sm-12">
+                                                                        <div class="form-group">
+                                                                            <label>{{'description' | translate}}</label>
+                                                                            <div class="clearfix d-flex">
+                                                                                <textarea class="form-control" rows="3"
+                                                                                    id="comment"
+                                                                                    [ngModelOptions]="{standalone: true}"
+                                                                                    [(ngModel)]="solutionDetails['description'+num]"
+                                                                                    [placeholder]="'write_a_short_description_of_the_solution'| translate"></textarea>
+                                                                                <p class="form-error pt-1">
+                                                                                    {{solutionDetails.description_error}}
+                                                                                </p>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="col-lg-12 col-sm-12">
+                                                                        <div class="form-group">
+                                                                            <label>{{'benifits' | translate}} <span
+                                                                                    class="form-error">*</span></label>
+                                                                            <div class="clearfix d-flex">
+                                                                                <input type="text"
+                                                                                    [ngModelOptions]="{standalone: true}"
+                                                                                    [(ngModel)]="solutionDetails['benifits'+num]"
+                                                                                    class="form-control"
+                                                                                    [placeholder]="'enter_strategy_benifits_placeholder'| translate"  />
+                                                                                <a>
+                                                                                    <button
+                                                                                        *ngIf="solutionDetails['benifits'+num]"
+                                                                                        (click)="addBenifits(solutionDetails['benifits'+num] , solutionDetails.id,num)"
+                                                                                        class="btn multi-add-user ml-2"
+                                                                                        style="width: 42px;"><i
+                                                                                            class="fas fa-plus"></i></button>
+                                                                                </a>
+                                                                            </div>
+                                                                            <p class="form-error pt-1">
+                                                                                {{solutionDetails.benifits_error}}</p>
+                                                                            <ul class="arrowlist pl-0 mt-2">
+                                                                                <ng-container
+                                                                                    *ngFor="let benifits of solutionDetails.benifits;let num1=index;">
+                                                                                    <li class="clearfix"
+                                                                                        *ngIf="benifits.solution_id == BcmStrategyStore.showId || benifits.business_continuity_strategy_solution_id == BcmStrategyStore.showId">
+                                                                                        {{benifits?.title}}
+                                                                                        <button type="button"
+                                                                                            title="Delete Benifit"
+                                                                                            (click)="deleteSolutionBenifits(num,num1 ,solutionDetails.id)"
+                                                                                            class="btn btn-small float-right btn-small-delete"
+                                                                                            style="border: none;"><i
+                                                                                                class="fas fa-trash"></i></button>
+                                                                                    </li>
+                                                                                </ng-container>
+                                                                            </ul>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="col-lg-12 col-sm-12">
+                                                                        <div class="form-group">
+                                                                            <label>{{'concequences' | translate}} <span
+                                                                                    class="form-error">*</span></label>
+                                                                            <div class="clearfix d-flex">
+                                                                                <input type="text"
+                                                                                    [ngModelOptions]="{standalone: true}"
+                                                                                    [(ngModel)]="solutionDetails['consequences'+num]"
+                                                                                    class="form-control"
+                                                                                    [placeholder]="'enter_strategy_concequences_placeholder'| translate" />
+                                                                                <a>
+                                                                                    <button
+                                                                                        *ngIf="solutionDetails['consequences'+num]"
+                                                                                        (click)="addConcequences(solutionDetails['consequences'+num] , solutionDetails.id, num)"
+                                                                                        class="btn multi-add-user ml-2"
+                                                                                        style="width: 42px;"><i
+                                                                                            class="fas fa-plus"></i></button>
+                                                                                </a>
+                                                                            </div>
+                                                                            <p class="form-error pt-1">
+                                                                                {{solutionDetails.consequences_error}}
+                                                                            </p>
+                                                                            <ul class="arrowlist pl-0 mt-2">
+                                                                                <ng-container
+                                                                                    *ngFor="let consequences of solutionDetails.consequences ; let num2 = index;">
+                                                                                    <li class="clearfix"
+                                                                                        *ngIf="consequences.solution_id == BcmStrategyStore.showId || consequences.business_continuity_strategy_solution_id == BcmStrategyStore.showId">
+                                                                                        {{consequences?.title}}
+                                                                                        <button type="button"
+                                                                                            title="Delete Consequence"
+                                                                                            (click)="deleteSolutionConcequences(num,num2 ,solutionDetails.id)"
+                                                                                            class="btn btn-small float-right btn-small-delete"
+                                                                                            style="border: none;"><i
+                                                                                                class="fas fa-trash"></i></button>
+
+                                                                                    </li>
+                                                                                </ng-container>
+                                                                            </ul>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="col-lg-12 col-sm-12">
+                                                                        <div class="form-group">
+                                                                            <div>
+                                                                                <h5 class="cmn-head-style"> Resource Requirements
+                                                                                </h5>
+                                                                            </div>
+                                                                            <hr>
+                                                                        </div>
+                                                                    </div>
+                                                                    
+                                                                    <div class="col-lg-6 col-sm-12">
+                                                                        <div class="form-group">
+                                                                            <label>{{'people' | translate}}</label>
+                                                                            <div class="clearfix d-flex">
+                                                                                <input type="text"
+                                                                                    [ngModelOptions]="{standalone: true}"
+                                                                                    [(ngModel)]="solutionDetails['people'+num]"
+                                                                                    class="form-control"
+                                                                                    [placeholder]="'enter_strategy_people_placeholder'| translate" />
+                                                                                <p class="form-error pt-1">
+                                                                                    {{solutionDetails.people_error}}</p>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="col-lg-6 col-sm-12">
+                                                                        <div class="form-group">
+                                                                            <label>{{'skills' | translate}}</label>
+                                                                            <div class="clearfix d-flex">
+                                                                                <input type="text"
+                                                                                    [ngModelOptions]="{standalone: true}"
+                                                                                    [(ngModel)]="solutionDetails['skills'+num]"
+                                                                                    class="form-control"
+                                                                                    [placeholder]="'enter_strategy_skills_placeholder'| translate" />
+                                                                                <p class="form-error pt-1">
+                                                                                    {{solutionDetails.skills_error}}</p>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-lg-6 col-sm-12">
+                                                                        <div class="form-group">
+                                                                            <label>{{'info_and_data' | translate}}</label>
+                                                                            <div class="clearfix d-flex">
+                                                                                <input type="text"
+                                                                                    [ngModelOptions]="{standalone: true}"
+                                                                                    [(ngModel)]="solutionDetails['information_and_data'+num]"
+                                                                                    class="form-control"
+                                                                                    [placeholder]="'enter_strategy_info_and_data_placeholder'| translate" />
+                                                                                <p class="form-error pt-1">
+                                                                                    {{solutionDetails.information_and_data_error}}
+                                                                                </p>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="col-lg-6 col-sm-12">
+                                                                        <div class="form-group">
+                                                                            <label>{{'building_and_utilities' | translate}}</label>
+                                                                            <div class="clearfix d-flex">
+                                                                                <input type="text"
+                                                                                    [ngModelOptions]="{standalone: true}"
+                                                                                    [(ngModel)]="solutionDetails['buildings_and_utilities'+num]"
+                                                                                    class="form-control"
+                                                                                    [placeholder]="'enter_strategy_building_and_utilities_placeholder'| translate" />
+                                                                                <p class="form-error pt-1">
+                                                                                    {{solutionDetails.buildings_and_utilities_error}}
+                                                                                </p>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+
+                                                                    <div class="col-lg-6 col-sm-12">
+                                                                        <div class="form-group">
+                                                                            <label>{{'facilities_and_equip' | translate}}</label>
+                                                                            <div class="clearfix d-flex">
+                                                                                <input type="text"
+                                                                                    [ngModelOptions]="{standalone: true}"
+                                                                                    [(ngModel)]="solutionDetails['facilities_equipment'+num]"
+                                                                                    class="form-control"
+                                                                                    [placeholder]="'enter_strategy_facilities_and_equip_placeholder'| translate" />
+                                                                                <p class="form-error pt-1">
+                                                                                    {{solutionDetails.facilities_equipment_error}}
+                                                                                </p>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="col-lg-6 col-sm-12">
+                                                                        <div class="form-group">
+                                                                            <label>{{'information_and_op_tech' | translate}}</label>
+                                                                            <div class="clearfix d-flex">
+                                                                                <input type="text"
+                                                                                    [ngModelOptions]="{standalone: true}"
+                                                                                    [(ngModel)]="solutionDetails['information_and_operational_technology'+num]"
+                                                                                    class="form-control"[placeholder]="'enter_strategy_information_and_op_tech_placeholder'| translate" />
+                                                                                <p class="form-error pt-1">
+                                                                                    {{solutionDetails.information_and_operational_technology_error}}
+                                                                                </p>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="col-lg-6 col-sm-12">
+                                                                        <div class="form-group">
+                                                                            <label>{{'transport_and_logistics' | translate}}</label>
+                                                                            <div class="clearfix d-flex">
+                                                                                <input type="text"
+                                                                                    [ngModelOptions]="{standalone: true}"
+                                                                                    [(ngModel)]="solutionDetails['transportation_and_logistics'+num]"
+                                                                                    class="form-control"
+                                                                                    [placeholder]="'enter_strategy_transport_and_logistics_placeholder'| translate" />
+                                                                                <p class="form-error pt-1">
+                                                                                    {{solutionDetails.transportation_and_logistics_error}}
+                                                                                </p>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="col-lg-6 col-sm-12">
+                                                                        <div class="form-group">
+                                                                            <label>{{'expenditure' | translate}}<span
+                                                                                    class="form-error">*</span></label>
+                                                                            <div class="clearfix w-100">
+                                                                                <div class="multiple-plain-ngselect">
+                                                                                    <ng-select
+                                                                                        [placeholder]="'select_finance'| translate"
+                                                                                        [multiple]="false"
+                                                                                        searchable="true"
+                                                                                        bindLabel="title" bindValue="id"
+                                                                                        [ngModelOptions]="{standalone: true}"
+                                                                                        [(ngModel)]="solutionDetails['business_continuity_strategy_finance_id'+num]"
+                                                                                        (clear)="getBcmFinance()"
+                                                                                        (open)="getBcmFinance()"
+                                                                                        autocomplete="new-password">
+                                                                                        <ng-option [value]="finance.id"
+                                                                                            *ngFor="let finance of BcmStrategyStore.BcmFinances">
+                                                                                            {{finance.title}}
+                                                                                        </ng-option>
+                                                                                    </ng-select>
+                                                                                    <p class="form-error pt-1">
+                                                                                        {{solutionDetails.business_continuity_strategy_finance_id_error}}
+                                                                                    </p>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="col-lg-6 col-sm-12">
+                                                                        <div class="form-group">
+                                                                            <label>{{'expenses' | translate}}
+                                                                                <span>({{OrganizationGeneralSettingsStore.organizationSettings?.currency}})</span><span
+                                                                                class="form-error">*</span></label>
+                                                                            <div class="password-icon-input">
+                                                                                <div class="clearfix d-flex">
+                                                                                    <input type="number"
+                                                                                        [ngModelOptions]="{standalone: true}"
+                                                                                        [(ngModel)]="solutionDetails['expense'+num]"
+                                                                                        class="form-control"
+                                                                                        [placeholder]="'enter_strategy_expenses_placeholder'| translate"/>
+                                                                                    
+
+                                                                                    <div class="question-circle-inp"
+                                                                                        style="margin-right: 8px;">
+                                                                                        <i
+                                                                                            class="far fa-money-bill-alt"></i>
+
+                                                                                    </div>
+                                                                                </div>
+                                                                                <p class="form-error pt-1">
+                                                                                    {{solutionDetails.expense_error}}
+                                                                                </p>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="col-lg-6 col-sm-12">
+                                                                        <div class="form-group">
+                                                                            <label>{{'supply_chain' | translate}}</label>
+                                                                            <div class="clearfix d-flex">
+                                                                                <input type="text"
+                                                                                    [ngModelOptions]="{standalone: true}"
+                                                                                    [(ngModel)]="solutionDetails['supply_chain'+num]"
+                                                                                    class="form-control"
+                                                                                    [placeholder]="'enter_strategy_supply_chain_placeholder'| translate" />
+                                                                                <p class="form-error pt-1">
+                                                                                    {{solutionDetails.supply_chain_error}}
+                                                                                </p>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="col-lg-3 col-sm-12">
+                                                                        <div class="form-group">
+                                                                            <label>{{'rd_duration' | translate}}</label>
+                                                                            <div class="clearfix d-flex">
+                                                                                <div class="w-100 mr-2">
+                                                                                    <input type="number"
+                                                                                        [ngModelOptions]="{standalone: true}"
+                                                                                        [(ngModel)]="solutionDetails['duration'+num]"
+                                                                                        class="form-control w-100 mr-2"
+                                                                                        [placeholder]="'enter_strategy_rd_duration_placeholder'| translate" />
+                                                                                    
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                        <!-- <p class="form-error pt-1">
+                                                                            {{solutionDetails.is_day_error}}
+                                                                        </p>
+                                                                        <p class="form-error pt-1">
+                                                                            {{solutionDetails.is_hour_error}}
+                                                                        </p>
+                                                                        <p class="form-error pt-1">
+                                                                            {{solutionDetails.duration_error}}
+                                                                        </p> -->
+                                                                    </div>
+
+                                                                    <div class="col-lg-3 col-sm-12">
+                                                                        <div class="form-group">
+                                                                            <label>{{'d_type' | translate}}</label>
+                                                                            <div class="clearfix d-flex">
+                                                                                <div class="multiple-plain-ngselect"
+                                                                                    style="width: 125px;">
+                                                                                    <ng-select
+                                                                                        [placeholder]="'select'| translate"
+                                                                                        [multiple]="false"
+                                                                                        [ngModelOptions]="{standalone: true}"
+                                                                                        [(ngModel)]="solutionDetails['time'+num]"
+                                                                                        autocomplete="new-password">
+                                                                                        <ng-option [value]='time.id'
+                                                                                            *ngFor="let time of times; let nums=index;">
+                                                                                            {{time.title}}</ng-option>
+                                                                                    </ng-select>
+                                                                                    
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="col-lg-12 col-sm-12">
+                                                                        <div class="form-group">
+                                                                            <label>{{'remarks' | translate}}</label>
+                                                                            <div class="clearfix d-flex">
+                                                                                <textarea class="form-control" rows="3"
+                                                                                    id="comment"
+                                                                                    [ngModelOptions]="{standalone: true}"
+                                                                                    [(ngModel)]="solutionDetails['remarks'+num]"
+                                                                                    [placeholder]="'enter_strategy_remarks_placeholder'| translate"></textarea>
+                                                                                <p class="form-error pt-1">
+                                                                                    {{solutionDetails.remarks_error}}
+                                                                                </p>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="col-lg-12 col-sm-12">
+                                                                        <div class="form-group">
+                                                                            <label>{{'score' | translate}}<span
+                                                                                    class="form-error">*</span></label>
+                                                                            <div class="clearfix d-flex">
+                                                                                <div class="accordian-boxed">
+                                                                                    <div
+                                                                                        class="card-body border-top-0 p-0">
+                                                                                        <ng-container
+                                                                                            *ngFor="let score of scores;let num1=index">
+                                                                                            <span
+                                                                                                [ngClass]="solutionDetails['score'+num]==score.value ? 'mb-0 pointer active' : 'pointer mb-0'"
+                                                                                                (click)="scoreClick(score.value,num)">{{score.title}}</span>
+                                                                                        </ng-container>
+                                                                                    </div>
+
+                                                                                    <p class="form-error pt-1">
+                                                                                        {{solutionDetails.score_error}}
+                                                                                    </p>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                            </ng-container>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab">
+                    <div class="row" *ngIf="solution_saved==1">
+                        <div class="col-md-12">
+                            <div class="col-lg-12 col-sm-12 padding-right-0">
+                                <div class="bg-white">
+                                    <div class="pb-2">
+                                        <div class="issue-top-sec">
+                                            <div class="clearfix">
+                                                <h5 class="d-inline-block cmn-head-style label-tag-style">
+                                                    <span
+                                                        class="issue-smoal-head-text">#{{BcmStrategyStore._singleStrategies?.reference_code}}</span>{{BcmStrategyStore._singleStrategies?.business_continuity_strategy_type?.title}}
+                                                    <span
+                                                        class="draft-tag label-tag-style-tag label-left-arow-tag ml-3 draft-tag-{{BcmStrategyStore._singleStrategies?.business_continuity_strategy_status?.label}}"
+                                                        style="line-height: 16px; vertical-align: middle; margin-top: -5px; display: inline-block;">{{BcmStrategyStore._singleStrategies?.business_continuity_strategy_status?.language[0]?.pivot?.title}}</span>
+                                                </h5>
+                                            </div>
+                                            <div class="clearfix">
+                                                <!-- <p class="mb-0"><i
+                                                        class="fas fa-calendar-alt date-pics-two"></i>{{getTimezoneFormatted(BcmStrategyStore._singleStrategies?.created_at)
+                                                    | date:
+                                                    OrganizationGeneralSettingsStore.organizationSettings?.date_time_format
+                                                    }}
+                                                </p> -->
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="clearfix"></div>
+
+                                    <p style="white-space: pre-wrap;">
+                                        {{BcmStrategyStore._singleStrategies?.business_continuity_strategy_type?.description}}
+                                    </p>
+
+                                    <!--<div class="mb-2 mt-2"> <label class="outline-tag">ISO 9001 <span>V 2019</span></label> <label class="outline-tag">QMS 9001 <span>V 2019</span></label> <label class="outline-tag">HMS 9001 <span>V 2019</span></label>
+                                            </div>-->
+
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <h6>{{'risks' | translate}}</h6>
+                                            <div class="loop-cmn-p">
+                                                <p
+                                                    *ngFor=" let risk of BcmStrategyStore._singleStrategies?.risks ; let isLast=last">
+                                                    {{risk.title}}{{isLast ? '' : ',' }}</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-lg-4 col-sm-6"
+                                            *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_subsidiary">
+                                            <h6>{{ 'organizations' | translate }}</h6>
+                                            <div class="loop-cmn-p">
+                                                <p
+                                                    *ngFor=" let sub of BcmStrategyStore._singleStrategies?.organizations ; let isLast=last">
+                                                    {{sub.title}}{{isLast ? '' : ',' }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-4 col-sm-6"
+                                            [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_division ? 'none':'block'}">
+                                            <h6>{{'divisions' | translate}}</h6>
+                                            <div class="loop-cmn-p">
+                                                <p
+                                                    *ngFor=" let div of BcmStrategyStore._singleStrategies?.divisions ; let isLast=last">
+                                                    {{div.title}}{{isLast ? '' : ',' }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-4 col-sm-6"
+                                            [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_section ? 'none':'block'}">
+                                            <h6>{{'sections' | translate}}</h6>
+                                            <div class="loop-cmn-p">
+                                                <p
+                                                    *ngFor=" let sec of BcmStrategyStore._singleStrategies?.sections ; let isLast=last">
+                                                    {{sec.title}}{{isLast ? '' : ',' }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-4 col-sm-6"
+                                            [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_sub_section ? 'none':'block'}">
+                                            <h6>{{'sub_sections' | translate}}</h6>
+                                            <div class="loop-cmn-p">
+                                                <p
+                                                    *ngFor=" let sub_sec of BcmStrategyStore._singleStrategies?.sub_sections ; let isLast=last">
+                                                    {{sub_sec.title}}{{isLast ? '' : ',' }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-4 col-sm-6"
+                                            [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_department ? 'none':'block'}">
+                                            <h6>{{'departments' | translate}}</h6>
+                                            <div class="loop-cmn-p">
+                                                <p
+                                                    *ngFor=" let dept of BcmStrategyStore._singleStrategies?.departments ; let isLast=last">
+                                                    {{dept.title}}{{isLast ? '' : ',' }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <h6>{{'solutions' | translate}}</h6>
+
+                                            <div class="mt-3" *ngIf="BcmStrategyStore.single_loaded">
+                                                <!-- common-tab-md starts -->
+                                                <div class="common-tab-md clearfix">
+                                                    <div class="tab-common-left-md">
+                                                        <div class="issues-tab">
+                                                            <!-- tab menu start -->
+                                                            <ul class="nav nav-tabs nav-tabs--vertical nav-tabs--left vertical-tab"
+                                                                role="navigation">
+                                                                <li class="nav-item"
+                                                                    *ngFor="let solution of BcmStrategyStore._singleStrategies?.solutions; let $i = index">
+                                                                    <a (click)="getBcmSolutions(solution.id)"
+                                                                        [ngClass]="BcmStrategyStore.showId == solution.id ? 'nav-link active show':'nav-link'"
+                                                                        data-toggle="tab" role="tab"
+                                                                        aria-controls="lorem" aria-selected="false"
+                                                                        data-original-title="" title="">
+                                                                        {{solution?.title}}
+                                                                    </a>
+                                                                </li>
+                                                            </ul>
+                                                        </div>
+                                                        <!-- tab menu end -->
+                                                    </div>
+
+                                                    <div class="tab-common-left-content-m cmn-bdr">
+                                                        <ng-container
+                                                            *ngFor="let solutionDetails of BcmStrategyStore._singleStrategies?.solutions;let num=index">
+                                                            <div class="tab-content"
+                                                                *ngIf="solutionDetails.id==BcmStrategyStore.showId">
+                                                                <div class="tab-pane fade active show"
+                                                                    id="risk-treatment-tab-one" role="tabpanel">
+                                                                    <div class="bg-white pt-3 pb-3">
+                                                                        <div class="row issuue-new-style">
+                                                                            <h5
+                                                                                class="d-inline-block cmn-head-style label-tag-style">
+                                                                                <span
+                                                                                    class="issue-smoal-head-text">#{{solutionDetails?.reference_code}}</span>
+                                                                                {{solutionDetails?.title}} <span
+                                                                                    class="draft-tag label-tag-style-tag label-left-arow-tag d-inline-block draft-tag-{{solutionDetails?.business_continuity_strategy_solution_status?.label}} status-tag-new-one ml-3">{{solutionDetails?.business_continuity_strategy_solution_status?.language[0]?.pivot?.title}}</span>
+                                                                            </h5>
+                                                                            <div class="row">
+                                                                                <div class="col-md-12">
+                                                                                    <h6>{{'benifits' | translate}}</h6>
+                                                                                    <div class="full-width-table">
+                                                                                        <table
+                                                                                            class="table table-bordered ordinary-table audit-page-table mb-4 table-scroll">
+                                                                                            <thead>
+                                                                                                <tr>
+                                                                                                    <th class="border-top-0"
+                                                                                                        width="4%">
+                                                                                                        {{'sl' | translate}}
+                                                                                                    </th>
+                                                                                                    <th class="border-top-0"
+                                                                                                        width="96%">
+                                                                                                        {{'benifits' | translate}}
+                                                                                                    </th>
+                                                                                                </tr>
+                                                                                            </thead>
+                                                                                            <tbody>
+                                                                                                <tr
+                                                                                                    *ngFor="let benifits of solutionDetails?.benifits;let num = index;">
+                                                                                                    <td>{{num+1}}</td>
+                                                                                                    <td>{{benifits?.title}}
+                                                                                                    </td>
+                                                                                                </tr>
+
+                                                                                            </tbody>
+                                                                                        </table>
+                                                                                    </div>
+                                                                                </div>
+
+                                                                                <div class="col-md-12">
+                                                                                    <h6>{{'concequences' | translate}}</h6>
+                                                                                    <div class="full-width-table">
+                                                                                        <table
+                                                                                            class="table table-bordered ordinary-table audit-page-table mb-4 table-scroll">
+                                                                                            <thead>
+                                                                                                <tr>
+                                                                                                    <th class="border-top-0"
+                                                                                                        width="4%">
+                                                                                                        {{'sl' | translate}}
+                                                                                                    </th>
+                                                                                                    <th class="border-top-0"
+                                                                                                        width="96%">
+                                                                                                        {{'concequences' | translate}}
+                                                                                                    </th>
+                                                                                                </tr>
+                                                                                            </thead>
+                                                                                            <tbody>
+                                                                                                <tr
+                                                                                                    *ngFor="let consequence of solutionDetails?.consequences;let num = index;">
+                                                                                                    <td>{{num+1}}</td>
+                                                                                                    <td>{{consequence?.title}}
+                                                                                                    </td>
+                                                                                                </tr>
+                                                                                            </tbody>
+                                                                                        </table>
+                                                                                    </div>
+                                                                                </div>
+
+                                                                                <div class="col-md-4">
+                                                                                    <h6>{{'people' | translate}}</h6>
+                                                                                    <p>{{solutionDetails?.people ?
+                                                                                        solutionDetails?.people : 'NA'}}
+                                                                                    </p>
+                                                                                </div>
+
+                                                                                <div class="col-md-4">
+                                                                                    <h6>{{'skills' | translate}}</h6>
+                                                                                    <p>{{solutionDetails?.skills ?
+                                                                                        solutionDetails?.skills : 'NA'}}
+                                                                                    </p>
+                                                                                </div>
+
+                                                                                <div class="col-md-4">
+                                                                                    <h6>{{'info_and_data' | translate}}</h6>
+                                                                                    <p>{{solutionDetails?.information_and_data
+                                                                                        ?
+                                                                                        solutionDetails?.information_and_data
+                                                                                        : 'NA'}}
+                                                                                    </p>
+                                                                                </div>
+
+                                                                                <div class="col-md-4">
+                                                                                    <h6>{{'building_and_utilities' | translate}}</h6>
+                                                                                    <p>{{solutionDetails?.buildings_and_utilities
+                                                                                        ?
+                                                                                        solutionDetails?.buildings_and_utilities
+                                                                                        : 'NA'}}
+                                                                                    </p>
+                                                                                </div>
+
+                                                                                <div class="col-md-4">
+                                                                                    <h6>{{'facilities_and_equip' | translate}}</h6>
+                                                                                    <p>{{solutionDetails?.facilities_equipment
+                                                                                        ?
+                                                                                        solutionDetails?.facilities_equipment
+                                                                                        : 'NA'}}
+                                                                                    </p>
+                                                                                </div>
+
+                                                                                <div class="col-md-4">
+                                                                                    <h6>{{'information_and_op_tech' | translate}}</h6>
+                                                                                    <p>{{solutionDetails?.information_and_operational_technology
+                                                                                        ?
+                                                                                        solutionDetails?.information_and_operational_technology
+                                                                                        : 'NA'}}
+                                                                                    </p>
+                                                                                </div>
+
+                                                                                <div class="col-md-4">
+                                                                                    <h6>{{'transport_and_logistics' | translate}}
+                                                                                    </h6>
+                                                                                    <p>{{solutionDetails?.transportation_and_logistics
+                                                                                        ?
+                                                                                        solutionDetails?.transportation_and_logistics
+                                                                                        : 'NA'}}
+                                                                                    </p>
+                                                                                </div>
+
+                                                                                <div class="col-md-4">
+                                                                                    <h6>{{'finance' | translate}}</h6>
+                                                                                    <p>{{solutionDetails?.business_continuity_strategy_finance?.language[0]?.pivot?.title}}
+                                                                                    </p>
+                                                                                </div>
+
+                                                                                <!-- <div class="col-md-4">
+                                                                                    <h6>Count Field</h6>
+                                                                                    <p>{{solutionDetails?.count ?
+                                                                                        solutionDetails?.count : 'NA'}}
+                                                                                    </p>
+                                                                                </div> -->
+
+                                                                                <div class="col-md-4">
+                                                                                    <h6>{{'supply_chain' | translate}}</h6>
+                                                                                    <p>{{solutionDetails?.supply_chain ?
+                                                                                        solutionDetails?.supply_chain
+                                                                                        :'NA'}}
+                                                                                    </p>
+                                                                                </div>
+
+                                                                                <div class="col-md-4">
+                                                                                    <h6>{{'rd_duration' | translate}}</h6>
+                                                                                    <p>{{solutionDetails?.duration ?
+                                                                                        solutionDetails?.duration :
+                                                                                        'NA'}} <span
+                                                                                            *ngIf="solutionDetails?.is_day==1">{{'days' | translate}}</span><span
+                                                                                            *ngIf="solutionDetails?.is_hour==1">{{'hours' | translate}}</span>
+                                                                                    </p>
+                                                                                </div>
+
+                                                                                <div class="col-md-12">
+                                                                                    <h6>{{'remarks' | translate}}</h6>
+                                                                                    <p style="white-space: pre-wrap;">
+                                                                                        {{solutionDetails?.remarks ?
+                                                                                        solutionDetails?.remarks :'NA'}}
+                                                                                    </p>
+                                                                                </div>
+                                                                                <div class="col-md-12">
+                                                                                    <h6>{{'description' | translate}}</h6>
+                                                                                    <p style="white-space: pre-wrap;">
+                                                                                        {{solutionDetails?.description ?
+                                                                                        solutionDetails?.description
+                                                                                        :'NA'}}
+                                                                                    </p>
+                                                                                </div>
+                                                                                <div class="col-md-12">
+                                                                                    <h6>{{'score' | translate}}</h6>
+                                                                                    <p>
+                                                                                        {{solutionDetails?.score ?
+                                                                                        solutionDetails?.score :'NA'}}
+                                                                                    </p>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                            </div>
+                                                        </ng-container>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-xl-12">
+                                            <hr />
+                                            <div class="d-flex flex-row user-list-sm">
+                                                <app-user-popup-box
+                                                    [source]=" getCreatedByPopupDetails(BcmStrategyStore._singleStrategies?.created_by,BcmStrategyStore._singleStrategies?.created_at)">
+                                                </app-user-popup-box>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="overflow: auto;">
+                    <div class="form-next-page-btns" style="float: left;">
+                        <button class="btn btn-active" type="button" id="nextBtn"
+                            [disabled]="AppStore.loading||!checkFormObject()"
+                            (click)="nextPrev(1,true)">{{getButtonText(nextButtonText)}}</button>
+                        <button class="btn" type="button" id="saveBtn" (click)="saveClick()"
+                            [disabled]="AppStore.loading||!checkFormObject()">{{getButtonText('save')}}</button>
+                        <button class="btn" type="button" id="prevBtn" (click)="nextPrev(-1)"
+                            [disabled]="AppStore.loading">{{getButtonText(previousButtonText)}}</button>
+                        <button class="btn" type="button" (click)="confirmCancel()">{{getButtonText('cancel')}}</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+
+
+<div class="modal modal-style-1 fade" id="delete-popup" #cancelPopup data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="confirmationObject"></app-delete-popup>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static"
+    #organisationChangeFormModal *mobxAutorun>
+    <app-organisation-change-modal *ngIf="openModelPopup" [source]="form.value"
+        (organizationChangeEvent)="closeModal($event)"></app-organisation-change-modal>
+</div>
+
+
+<!-- calling add auditable item category modal -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #typeAddModal>
+    <app-bcs-type-modal>
+
+    </app-bcs-type-modal>
+
+</div>

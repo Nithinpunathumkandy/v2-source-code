@@ -1,0 +1,85 @@
+<div class="widget bg-white">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item pointer" [routerLink]="['/masters/mock-drill']"><a>{{'mock_drill' |
+                    translate}}</a></li>
+            <li class="breadcrumb-item active">{{'mock_drill_scopes' | translate}}</li>
+        </ol>
+    </nav>
+    <!-- Nav tabs -->
+    <table class="table-master table"
+        *ngIf="MockDrillScopesMasterStore?.loaded && MockDrillScopesMasterStore.allItems.length > 0">
+        <tr>
+            <th style="width: 8%; text-align: center;">{{'sl' | translate}}</th>
+            <th (click)="sortTitle('mock_drill_scopes.mock_drill_scope_title')"
+                class="border-top-0 issue-list-org-tab-three pointer" style="width: 82%;"><span>{{'title' |
+                    translate}}</span>
+                <img _ngcontent-twv-c17=""
+                    *ngIf="MockDrillScopesMasterStore.orderItem=='mock_drill_scopes.mock_drill_scope_title'"
+                    class="sort-down-pics pl-2" [attr.src]="MockDrillScopesMasterStore.orderBy=='desc' ? 
+                'assets/images/sort-up.png' : MockDrillScopesMasterStore.orderBy=='asc' ? 
+                'assets/images/sort-down.png' : 'assets/images/sort-empty.png'">
+            </th>
+            <th style="width: 10%">{{'status' | translate}}</th>
+        </tr>
+        <ng-container *mobxAutorun>
+            <tr class="edit-and-delete-main"
+                *ngFor="let row of MockDrillScopesMasterStore.allItems | paginate: {currentPage:MockDrillScopesMasterStore?.currentPage, itemsPerPage:MockDrillScopesMasterStore?.itemsPerPage,totalItems:MockDrillScopesMasterStore?.totalItems}; let num = index">
+                <td style="text-align: center;">
+                    {{(MockDrillScopesMasterStore?.currentPage - 1) *
+                    MockDrillScopesMasterStore?.itemsPerPage + (num +
+                    1)}}
+                </td>
+                <td><a
+                        [ngStyle]="{ 'pointer-events' : AuthStore.getActivityPermission(1100,'UPDATE_MOCK_DRILL_SCOPE') ? '' : 'none'}">{{row.mock_drill_scope_title}}</a>
+                </td>
+                <td style="padding:0.75rem;">
+                    <div [attr.class]="'dot-div '+row.status_label">{{row?.status}}
+                    </div>
+                    <div class="edit-option-show">
+                        <a *ngIf="row.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(1100,'ACTIVATE_MOCK_DRILL_SCOPE')"
+                            (click)="activate(row.id)" [attr.title]="'activate' | translate"><i
+                                class="fas fa-check pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.activeStatusId && AuthStore.getActivityPermission(1100,'DEACTIVATE_MOCK_DRILL_SCOPE')"
+                            (click)="deactivate(row.id)" [attr.title]="'deactivate' | translate"><i
+                                class="fas fa-ban pointer"></i></a>
+                    </div>
+                </td>
+            </tr>
+        </ng-container>
+    </table>
+
+    <p class="float-right"
+        *ngIf="MockDrillScopesMasterStore?.loaded && MockDrillScopesMasterStore.totalItems > 0">
+        <b>{{'total_Items' | translate}}:{{MockDrillScopesMasterStore?.totalItems}}</b>
+    </p>
+
+    <ng-container *mobxAutorun>
+        <div *ngIf="!MockDrillScopesMasterStore.loaded">
+            <app-table-loader></app-table-loader>
+        </div>
+        <app-no-data
+            *ngIf="MockDrillScopesMasterStore.allItems.length == 0 && MockDrillScopesMasterStore.loaded == true">
+        </app-no-data>
+    </ng-container>
+
+    <div class="col-sm-12"
+        *ngIf="MockDrillScopesMasterStore.totalItems>MockDrillScopesMasterStore.itemsPerPage">
+        <ul class="pagination justify-content-center mt-3">
+            <div class="list">
+                <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+                    (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+            </div>
+        </ul>
+    </div>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+<!-- Share Mock Drill scopes Status-->
+<div class="modal modal-style-1 email-popup-new fade" data-backdrop="static" data-keyboard="false"
+    id="email-notification-popup" #mailConfirmationPopup>
+    <app-mail-send-popup [source]="mailConfirmationData"></app-mail-send-popup>
+</div>

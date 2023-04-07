@@ -1,0 +1,100 @@
+<nav class="edit-bar" data-toggle="affix" scrollPoint #navigationBar *mobxAutorun>
+   <div class="module-name-block module-name-block-space float-left">
+       <a class="dropdown module-title" >{{'statement_of_applicability'|translate}}</a>
+     </div>
+   <app-sub-menu></app-sub-menu>
+</nav>
+<main class="mt-3 acl-page" *mobxAutorun>
+   <div class="container-fluid widget">
+      <div class="audit-program-box audit-page-table-main">
+         <div class="row" *ngIf="SOAStore.loaded && SOAStore.allItems?.length>0">
+            <div class="col-sm-12">
+               <div class="relative">
+               <div class="left-right-round-btns">
+                  <button id="left-button" class="btn-left" (click)="prev()"></button>
+                  <button id="right-button" class="btn-right" (click)="next()"></button>
+                </div>
+               <div class="full-width-table table-scroll-first-time mb-3" id="container">
+                  <table class="table table-bordered ordinary-table audit-page-table table-scroll mb-1"
+                     style="width: 2600px;">
+                     <thead>
+                        <tr>
+                           <th class="border-top-0 text-center" width="2%">#</th>
+                           <th class="border-top-0" width="6%">{{'reference_code'|translate}}</th>
+                           <th class="border-top-0" width="21%">{{'title'|translate}}</th>
+                           <th class="border-top-0" width="8%">{{'category'|translate}}</th>
+                           <th class="border-top-0" width="8%">{{'control_type'|translate}}</th>
+                           <!-- <th class="border-top-0" width="10%">Objective</th> -->
+                           <th class="border-top-0" width="9%">{{'applicable'|translate}} / {{'not_applicable'|translate}}</th>
+                           <th class="border-top-0" width="8%">{{'implementation_status'|translate}}</th>
+                           <th class="border-top-0" width="12%">{{'justify'|translate}}</th>
+                           <th class="border-top-0" width="12%">{{'method'|translate}}</th>
+                           <th class="border-top-0" width="14%">{{'comment'|translate}}</th>
+                        </tr>
+                     </thead>
+                     <tbody>
+                        <tr class="pointer edit-and-delete-main"
+                           *ngFor="let soa of SOAStore.allItems| paginate: {currentPage:SOAStore?.currentPage, itemsPerPage:SOAStore?.itemsPerPage,totalItems:SOAStore?.totalItems}; let num = index">
+                           <td (click)="gotoDetails(soa.id)" class="text-center">
+                              {{(SOAStore?.currentPage -1) * SOAStore?.itemsPerPage + (num + 1)}}</td>
+                           <td (click)="gotoDetails(soa.id)">#{{soa.reference_code}}</td>
+                           <td (click)="gotoDetails(soa.id)">{{soa.title}}</td>
+                           <td (click)="gotoDetails(soa.id)">{{soa.control_category_title}}</td>
+                           <td (click)="gotoDetails(soa.id)">{{soa.control_type_title}}</td>
+              
+                           <!-- <td onclick="window.location='soa-details.html';">For security purposes</td> -->
+                           <td>
+                              <div class="small-switch-checkbox text-center">
+                                 <label class="switch mt-2 float-none">
+                                    <input type="checkbox" [checked]="soa.soa_status_id==1?true:false" (change)="changeSoaStatus(soa.soa_status_id,soa.id)">
+                                    <span class="slider"></span> </label>
+                              </div>
+                           </td>
+                           <td (click)="gotoDetails(soa.id)">{{soa.implementation_status_title?soa.implementation_status_title:AppStore.noContentText}}</td>
+                           <td (click)="gotoDetails(soa.id)"><p style="white-space: pre-line;" [attr.title]="soa.justify?.length>200?soa.justify:''">{{soa.justify?soa.justify?.length>200?soa.justify.substring(0,200) + '...':soa.justify:AppStore.noContentText}}</p></td>
+                           <td (click)="gotoDetails(soa.id)"><p style="white-space: pre-line;" [attr.title]="soa.method?.length>200?soa.method:''">{{soa.method?soa.method?.length>200?soa.method.substring(0,200) + '...':soa.method:AppStore.noContentText}}</p></td>
+                           <td>
+                              <div (click)="gotoDetails(soa.id)" [attr.title]="soa.comment?.length>200?soa.comment:''"><p style="white-space: pre-line;">{{soa.comment?soa.comment?.length>200?soa.comment.substring(0,200) + '...':soa.comment:AppStore.noContentText}}</p></div>
+                              <div class="edit-option-show" style="margin: 30px 0 0 0; ">
+                                 <!-- edit-and-delete starts -->
+                                 <a (click)="updateSoa(soa)"><i class="fas fa-pen"></i></a>
+                                 <!-- <a href="#"><i class="fas fa-trash"></i></a> -->
+                              </div><!-- edit-and-delete end -->
+                           </td>
+                        </tr>
+
+
+
+
+                     </tbody>
+                  </table>
+               </div>
+            </div>
+               <p class="float-right bold mb-0" *ngIf="SOAStore.loaded && SOAStore.totalItems > 0">{{'total_Items' | translate}}:{{SOAStore?.totalItems}}</p>
+            </div>
+            <div *ngIf="SOAStore.totalItems > SOAStore.itemsPerPage" class="col-sm-12">
+               <ul class="pagination justify-content-center mt-3">
+                  <div class="list">
+                     <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+                        (pageChange)="getItems($event)" class="my-pagination">
+                     </pagination-controls>
+                  </div>
+               </ul>
+            </div>
+         </div>
+         <ng-container *mobxAutorun>
+            <div *ngIf="!SOAStore.loaded">
+               <app-risk-list></app-risk-list>
+           </div>
+            <app-no-data [border]="false"  *ngIf="SOAStore.loaded && SOAStore.allItems?.length==0"></app-no-data>
+         </ng-container>
+      </div>
+
+      <div class="modal modal-style-1 popup-full-width fade" id="soa-popup" data-keyboard="false" data-backdrop="static"
+         #soaFormModal>
+         <app-add-soa *ngIf="soaObject.type" [source]="soaObject"></app-add-soa>
+      </div>
+
+   </div>
+
+</main>

@@ -1,0 +1,135 @@
+<!-- Certificate Modal start -->
+    <button type="button" class="close" (click)="closeCertificateFormModal()"><i
+            class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title">{{'certificates'|translate}}</h4>
+
+            </div>
+            <!-- Modal body -->
+            <div class="modal-body form-body">
+
+                <p class="head-details"></p>
+
+                <form [formGroup]="certificateForm" *mobxAutorun>
+                    <label for="name" class="label-style mb-0">{{'certificate_upload' | translate}}<sup class="red">*</sup></label>
+
+                    <div class="row m-0 upload-section" style="padding-top: 0">
+                        <div class="col-sm-4 costmz-logo-new mt-2">
+                            <div class="question-circle-inp" style="margin-right: 7px;">
+                                <i class="far fa-question-circle"></i>
+                                <div class="message-password-inp">
+                                    <p class="mb-0">{{'allowed_file_types' | translate}}
+                                        {{OrganizationGeneralSettingsStore.organizationSettings?.support_file_allowed_types.toString()}}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="form-group form-group-upload">
+                                <div class="darag-dropifile-upload">
+                                    <div class="d-flex justify-content-center align-items-center text-center">
+                                        <div class="drag-file-sec">
+                                            <img src="assets/images/drag-pic.png" class="drag-pic-files">
+                                            <div class="drag-file-name">{{'drag_drop_file_here'|translate}}</div>
+                                            <div class="upload-btn-wrapper">
+                                                <input type="file" name="myfile"
+                                                    (change)="onFileChange($event,'support-file')" [accept]="checkAcceptFileTypes('logo')"/>
+                                                <button class="btn">{{'browse_files'|translate}}</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="col-sm-4 up-pic-cf mt-2" *ngIf="ProfileCertificateStore.certificate_preview_available">
+
+                            <div class="upload-pics edit-option">
+                                <circle-progress class="browse-form-pic" [percent]=fileUploadProgress
+                                    [title]=fileUploadProgress></circle-progress>
+                            </div>
+                        </div>
+
+
+                        <div [ngClass]="ProfileCertificateStore.certificateImage?.is_deleted ? 'col-sm-4 up-pic-cf mt-2 image_deleted':'col-sm-4 up-pic-cf mt-2'"
+                            *ngIf="ProfileCertificateStore.certificateImage">
+                            <div class="upload-pics edit-option">
+                                <div class="browse-form-pic"
+                                    [ngStyle]="{'background': 'url(' + ProfileCertificateStore.preview_url + '),url(' + getDefaultImage('no-preview') + ') no-repeat 0 0 / cover'}">
+                                </div>
+                                <div class="browse-form-name clearfix">
+                                    <div class="float-left">
+                                        <h6>{{ProfileCertificateStore.certificateImage.certificate_name?.length > 15 ? ProfileCertificateStore.certificateImage.certificate_name.substring(0,15)+' ...': ProfileCertificateStore.certificateImage.certificate_name}}
+                                        </h6>
+                                        <span>{{ProfileCertificateStore.certificateImage.size/1000}}KB</span>
+                                    </div>
+                                    <div class="browse-logo">
+                                        <img *ngIf="checkExtension(ProfileCertificateStore.certificateImage?.ext,'excel') != -1"
+                                            src="/assets/images/md-xl.png">
+                                        <img *ngIf="checkExtension(ProfileCertificateStore.certificateImage?.ext,'image') != -1"
+                                            src="/assets/images/md-jpg.png">
+                                        <img *ngIf="checkExtension(ProfileCertificateStore.certificateImage?.ext,'doc') != -1"
+                                            src="/assets/images/md-doc.png">
+                                        <img *ngIf="checkExtension(ProfileCertificateStore.certificateImage?.ext,'pdf') != -1"
+                                            src="/assets/images/md-pdf.png">
+                                        <img *ngIf="checkExtension(ProfileCertificateStore.certificateImage?.ext,'video') != -1"
+                                            src="/assets/images/md-video.png">
+                                        <img *ngIf="checkExtension(ProfileCertificateStore.certificateImage?.ext,'audio') != -1"
+                                            src="/assets/images/md-audio.png">
+                                        <img *ngIf="checkExtension(ProfileCertificateStore.certificateImage?.ext,'ppt') != -1"
+                                            src="/assets/images/md-ppt.png">
+
+                                    </div>
+                                </div>
+                                <div class="edit-option-show">
+                                    <a [attr.title]="'delete'|translate"
+                                        (click)="deleteCertificateImage(ProfileCertificateStore.certificateImage.token)"><i
+                                            class="fas fa-trash"></i></a>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <p style="color: red;" *ngIf="formErrors&&formErrors.name">{{'certificate_required'|translate}}</p>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label>{{'certificate_name'|translate}}<sup>*</sup></label>
+                                <input type="text" formControlName="certificate_name" class="form-control"
+                                    [attr.placeholder]="'enter_certificate_name'|translate" id="title" #certificateNameInput>
+                                <p class="form-error pt-1"
+                                    *ngIf="certificateForm.value.certificate_name && certificateForm.value.certificate_name?.length>500 && !formErrors">
+                                    {{'maximum_character_allowed'|translate}} 500</p>
+                                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.certificate_name">
+                                    {{formErrors.certificate_name}}</p>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="clearfix"></div>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="d-block justify-content-left border-0 mt-3">
+                                <button type="submit" class="btn btn-active"
+                                    (click)="saveCertificate()"
+                                    [disabled]="certificateForm.invalid || AppStore.loading ||  (fileUploadProgress != 0 && fileUploadProgress != 100)">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save') }}</button>
+                                <button type="button" data-toggle="modal" data-target="#signal-lost"
+                                    class="btn " (click)="saveCertificate(true)"
+                                    [disabled]="certificateForm.invalid || AppStore.loading || (fileUploadProgress != 0 && fileUploadProgress != 100)">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save_close') }}</button>
+                                <button type="button" data-toggle="modal" data-target="#error-message"
+                                    class="btn"
+                                    (click)="closeCertificateFormModal()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('cancel') }}</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <!-- Modal footer -->
+        </div>
+    </div>
+<!-- certificate modal end -->

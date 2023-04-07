@@ -1,0 +1,142 @@
+<button type="button" class="close" (click) = "cancel()"><i class="lni-close"></i><span>esc</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered">
+  <div class="modal-content">
+     <!-- Modal Header -->
+     <div class="modal-header">
+        <h4 class="modal-title pb-2" *ngIf = "bcpSource.type == 'Add'">{{'new_bcp' | translate}}</h4>
+        <h4 class="modal-title pb-2" *ngIf = "bcpSource.type == 'Edit'">{{'edit_bcp' | translate}}</h4>
+        <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
+     </div>
+     <!-- Modal body -->
+     <div class="modal-body form-body" *mobxAutorun>
+      <p class="head-details">{{'bcp_form_message' | translate}}
+      </p>
+      
+
+
+      <form [formGroup]="form" *mobxAutorun>
+         <div class="row">
+            <div class="col-sm-12">
+               <div class="form-group">
+                  <label>{{'bcp_title' | translate}}<span class="form-error">*</span></label>
+                  <input type="text" class="form-control" formControlName="title" [attr.placeholder]="'bcp_form_title' | translate">
+                  <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.title}}</p>
+               </div>
+               <div class="form-group add-kpi-textarea">
+                  <span style="float: right;" class="text-grey">{{form?.value.description != null ? getDescriptionLength() : 0}} {{'characters' | translate}}</span>
+                  <label for="description">{{'bcp_description' | translate}}</label>
+                  <textarea class="form-control" rows="11" (change)="descriptionValueChange($event)" id="comment2" formControlName="description" [attr.placeholder]="'bcp_form_description' | translate"></textarea>
+                  <!-- <ckeditor id="description" (change)="descriptionValueChange($event)" [editor]="Editor" formControlName="description"></ckeditor> -->
+                  <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.description}}</p>
+                  <!-- <textarea class="form-control" rows="11" id="comment2" formControlName="description" placeholder="Enter Field Name"></textarea> -->
+               </div>
+            </div>
+         </div>
+         <div class="row">
+            <div class="col-sm-6">
+               <div class="form-group pt-1">
+                  <label for="name">{{'bcp_document_no' | translate}}<span class="form-error">*</span></label>
+                  <input type="text" class="form-control" formControlName="document_no" [attr.placeholder]="'bcp_document_no_placeholder' | translate">
+                  <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.document_no}}</p>
+               </div>
+            </div>
+            <div class="col-sm-6">
+               <div class="form-group pt-1">
+                  <label for="name">{{'bcp_version' | translate}}<span class="form-error">*</span></label>
+                  <input type="text" class="form-control" formControlName="version" [attr.placeholder]="'bcp_form_version_placeholder' | translate">
+                  <p class="form-error pt-1" *ngIf="formErrors"> {{formErrors.version}}</p>
+               </div>
+            </div>
+         </div>
+         <div class="row">
+            <div class="col-sm-12">
+               <div class="form-group pt-1" *ngIf="this.bcpSource.type!='Edit'">
+                  <label for="name">{{'bcp_template' | translate}}</label>
+                  <div class="clearfix">
+                     <div class="multiple-plain-ngselect">
+                           <ng-select  [placeholder]="'select_BCP_template' | translate"
+                              (open) = "getBCPTemplate()"
+                              (search) = "searchBCPTemplate($event)"
+                              [multiple]="false" formControlName = "template_id">
+                              <ng-option [value]="item.id"
+                                 *ngFor="let item of BcmTemplateStore.allItems">
+                                 <label class="mb-0">{{item.template_title.length > 80 ?
+                                       item.template_title.substring(0,80)+' ...' : item.template_title }} </label>
+                              </ng-option>
+                           </ng-select>
+                     </div>
+                  </div>
+                  <p class="form-error pt-1" *ngIf="formErrors && formErrors.module_id">
+                     {{formErrors.module_id}}</p>
+               </div>
+               <div class="form-group pt-1">
+                  <label for="name">{{'bc_strategy' | translate}}</label>
+                  <div class="clearfix">
+                     <div class="multiple-plain-ngselect">
+                           <ng-select  [placeholder]="'select_bc_strategy' | translate"
+                              (open) = "getBcStrategies()"
+                              (search) = "searchBCPTemplate($event)"
+                              (change) = "getBcStrategy($event)"
+                              [multiple]="true" formControlName = "strategy_ids">
+                              <ng-option [value]="item.id"
+                                 *ngFor="let item of BcmStrategyStore.allItems">
+                                 <label class="mb-0">{{item.business_continuity_strategy_type.length > 80 ?
+                                       item.business_continuity_strategy_type.substring(0,80)+' ...' : item.business_continuity_strategy_type }} </label>
+                              </ng-option>
+                           </ng-select>
+                     </div>
+                  </div>
+                  <p class="form-error pt-1" *ngIf="formErrors && formErrors.module_id">
+                     {{formErrors.module_id}}</p>
+               </div>
+               <div class="form-group pt-1">
+                  <label for="name">{{'bc_strategy_solutions' | translate}}</label>
+                  <div class="clearfix">
+                     <div class="multiple-plain-ngselect">
+                           <ng-select  [placeholder]="'select_bc_strategy_solutions' | translate"
+                              [multiple]="true" formControlName="solution_ids"
+                              [items]="approvedSolutions"
+                              bindLabel="title"
+                              >
+                              <!-- <ng-option [value]="item.id"
+                                 *ngFor="let item of approvedSolutions">
+                                 <label class="mb-0">{{item.title.length > 80 ?
+                                       item.title.substring(0,80)+' ...' : item.title }} </label>
+                              </ng-option> -->
+                               <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            <p >{{item.title.length > 50 ? item.title.substring(0,50)+'...' : item.title}}</p>
+                                            </ng-template>
+                           </ng-select>
+                     </div>
+                  </div>
+                  <p class="form-error pt-1" *ngIf="formErrors && formErrors.module_id">
+                     {{formErrors.module_id}}</p>
+               </div>
+               <div class="col-lg-12 col-sm-12 pl-0">
+                  <div class="form-group">
+                     <a class="text-light-blue" data-toggle="modal" (click)="organisationChanges()" style="border-bottom: 1px solid;">{{'change_organization_unit' | translate}}</a>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </form>  
+       
+       
+      <div class="row">
+         <div class="col-sm-12">
+            <div class="d-block justify-content-left border-0 mt-3">
+               <button type="button"  [disabled]="form.invalid || AppStore.loading" class="btn btn-active" (click) = "save()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save') }}</button>
+               <button type="button"  [disabled]="form.invalid || AppStore.loading" class="btn" (click) = "save(true)">{{  AppStore.loading  ? getButtonText('loading') : getButtonText('save_close')}}</button>
+               <button type="button" data-toggle="modal" (click) = "cancel()" class="btn">Cancel</button>
+            </div>
+         </div>
+      </div>
+     </div>
+     <!-- Modal footer -->
+  </div>
+</div>
+<div  class="modal modal-style-1 popup-full-width fade"  data-keyboard="false"
+data-backdrop="static" #organisationChangeFormModal *mobxAutorun>
+<app-organisation-change-modal *ngIf = "openModelPopup" [source] = "form.value" 
+(organizationChangeEvent)="closeModal($event)"></app-organisation-change-modal>
+</div>

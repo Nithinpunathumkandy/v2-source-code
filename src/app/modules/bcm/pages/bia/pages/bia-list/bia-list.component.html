@@ -1,0 +1,111 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navBar>
+   <app-sub-menu>-</app-sub-menu>
+   <div class="module-name-block module-name-block-space float-left">
+      <a class="dropdown module-title">{{'business_impact_analysis'|translate}}</a>
+   </div>
+   <!-- <ul class="nav nav-pills float-left d-none d-lg-block" role="tablist">
+      <li class="nav-item">
+         <a class="nav-link nav-link-show" [routerLink]="['/bcm/business-impact-analysis']"
+             routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"> {{'business_impact_analysis' | translate}}</a>
+     </ul> -->
+</nav>
+<main class="mt-3 acl-page">
+   <div class="container-fluid">
+      <app-filter-menu></app-filter-menu>
+      <div class="audit-program-box audit-page-table-main">
+         <div class="row" *ngIf="BiaStore.loaded">
+            <div class="col-sm-12">
+               <div class="full-width-table mb-3">
+               <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll"
+                  *ngIf="BiaStore.loaded && BiaStore.BiaList.length!=0 && AuthStore.getActivityPermission(100,'IMPACT_ANALYSIS_LIST')">
+                  <thead>
+                     <tr>
+                        <th class="border-top-0 text-center" width="2%">#</th>
+                        <th class="border-top-0 issue-list-org-tab-three pointer" width="9%"
+                           (click)="setProcessSort('ref_no')">{{'ref_id'|translate}} <img
+                              *ngIf="BiaStore.orderItem == 'ref_no'"
+                              [attr.src]="BiaStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                              class="sort-down-pics"></th>
+                        <th class="border-top-0 issue-list-org-tab-three pointer" width="30%"
+                           (click)="setProcessSort('process')">{{'process'|translate}} <img
+                              *ngIf="BiaStore.orderItem == 'process'"
+                              [attr.src]="BiaStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                              class="sort-down-pics"></th>
+                        <th class="border-top-0 issue-list-org-tab-three pointer" width="20%"
+                           *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_department"
+                           (click)="setProcessSort('process_department')">{{'process_department'|translate}} <img
+                              *ngIf="BiaStore.orderItem == 'process_department'"
+                              [attr.src]="BiaStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                              class="sort-down-pics"></th>
+                        <th class="border-top-0 issue-list-org-tab-three pointer" width="19%"
+                           *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_section"
+                           (click)="setProcessSort('process_section')">{{'process_section'|translate}} <img
+                              *ngIf="BiaStore.orderItem == 'process_section'"
+                              [attr.src]="BiaStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                              class="sort-down-pics"></th>
+                        <th class="border-top-0" width="10%">{{'bia_tire'|translate}}</th>
+                        <th class="border-top-0 text-center" width="10%">{{'bia_status'|translate}}</th>
+                     </tr>
+                  </thead>
+                  <tbody>
+                     <tr class="edit-and-delete-main"
+                        *ngFor="let bia of BiaStore.BiaList| paginate: {currentPage:BiaStore?.currentPage, itemsPerPage:BiaStore?.itemsPerPage,totalItems:BiaStore?.totalItems}let ind=index;">
+                        <td (click)="AuthStore.getActivityPermission(100,'IMPACT_ANALYSIS_DETAILS') ? gotoBiaDetails(bia.id,bia.process_id) : ''"
+                           class="pointer text-center">{{(BiaStore?.currentPage - 1) * BiaStore?.itemsPerPage + (ind + 1)}}</td>
+                        <td (click)="AuthStore.getActivityPermission(100,'PROCESS_DETAILS') ? gotoProcessDetails(bia.process_id) : ''"
+                           class="pointer">{{bia.reference_code}}</td>
+                        <td (click)="AuthStore.getActivityPermission(100,'IMPACT_ANALYSIS_DETAILS') ? gotoBiaDetails(bia.id,bia.process_id) : ''"
+                           class="pointer">{{bia.title}}</td>
+                        <td (click)="AuthStore.getActivityPermission(100,'IMPACT_ANALYSIS_DETAILS') ? gotoBiaDetails(bia.id,bia.process_id) : ''"
+                           *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_department"
+                           class="pointer">{{bia.department}}</td>
+                        <td (click)="AuthStore.getActivityPermission(100,'IMPACT_ANALYSIS_DETAILS') ? gotoBiaDetails(bia.id,bia.process_id) : ''"
+                           *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_section" class="pointer">
+                           {{bia.section}}</td>
+                        <td class="pointer">
+                           <p [ngStyle]="{'color': bia.bia_tire_color_code}">{{bia.bia_tire_title?bia.bia_tire_title:AppStore.noContentText}}</p>
+                        </td>
+                        <td class="pointer text-center">
+                           <div [attr.class]="'dot-div '+bia.status_label">{{bia.status}}</div>
+                           <div class="edit-option-show" style="margin: 30px 0 0 0; "
+                              *ngIf="bia.status_type!='in-review' && bia.status_type!='completed'">
+                              <!-- edit-and-delete starts -->
+                              <a *ngIf="AuthStore.getActivityPermission(100,'UPDATE_IMPACT_ANALYSIS')"
+                                 (click)="edit(bia.process_id)"><i class="fas fa-pen"></i></a>
+                              <a *ngIf="AuthStore.getActivityPermission(100,'DELETE_IMPACT_ANALYSIS')"
+                                 (click)="deleteConfirm(bia.process_id)"><i class="fas fa-trash"></i></a>
+                           </div><!-- edit-and-delete end -->
+                        </td>
+                     </tr>
+                  </tbody>
+               </table>
+               </div>
+               <p class="float-right bold mb-0" *ngIf="BiaStore.loaded && BiaStore.totalItems > 0">{{'total_Items' | translate}}:{{BiaStore?.totalItems}}</p>
+               <div *ngIf="BiaStore.totalItems>BiaStore.itemsPerPage" class="col-sm-12">
+                  <ul class="pagination justify-content-center mt-3">
+                     <div class="list">
+                        <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+                           (pageChange)="getBiaList($event)" class="my-pagination"></pagination-controls>
+                     </div>
+                  </ul>
+               </div>
+            </div>
+         </div>
+         <ng-container *mobxAutorun>
+            <app-bcm-table-loader *ngIf="!BiaStore.loaded"></app-bcm-table-loader>
+         </ng-container>
+         <ng-container *mobxAutorun>
+            <app-no-data *ngIf="BiaStore.loaded && BiaStore.BiaList.length==0"></app-no-data>
+         </ng-container>
+      </div>
+   </div>
+</main>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp>
+   <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+
+<!------------------- Delete Confirmation Modal End --------------------------->

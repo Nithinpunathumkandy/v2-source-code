@@ -1,0 +1,294 @@
+<div class="tab-pane tab-edit-class assessment-tab-user" id="top-tab-left-five" *mobxAutorun>
+    <!-- <ng-container *mobxAutorun>
+        <app-am-audit-summary *ngIf="!AmAuditSummaryStore.loaded"></app-am-audit-summary>
+    </ng-container> -->
+    <!-- common-tab-md starts -->
+    <div class="common-tab-md tab-same-height clearfix mb-3" >
+        <div class="tab-common-left-md">
+            <div class=" issues-tab">
+                <!-- tab menu start -->
+                <ul class="nav nav-tabs nav-tabs--vertical nav-tabs--left vertical-tab" role="navigation">
+                    <li (click)="getAuditSummaries()" class="nav-item"> <a href="#tab-one" class="nav-link active" data-toggle="tab" role="tab"
+                            aria-controls="lorem" aria-selected="false">Overall</a>
+                    </li>
+                    <li (click)="getAuditors()" class="nav-item"> <a href="#tab-three" class="nav-link" data-toggle="tab" role="tab"
+                            aria-controls="ipsum" aria-selected="true">By Auditor</a>
+                    </li>
+                    <li (click)="getAuditeeDepartments()" class="nav-item"> <a href="#tab-four" class="nav-link" data-toggle="tab" role="tab"
+                            aria-controls="ipsum" aria-selected="true">By Auditee Department</a>
+                    </li>
+                    <li (click)="getAuditByManager()" class="nav-item"> <a href="#tab-six" class="nav-link" data-toggle="tab" role="tab"
+                        aria-controls="ipsum" aria-selected="true">By Audit Manager</a>
+                    </li>
+                    <li (click)="getCalendar()" class="nav-item"> <a href="#tab-five" class="nav-link" data-toggle="tab" role="tab"
+                            aria-controls="ipsum" aria-selected="true">Audit Calender</a>
+                    </li>
+                </ul>
+            </div><!-- tab menu end -->
+        </div>
+
+
+        <div class="tab-common-left-content-m widg-padding-cmn bg-white min-height-83">
+            <div class="tab-content">
+                <div class="tab-pane fade active show" id="tab-one" role="tabpanel">
+                        <div *ngIf="AmAuditSummaryStore.loaded && AmAuditSummaryStore?.summaryData?.total_auditable_items > 0" class="cmn-bdr bg-white btm-space-10 p-2 summary-box-height db-md-screen-center">
+
+                           <div class="row align-items-center w-100">
+                               <div class="col-lg-2 col-sm-12 bdr-right-pc-sm-none">
+                                   <div class="text-center mt-1 mb-1">
+                                       <h3 class="big-text-two">{{AmAuditSummaryStore?.summaryData?.total_auditable_items}}</h3>
+                                       <p class="mb-0">Auditable Item</p>
+                                   </div>
+                               </div>
+                               <div class="col-lg-10 col-sm-12">
+                                   <div class="clearfix pl-3 clearfix d-flex flex-wrap justify-content-between">
+                                       <div *ngFor="let obj of AmAuditSummaryStore?.summaryData?.auditable_item_department" class="text-left w-33-mbl-100 mbl-btm-15">
+                                        <h3 class="big-text-two">{{obj?.count}}</h3>
+                                        <p class="dot-div-new mb-0 span-dot-color"><span [ngStyle]="{'background':obj?.department_color_code}"></span>{{obj?.department}}</p>                                        
+                                       </div>                                       
+                                   </div>
+                               </div>
+                               <!-- <div class="col-lg-2 text-center pt-2 pb-2">
+                                 <img src="images/summary-chart.png" class="img-fluid" width="100px;">
+                               </div> -->
+                           </div>
+
+                        </div>
+
+                    <div *ngIf="AmAuditSummaryStore.loaded && AmAuditSummaryStore?.summaryData?.total_auditable_items > 0"
+                        class="audit-form-table w-100 not-fixed-table mb-0 vertical-align-middle">
+                        <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll text-center"
+                            >
+                            <thead>
+                                <tr>
+                                    <th class="border-top-0 text-center" width="45%">Department</th>
+                                    <th class="border-top-0 text-center" width="45%">Auditable Item</th>
+                                    <th class="border-top-0 text-center" width="10%">No. of days</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <ng-container *ngFor="let item of auditSummaryArray?.auditable_item_department_days">
+                                    <tr>
+                                        <td [attr.rowspan]="item?.auditable_item.length + 1">{{item?.department}}</td>                                                                                
+                                    </tr>
+                                    <tr *ngFor="let row of item?.auditable_item">
+                                        <td>{{row?.auditable_item_title}}</td>
+                                        <td>{{row?.no_of_days}}</td>
+                                    </tr>
+                                </ng-container>
+                            </tbody>
+                        </table>                        
+                    </div>
+                    <ng-container *mobxAutorun>
+                        <div *ngIf="!AmAuditSummaryStore.loaded">
+                           <app-table-loader></app-table-loader>
+                        </div>
+                        <app-report-no-data [source]="emptyList" [border]="false" [height]="true" *ngIf="AmAuditSummaryStore?.summaryData?.total_auditable_items == 0 && AmAuditSummaryStore.loaded == true"></app-report-no-data>
+                     </ng-container>
+
+                                
+            </div>
+            <div class="tab-pane fade" id="tab-three" role="tabpanel" *ngIf="auditFlag">
+
+                <div  *ngIf="AmAuditSummaryStore.auditorsLoaded && AmAuditSummaryStore?.auditors?.length > 0"
+                    [ngClass]="AmAuditPlansStore.individualAuditPlanDetails?.am_annual_plan_frequency?.type=='monthly'?'audit-form-table w-100 not-fixed-table mb-0 vertical-align-middle table-scroll-first-time':'audit-form-table w-100 not-fixed-table mb-0 vertical-align-middle'">
+                    <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll text-center"
+                        [ngStyle]="{width: AmAuditPlansStore.individualAuditPlanDetails?.am_annual_plan_frequency?.type=='monthly'?'2000px !important':''}">
+                        <thead>
+                            <tr>
+                                <th class="border-top-0 text-center" width="18%">Auditor</th>
+                                <th class="border-top-0 text-center" width="16%">Auditable Item</th>
+                                <th *ngFor="let item of AmAuditSummaryStore?.auditors[0]?.auditable_item[0]?.auditable_item_frequency" class="border-top-0 text-center" width="6%">{{item?.am_annual_plan_frequency_item_title}}</th>
+                                
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <ng-container *ngFor="let item of AmAuditSummaryStore?.auditors">
+                                <tr>
+                                    <td [attr.rowspan]="item?.auditable_item.length + 1">
+                                        <div class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg p-0">
+                                            <app-user-popup-box [alignLeft]="true" [showName]="true"  [source]="getAuditor(item)"></app-user-popup-box>
+                                        </div>
+                                    </td>                                                                                
+                                </tr>
+                                <tr *ngFor="let row of item?.auditable_item">
+                                    <td class="text-left">{{row?.auditable_item_title}}</td>
+                                    <ng-container *ngFor="let freq of row?.auditable_item_frequency">
+                                        <ng-container *ngFor="let freq_type of getFrequency(row?.frequencies,row?.auditable_item_frequency)">
+                                            <td *ngIf="freq_type?.am_annual_plan_frequency_item_type==freq?.am_annual_plan_frequency_item_type" class="text-center">
+                                                <div [ngClass]="freq_type?.am_individual_audit_plan_status_label?'dot-div '+ freq_type?.am_individual_audit_plan_status_label:''"> {{freq_type?.am_individual_audit_plan_status_title}}</div>                                                    
+                                             </td>                                                
+                                        </ng-container>                                            
+                                    </ng-container>
+                                </tr>
+                            </ng-container>
+                        </tbody>
+                    </table>
+                    
+                </div>
+                <ng-container *mobxAutorun>
+                    <div *ngIf="!AmAuditSummaryStore.auditorsLoaded">
+                       <app-table-loader></app-table-loader>
+                    </div>
+                    <app-report-no-data [source]="emptyList" [border]="false" [height]="true" *ngIf="AmAuditSummaryStore?.auditors?.length == 0 && AmAuditSummaryStore.auditorsLoaded == true"></app-report-no-data>
+                 </ng-container>
+
+            </div>
+
+            <div class="tab-pane fade" id="tab-four" role="tabpanel">
+
+                <div  *ngIf="AmAuditSummaryStore.auditeeDepartmentLoaded && AmAuditSummaryStore?.auditeeDepartment?.length > 0"
+                    [ngClass]="AmAuditPlansStore.individualAuditPlanDetails?.am_annual_plan_frequency?.type=='monthly'?'audit-form-table w-100 not-fixed-table mb-0 vertical-align-middle table-scroll-first-time':'audit-form-table w-100 not-fixed-table mb-0 vertical-align-middle'">
+                    <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll text-center"
+                    [ngStyle]="{width: AmAuditPlansStore.individualAuditPlanDetails?.am_annual_plan_frequency?.type=='monthly'?'2000px !important':''}">
+                    
+                        <thead>
+                            <tr>
+                                <th class="border-top-0 text-center" width="12%">Department</th>
+                                <th class="border-top-0 text-center" width="16%">Auditable Item</th>
+                                <th *ngFor="let item of auditeeDepartment[0]?.auditable_item[0]?.auditable_item_frequency" class="border-top-0 text-center" width="6%">{{item?.am_annual_plan_frequency_item_title}}</th>
+                                
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <ng-container *ngFor="let item of auditeeDepartment">
+                                <tr>
+                                    <td [attr.rowspan]="item?.auditable_item.length + 1">{{item?.department}}</td>                                                                                
+                                </tr>
+                                <tr *ngFor="let row of item?.auditable_item">
+                                    <td>{{row?.auditable_item_title}}</td>
+                                    <ng-container *ngFor="let freq of row?.auditable_item_frequency">
+                                        <ng-container *ngFor="let freq_type of getFrequency(row?.frequencies,row?.auditable_item_frequency)">
+                                            <td *ngIf="freq_type?.am_annual_plan_frequency_item_type==freq?.am_annual_plan_frequency_item_type" class="text-center">
+                                                <div [ngClass]="freq_type?.am_individual_audit_plan_status_label?'dot-div '+ freq_type?.am_individual_audit_plan_status_label:''" > {{freq_type?.am_individual_audit_plan_status_title}}</div>                                                    
+                                             </td>
+                                            
+                                        </ng-container>                                            
+                                    </ng-container>
+                                </tr>
+                            </ng-container>                               
+
+                        </tbody>
+                    </table>                    
+                </div>
+                <ng-container *mobxAutorun>
+                    <div *ngIf="!AmAuditSummaryStore.auditeeDepartmentLoaded">
+                       <app-table-loader></app-table-loader>
+                    </div>
+                    <app-report-no-data [source]="emptyList" [height]="true" [border]="false" *ngIf="AmAuditSummaryStore?.auditeeDepartment?.length == 0 && AmAuditSummaryStore.auditeeDepartmentLoaded == true"></app-report-no-data>
+                 </ng-container>
+
+            </div>
+
+            <div class="tab-pane fade" id="tab-six" role="tabpanel">
+
+                <div  *ngIf="AmAuditSummaryStore.auditByManagersLoaded && AmAuditSummaryStore?.auditByManager?.length > 0"
+                    [ngClass]="AmAuditPlansStore.individualAuditPlanDetails?.am_annual_plan_frequency?.type=='monthly'?'audit-form-table w-100 not-fixed-table mb-0 vertical-align-middle table-scroll-first-time':'audit-form-table w-100 not-fixed-table mb-0 vertical-align-middle'">
+                    <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll text-center"
+                        [ngStyle]="{width: AmAuditPlansStore.individualAuditPlanDetails?.am_annual_plan_frequency?.type=='monthly'?'2000px !important':''}">
+                        <thead>
+                            <tr>
+                                <th class="border-top-0 text-center" width="18%">Audit Manager</th>
+                                <th class="border-top-0 text-center" width="16%">Auditable Item</th>
+                                <th *ngFor="let item of AmAuditSummaryStore?.auditByManager[0]?.auditable_item[0]?.auditable_item_frequency" class="border-top-0 text-center" width="6%">{{item?.am_annual_plan_frequency_item_title}}</th>
+                                
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <ng-container *ngFor="let item of AmAuditSummaryStore?.auditByManager">
+                                <tr>
+                                    <td [attr.rowspan]="item?.auditable_item.length + 1">
+                                        <div class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg p-0">
+                                            <app-user-popup-box [alignLeft]="true" [showName]="true"  [source]="getAuditorManager(item)"></app-user-popup-box>
+                                        </div>
+                                    </td>                                                                                
+                                </tr>
+                                <tr *ngFor="let row of item?.auditable_item">
+                                    <td class="text-left">{{row?.auditable_item_title}}</td>
+                                    <ng-container *ngFor="let freq of row?.auditable_item_frequency">
+                                        <ng-container *ngFor="let freq_type of getFrequency(row?.frequencies,row?.auditable_item_frequency)">
+                                            <td *ngIf="freq_type?.am_annual_plan_frequency_item_type==freq?.am_annual_plan_frequency_item_type" class="text-center">
+                                                <div [ngClass]="freq_type?.am_individual_audit_plan_status_label?'dot-div '+ freq_type?.am_individual_audit_plan_status_label:''"> {{freq_type?.am_individual_audit_plan_status_title}}</div>                                                    
+                                             </td>                                                
+                                        </ng-container>                                            
+                                    </ng-container>
+                                </tr>
+                            </ng-container>
+                        </tbody>
+                    </table>
+                    
+                </div>
+                <ng-container *mobxAutorun>
+                    <div *ngIf="!AmAuditSummaryStore.auditByManagersLoaded">
+                       <app-table-loader></app-table-loader>
+                    </div>
+                    <app-report-no-data [source]="emptyList" [border]="false" [height]="true" *ngIf="AmAuditSummaryStore?.auditByManager?.length == 0 && AmAuditSummaryStore.auditByManagersLoaded == true"></app-report-no-data>
+                 </ng-container>
+
+            </div>
+
+            <div class="tab-pane fade new-calendar" id="tab-five" role="tabpanel">
+                <!-- <full-calendar contentHeight="auto" [options]="calendarOptions" *ngIf="AmAuditSummaryStore.calendarLoaded"></full-calendar>                    
+                <ng-container *mobxAutorun>
+                    <div *ngIf="!AmAuditSummaryStore.calendarLoaded">
+                       <app-table-loader></app-table-loader>
+                    </div>                    
+                 </ng-container> -->
+                 <div class="row text-center">
+                    <div class="col-md-4">
+                      <div class="">
+                        <button class="btn" mwlCalendarPreviousView [view]="view" [(viewDate)]="viewDate"(viewDateChange)="closeOpenMonthViewDay()">Previous</button>
+                        <button class="btn" mwlCalendarToday [(viewDate)]="viewDate">Today</button>
+                        <button class="btn" mwlCalendarNextView [view]="view" [(viewDate)]="viewDate" (viewDateChange)="closeOpenMonthViewDay()">Next</button>
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <h3>{{ viewDate | calendarDate:(view + 'ViewTitle'):'en' }}</h3>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="">
+                        <button class="btn" (click)="setView(CalendarView.Month)" [class.btn-active]="view === CalendarView.Month">Month</button>
+                        <button class="btn" (click)="setView(CalendarView.Week)" [class.btn-active]="view === CalendarView.Week">Week</button>
+                        <button class="btn" (click)="setView(CalendarView.Day)" [class.btn-active]="view === CalendarView.Day">Day</button>
+                      </div>
+                    </div>
+                  </div>
+                  <br />
+                  <div [ngSwitch]="view" class="audit-calender-audit-summary">
+                    <mwl-calendar-month-view
+                      *ngSwitchCase="CalendarView.Month"
+                      [viewDate]="viewDate"
+                      [events]="events"
+                      [refresh]="refresh"
+                      [activeDayIsOpen]="activeDayIsOpen"
+                      (dayClicked)="dayClicked($event.day)"
+                      (eventClicked)="handleEvent('Clicked', $event.event)"
+                      (eventTimesChanged)="eventTimesChanged($event)">
+                    </mwl-calendar-month-view>
+                    <mwl-calendar-week-view
+                      *ngSwitchCase="CalendarView.Week"
+                      [viewDate]="viewDate"
+                      [events]="events"
+                      [refresh]="refresh"
+                      (eventClicked)="handleEvent('Clicked', $event.event)"
+                      (eventTimesChanged)="eventTimesChanged($event)">
+                    </mwl-calendar-week-view>
+                    <mwl-calendar-day-view
+                      *ngSwitchCase="CalendarView.Day"
+                      [viewDate]="viewDate"
+                      [events]="events"
+                      [refresh]="refresh"
+                      (eventClicked)="handleEvent('Clicked', $event.event)"
+                      (eventTimesChanged)="eventTimesChanged($event)">
+                    </mwl-calendar-day-view>
+                  </div>
+            </div>
+        </div>
+    </div>
+    <!-- common-tab-md end -->
+
+</div>
+
+<div class="modal modal-style-1 fade" id="delete-popup" data-backdrop="static" data-keyboard="false" #detailsPopup>
+    <app-calendar-details-popup [source]="deleteObject?.values"></app-calendar-details-popup>
+</div>

@@ -1,0 +1,249 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navigationBar *mobxAutorun>
+   <app-breadcrumb-menu></app-breadcrumb-menu>
+   <div class="dropdown edit-dropdown d-lg-none drop-menu-left-head">
+      <a class="btn btn-primary float-left three-dots-dropdown dropdown-toggle"
+         data-toggle="dropdown">{{AppStore.pageTitle}}<i class="fas fa-chevron-circle-down ml-2"></i></a>
+      <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+         <a class="dropdown-item active" data-toggle="pill" routerLinkActive="active"
+            [routerLinkActiveOptions]="{exact: true}"
+            [routerLink]="['/audit-management/am-audits/',AmAuditsStore.auditId,'/am-audit-test-plans/',AmAuditTestPlanStore.auditTestPlanId]">{{'info'
+            |
+            translate}}</a>
+      </div>
+   </div>
+
+
+   <!-- END FOR SMALL SCREENS -->
+
+   <!-- START FOR NORMAL SCREEN -->
+
+   <ul class="nav nav-pills float-left  d-none d-lg-block" role="tablist">
+      <li class="nav-item"> <a class="nav-link nav-link-show" data-toggle="tab" data-original-title="Customer"
+            [routerLink]="['/audit-management/am-audits/',AmAuditsStore.auditId,'/am-audit-test-plans/',AmAuditTestPlanStore.auditTestPlanId]"
+            routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"> {{'info' |
+            translate}}</a>
+      </li>
+
+   </ul>
+   <app-sub-menu></app-sub-menu>
+
+</nav>
+<main class="audit-program-details-page mt-3" *mobxAutorun>
+   <div class="container-fluid">
+      <div class="row">
+         <div class="col-sm-12">
+            <div class="widget">
+               <ng-container *mobxAutorun>
+                  <app-am-audit-test-plan-loader *ngIf="!AmAuditTestPlanStore?.individual_audit_testPlan_loaded"></app-am-audit-test-plan-loader>
+                </ng-container>
+               <div class="row" *ngIf="AmAuditTestPlanStore?.individual_audit_testPlan_loaded">
+                  <div class="col-lg-6 col-sm-12 padding-right-0">
+                     <div class="bg-white widg-padding-cmn">
+                        <div class="min-height-64">
+
+                           <div class="issue-top-sec">
+                              <div class="clearfix">
+                                 <h5 class="d-inline-block cmn-head-style label-tag-style">
+                                    <span
+                                    class="issue-smoal-head-text">#{{AmAuditTestPlanStore?.individualTestPlanDetails?.reference_code}}</span>{{AmAuditTestPlanStore?.individualTestPlanDetails?.title}} <span
+                                       [ngClass]="'draft-tag draft-tag-'+AmAuditTestPlanStore?.individualTestPlanDetails?.am_audit_test_plan_status?.label+' label-tag-style-tag label-left-arow-tag d-inline-block status-tag-new-one'"> {{AmAuditTestPlanStore?.individualTestPlanDetails?.am_audit_test_plan_status?.language[0]?.pivot?.title}}</span>
+                                 </h5>
+                              </div>
+                              <p style="white-space:pre-line">
+                                 {{AmAuditTestPlanStore?.individualTestPlanDetails?.description}}</p>
+
+                           </div>
+
+                           <div class="row">
+
+                              <div class="col-lg-12 col-sm-12">
+                                 <h6>Controls</h6>
+                                 <ul class="arrowlist mt-0 p-0" *ngIf="AmAuditTestPlanStore?.individualTestPlanDetails?.test_plan_controls?.length>0">
+
+                                    <li
+                                       *ngFor="let control of AmAuditTestPlanStore?.individualTestPlanDetails?.test_plan_controls">
+                                       {{control.title}}</li>
+                                 </ul>
+                                 <p *ngIf="AmAuditTestPlanStore?.individualTestPlanDetails?.test_plan_controls?.length==0">{{AppStore.noContentText}}</p>
+                           
+                              </div>
+                              <div class="col-lg-12 col-sm-12">
+                                 <h6>{{'am_audit_clause' | translate}}</h6>
+                                 <p *ngFor="let item of AmAuditTestPlanStore?.individualTestPlanDetails?.test_plan_document_version_contents ;let innerIndex = index">{{item.clause_number ? item.clause_number : ''}} {{item.title}}</p>
+                                 <p *ngIf="AmAuditTestPlanStore?.individualTestPlanDetails?.test_plan_document_version_contents?.length==0">{{AppStore.noContentText}}
+                             </div>
+                              <div class="col-lg-12 col-sm-12">
+                                 <h6>Support Files</h6>
+                                 <div class="thumb-pics-bg thumb-pics-col-3 clearfix thumb-pics-fix-text"
+                                    *ngIf="AmAuditTestPlanStore?.individualTestPlanDetails?.test_plan_documents?.length>0">
+                                    <div class="thumb-pics"
+                                       *ngFor="let docs of AmAuditTestPlanStore?.individualTestPlanDetails?.test_plan_documents;let j = index">
+
+                                       <!-- System Files Starts Here -->
+                                       <div class="upload-pics edit-option" *ngIf="!docs?.document_id"
+                                          (click)="viewDocument('test-plan-document',docs,docs)">
+                                          <div class="browse-form-pic"
+                                             [ngStyle]="{'background': 'url('+createImageUrl('test-plan-document',docs?.token)+') no-repeat'}">
+                                          </div>
+                                          <div class="browse-form-name clearfix">
+                                             <div class="float-left">
+                                                <h6>
+                                                   {{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}
+                                                </h6>
+                                                <span>{{docs.size/1048576 |
+                                                   number:'0.2-2'}}MB</span><span
+                                                   class="text-blue bold pl-2">System</span>
+                                             </div>
+                                             <div class="browse-logo">
+                                                <img *ngIf="checkExtension(docs.ext,'image') != -1"
+                                                   class="folder-picher" src="/assets/images/jpg-icone.png">
+                                                <img *ngIf="checkExtension(docs.ext,'doc') != -1" class="folder-picher"
+                                                   src="/assets/images/word-icone.png">
+                                                <img *ngIf="checkExtension(docs.ext,'pdf') != -1" class="folder-picher"
+                                                   src="/assets/images/pdf-icone.png">
+                                                <img *ngIf="checkExtension(docs.ext,'excel') != -1"
+                                                   class="folder-picher" src="/assets/images/excel-icone.png">
+                                                <img *ngIf="checkExtension(docs.ext,'video') != -1"
+                                                   class="folder-picher" src="/assets/images/md-video.png">
+                                                <img *ngIf="checkExtension(docs.ext,'audio') != -1"
+                                                   class="folder-picher" src="/assets/images/md-audio.png">
+                                                <img *ngIf="checkExtension(docs.ext,'ppt') != -1" class="folder-picher"
+                                                   src="/assets/images/md-ppt.png">
+                                             </div>
+                                          </div>
+                                          <div class="edit-option-show-inner" style="margin: 0 -8px 0 0;">
+                                             <a><i class="fas fa-download"
+                                                   (click)="downloadDocumentFile('test-plan-document',docs)"></i></a>
+                                          </div>
+                                       </div>
+
+                                       <!-- System Files Starts Here -->
+                                       <!-- KnowledgeHub Files Starts Here -->
+                                       <div class="upload-pics edit-option" *ngIf="docs.document_id">
+
+                                          <div *ngFor="let mainDoc of docs?.kh_document?.versions"
+                                             (click)="viewDocument('document-version',docs,mainDoc)">
+                                             <div *ngIf="mainDoc.is_latest">
+                                                <div class="browse-form-pic"
+                                                   [ngStyle]="{'background': 'url('+createImageUrl('document-version',mainDoc?.token)+') no-repeat'}">
+                                                </div>
+                                                <div class="browse-form-name clearfix">
+                                                   <div class="float-left">
+                                                      <h6>{{mainDoc.title}}
+                                                      </h6>
+                                                      <span>{{mainDoc.size/1048576 |
+                                                         number:'0.2-2'}}MB</span><span
+                                                         class="text-blue bold pl-2">Knowledge
+                                                         Hub</span>
+                                                   </div>
+                                                   <div class="browse-logo">
+                                                      <img *ngIf="checkExtension(mainDoc.ext,'image') != -1"
+                                                         class="folder-picher" src="/assets/images/jpg-icone.png">
+                                                      <img *ngIf="checkExtension(mainDoc.ext,'doc') != -1"
+                                                         class="folder-picher" src="/assets/images/word-icone.png">
+                                                      <img *ngIf="checkExtension(mainDoc.ext,'pdf') != -1"
+                                                         class="folder-picher" src="/assets/images/pdf-icone.png">
+                                                      <img *ngIf="checkExtension(mainDoc.ext,'excel') != -1"
+                                                         class="folder-picher" src="/assets/images/excel-icone.png">
+                                                      <img *ngIf="checkExtension(mainDoc.ext,'video') != -1"
+                                                         class="folder-picher" src="/assets/images/md-video.png">
+                                                      <img *ngIf="checkExtension(mainDoc.ext,'audio') != -1"
+                                                         class="folder-picher" src="/assets/images/md-audio.png">
+                                                      <img *ngIf="checkExtension(mainDoc.ext,'ppt') != -1"
+                                                         class="folder-picher" src="/assets/images/md-ppt.png">
+                                                   </div>
+                                                </div>
+                                                <div class="edit-option-show-inner" style="margin: 0 -8px 0 0;">
+                                                   <a><i class="fas fa-download"
+                                                         (click)="downloadDocumentFile('document-version',docs,mainDoc)"></i></a>
+                                                </div>
+                                             </div>
+                                          </div>
+
+
+                                       </div>
+                                       <!-- KnowledgeHub Files Ends Here -->
+
+                                    </div>
+
+                                 </div>
+                                 <p *ngIf="AmAuditTestPlanStore?.individualTestPlanDetails?.test_plan_documents?.length==0">{{AppStore.noContentText}}</p>
+
+                              </div>
+
+                           </div>
+
+                        </div>
+
+                        <div class="row">
+                           <div class="col-xl-12">
+                              <hr class="mb-2">
+                              <app-user-popup-box
+                                 [source]=" getCreatedByDetails(AmAuditTestPlanStore.individualTestPlanDetails?.created_by)">
+                              </app-user-popup-box>
+                           </div>
+                        </div>
+
+                     </div>
+
+                  </div>
+                  <div class="col-lg-6 col-sm-12">
+                     <div class="bg-white widg-padding-cmn h-100">
+                     
+
+                           <div class="row">
+                              <div class="col-lg-12 col-sm-12">
+                                 <h6>{{'risks'|translate}}</h6>
+                                 <ul class="arrowlist mt-0 p-0" *ngIf="AmAuditTestPlanStore?.individualTestPlanDetails?.test_plan_risks?.length>0">
+                                    <li
+                                       *ngFor="let risk of AmAuditTestPlanStore?.individualTestPlanDetails?.test_plan_risks">
+                                       {{risk.title}}
+                                    </li>
+
+                                 </ul>
+                                 <p *ngIf="AmAuditTestPlanStore?.individualTestPlanDetails?.test_plan_risks?.length==0">{{AppStore.noContentText}}</p>
+                              </div>
+                              <div class="col-lg-12 col-sm-12">
+                                 <h6>{{'strategic_objectives'|translate}}</h6>
+                                 <ul class="arrowlist mt-0 p-0" *ngIf="AmAuditTestPlanStore?.individualTestPlanDetails?.test_plan_objectives?.length>0">
+                                    <li
+                                       *ngFor="let objective of AmAuditTestPlanStore?.individualTestPlanDetails?.test_plan_objectives">
+                                       {{objective.title}}
+                                    </li>
+
+                                 </ul>
+                                 <p *ngIf="AmAuditTestPlanStore?.individualTestPlanDetails?.test_plan_objectives?.length==0">{{AppStore.noContentText}}</p>
+                           
+                              </div>
+
+                           </div>
+
+
+                        
+                     </div>
+                  </div>
+               </div>
+
+            </div>
+         </div>
+      </div>
+   </div>
+</main>
+
+<div class="modal modal-style-1 fade" id="delete-popup" #deletePopup data-backdrop="static" data-keyboard="false">
+   <app-delete-popup [source]="deleteObject"></app-delete-popup>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup" data-keyboard="false"
+   data-backdrop="static" #filePreviewModal *mobxAutorun>
+   <button type="button" class="close" data-dismiss="modal" (click)="closePreviewModal($event)"><i
+         class="lni-close"></i><span>esc</span></button>
+   <app-am-preview-modal *ngIf="previewObject" [source]="previewObject" (close)="closePreviewModal($event)">
+   </app-am-preview-modal>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" style="overflow: hidden auto; z-index: 999999;"
+   data-keyboard="false" data-backdrop="static" #formModal *mobxAutorun>
+   <app-am-audit-test-plan-modal *ngIf="testPlanObject.type" [source]="testPlanObject"></app-am-audit-test-plan-modal>
+</div>

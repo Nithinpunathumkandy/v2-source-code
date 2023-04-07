@@ -1,0 +1,68 @@
+<!-- <app-event-profile-milestone-loader *ngIf="!EventMilestoneStore.loaded"></app-event-profile-milestone-loader> -->
+
+
+<div class="tab-pane tab-edit-class smoal-left-tab-page" id="project-tab-fourteen">
+    <ul *ngIf="EventMilestoneStore.milesstones.length > 0 && AuthStore.getActivityPermission(3700, 'EVENT_MILESTONE_LIST')" class="tmline">
+
+        <li *ngFor="let milestone of EventMilestoneStore.milesstones;let num = index; let last = last" [ngClass]="isEven(num) ? 'mb-0' : 'tmline-inverted mb-0'"   class="edit-option">
+            <div class="tmline-badge">{{num+1}}</div>
+           
+            <div [ngClass]="isEven(num) ? 'tmline-panel  slideInLeft' : 'tmline-panel slideInRight'" >
+                <div style="margin: 36px -12px 0 0;"  class="edit-option-show" *ngIf="EventsStore?.eventDetails?.event_status?.type=='draft' || EventsStore?.eventDetails?.event_status?.type=='send-back' ||  EventsStore?.eventDetails?.event_status?.type=='approved' || EventsStore?.eventDetails?.event_status?.type=='postponed'">
+                    <!-- edit-and-delete starts -->
+                    <a *ngIf="AuthStore.getActivityPermission(3700, 'UPDATE_EVENT_MILESTONE') && (EventsStore?.eventDetails?.event_status?.type=='draft' || EventsStore?.eventDetails?.event_status?.type=='send-back')" (click)="editMileStone(milestone)"  ><i class="fas fa-pen"></i></a>
+                    <a *ngIf="AuthStore.getActivityPermission(3700, 'DELETE_EVENT_MILESTONE') && (EventsStore?.eventDetails?.event_status?.type=='draft' || EventsStore?.eventDetails?.event_status?.type=='send-back')" (click)="delete(milestone.id)" ><i class="fas fa-trash"></i></a>
+                    <a *ngIf="AuthStore.getActivityPermission(3700, 'UPDATE_EVENT_MILESTONE') && (EventsStore?.eventDetails?.event_status?.type=='approved' || EventsStore?.eventDetails?.event_status?.type=='postponed')" (click)="addNewMilestoneProgress(milestone)"><i class="fas fa-edit"></i></a>
+                </div>
+                <div class="tmline-heading d-flex align-items-center flex-wrap justify-content-between"> 
+                    <div class="border-right">
+                        <h4 class="tmline-title bold">{{milestone.title}}</h4>
+                        <p><i class="far fa-calendar-alt"></i> {{milestone.due | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</p>
+                        <p style="white-space: pre-wrap;"><i class="tmline-title"></i>{{milestone.event_milestone_description}}</p>
+                    </div>
+                    <div class="pl-4">
+                        <div  [ngClass]="milestone.completion > 70 ?'progress-circle progress-green over50 p'+mileStonCompletion(milestone.completion) : milestone.completion > 50 ? 'progress-circle progress-yellow over50 p'+mileStonCompletion(milestone.completion) : 'progress-circle progress-red p'+mileStonCompletion(milestone.completion)">
+                            <span>{{milestone.completion? milestone.completion : '30'}}%</span>
+                            <div class="left-half-clipper">
+                                <div class="first50-bar"></div>
+                                <div class="value-bar"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </li>
+        <li *ngIf="EventsStore?.eventDetails?.event_status?.type=='draft' || EventsStore?.eventDetails?.event_status?.type=='send-back'"
+        class="add-tmlinr text-md-center">
+            <button class="tmline-btn" (click)="openNewEventModal()">+</button>
+        </li>
+    </ul>
+    <ng-container *mobxAutorun>
+        <div *ngIf="!EventMilestoneStore.loaded">
+           <app-event-profile-milestone-loader></app-event-profile-milestone-loader>
+       </div>
+        <app-no-data *ngIf = "EventMilestoneStore.allItems.length == 0 && EventMilestoneStore.loaded == true"></app-no-data>
+    </ng-container>
+</div>
+
+<!-- add milestone -->
+
+<div class="modal modal-style-1 popup-full-width fade" id="add-actionplan-popup" data-keyboard="false"
+data-backdrop="static" #newMilestone>
+   <app-add-event-milestone [source] = "newMilestoneObject" *ngIf = "newMilestoneObject.type"></app-add-event-milestone>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+  </div>
+
+<!-- milestone progress -->
+<div class="modal modal-style-1 popup-full-width fade"  data-keyboard="false"
+data-backdrop="static" #newProgress>
+   <app-add-progress-update [source] ="newProgressObject" *ngIf="newProgressObject.type">
+       
+   </app-add-progress-update>
+</div>  

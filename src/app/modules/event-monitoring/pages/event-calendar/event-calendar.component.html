@@ -1,0 +1,77 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navBar>
+    <div class="module-name-block float-left">
+        <a class="dropdown module-name-block-space module-title">{{'event_calendar' | translate}}</a>
+    </div>
+    <app-sub-menu></app-sub-menu>
+</nav>
+
+<main class="mt-3 acl-page">
+    <div class="container-fluid">
+        <div>
+            <ng-container *mobxAutorun>
+                <app-no-data *ngIf = "EventsStore.eventsList.length == 0 && EventsStore.loaded == true"></app-no-data>
+            </ng-container>
+        </div>
+        <div class="row" *ngIf="EventsStore.loaded">
+            <div class="col-lg-4"
+                *ngFor="let event of EventsStore?.eventsList | paginate: {currentPage:EventsStore?.currentPage, itemsPerPage:EventsStore?.itemsPerPage,totalItems:EventsStore?.totalItems};let num = index">
+                <div [ngClass]="AuthStore.getActivityPermission(1900,'EVENT_DETAILS') ? 'cmn-bdr widg-padding-cmn bg-white pt-3 pb-3 mb-3 left-bold-border ev-cal pointer' : 'cmn-bdr widg-padding-cmn bg-white pt-3 pb-3 mb-3 left-bold-border ev-cal'"
+                    (click)="AuthStore.getActivityPermission(100,'EVENT_DETAILS') ? gotoEventDetails(event.id) : ''"
+                    [style.border-left-color]="labelDot(event.event_status_color)">
+
+                    <div class="d-flex align-items-center">
+                        <div class="float-left border-right pr-3">
+                            <p class="mb-0">{{processDate(event.start_date) | date:'E'}}</p>
+                            <h4 class="font-weight-bold">{{processDate(event.start_date) | date:'dd'}}</h4>
+                            <p class="mb-0">{{processDate(event.start_date) | date:'MMM'}}</p>
+                        </div>
+                        <div class="pt-2 pb-2 pl-3">
+                            <h6 class="elips-1">{{event.title?event.title:AppStore.noContentText}}</h6>
+                            <p class="mb-0">
+                                <span class="mr-1"><i class="fas fa-map-marker-alt mr-2"></i></span>
+                                {{event.event_location_title?event.event_location_title:AppStore.noContentText}}
+                            </p>
+                            <p class="mb-0">
+                                <span class="mr-1"><i class="mr-2"
+                                        [ngClass]="(event.event_status_title == 'Approved')?'fas fa-check-circle': 'fas fa-clock'"></i>
+                                 <div
+                                 [ngClass]="event.event_status_label ? 'dot-div '+event.event_status_label : ''">
+                                 {{event.event_status_title?event.event_status_title:AppStore.noContentText}}
+                            
+                                </div>
+                                </span>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+            
+            
+        </div>
+
+        <ng-container>
+            <div *ngIf="!EventsStore.loaded">
+                <app-event-calendar-loader></app-event-calendar-loader>
+            </div>
+        </ng-container>
+
+    </div>
+    <div *ngIf="EventsStore.totalItems>EventsStore.itemsPerPage && EventsStore.loaded" class="col-sm-12">
+        <ul class="pagination justify-content-center mt-3">
+            <div class="list">
+                <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+                    (pageChange)="pageChange($event)" class="my-pagination">
+                </pagination-controls>
+            </div>
+        </ul>
+    </div>
+</main>
+
+
+
+<!-- app-event-calendar-loader -->
+
+<div class="modal modal-style-1 fade email-popup-new" id="custom-date-popup" #confirmationPopUp>
+    <app-custom-date-popup (dateEvent)="passDates($event)"></app-custom-date-popup>
+</div>

@@ -1,0 +1,1929 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navigationBar>
+
+    <app-breadcrumb-menu></app-breadcrumb-menu>
+    <app-sub-menu></app-sub-menu>
+
+</nav>
+<main class="mt-3 organization-page">
+    <div class="container-fluid">
+        <div class="organization-form-page" *mobxAutorun>
+            <form id="regForm" class="organization-multi-stup-form" [formGroup]="form">
+                <!-- Circles which indicates the steps of the form: -->
+                <div id="header-sroll-form" class="form-indicates-sec clearfix" #formSteps>
+                    <span class="step pointer" (click)="changeStep(0)"><span
+                            class="multi-form-nbr">1</span>Process</span>
+                    <span class="step pointer" (click)="changeStep(1)"><span class="multi-form-nbr">2</span>Risk
+                        Info</span>
+
+                    <span class="step pointer" (click)="changeStep(2)"><span
+                            class="multi-form-nbr">3</span>Mapping</span>
+                    <span class="step pointer" (click)="changeStep(3)"><span class="multi-form-nbr">4</span>Preview &
+                        Save</span>
+                </div>
+                <!-- One "tab" for each step in the form: -->
+
+                <div class="tab">
+                    <div class="row">
+                        <div class="col-lg-6 col-sm-6">
+                            <div class="form-group">
+                                <label for="name">{{'bia_tire' | translate}}</label>
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect">
+                                        <ng-select [placeholder]="'select_bia_tire' | translate" [multiple]="true"
+                                            searchable="true" (search)="searchBiaTire($event)" formControlName="tire_id"
+                                            (change)="sortProcess()" (clear)="getBiaTire()" (open)="getBiaTire()">
+                                            <ng-option [value]="type.id"
+                                                *ngFor="let type of BiaTireMasterStore.allItems">
+                                                {{type.title}}
+                                            </ng-option>
+                                        </ng-select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-lg-6">
+                            <div class="form-group">
+                                <label for="name">{{'search' | translate}}</label>
+                                <form class="form-control issue-select-process-search bg-white search-popup-new">
+                                    <input type="text" [placeholder]="'search_process'|translate" name="search"
+                                        class="search-process" [(ngModel)]="searchTerm"
+                                        (ngModelChange)="searchProcessWithActivities()"
+                                        [ngModelOptions]="{standalone: true}">
+                                    <a class="search-clear-btn" (click)="clearSearchBar()" *ngIf="searchTerm">X</a>
+                                    <button type="submit" style="width: 40px;"><i class="fa fa-search"></i></button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="audit-form-table w-100">
+                        <table class="table table-bordered ordinary-table audit-page-table mb-2 table-scroll"
+                            *ngIf="BiaStore.loaded && BiaStore.BiaList.length > 0 && AuthStore.getActivityPermission(100,'IMPACT_ANALYSIS_LIST')">
+                            <tr>
+                                <th class="border-top-0" width="8%">
+                                    #</th>
+                                <th class="border-top-0" width="10%">{{'ref_id' | translate}}</th>
+                                <th class="border-top-0" width="40%">{{'process' | translate}}</th>
+                                <th class="border-top-0" width="20%">{{'tire' | translate}}</th>
+                                <th class="border-top-0 text-center" width="20%">{{'action' | translate}}</th>
+                            </tr>
+
+                            <ng-container *ngFor="
+                     let row of BiaStore?.BiaList
+                       | paginate
+                         : {
+                             currentPage: BiaStore?.currentPage,
+                             itemsPerPage: BiaStore?.itemsPerPage,
+                             totalItems: BiaStore?.totalItems
+                           };
+                     let num = index
+                   ">
+                                <tr>
+                                    <td>{{
+                                        (BiaStore?.currentPage - 1) *
+                                        BiaStore?.itemsPerPage +
+                                        (num + 1)
+                                        }}</td>
+                                    <td style="padding:0.75rem">{{ row.reference_code }}</td>
+                                    <td>{{row.title}}</td>
+                                    <td [ngStyle]="{color: row?.bia_tire_color_code}">{{row.bia_tire_title?row.bia_tire_title:AppStore.noContentText}}</td>
+                                    <td class="text-center">
+                                        <button type="button" class="btn-table" (click)="getProcess(row)"
+                                            [disabled]="BcmRiskAssessmentStore.is_edit||processExisting(row.id)"
+                                            *ngIf="selectedProcess==false||BcmRiskAssessmentStore.selectedProcessId!=row.process_id">{{'select'
+                                            | translate}}</button>
+                                        <button type="button" class="btn-table btn-tic" (click)="changeProcess()"
+                                            [disabled]="BcmRiskAssessmentStore.is_edit||processExisting(row.id)"
+                                            *ngIf="selectedProcess==true && BcmRiskAssessmentStore.selectedProcessId == row.process_id"><i
+                                                class="fas fa-check"></i></button>
+                                    </td>
+                                </tr>
+                            </ng-container>
+                        </table>
+                        <p class="form-error pt-1" *ngIf="formErrors && formErrors.process">
+                            {{formErrors.process[0]}}</p>
+                        <div *ngIf="BiaStore.totalItems > BiaStore.itemsPerPage && BiaStore.loaded" class="col-sm-12">
+                            <ul class="pagination justify-content-center mt-3">
+                                <div class="list">
+                                    <pagination-controls [previousLabel]="'previous' | translate"
+                                        [nextLabel]="'next' | translate" (pageChange)="getProcessList($event)"
+                                        class="my-pagination"></pagination-controls>
+                                </div>
+                            </ul>
+                        </div>
+                        <ng-container *ngIf="BiaStore.loaded && BiaStore.BiaList.length == 0">
+                            <app-no-data-list [source]="processItemEmptyList">
+
+                            </app-no-data-list>
+                        </ng-container>
+                        <ng-container *ngIf="!BiaStore.loaded">
+                            <app-bia-form-table-loader>
+
+                            </app-bia-form-table-loader>
+                        </ng-container>
+                    </div>
+                </div>
+
+
+
+
+
+
+
+
+
+
+
+
+                <div class="tab">
+                    <!-- tab start -->
+
+
+
+
+
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label for="name">{{'risk_title'|translate}}<span class="form-error">*</span></label>
+                                <input type="text" formControlName="title" class="form-control"
+                                    [placeholder]="'risk_assessments_addform_placeholder_risk_title'|translate">
+                                <p class="form-error pt-1" *ngIf="formErrors && formErrors.title">
+                                    {{formErrors.title}}</p>
+                            </div>
+                        </div>
+                        <!-- <div class="col-sm-12">
+                            <div class="form-group">
+                                <div class="Preview-checkbox clearfix">
+                                    <label class="container2 float-left pl-4" style="font-size: 14px; padding-top:2px;">
+                                        <input type="checkbox" (change)="setCorporate($event)"
+                                            [checked]="form.value.is_corporate">
+                                        <span class="checkmark mt-1"></span> {{'corporate_risk' | translate}}?</label>
+                                </div>
+                            </div>
+                        </div> -->
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label>{{'sub_risks'|translate}}</label>
+                                <div class="clearfix d-flex">
+                                    <div class="multiple-plain-ngselect w-100">
+                                        <ng-select [items]="RiskLibraryMasterStore.allItems" bindValue="id"
+                                            bindLabel="title" [placeholder]="'select_sub_risks' | translate"
+                                            [multiple]="true" searchable="true" [clearable]="true"
+                                            formControlName="sub_risk_ids" (search)="searchSubRisk($event)"
+                                            (clear)="getSubRisk()" (open)="getSubRisk()">
+                                        </ng-select>
+                                    </div>
+                                    <a data-toggle="modal" data-target="#add-asset-sub-category-popup"
+                                        style="cursor: pointer;">
+                                        <button class="btn multi-add-user ml-2" (click)="addLibrary()"
+                                            style="width: 42px;"><i class="fas fa-plus"></i></button> </a>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.sub_risk_ids">
+                                    {{formErrors['sub_risk_ids.0']}}</p>
+                            </div>
+                        </div>
+                        <div class="col-sm-12">
+                            <div class="form-group add-kpi-textarea">
+                                <label for="name">{{'bcm_ra_addform_description'|translate}}</label>
+                                <textarea class="form-control" rows="11" formControlName="description" id="comment"
+                                    [placeholder]="'bcm_ra_addform_placeholder_description'|translate"></textarea>
+                            </div>
+                        </div>
+
+                        
+
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="name">{{'risk_date'|translate}}<span class="form-error">*</span></label>
+                                <div class="input-group date-picker input-clear-btn-main">
+                                    <input formControlName="risk_date" class="form-control bg-white"
+                                        placeholder="yyyy-mm-dd" id="risk_date" [readonly]="true" ngbDatepicker
+                                        #startInput="ngbDatepicker"><span *ngIf="form.value.risk_date"
+                                        aria-hidden="true" (click)="clear('risk_date')" style="border:none;"
+                                        class="input-clear-btn">×</span>
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary calendar" (click)="startInput.toggle()"
+                                            type="button"><i class="fas fa-calendar-alt"></i></button>
+                                    </div>
+                                    <!-- <input formControlName="start_date" class="form-control cal3" placeholder="Enter Field Name"> -->
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.risk_date">
+                                    {{formErrors.risk_date[0]}}</p>
+                            </div>
+                        </div>
+
+                        <!-- <div class="col-lg-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="name">{{'review_frequency' | translate}}</label>
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect">
+                                        <ng-select [placeholder]="'select_review_frequency'|translate"
+                                            [multiple]="false" searchable="true"
+                                            bindLabel="risk_review_frequency_language_title" bindValue="id"
+                                            formControlName="risk_review_frequency_id"
+                                            (search)="searchRiskReviewFrequency($event)"
+                                            (clear)="getRiskReviewFrequency()" (open)="getRiskReviewFrequency()"
+                                            autocomplete="new-password">
+                                            <ng-option [value]="type.id"
+                                                *ngFor="let type of RiskReviewFrequencyStore.allItems">
+                                                {{type.risk_review_frequency_language_title}}
+                                            </ng-option>
+                                        </ng-select>
+                                    </div>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.risk_review_frequency_id">
+                                    {{formErrors.risk_review_frequency_id}}</p>
+                            </div>
+                        </div> -->
+                        <div class="col-lg-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="name">{{'risk_owner' | translate}}<sup>*</sup></label>
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect">
+                                        <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                                            [placeholder]="'select_risk_owner'|translate" formControlName="risk_owner_id" [multiple]="false"
+                                            (clear)="getUsers()" (search)="searchUsers($event)" multiple="false"
+                                            (open)="getUsers()" [searchFn]="customSearchFn">
+                                            <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                                <img class="ng-select-user-display"
+                                                    *ngIf="item.image?.token||item.image_token" height="15" width="15"
+                                                    [attr.src]="item.image?.token?createImageUrl(item.image?.token):createImageUrl(item.image_token)" />
+                                                <img class="ng-select-user-display"
+                                                    *ngIf="!item.image?.token && !item.image_token" height="15"
+                                                    width="15" [attr.src]="getDefaultImage('user-logo')" />
+                                                <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b><span aria-hidden="true"
+                                                    (click)="clear(item)" style="border:none;"
+                                                    class="ng-value-icon left">×</span>
+                                            </ng-template>
+
+                                            <ng-template ng-option-tmp let-item="item" let-index="index">
+                                                <div class="user-post-department-pic">
+                                                    <img class="ng-select-user-display"
+                                                        *ngIf="item.image?.token || item.image_token" height="25"
+                                                        width="25"
+                                                        [attr.src]="item.image?.token?createImageUrl(item.image?.token):createImageUrl(item.image_token)" />
+                                                    <img class="ng-select-user-display"
+                                                        *ngIf="!item.image?.token && !item.image_token" height="25"
+                                                        width="25" [attr.src]="getDefaultImage('user-logo')" />
+                                                </div>
+                                                <div class="user-post-department-div">
+                                                    <b>{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b>
+                                                    <p class="user-post-department-multiple">
+                                                        {{getStringsFormatted([item.designation_title,' '+item.department],50,',')}}</p>
+                                                </div>
+                                            </ng-template>
+                                        </ng-select>
+                                    </div>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.risk_owner_id">
+                                    {{formErrors.risk_owner_id}}</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="name">{{'responsible_users' | translate}}</label>
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect">
+                                        <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                                            [placeholder]="'select_responsible_users'|translate" formControlName="user_ids"
+                                            (clear)="getUsers()" (search)="searchUsers($event)" multiple="true"
+                                            (open)="getUsers()" [searchFn]="customSearchFn">
+                                            <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                                <img class="ng-select-user-display"
+                                                    *ngIf="item.image?.token||item.image_token" height="15" width="15"
+                                                    [attr.src]="item.image?.token?createImageUrl(item.image?.token):createImageUrl(item.image_token)" />
+                                                <img class="ng-select-user-display"
+                                                    *ngIf="!item.image?.token && !item.image_token" height="15"
+                                                    width="15" [attr.src]="getDefaultImage('user-logo')" />
+                                                <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b><span aria-hidden="true"
+                                                    (click)="clear(item)" style="border:none;"
+                                                    class="ng-value-icon left">×</span>
+                                            </ng-template>
+
+                                            <ng-template ng-option-tmp let-item="item" let-index="index">
+                                                <div class="user-post-department-pic">
+                                                    <img class="ng-select-user-display"
+                                                        *ngIf="item.image?.token || item.image_token" height="25"
+                                                        width="25"
+                                                        [attr.src]="item.image?.token?createImageUrl(item.image?.token):createImageUrl(item.image_token)" />
+                                                    <img class="ng-select-user-display"
+                                                        *ngIf="!item.image?.token && !item.image_token" height="25"
+                                                        width="25" [attr.src]="getDefaultImage('user-logo')" />
+                                                </div>
+                                                <div class="user-post-department-div">
+                                                    <b>{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b>
+                                                    <p class="user-post-department-multiple">
+                                                        {{getStringsFormatted([item.designation_title,' '+item.department],50,',')}}</p>
+                                                </div>
+                                            </ng-template>
+                                        </ng-select>
+                                    </div>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors&&formErrors.user_ids">
+                                    {{formErrors.user_ids}}</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="name">{{'risk_types' | translate}}</label>
+                                <div class="clearfix">
+                                    <div class="multiple-plain-ngselect">
+                                        <ng-select [items]="RiskTypeStore.allItems" bindValue="id"
+                                            bindLabel="risk_type_language_title" [placeholder]="'select_risk_types' | translate"
+                                            [multiple]="true" searchable="true" [clearable]="true"
+                                            formControlName="risk_type_ids" (search)="searchRiskType($event)"
+                                            (clear)="getRiskType()" (open)="getRiskType()">
+                                        </ng-select>
+                                    </div>
+                                </div>
+                                <p class="form-error pt-1" *ngIf="formErrors && formErrors.risk_type_ids">
+                                    {{formErrors?.risk_type_ids}}</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-sm-12">
+                            <div class="form-group  mt-4">
+                                <a class="text-light-blue" data-toggle="modal" (click)="organisationChanges()"
+                                    style="border-bottom: 1px solid;">{{'change_organization_unit' | translate}}<span
+                                        class="form-error">*</span></a>
+                            </div>
+                        </div>
+
+
+
+
+                    </div>
+
+
+                </div>
+
+                <div class="tab">
+                    <!-- tab start -->
+                    <div class="row process-form-tab mb-4">
+                        <div class="col-sm-12">
+
+                            <div class="clearfix small-tab-small-main">
+                                <div class="small-list-tab small-tab-small small-list-tab-md">
+                                    <!-- tab menu start -->
+                                    <ul class="nav nav-tabs nav-tabs--vertical nav-tabs--left vertical-tab"
+                                        role="navigation">
+                                        <li class="nav-item"> <a (click)="gotoMappingSection('control')"
+                                           class="nav-link text-left active show" data-toggle="tab" role="tab"
+                                           aria-controls="ipsum" aria-selected="false" data-original-title=""
+                                           title="">{{'controls' | translate}}</a></li>
+                                        <li class="nav-item"> <a (click)="gotoMappingSection('issue')"
+                                                class="nav-link text-left" data-toggle="tab" role="tab"
+                                                aria-controls="lorem" aria-selected="true" data-original-title=""
+                                                title="">{{'issues' | translate}}</a></li>
+
+                                        <li class="nav-item"> <a (click)="gotoMappingSection('process')"
+                                                class="nav-link text-left" data-toggle="tab" role="tab"
+                                                aria-controls="ipsum" aria-selected="false" data-original-title=""
+                                                title="">{{'processes' | translate}}</a></li>
+
+                                        <!-- <li class="nav-item"> <a (click)="gotoMappingSection('location')"
+                                           class="nav-link text-left" data-toggle="tab" role="tab"
+                                           aria-controls="ipsum" aria-selected="false" data-original-title=""
+                                           title="">{{'locations' | translate}}</a></li> -->
+                                        <!-- <li class="nav-item"> <a (click)="gotoMappingSection('project')"
+                                           class="nav-link text-left" data-toggle="tab" role="tab"
+                                           aria-controls="ipsum" aria-selected="false" data-original-title=""
+                                           title="">{{'projects' | translate}}</a></li> -->
+                                        <li class="nav-item"> <a (click)="gotoMappingSection('service')"
+                                                class="nav-link text-left" data-toggle="tab" role="tab"
+                                                aria-controls="ipsum" aria-selected="false" data-original-title=""
+                                                title="">{{'service' | translate}}</a></li>
+                                        <li class="nav-item" *ngIf="OrganizationModulesStore.checkOrganizationSubModulesPermission(300,4101)"> <a (click)="gotoMappingSection('customer')"
+                                                class="nav-link text-left" data-toggle="tab" role="tab"
+                                                aria-controls="ipsum" aria-selected="false" data-original-title=""
+                                                title="">{{'customers' | translate}}</a></li>
+                                        <li class="nav-item"> <a (click)="gotoMappingSection('assets')"
+                                                class="nav-link text-left" data-toggle="tab" role="tab"
+                                                aria-controls="ipsum" aria-selected="false" data-original-title=""
+                                                title="">{{'assets' | translate}}</a></li>
+                                        <!-- <li class="nav-item"> <a (click)="gotoMappingSection('focus-area')"
+                                                class="nav-link text-left" data-toggle="tab" role="tab"
+                                                aria-controls="ipsum" aria-selected="false" data-original-title=""
+                                                title="">{{'strategic_focusarea' | translate}}</a></li> -->
+
+                                    </ul>
+                                </div>
+                                <div class="tab-content min-height-440">
+                                    <div *ngIf="selectedSection=='control'"
+                                        [ngClass]="ControlStore?.selectedControlsList.length==0?'tab-pane fade active show':'tab-pane fade active show'"
+                                        id="tab-one" role="tabpanel">
+                                        <div class="p-3">
+                                            <!-- *ngIf="ControlStore?.selectedControlsList.length> 0" -->
+                                            <div
+                                                class="processes-issue audit-processes-issue clearfix bg-white cmn-bdr mb-3">
+                                                <h5>{{'connect_control_with_risk'|translate}}</h5>
+                                                <div class="float-right">
+                                                    <a (click)="selectControls()" data-toggle="modal"
+                                                        class="btn btn-small">{{'select' | translate}}</a>
+                                                    <a class="btn btn-small" (click)="addControl()">{{'add_control' |
+                                                        translate}}</a>
+                                                </div>
+                                            </div>
+                                            <div class="audit-form-table w-100 risk-form-mapping-table form-table-scroll"
+                                                *ngIf="ControlStore?.selectedControlsList.length> 0">
+                                                <table class="table table-bordered ordinary-table cmn-table-style mb-2">
+                                                    <tr>
+                                                        <th class="border-top-0" width="2%">#</th>
+                                                        <th class="border-top-0" width="10%">{{'ref_id' | translate}}
+                                                        </th>
+                                                        <th class="border-top-0" width="88%">{{'title' | translate}}
+                                                        </th>
+                                                    </tr>
+                                                    <tr class="pointer edit-and-delete-main"
+                                                        *ngFor="let cntrl of ControlStore?.selectedControlsList; let list=index">
+                                                        <td>{{list+1}}</td>
+                                                        <td>{{cntrl.reference_code}}</td>
+                                                        <td>
+                                                            <div class="edit-option-show">
+                                                                <a [attr.title]="'delete'|translate"
+                                                                    (click)="deleteItem('control',list)"><i
+                                                                        class="fas fa-trash"></i></a>
+                                                            </div>
+                                                            {{cntrl.issues_title?cntrl.issues_title:cntrl.title}}
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                            <div *ngIf="ControlStore?.selectedControlsList.length == 0"
+                                                style="height: 300px">
+
+                                                <app-no-data [height]=true [border]=false></app-no-data>
+
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    <div *ngIf="selectedSection=='issue'"
+                                        [ngClass]="IssueListStore?.selectedIssuesList.length==0?'tab-pane fade active show':'tab-pane fade active show'"
+                                        id="tab-one" role="tabpanel">
+                                        <div class="p-3">
+                                            <div class="processes-issue audit-processes-issue clearfix bg-white cmn-bdr mb-3"
+                                                *ngIf="IssueListStore?.selectedIssuesList.length> 0">
+                                                <h5>{{'connect_organization_issue_risk' | translate}}</h5>
+                                                <div class="float-right">
+                                                    <a (click)="selectIssues()" data-toggle="modal"
+                                                        class="btn btn-small">{{'select' | translate}}</a>
+                                                </div>
+                                            </div>
+                                            <div class="audit-form-table w-100 risk-form-mapping-table form-table-scroll"
+                                                *ngIf="IssueListStore?.selectedIssuesList.length> 0">
+                                                <table class="table table-bordered ordinary-table cmn-table-style mb-2">
+                                                    <tr>
+                                                        <th class="border-top-0" width="2%">#</th>
+                                                        <th class="border-top-0" width="9%">{{'ref_id' | translate}}
+                                                        </th>
+                                                        <th class="border-top-0" width="18%">{{'issue' | translate}}
+                                                        </th>
+                                                        <th class="border-top-0" width="12%">{{'issue_types' |
+                                                            translate}}</th>
+                                                        <th class="border-top-0" width="20%">{{'issue_categories' |
+                                                            translate}}</th>
+                                                        <th class="border-top-0" width="19%">{{'issue_domains' |
+                                                            translate}}</th>
+                                                        <th class="border-top-0" width="32%">{{'departments' |
+                                                            translate}}</th>
+                                                    </tr>
+                                                    <tr class="pointer edit-and-delete-main"
+                                                        *ngFor="let selected of IssueListStore?.selectedIssuesList; let list=index">
+                                                        <td>{{list+1}}</td>
+                                                        <td>{{selected.reference_code}}</td>
+                                                        <td>{{selected.issues_title?selected.issues_title:selected.title}}
+                                                        </td>
+                                                        <td>
+                                                            <ng-container
+                                                                *ngIf="selected.issue_types_list&&selected.issue_types_list.length!=0">
+                                                                <span *ngFor="let types of selected.issue_types_list"
+                                                                    class="risk-type-bx risk-type-bx-drop">
+                                                                    <i><img
+                                                                            [attr.src]="types == 'Internal' ? 'assets/images/risk-type-icon.png' : 'assets/images/risk-type-icon-two.png'">{{types}}</i>&nbsp;
+                                                                </span>
+                                                            </ng-container>
+                                                            <ng-container
+                                                                *ngIf="!selected.issue_types_list||selected.issue_types_list.length==0">
+                                                                <p>{{AppStore.noContentText}}</p>
+                                                            </ng-container>
+                                                        </td>
+                                                        <td [attr.title]="selected.issue_categories">
+                                                            {{ selected.issue_categories?.length > 25 ?
+                                                            selected.issue_categories.substring(0,25)+'...' :
+                                                            selected.issue_categories }}
+                                                        </td>
+                                                        <td [attr.title]="selected.issue_domains">
+                                                            {{ selected.issue_domains?.length > 25 ?
+                                                            selected.issue_domains.substring(0,25)+'...' :
+                                                            selected.issue_domains }}
+                                                        </td>
+
+                                                        <td>
+                                                            <div class="edit-option-show">
+                                                                <a [attr.title]="'delete'|translate"
+                                                                    (click)="deleteItem('issue',list)"><i
+                                                                        class="fas fa-trash"></i></a>
+                                                            </div>
+                                                            {{selected.departments}}
+
+                                                        </td>
+                                                    </tr>
+
+
+
+
+                                                </table>
+
+
+                                            </div>
+                                            <div *ngIf="IssueListStore?.selectedIssuesList.length == 0"
+                                                style="height: 300px">
+                                                <app-no-data [height]=true [border]=false></app-no-data>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div *ngIf="selectedSection=='process'"
+                                        [ngClass]="ProcessStore?.selectedProcessesList.length==0?'tab-pane fade active show':'tab-pane fade active show'"
+                                        id="tab-one" role="tabpanel">
+
+                                        <div class="p-3">
+                                            <!-- <div *ngIf="ProcessStore?.selectedProcessesList.length> 0"
+                                           class="processes-issue audit-processes-issue clearfix bg-white cmn-bdr mb-3">
+                                           <h5>{{'connect_process_with_risk' | translate}}</h5>
+                                           <div class="float-right">
+                                               <a (click)="selectProcesses()" data-toggle="modal"
+                                                   class="btn btn-small">{{'select' | translate}}</a>
+                                           </div>
+                                       </div> -->
+                                            <div class="audit-form-table w-100 risk-form-mapping-table form-table-scroll"
+                                                *ngIf="ProcessStore?.selectedProcessesList.length>0">
+                                                <table class="table table-bordered ordinary-table cmn-table-style mb-2">
+                                                    <tr>
+                                                        <th class="border-top-0" width="2%">#</th>
+                                                        <th class="border-top-0" width="9%">{{'ref_id' | translate}}
+                                                        </th>
+                                                        <th class="border-top-0" width="25%">{{'process_group' |
+                                                            translate}}</th>
+                                                        <th class="border-top-0" width="32%">{{'process' | translate}}
+                                                        </th>
+                                                        <th class="border-top-0" width="16%">{{'process_category' |
+                                                            translate}}</th>
+                                                        <th class="border-top-0" width="12%">{{'department' |
+                                                            translate}}</th>
+                                                        <th class="border-top-0" width="19%">{{'risk_rating' |
+                                                            translate}}</th>
+                                                        <!-- <th class="border-top-0" width="33%">Status</th> -->
+                                                    </tr>
+                                                    <tr class="pointer edit-and-delete-main"
+                                                        *ngFor="let selected of ProcessStore?.selectedProcessesList; let list=index">
+                                                        <td>{{list+1}}</td>
+                                                        <td>{{selected.reference_code}}</td>
+                                                        <td>{{selected.process_group_title}}</td>
+                                                        <td> {{selected.title}}
+                                                        </td>
+                                                        <td>{{selected.process_category_title}}</td>
+                                                        <td>
+                                                            {{selected.department}}
+                                                        </td>
+                                                        <td>
+                                                            <!-- <div class="edit-option-show">
+                                                           <a [attr.title]="'delete'|translate"
+                                                               (click)="deleteItem('process',list)"><i
+                                                                   class="fas fa-trash"></i></a>
+                                                       </div> -->
+                                                            {{ selected.risk_rating_title ? selected.risk_rating_title :
+                                                            AppStore.noContentText }}
+                                                        </td>
+                                                        <!-- <td>
+                                                       {{selected.status}}
+
+                                                   </td> -->
+                                                    </tr>
+
+
+
+                                                </table>
+
+
+                                            </div>
+                                            <div *ngIf="ProcessStore?.selectedProcessesList.length == 0"
+                                                style="height: 300px">
+
+                                                <app-no-data [height]=true [border]=false></app-no-data>
+
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div *ngIf="selectedSection=='location'"
+                                        [ngClass]="LocationMasterStore?.selectedLocationList.length==0?'tab-pane fade active show':'tab-pane fade active show'"
+                                        id="tab-one" role="tabpanel">
+
+                                        <div class="p-3">
+                                            <div *ngIf="LocationMasterStore?.selectedLocationList.length> 0"
+                                                class="processes-issue audit-processes-issue clearfix bg-white cmn-bdr mb-3">
+                                                <h5>{{'connect_location_with_risk'|translate}}</h5>
+                                                <div class="float-right">
+                                                    <a (click)="selectLocations()" data-toggle="modal"
+                                                        class="btn btn-small">{{'select' | translate}}</a>
+                                                </div>
+                                            </div>
+                                            <div class="audit-form-table w-100 risk-form-mapping-table form-table-scroll"
+                                                *ngIf="LocationMasterStore?.selectedLocationList.length> 0">
+                                                <table class="table table-bordered ordinary-table cmn-table-style mb-2">
+                                                    <tr>
+
+                                                        <th class="border-top-0" width="2%">#
+                                                        </th>
+                                                        <th class="border-top-0" width="25%">{{'title' |
+                                                            translate}}</th>
+                                                        <!-- <th class="border-top-0" width="32%">{{'process' | translate}}
+                                                   </th> -->
+
+                                                    </tr>
+                                                    <tr class="pointer edit-and-delete-main"
+                                                        *ngFor="let loc of LocationMasterStore?.selectedLocationList; let list=index">
+                                                        <td>{{list+1}}</td>
+                                                        <td>
+                                                            <div class="edit-option-show">
+                                                                <a [attr.title]="'delete'|translate"
+                                                                    (click)="deleteItem('location',list)"><i
+                                                                        class="fas fa-trash"></i></a>
+                                                            </div>
+                                                            {{loc.title}}
+                                                        </td>
+                                                        <!-- <td>{{loc.status}}</td> -->
+
+
+                                                    </tr>
+
+
+
+                                                </table>
+
+
+                                            </div>
+                                            <div *ngIf="LocationMasterStore?.selectedLocationList.length == 0"
+                                                style="height: 300px">
+
+                                                <app-no-data [height]=true [border]=false></app-no-data>
+
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                    <div *ngIf="selectedSection=='project'"
+                                        [ngClass]="BusinessProjectsStore?.selectedProjectsList.length==0?'tab-pane fade active show':'tab-pane fade active show'"
+                                        id="tab-one" role="tabpanel">
+
+                                        <div class="p-3">
+                                            <div *ngIf="BusinessProjectsStore?.selectedProjectsList.length> 0"
+                                                class="processes-issue audit-processes-issue clearfix bg-white cmn-bdr mb-3">
+                                                <h5>{{'connect_project_with_risk'|translate}}</h5>
+                                                <div class="float-right">
+                                                    <a (click)="selectProjects()" data-toggle="modal"
+                                                        class="btn btn-small">{{'select' | translate}}</a>
+                                                </div>
+                                            </div>
+                                            <div class="audit-form-table w-100 risk-form-mapping-table form-table-scroll"
+                                                *ngIf="BusinessProjectsStore?.selectedProjectsList.length> 0">
+                                                <table class="table table-bordered ordinary-table cmn-table-style mb-2">
+                                                    <tr>
+
+                                                        <th class="border-top-0" width="2%">#
+                                                        </th>
+                                                        <th class="border-top-0" width="25%">{{'title' |
+                                                            translate}}</th>
+                                                        <th class="border-top-0" width="32%">
+                                                            {{'manager_name'|translate}}
+
+                                                        </th>
+                                                        <th class="border-top-0" width="9%">{{'member_count' |
+                                                            translate}}</th>
+                                                        <th class="border-top-0" width="9%">{{'location' | translate}}
+                                                        </th>
+
+                                                    </tr>
+                                                    <tr class="pointer edit-and-delete-main"
+                                                        *ngFor="let proj of BusinessProjectsStore?.selectedProjectsList; let list=index">
+                                                        <td>{{list+1}}</td>
+                                                        <td> {{proj.title}}
+                                                        </td>
+                                                        <td>
+                                                            <div class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg"
+                                                                *ngIf="proj.project_manager_first_name">
+                                                                <img [attr.src]="proj.project_manager_image_token?createImageUrl(proj.project_manager_image_token):getDefaultImage('user-logo')"
+                                                                    width="30px" height="30px" class="rounded-circle">
+
+                                                                <div>
+                                                                    <h6>{{proj.project_manager_first_name}}
+                                                                        {{proj.project_manager_last_name}}</h6>
+                                                                    <span>{{proj.project_manager_designation?proj.project_manager_designation:AppStore.noContentText}}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <p *ngIf="!proj.project_manager_first_name">
+                                                                {{AppStore.noContentText}}</p>
+                                                        </td>
+                                                        <td>{{proj.member_count}}</td>
+                                                        <td>
+                                                            <div class="edit-option-show">
+                                                                <a [attr.title]="'delete'|translate"
+                                                                    (click)="deleteItem('project',list)"><i
+                                                                        class="fas fa-trash"></i></a>
+                                                            </div>
+                                                            {{proj.location_title?proj.location_title:AppStore.noContentText}}
+                                                        </td>
+
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                            <div *ngIf="BusinessProjectsStore?.selectedProjectsList.length == 0"
+                                                style="height: 300px">
+
+                                                <app-no-data [height]=true [border]=false></app-no-data>
+
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                    <div *ngIf="selectedSection=='product'"
+                                        [ngClass]="BusinessProductsStore?.selectedProductList.length==0?'tab-pane fade active show':'tab-pane fade active show'"
+                                        id="tab-one" role="tabpanel">
+
+                                        <div class="p-3">
+                                            <div *ngIf="BusinessProductsStore?.selectedProductList.length> 0"
+                                                class="processes-issue audit-processes-issue clearfix bg-white cmn-bdr mb-3">
+                                                <h5>{{'connect_product_with_risk'|translate}}</h5>
+                                                <div class="float-right">
+                                                    <a (click)="selectProducts()" data-toggle="modal"
+                                                        class="btn btn-small">{{'select' | translate}}</a>
+                                                </div>
+                                            </div>
+                                            <div class="audit-form-table w-100 risk-form-mapping-table form-table-scroll"
+                                                *ngIf="BusinessProductsStore?.selectedProductList.length> 0">
+                                                <table class="table table-bordered ordinary-table cmn-table-style mb-2">
+                                                    <tr>
+
+                                                        <th class="border-top-0" width="2%">#
+                                                        </th>
+                                                        <th class="border-top-0" width="25%">{{'title' |
+                                                            translate}}</th>
+                                                        <th class="border-top-0" width="32%">{{'description' |
+                                                            translate}}
+                                                        </th>
+                                                    </tr>
+                                                    <tr class="pointer edit-and-delete-main"
+                                                        *ngFor="let prod of BusinessProductsStore?.selectedProductList; let list=index">
+                                                        <td>{{list+1}}</td>
+                                                        <td> {{prod.title}}
+                                                        </td>
+                                                        <td>
+                                                            <div class="edit-option-show">
+                                                                <a [attr.title]="'delete'|translate"
+                                                                    (click)="deleteItem('product',list)"><i
+                                                                        class="fas fa-trash"></i></a>
+                                                            </div>
+                                                            {{prod.description?prod.description:AppStore.noContentText}}
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                            <div *ngIf="BusinessProductsStore?.selectedProductList.length == 0"
+                                                style="height: 300px">
+
+                                                <app-no-data [height]=true [border]=false></app-no-data>
+
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                    <div *ngIf="selectedSection=='customer'"
+                                        [ngClass]="BusinessCustomersStore?.selectedCustomerList.length==0?'tab-pane fade active show':'tab-pane fade active show'"
+                                        id="tab-one" role="tabpanel">
+
+                                        <div class="p-3">
+                                            <div *ngIf="BusinessCustomersStore?.selectedCustomerList.length> 0"
+                                                class="processes-issue audit-processes-issue clearfix bg-white cmn-bdr mb-3">
+                                                <h5>{{'connect_customer_with_risk'|translate}}</h5>
+                                                <div class="float-right">
+                                                    <a (click)="selectCustomers()" data-toggle="modal"
+                                                        class="btn btn-small">{{'select' | translate}}</a>
+                                                </div>
+                                            </div>
+                                            <div class="audit-form-table w-100 risk-form-mapping-table form-table-scroll"
+                                                *ngIf="BusinessCustomersStore?.selectedCustomerList.length> 0">
+                                                <table class="table table-bordered ordinary-table cmn-table-style mb-2">
+                                                    <tr>
+
+                                                        <th class="border-top-0" width="2%">#
+                                                        </th>
+                                                        <th class="border-top-0" width="25%">{{'title' |
+                                                            translate}}</th>
+                                                        <th class="border-top-0" width="32%">{{'contact_person' |
+                                                            translate}}
+                                                        </th>
+                                                        <th class="border-top-0" width="9%">{{'address' |
+                                                            translate}}</th>
+                                                    </tr>
+                                                    <tr class="pointer edit-and-delete-main"
+                                                        *ngFor="let cust of BusinessCustomersStore?.selectedCustomerList; let list=index">
+                                                        <td>{{list+1}}</td>
+                                                        <td> {{cust.title}}
+                                                        </td>
+                                                        <td>{{cust.contact_person?cust.contact_person:AppStore.noContentText}}
+                                                        </td>
+                                                        <td>
+                                                            <div class="edit-option-show">
+                                                                <a [attr.title]="'delete'|translate"
+                                                                    (click)="deleteItem('customer',list)"><i
+                                                                        class="fas fa-trash"></i></a>
+                                                            </div>
+                                                            {{cust.address?cust.address:AppStore.noContentText}}
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                            <div *ngIf="BusinessCustomersStore?.selectedCustomerList.length == 0"
+                                                style="height: 300px">
+
+                                                <app-no-data [height]=true [border]=false></app-no-data>
+
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    <div *ngIf="selectedSection=='objective'"
+                                        [ngClass]="StrategicObjectivesMasterStore?.selectedStrategic.length==0?'tab-pane fade active show':'tab-pane fade active show'"
+                                        id="tab-one" role="tabpanel">
+
+                                        <div class="p-3">
+                                            <div *ngIf="StrategicObjectivesMasterStore?.selectedStrategic.length>0"
+                                                class="processes-issue audit-processes-issue clearfix bg-white cmn-bdr mb-3">
+                                                <h5>{{'connect_strategic_objective_with_risk'|translate}}</h5>
+                                                <div class="float-right">
+                                                    <a (click)="selectObjectives()" data-toggle="modal"
+                                                        class="btn btn-small">{{'select' | translate}}</a>
+                                                </div>
+                                            </div>
+                                            <div class="audit-form-table w-100 risk-form-mapping-table form-table-scroll"
+                                                *ngIf="StrategicObjectivesMasterStore?.selectedStrategic.length> 0">
+                                                <table class="table table-bordered ordinary-table cmn-table-style mb-2">
+                                                    <tr>
+
+                                                        <th class="border-top-0" width="2%">#
+                                                        </th>
+                                                        <th class="border-top-0" width="90%">{{'title' |
+                                                            translate}}</th>
+                                                    </tr>
+                                                    <tr class="pointer edit-and-delete-main"
+                                                        *ngFor="let obj of StrategicObjectivesMasterStore?.selectedStrategic; let list=index">
+                                                        <td>{{list+1}}</td>
+                                                        <td>
+                                                            <div class="edit-option-show">
+                                                                <a [attr.title]="'delete'|translate"
+                                                                    (click)="deleteItem('strategic',list)"><i
+                                                                        class="fas fa-trash"></i></a>
+                                                            </div>
+                                                            {{obj.title}}
+                                                        </td>
+
+
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                            <div *ngIf="StrategicObjectivesMasterStore?.selectedStrategic.length == 0"
+                                                style="height: 300px">
+
+                                                <app-no-data [height]=true [border]=false></app-no-data>
+
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    <div *ngIf="selectedSection=='focus-area'"
+                                        [ngClass]="FocusAreaMasterStore?.selectedStrategic.length==0?'tab-pane fade active show':'tab-pane fade active show'"
+                                        id="tab-one" role="tabpanel">
+
+                                        <div class="p-3">
+                                            <div *ngIf="FocusAreaMasterStore?.selectedStrategic.length>0"
+                                                class="processes-issue audit-processes-issue clearfix bg-white cmn-bdr mb-3">
+                                                <h5>{{'connect_focus_area_with_risk'|translate}}</h5>
+                                                <div class="float-right">
+                                                    <a (click)="selectFocusArea()" data-toggle="modal"
+                                                        class="btn btn-small">{{'select' | translate}}</a>
+                                                </div>
+                                            </div>
+                                            <div class="audit-form-table w-100 risk-form-mapping-table form-table-scroll"
+                                                *ngIf="FocusAreaMasterStore?.selectedStrategic.length> 0">
+                                                <table class="table table-bordered ordinary-table cmn-table-style mb-2">
+                                                    <tr>
+
+                                                        <th class="border-top-0" width="2%">#
+                                                        </th>
+                                                        <th class="border-top-0" width="90%">{{'title' |
+                                                            translate}}</th>
+                                                    </tr>
+                                                    <tr class="pointer edit-and-delete-main"
+                                                        *ngFor="let obj of FocusAreaMasterStore?.selectedStrategic; let list=index">
+                                                        <td>{{list+1}}</td>
+                                                        <td>
+                                                            <div class="edit-option-show">
+                                                                <a [attr.title]="'delete'|translate"
+                                                                    (click)="deleteItem('focus-area',list)"><i
+                                                                        class="fas fa-trash"></i></a>
+                                                            </div>
+                                                            {{obj.title}}
+                                                        </td>
+
+
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                            <div *ngIf="FocusAreaMasterStore?.selectedStrategic.length == 0"
+                                                style="height: 300px">
+
+                                                <app-no-data [height]=true [border]=false></app-no-data>
+
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    <div *ngIf="selectedSection=='assets'"
+                                        [ngClass]="AssetRegisterStore?.selectedAssets.length==0?'tab-pane fade active show':'tab-pane fade active show'"
+                                        id="tab-one" role="tabpanel">
+
+                                        <div class="p-3">
+                                            <div *ngIf="AssetRegisterStore?.selectedAssets.length>0"
+                                                class="processes-issue audit-processes-issue clearfix bg-white cmn-bdr mb-3">
+                                                <h5>{{'connect_focus_area_with_risk'|translate}}</h5>
+                                                <div class="float-right">
+                                                    <a (click)="selectAssests()" data-toggle="modal"
+                                                        class="btn btn-small">{{'select' | translate}}</a>
+                                                </div>
+                                            </div>
+                                            <div class="audit-form-table w-100 risk-form-mapping-table form-table-scroll"
+                                                *ngIf="AssetRegisterStore?.selectedAssets.length> 0">
+                                                <table class="table table-bordered ordinary-table cmn-table-style mb-2">
+                                                    <tr>
+
+                                                        <th class="border-top-0" width="2%">#
+                                                        </th>
+                                                        <th class="border-top-0" width="90%">{{'title' |
+                                                            translate}}</th>
+                                                    </tr>
+                                                    <tr class="pointer edit-and-delete-main"
+                                                        *ngFor="let obj of AssetRegisterStore?.selectedAssets; let list=index">
+                                                        <td>{{list+1}}</td>
+                                                        <td>
+                                                            <div class="edit-option-show">
+                                                                <a [attr.title]="'delete'|translate"
+                                                                    (click)="deleteItem('assets',list)"><i
+                                                                        class="fas fa-trash"></i></a>
+                                                            </div>
+                                                            {{obj.title}}
+                                                        </td>
+
+
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                            <div *ngIf="AssetRegisterStore?.selectedAssets.length == 0"
+                                                style="height: 300px">
+
+                                                <app-no-data [height]=true [border]=false></app-no-data>
+
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    <div *ngIf="selectedSection=='service'"
+                                        [ngClass]="BusinessServiceStore?.selectedBusinessServicesList.length==0?'tab-pane fade active show':'tab-pane fade active show'"
+                                        id="tab-one" role="tabpanel">
+
+                                        <div class="p-3">
+                                            <div *ngIf="BusinessServiceStore?.selectedBusinessServicesList.length>0"
+                                                class="processes-issue audit-processes-issue clearfix bg-white cmn-bdr mb-3">
+                                                <h5>{{'connect_service_with_risk'|translate}}</h5>
+                                                <div class="float-right">
+                                                    <a (click)="selectServiceMapping()" data-toggle="modal"
+                                                        class="btn btn-small">{{'select' | translate}}</a>
+                                                </div>
+                                            </div>
+                                            <div class="audit-form-table w-100 risk-form-mapping-table form-table-scroll"
+                                                *ngIf="BusinessServiceStore?.selectedBusinessServicesList.length> 0">
+                                                <table class="table table-bordered ordinary-table cmn-table-style mb-2">
+                                                    <tr>
+
+                                                        <th class="border-top-0" width="2%">#
+                                                        </th>
+                                                        <th class="border-top-0" width="90%">{{'title' |
+                                                            translate}}</th>
+                                                    </tr>
+                                                    <tr class="pointer edit-and-delete-main"
+                                                        *ngFor="let obj of BusinessServiceStore?.selectedBusinessServicesList; let list=index">
+                                                        <td>{{list+1}}</td>
+                                                        <td>
+                                                            <div class="edit-option-show">
+                                                                <a [attr.title]="'delete'|translate"
+                                                                    (click)="deleteItem('service',list)"><i
+                                                                        class="fas fa-trash"></i></a>
+                                                            </div>
+                                                            {{obj.title}}
+                                                        </td>
+
+
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                            <div *ngIf="BusinessServiceStore?.selectedBusinessServicesList.length == 0"
+                                                style="height: 300px">
+
+                                                <app-no-data [height]=true [border]=false></app-no-data>
+
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <!-- <div class="tab-content"> -->
+
+
+                                <!-- </div> -->
+                            </div>
+
+
+                        </div>
+                    </div>
+                </div>
+                <!-- tab end -->
+                <div class="tab">
+                    <!-- tab start -->
+                    <div class="row issuue-new-style p-0" *ngIf="BcmRiskAssessmentStore.detailsLoaded">
+                        <div class="col-md-12 bg-white pb-3">
+                            <div class="issue-top-sec">
+                                <div class="clearfix">
+                                    <h5 class="d-inline-block cmn-head-style label-tag-style"><span
+                                            class="issue-smoal-head-text">#{{BcmRiskAssessmentStore.bcmRiskDetails.reference_code}}</span>
+                                        {{BcmRiskAssessmentStore.bcmRiskDetails.title}}</h5>
+                                </div>
+                                <p style="white-space: pre-wrap;">
+                                    {{BcmRiskAssessmentStore.bcmRiskDetails.description?BcmRiskAssessmentStore.bcmRiskDetails.description:AppStore.noContentText}}
+                                </p>
+                            </div>
+
+
+
+                            <div class="row">
+
+                                <div class="col-md-4">
+                                    <h6>{{'risk_type'|translate}}</h6>
+                                    <ng-container
+                                        *ngIf="BcmRiskAssessmentStore.bcmRiskDetails.risk_types&&BcmRiskAssessmentStore.bcmRiskDetails.risk_types.length!=0">
+                                        <p
+                                            *ngFor="let row of BcmRiskAssessmentStore.bcmRiskDetails.risk_types;let i=last">
+                                            {{row.language[0].pivot.title}}{{i?'':','}}</p>
+                                    </ng-container>
+                                    <ng-container
+                                        *ngIf="!BcmRiskAssessmentStore.bcmRiskDetails.risk_types||BcmRiskAssessmentStore.bcmRiskDetails.risk_types.length==0">
+                                        <p>{{AppStore.noContentText}}</p>
+                                    </ng-container>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6>{{'sub_risks'|translate}}</h6>
+                                    <ng-container
+                                        *ngIf="BcmRiskAssessmentStore.bcmRiskDetails.sub_risks&&BcmRiskAssessmentStore.bcmRiskDetails.sub_risks.length!=0">
+                                        <p
+                                            *ngFor="let row of BcmRiskAssessmentStore.bcmRiskDetails.sub_risks;let i=last">
+                                            {{row.title}}{{i?'':','}}</p>
+                                    </ng-container>
+                                    <ng-container
+                                        *ngIf="!BcmRiskAssessmentStore.bcmRiskDetails.sub_risks||BcmRiskAssessmentStore.bcmRiskDetails.sub_risks.length==0">
+                                        <p>{{AppStore.noContentText}}</p>
+                                    </ng-container>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6>{{'review_frequency'|translate}}</h6>
+                                    <p>{{BcmRiskAssessmentStore.bcmRiskDetails.risk_review_frequency?BcmRiskAssessmentStore.bcmRiskDetails.risk_review_frequency.language[0].pivot.title:AppStore.noContentText}}
+                                    </p>
+                                </div>
+                                <div class="col-md-4"
+                                    *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_subsidiary">
+                                    <h6>{{'organizations' | translate}}</h6>
+                                    <p>{{BcmRiskAssessmentStore.bcmRiskDetails?.organizations?.length > 0 ?
+                                        getArrayFormatedString('title',BcmRiskAssessmentStore.bcmRiskDetails?.organizations):AppStore.noContentText}}
+                                    </p>
+                                </div>
+                                <div class="col-md-4"
+                                    [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_division ? 'none':'block'}">
+                                    <h6>{{'divisions' | translate}}</h6>
+                                    <p>{{ BcmRiskAssessmentStore.bcmRiskDetails?.divisions?.length > 0 ?
+                                        getArrayFormatedString('title',BcmRiskAssessmentStore.bcmRiskDetails?.divisions):AppStore.noContentText}}
+                                    </p>
+                                </div>
+                                <div class="col-md-4"
+                                    [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_department ? 'none':'block'}">
+                                    <h6>{{'departments' | translate}}</h6>
+                                    <p>{{ BcmRiskAssessmentStore.bcmRiskDetails?.departments?.length > 0 ?
+                                        getArrayFormatedString('title',BcmRiskAssessmentStore.bcmRiskDetails?.departments):AppStore.noContentText}}
+                                    </p>
+                                </div>
+                                <div class="col-md-4"
+                                    [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_section ? 'none':'block'}">
+                                    <h6>{{'sections' | translate}}</h6>
+                                    <p>{{ BcmRiskAssessmentStore.bcmRiskDetails?.sections?.length > 0 ?
+                                        getArrayFormatedString('title',BcmRiskAssessmentStore.bcmRiskDetails?.sections):AppStore.noContentText}}
+                                    </p>
+                                </div>
+
+                                <div class="col-md-4"
+                                    [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_sub_section ? 'none':'block'}">
+                                    <h6>{{'sub_sections' | translate}}</h6>
+                                    <p>{{ BcmRiskAssessmentStore.bcmRiskDetails?.sub_sections?.length > 0 ?
+                                        getArrayFormatedString('title',BcmRiskAssessmentStore.bcmRiskDetails?.sub_sections):AppStore.noContentText}}
+                                    </p>
+                                </div>
+
+                            </div>
+
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <h6>{{'responsible_users' | translate}}</h6>
+                                    <div class="row">
+                                        <div class="col-lg-12 col-sm-6">
+
+                                            <ul class="arci-user-tab-dtl workflow-lst-pics-loop clearfix"
+                                                *ngIf="BcmRiskAssessmentStore.bcmRiskDetails.responsible_users.length!=0">
+                                                <li *ngFor="let user of BcmRiskAssessmentStore.bcmRiskDetails.responsible_users"
+                                                    class="rounde-hov-bg">
+                                                    <app-user-popup-box [source]="getPopupDetails(user,true)"
+                                                        [showName]="false" [activateButtons]="true">
+                                                    </app-user-popup-box>
+                                                </li>
+                                            </ul>
+                                            <p
+                                                *ngIf="BcmRiskAssessmentStore.bcmRiskDetails.responsible_users.length==0">
+                                                {{AppStore.noContentText}}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="label-and-user-pic user-big-pic">
+                                       <h6>{{'risk_owner' | translate}}</h6>
+                                       <div class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg mb-2"
+                                          *ngIf="BcmRiskAssessmentStore.bcmRiskDetails.risk_owner">
+                                          <ng-container>
+                                             <app-user-popup-box
+                                                [source]="getPopupDetails(BcmRiskAssessmentStore.bcmRiskDetails.risk_owner)">
+                                             </app-user-popup-box>
+                                          </ng-container>
+                                       </div>
+                                       <p
+                                          *ngIf="!BcmRiskAssessmentStore.bcmRiskDetails.risk_owner">
+                                          {{AppStore.noContentText}}</p>
+                                    </div>
+                                 </div>
+                            </div>
+
+
+
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <h6>{{'risk_mapping' | translate}}</h6>
+                                    <div class="clearfix small-tab-small-main">
+                                        <div class="small-list-tab small-tab-small small-list-tab-md">
+                                            <!-- tab menu start -->
+                                            <ul class="nav nav-tabs nav-tabs--vertical nav-tabs--left vertical-tab"
+                                                role="navigation">
+                                                <li class="nav-item"> <a (click)="gotoMappingSection('control')"
+                                                    class="nav-link text-left active show" data-toggle="tab"
+                                                    *ngIf="ControlStore?.selectedControlsList.length>0"
+                                                    role="tab" aria-controls="lorem" aria-selected="true"
+                                                    data-original-title="" title="">{{'controls' | translate}}</a>
+                                                </li>
+                                                <li class="nav-item"> <a (click)="gotoMappingSection('issue')"
+                                                    *ngIf="IssueListStore?.selectedIssuesList.length != 0"
+                                                        class="nav-link text-left" data-toggle="tab"
+                                                        role="tab" aria-controls="lorem" aria-selected="true"
+                                                        data-original-title="" title="">{{'issues' | translate}}</a>
+                                                </li>
+                                                <li class="nav-item"> <a (click)="gotoMappingSection('process')"
+                                                    *ngIf="ProcessStore?.selectedProcessesList.length != 0"
+                                                        class="nav-link text-left" data-toggle="tab" role="tab"
+                                                        aria-controls="ipsum" aria-selected="false"
+                                                        data-original-title="" title="">{{'process' | translate}} </a>
+                                                </li>
+                                                <!-- <li class="nav-item"> <a (click)="gotoMappingSection('location')"
+                                                class="nav-link text-left" data-toggle="tab" role="tab"
+                                                aria-controls="ipsum" aria-selected="false"
+                                                data-original-title="" title="">{{'locations' | translate}}</a>
+                                        </li> -->
+                                                <!-- <li class="nav-item"> <a (click)="gotoMappingSection('project')"
+                                                class="nav-link text-left" data-toggle="tab" role="tab"
+                                                aria-controls="ipsum" aria-selected="false"
+                                                data-original-title="" title="">{{'projects' | translate}}</a>
+                                        </li>
+                                        <li class="nav-item"> <a (click)="gotoMappingSection('product')"
+                                                class="nav-link text-left" data-toggle="tab" role="tab"
+                                                aria-controls="ipsum" aria-selected="false"
+                                                data-original-title="" title="">{{'products' | translate}}</a>
+                                        </li> -->
+                                                <li class="nav-item" *ngIf="OrganizationModulesStore.checkOrganizationSubModulesPermission(300,4101)"> <a (click)="gotoMappingSection('customer')"
+                                                    *ngIf="BusinessCustomersStore?.selectedCustomerList.length != 0"
+                                                        class="nav-link text-left" data-toggle="tab" role="tab"
+                                                        aria-controls="ipsum" aria-selected="false"
+                                                        data-original-title="" title="">{{'customers' | translate}}</a>
+                                                </li>
+
+                                                <li class="nav-item"> <a (click)="gotoMappingSection('service')"
+                                                    *ngIf="BusinessServiceStore?.selectedBusinessServicesList.length != 0"
+                                                        class="nav-link text-left" data-toggle="tab" role="tab"
+                                                        aria-controls="ipsum" aria-selected="false"
+                                                        data-original-title="" title="">{{'service' |
+                                                        translate}}</a></li>
+
+                                                <li class="nav-item"> <a (click)="gotoMappingSection('assets')"
+                                                    *ngIf="AssetRegisterStore?.selectedAssets.length != 0"
+                                                        class="nav-link text-left" data-toggle="tab" role="tab"
+                                                        aria-controls="ipsum" aria-selected="false"
+                                                        data-original-title="" title="">{{'assets' |
+                                                        translate}}</a></li>
+
+                                                <!-- <li class="nav-item"> <a (click)="gotoMappingSection('focus-area')"
+                                                    *ngIf="FocusAreaMasterStore?.selectedStrategic.length != 0"
+                                                        class="nav-link text-left" data-toggle="tab" role="tab"
+                                                        aria-controls="ipsum" aria-selected="false"
+                                                        data-original-title="" title="">{{'strategic_focusarea' |
+                                                        translate}}</a></li> -->
+                                            </ul>
+                                        </div>
+                                        <div class="tab-content" style="min-height:350px;">
+
+                                            <div *ngIf="selectedSection=='control'"
+                                                class="tab-pane fade-media-scr active show" id="inner-tab-one"
+                                                role="tabpanel">
+                                                <div class="p-2 no-fixed-table form-table-scroll-media-scr">
+                                                    <table
+                                                        class="table table-bordered ordinary-table cmn-table-style mb-4"
+                                                        *ngIf="ControlStore?.selectedControlsList.length>0">
+                                                        <tr>
+                                                            <th class="border-top-0" width="2%">#</th>
+                                                            <th class="border-top-0" width="10%">{{'ref_id' |
+                                                                translate}}
+                                                            </th>
+                                                            <th class="border-top-0" width="88%">{{'title' | translate}}
+                                                            </th>
+
+                                                        </tr>
+                                                        <tr
+                                                            *ngFor="let cntrl of ControlStore?.selectedControlsList; let list=index">
+                                                            <td>{{list+1}}</td>
+                                                            <td>{{cntrl.reference_code}}</td>
+                                                            <td>{{cntrl.issues_title?cntrl.issues_title:cntrl.title}}
+                                                            </td>
+
+
+                                                        </tr>
+
+
+
+                                                    </table>
+                                                    <div *ngIf="ControlStore?.selectedControlsList.length == 0"
+                                                        style="min-height: 300px">
+                                                        <!-- <div class="no-policy-demo">
+                                            <div class="no-file-icon">
+                                                <i class="far fa-file"></i>
+                                            </div> -->
+                                                        <app-no-data-list [source]="commonEmptyList" [height]=true
+                                                            [border]=false></app-no-data-list>
+                                                        <!-- </div> -->
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div *ngIf="selectedSection=='issue'"
+                                                class="tab-pane fade-media-scr active show" id="inner-tab-one"
+                                                role="tabpanel">
+                                                <div class="p-2 no-fixed-table form-table-scroll-media-scr">
+                                                    <table
+                                                        class="table table-bordered ordinary-table cmn-table-style mb-4"
+                                                        *ngIf=" IssueListStore?.selectedIssuesList.length>0">
+                                                        <tr>
+                                                            <th class="border-top-0" width="2%">#</th>
+                                                            <th class="border-top-0" width="9%">{{'ref_id' | translate}}
+                                                            </th>
+                                                            <th class="border-top-0" width="18%">{{'issue' | translate}}
+                                                            </th>
+                                                            <th class="border-top-0" width="12%">{{'issue_types' |
+                                                                translate}}</th>
+                                                            <th class="border-top-0" width="20%">{{'issue_categories' |
+                                                                translate}}</th>
+                                                            <th class="border-top-0" width="19%">{{'issue_domains' |
+                                                                translate}}</th>
+                                                            <th class="border-top-0" width="32%">{{'departments' |
+                                                                translate}}</th>
+                                                        </tr>
+                                                        <tr
+                                                            *ngFor="let issue of IssueListStore?.selectedIssuesList; let list=index">
+                                                            <td>{{list+1}}</td>
+                                                            <td>{{issue.reference_code}}</td>
+                                                            <td>{{issue.issues_title?issue.issues_title:issue.title}}
+                                                            </td>
+                                                            <td>
+                                                                <ng-container
+                                                                    *ngIf="issue.issue_types_list&&issue.issue_types_list.length!=0">
+                                                                    <span *ngFor="let types of issue.issue_types_list"
+                                                                        class="risk-type-bx risk-type-bx-drop">
+                                                                        <i><img
+                                                                                [attr.src]="types == 'Internal' ? 'assets/images/risk-type-icon.png' : 'assets/images/risk-type-icon-two.png'">{{types}}</i>&nbsp;
+                                                                    </span>
+                                                                </ng-container>
+                                                                <ng-container
+                                                                    *ngIf="!issue.issue_types_list||issue.issue_types_list.length==0">
+                                                                    <p>{{AppStore.noContentText}}</p>
+                                                                </ng-container>
+                                                            </td>
+                                                            <td [attr.title]="issue.issue_categories">
+                                                                {{ issue.issue_categories?.length > 25 ?
+                                                                issue.issue_categories.substring(0,25)+'...' :
+                                                                issue.issue_categories }}
+                                                            </td>
+                                                            <td [attr.title]="issue.issue_domains">
+                                                                {{ issue.issue_domains?.length > 25 ?
+                                                                issue.issue_domains.substring(0,25)+'...' :
+                                                                issue.issue_domains }}
+                                                            </td>
+                                                            <td>
+                                                                {{issue.departments}}
+
+                                                            </td>
+                                                        </tr>
+
+
+                                                    </table>
+                                                    <div *ngIf="IssueListStore?.selectedIssuesList.length == 0"
+                                                        style="min-height: 300px">
+                                                        <!-- <div class="no-policy-demo">
+                                                <div class="no-file-icon">
+                                                    <i class="far fa-file"></i>
+                                                </div> -->
+                                                        <app-no-data-list [source]="commonEmptyList" [height]=true
+                                                            [border]=false></app-no-data-list>
+                                                        <!-- </div> -->
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div *ngIf="selectedSection=='process'"
+                                                class="tab-pane fade-media-scr active show" id="inner-tab-two"
+                                                role="tabpanel">
+                                                <div class="p-2 no-fixed-table form-table-scroll-media-scr">
+                                                    <table
+                                                        class="table table-bordered ordinary-table cmn-table-style mb-4"
+                                                        *ngIf="ProcessStore?.selectedProcessesList.length!=0">
+                                                        <tr>
+                                                            <th class="border-top-0" width="2%">#</th>
+                                                            <th class="border-top-0" width="9%">{{'ref_id' | translate}}
+                                                            </th>
+                                                            <th class="border-top-0" width="25%">{{'process_group' |
+                                                                translate}}</th>
+                                                            <th class="border-top-0" width="32%">{{'process' |
+                                                                translate}}</th>
+                                                            <th class="border-top-0" width="16%">{{'process_category' |
+                                                                translate}}</th>
+                                                            <th class="border-top-0" width="12%">{{'department' |
+                                                                translate}}</th>
+                                                            <th class="border-top-0" width="19%">{{'risk_rating' |
+                                                                translate}}</th>
+                                                            <!-- <th class="border-top-0" width="33%">Status</th> -->
+                                                        </tr>
+                                                        <tr
+                                                            *ngFor="let selected of ProcessStore?.selectedProcessesList; let p=index">
+                                                            <td>{{p+1}}</td>
+                                                            <td>{{selected.reference_code}}</td>
+                                                            <td>{{selected.process_group_title}}</td>
+                                                            <td> {{selected.title}}
+                                                            </td>
+                                                            <td>{{selected.process_category_title}}</td>
+                                                            <td>
+                                                                {{selected.department}}
+                                                            </td>
+                                                            <td>
+                                                                {{ selected.risk_rating_title ?
+                                                                selected.risk_rating_title : AppStore.noContentText }}
+                                                            </td>
+                                                            <!-- <td>
+                                                        {{selected.status}}
+
+                                                    </td> -->
+                                                        </tr>
+
+                                                    </table>
+                                                    <div *ngIf="ProcessStore?.selectedProcessesList.length == 0"
+                                                        style="min-height: 300px">
+                                                        <!-- <div class="no-policy-demo">
+                                                    <div class="no-file-icon">
+                                                        <i class="far fa-file"></i>
+                                                    </div> -->
+                                                        <app-no-data-list [source]="commonEmptyList" [height]=true
+                                                            [border]=false></app-no-data-list>
+                                                        <!-- </div> -->
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div *ngIf="selectedSection=='location'"
+                                                [ngClass]="LocationMasterStore?.selectedLocationList.length==0?'tab-pane fade active show':'tab-pane fade active show'"
+                                                id="tab-one" role="tabpanel">
+
+                                                <div class="p-2 no-fixed-table form-table-scroll-media-scr">
+                                                    <!-- <div *ngIf="LocationMasterStore?.selectedLocationList.length> 0"
+                                        class="processes-issue audit-processes-issue clearfix bg-white cmn-bdr mb-3">
+                                        <h5>Connect location with risk</h5>
+                                        <div class="float-right">
+                                            <a (click)="selectLocations()" data-toggle="modal"
+                                                class="btn btn-small">{{'select' | translate}}</a>
+                                        </div>
+                                    </div> -->
+                                                    <!-- <div class="audit-form-table w-100 risk-form-mapping-table form-table-scroll"
+                                   > -->
+                                                    <table
+                                                        class="table table-bordered ordinary-table cmn-table-style mb-2"
+                                                        *ngIf="LocationMasterStore?.selectedLocationList.length>0">
+                                                        <tr>
+
+                                                            <th class="border-top-0" width="9%">{{'ref_id' | translate}}
+                                                            </th>
+                                                            <th class="border-top-0" width="25%">{{'title' |
+                                                                translate}}</th>
+                                                            <!-- <th class="border-top-0" width="32%">{{'status' |
+                                                        translate}}
+                                                    </th> -->
+
+                                                        </tr>
+                                                        <tr
+                                                            *ngFor="let loc of LocationMasterStore?.selectedLocationList; let list=index">
+                                                            <td>{{list+1}}</td>
+                                                            <td> {{loc.title}}
+                                                            </td>
+                                                            <!-- <td>{{loc.status}}</td> -->
+
+
+                                                        </tr>
+
+
+
+                                                    </table>
+
+
+                                                    <!-- </div> -->
+                                                    <div *ngIf="LocationMasterStore?.selectedLocationList.length == 0"
+                                                        style="min-height: 300px">
+
+                                                        <app-no-data-list [source]="commonEmptyList" [height]=true
+                                                            [border]=false></app-no-data-list>
+
+                                                    </div>
+
+                                                </div>
+                                            </div>
+
+                                            <div *ngIf="selectedSection=='project'"
+                                                class="tab-pane fade-media-scr active show" id="inner-tab-two"
+                                                role="tabpanel">
+                                                <div class="p-2 no-fixed-table form-table-scroll-media-scr">
+                                                    <table
+                                                        class="table table-bordered ordinary-table cmn-table-style mb-4"
+                                                        *ngIf="BusinessProjectsStore?.selectedProjectsList.length>0">
+                                                        <tr>
+
+                                                            <th class="border-top-0" width="2%">#
+                                                            </th>
+                                                            <th class="border-top-0" width="25%">{{'title' |
+                                                                translate}}</th>
+                                                            <th class="border-top-0" width="32%">
+                                                                {{'manager_name'|translate}}
+                                                            </th>
+                                                            <th class="border-top-0" width="9%">{{'member_count' |
+                                                                translate}}</th>
+                                                            <th class="border-top-0" width="9%">{{'location' |
+                                                                translate}}
+                                                            </th>
+
+                                                        </tr>
+                                                        <tr
+                                                            *ngFor="let proj of BusinessProjectsStore?.selectedProjectsList; let list=index">
+                                                            <td>{{list+1}}</td>
+                                                            <td> {{proj.title}}
+                                                            </td>
+                                                            <td>
+                                                                <div class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg"
+                                                                    *ngIf="proj.project_manager_first_name">
+                                                                    <img [attr.src]="proj.project_manager_image_token?createImageUrl(proj.project_manager_image_token):getDefaultImage('user-logo')"
+                                                                        width="30px" height="30px"
+                                                                        class="rounded-circle">
+
+                                                                    <div>
+                                                                        <h6>{{proj.project_manager_first_name}}
+                                                                            {{proj.project_manager_last_name}}</h6>
+                                                                        <span>{{proj.project_manager_designation?proj.project_manager_designation:AppStore.noContentText}}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                                <p *ngIf="!proj.project_manager_first_name">
+                                                                    {{AppStore.noContentText}}</p>
+                                                            </td>
+                                                            <td>{{proj.member_count}}</td>
+                                                            <td>{{proj.location_title?proj.location_title:AppStore.noContentText}}
+                                                            </td>
+
+                                                        </tr>
+
+                                                    </table>
+                                                    <div *ngIf="BusinessProjectsStore?.selectedProjectsList.length == 0"
+                                                        style="min-height: 300px">
+                                                        <!-- <div class="no-policy-demo">
+                                                    <div class="no-file-icon">
+                                                        <i class="far fa-file"></i>
+                                                    </div> -->
+                                                        <app-no-data-list [source]="commonEmptyList" [height]=true
+                                                            [border]=false></app-no-data-list>
+                                                        <!-- </div> -->
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div *ngIf="selectedSection=='product'"
+                                                class="tab-pane fade-media-scr active show" id="inner-tab-two"
+                                                role="tabpanel">
+                                                <div class="p-2 no-fixed-table form-table-scroll-media-scr">
+                                                    <table
+                                                        class="table table-bordered ordinary-table cmn-table-style mb-4"
+                                                        *ngIf="BusinessProductsStore?.selectedProductList.length>0">
+                                                        <tr>
+
+                                                            <th class="border-top-0" width="2%">#
+                                                            </th>
+                                                            <th class="border-top-0" width="25%">{{'title' |
+                                                                translate}}</th>
+                                                            <th class="border-top-0" width="32%">{{'description' |
+                                                                translate}}
+                                                            </th>
+                                                            <!-- <th class="border-top-0" width="9%">{{'member_count' |
+                                                        translate}}</th>
+                                                    <th class="border-top-0" width="9%">{{'location' | translate}}
+                                                    </th> -->
+
+                                                        </tr>
+                                                        <tr
+                                                            *ngFor="let prod of BusinessProductsStore?.selectedProductList; let list=index">
+                                                            <td>{{list+1}}</td>
+                                                            <td> {{prod.title}}
+                                                            </td>
+                                                            <td>{{prod.description?prod.description:AppStore.noContentText}}
+                                                            </td>
+                                                            <!-- <td>{{prod.member_count}}</td>
+                                                    <td>{{prod.location_title?prod.location_title:AppStore.noContentText}}
+                                                    </td> -->
+
+                                                        </tr>
+                                                    </table>
+                                                    <div *ngIf="BusinessProductsStore?.selectedProductList.length == 0"
+                                                        style="min-height: 300px">
+
+                                                        <app-no-data-list [source]="commonEmptyList" [height]=true
+                                                            [border]=false></app-no-data-list>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+
+
+                                            <div *ngIf="selectedSection=='customer'"
+                                                class="tab-pane fade-media-scr active show" id="inner-tab-two"
+                                                role="tabpanel">
+                                                <div class="p-2 no-fixed-table form-table-scroll-media-scr">
+                                                    <table
+                                                        class="table table-bordered ordinary-table cmn-table-style mb-4"
+                                                        *ngIf="BusinessCustomersStore?.selectedCustomerList.length>0">
+                                                        <tr>
+
+                                                            <th class="border-top-0" width="2%">#
+                                                            </th>
+                                                            <th class="border-top-0" width="25%">{{'title' |
+                                                                translate}}</th>
+                                                            <th class="border-top-0" width="32%">{{'contact_person' |
+                                                                translate}}
+                                                            </th>
+                                                            <th class="border-top-0" width="9%">{{'address' |
+                                                                translate}}</th>
+                                                            <!-- <th class="border-top-0" width="9%">{{'location' | translate}}
+                                                    </th> -->
+
+                                                        </tr>
+                                                        <tr
+                                                            *ngFor="let cust of BusinessCustomersStore?.selectedCustomerList; let list=index">
+                                                            <td>{{list+1}}</td>
+                                                            <td> {{cust.title}}
+                                                            </td>
+                                                            <td>{{cust.contact_person?cust.contact_person:AppStore.noContentText}}
+                                                            </td>
+                                                            <td>{{cust.address?cust.address:AppStore.noContentText}}
+                                                            </td>
+                                                            <!-- <td>{{cust.location_title?cust.location_title:AppStore.noContentText}}
+                                                    </td> -->
+
+                                                        </tr>
+
+                                                    </table>
+                                                    <div *ngIf="BusinessCustomersStore?.selectedCustomerList.length == 0"
+                                                        style="min-height: 300px">
+
+                                                        <app-no-data-list [source]="commonEmptyList" [height]=true
+                                                            [border]=false></app-no-data-list>
+                                                        <!-- </div> -->
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div *ngIf="selectedSection=='objective'"
+                                                class="tab-pane fade-media-scr active show" id="inner-tab-two"
+                                                role="tabpanel">
+                                                <div class="p-2 no-fixed-table form-table-scroll-media-scr">
+                                                    <table
+                                                        class="table table-bordered ordinary-table cmn-table-style mb-4"
+                                                        *ngIf="StrategicObjectivesMasterStore?.selectedStrategic.length>0">
+                                                        <tr>
+
+                                                            <th class="border-top-0" width="2%">#
+                                                            </th>
+                                                            <th class="border-top-0" width="25%">{{'title' |
+                                                                translate}}</th>
+
+                                                            <!-- <th class="border-top-0" width="9%">{{'location' | translate}}
+                                                    </th> -->
+
+                                                        </tr>
+                                                        <tr
+                                                            *ngFor="let obj of StrategicObjectivesMasterStore?.selectedStrategic; let list=index">
+                                                            <td>{{list+1}}</td>
+                                                            <td> {{obj.title}}
+                                                            </td>
+
+
+                                                        </tr>
+
+                                                    </table>
+                                                    <div *ngIf="StrategicObjectivesMasterStore?.selectedStrategic.length == 0"
+                                                        style="min-height: 300px">
+
+                                                        <app-no-data-list [source]="commonEmptyList" [height]=true
+                                                            [border]=false></app-no-data-list>
+                                                        <!-- </div> -->
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div *ngIf="selectedSection=='assets'"
+                                                class="tab-pane fade-media-scr active show" id="inner-tab-two"
+                                                role="tabpanel">
+                                                <div class="p-2 no-fixed-table form-table-scroll-media-scr">
+                                                    <table
+                                                        class="table table-bordered ordinary-table cmn-table-style mb-4"
+                                                        *ngIf="AssetRegisterStore?.selectedAssets.length>0">
+                                                        <tr>
+
+                                                            <th class="border-top-0" width="2%">#
+                                                            </th>
+                                                            <th class="border-top-0" width="25%">{{'title' |
+                                                                translate}}</th>
+
+                                                            <!-- <th class="border-top-0" width="9%">{{'location' | translate}}
+                                                    </th> -->
+
+                                                        </tr>
+                                                        <tr
+                                                            *ngFor="let obj of AssetRegisterStore?.selectedAssets; let list=index">
+                                                            <td>{{list+1}}</td>
+                                                            <td> {{obj.title}}
+                                                            </td>
+
+
+                                                        </tr>
+
+                                                    </table>
+                                                    <div *ngIf="AssetRegisterStore?.selectedAssets.length == 0"
+                                                        style="min-height: 300px">
+
+                                                        <app-no-data-list [source]="commonEmptyList" [height]=true
+                                                            [border]=false></app-no-data-list>
+                                                        <!-- </div> -->
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div *ngIf="selectedSection=='focus-area'"
+                                            class="tab-pane fade-media-scr active show" id="inner-tab-two"
+                                            role="tabpanel">
+                                            <div class="p-2 no-fixed-table form-table-scroll-media-scr">
+                                                <table
+                                                    class="table table-bordered ordinary-table cmn-table-style mb-4"
+                                                    *ngIf="FocusAreaMasterStore?.selectedStrategic.length>0">
+                                                    <tr>
+
+                                                        <th class="border-top-0" width="2%">#
+                                                        </th>
+                                                        <th class="border-top-0" width="25%">{{'title' |
+                                                            translate}}</th>
+
+                                                        <!-- <th class="border-top-0" width="9%">{{'location' | translate}}
+                                                </th> -->
+
+                                                    </tr>
+                                                    <tr
+                                                        *ngFor="let obj of FocusAreaMasterStore?.selectedStrategic; let list=index">
+                                                        <td>{{list+1}}</td>
+                                                        <td> {{obj.title}}
+                                                        </td>
+
+
+                                                    </tr>
+
+                                                </table>
+                                                <div *ngIf="FocusAreaMasterStore?.selectedStrategic.length == 0"
+                                                    style="min-height: 300px">
+
+                                                    <app-no-data-list [source]="commonEmptyList" [height]=true
+                                                        [border]=false></app-no-data-list>
+                                                    <!-- </div> -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                            <div *ngIf="selectedSection=='service'"
+                                                class="tab-pane fade-media-scr active show" id="inner-tab-two"
+                                                role="tabpanel">
+                                                <div class="p-2 no-fixed-table form-table-scroll-media-scr">
+                                                    <table
+                                                        class="table table-bordered ordinary-table cmn-table-style mb-4"
+                                                        *ngIf="BusinessServiceStore?.selectedBusinessServicesList.length>0">
+                                                        <tr>
+
+                                                            <th class="border-top-0" width="2%">#
+                                                            </th>
+                                                            <th class="border-top-0" width="25%">{{'title' |
+                                                                translate}}</th>
+                                                        </tr>
+                                                        <tr
+                                                            *ngFor="let obj of BusinessServiceStore?.selectedBusinessServicesList; let list=index">
+                                                            <td>{{list+1}}</td>
+                                                            <td> {{obj.title}}
+                                                            </td>
+
+
+                                                        </tr>
+
+                                                    </table>
+                                                    <div *ngIf="BusinessServiceStore?.selectedBusinessServicesList.length == 0"
+                                                        style="min-height: 300px">
+
+                                                        <app-no-data-list [source]="commonEmptyList" [height]=true
+                                                            [border]=false></app-no-data-list>
+                                                        <!-- </div> -->
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="row">
+                                <div class="col-xl-12">
+                                    <hr>
+                                    <div class="d-flex flex-row user-list-sm">
+                                        <app-user-popup-box
+                                            [source]=" getCreatedByPopupDetails(BcmRiskAssessmentStore.bcmRiskDetails,BcmRiskAssessmentStore?.bcmRiskDetails?.created_at,'default')">
+                                        </app-user-popup-box>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        </div>
+
+                    </div>
+
+                </div>
+                <!-- tab end -->
+                <div style="overflow:auto;">
+                    <div class="form-next-page-btns" style="float:left;">
+                        <button class="btn btn-active" type="button" id="nextBtn"
+                            [disabled]="AppStore.loading||!checkFormObject()"
+                            (click)="nextPrev(1,true)">{{getButtonText(nextButtonText)}}</button>
+                        <button class="btn" type="button" id="saveBtn" (click)="saveClick()"
+                            [disabled]="AppStore.loading||!checkFormObject()">{{getButtonText('save')}}</button>
+                        <button class="btn" type="button" id="prevBtn" (click)="nextPrev(-1)"
+                            [disabled]="AppStore.loading">{{getButtonText(previousButtonText)}}</button>
+                        <button class="btn" type="button" (click)="confirmCancel()">{{getButtonText('cancel')}}</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+<div class="modal modal-style-1 fade" id="delete-popup" #cancelPopup data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="confirmationObject"></app-delete-popup>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static"
+    #organisationChangeFormModal *mobxAutorun>
+    <app-organisation-change-modal *ngIf="openModelPopup" [source]="form.value"
+        (organizationChangeEvent)="closeModal($event)"></app-organisation-change-modal>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="issue-popup" data-keyboard="false" data-backdrop="static"
+    #issueFormModal *mobxAutorun>
+    <app-issues-modal *ngIf="IssueListStore.issue_select_form_modal" [issuesModalTitle]="modalObject">
+    </app-issues-modal>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="process-popup" data-keyboard="false" data-backdrop="static"
+    #processFormModal *mobxAutorun>
+    <app-addprocess *ngIf="IssueListStore.processes_form_modal" [processModalTitle]="modalObject">
+    </app-addprocess>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="project-popup" data-keyboard="false" data-backdrop="static"
+    #projectFormModal *mobxAutorun>
+    <app-projects-modal *ngIf="BusinessProjectsStore.project_select_form_modal"
+        [projectsModalTitle]="modalObject"></app-projects-modal>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="project-popup" data-keyboard="false" data-backdrop="static"
+    #productFormModal *mobxAutorun>
+    <app-product-modal *ngIf="BusinessProductsStore.product_select_form_modal" [productModalTitle]="modalObject">
+    </app-product-modal>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="project-popup" data-keyboard="false" data-backdrop="static"
+    #customerFormModal *mobxAutorun>
+    <app-customer-modal *ngIf="BusinessCustomersStore.customer_select_form_modal"
+        [customerModalTitle]="modalObject"></app-customer-modal>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="location-popup" data-keyboard="false" data-backdrop="static"
+    #locationFormModal *mobxAutorun>
+    <app-location-list-modal *ngIf="LocationMasterStore.location_select_form_modal"
+        [locationModalTitle]="modalObject"></app-location-list-modal>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="project-popup" data-keyboard="false" data-backdrop="static"
+    #objectiveFormModal *mobxAutorun>
+    <app-strategic-objective-mapping *ngIf="StrategicObjectivesMasterStore?.objective_select_form_modal"
+        [strategicModalTitle]="modalObject"></app-strategic-objective-mapping>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="project-popup" data-keyboard="false" data-backdrop="static"
+    #strategicFocusAreaModal *mobxAutorun>
+    <app-strategic-focus-area-mapping *ngIf="FocusAreaMasterStore?.objective_select_form_modal"
+        [strategicFocusAreaTitle]="modalObject"></app-strategic-focus-area-mapping>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static"
+    #controlAddFormModal>
+
+    <app-add-control *ngIf="controlObject.type" [source]="controlObject"></app-add-control>
+
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="process-popup" data-keyboard="false" data-backdrop="static"
+        #controlFormModal *mobxAutorun>
+        <app-control-popup *ngIf=" ControlStore.control_select_form_modal" [controlsModalTitle] = "modalObject"></app-control-popup>
+    </div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="process-popup" data-keyboard="false" data-backdrop="static"
+    #assetsFormModal *mobxAutorun>
+    <app-asset-mapping *ngIf="AssetRegisterStore?.assets_select_form_modal" [assetModalTitle]="modalObject">
+    </app-asset-mapping>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #riskLibraryModal>
+    <app-risk-library-modal *ngIf="riskLibraryObject.type" [source]="riskLibraryObject">
+    </app-risk-library-modal>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="issue-popup" data-keyboard="false" data-backdrop="static"
+    #serviceFormModal *mobxAutorun>
+    <app-service-modal *ngIf="BusinessServiceStore.service_select_form_modal" [serviceModalTitle]="modalObject">
+    </app-service-modal>
+</div>

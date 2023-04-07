@@ -1,0 +1,272 @@
+
+<button type="button" class="close" data-dismiss="modal" (click)="closeFormModal()"><i
+      class="lni-close"></i><span>{{'esc'|translate}}</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered">
+   <div class="modal-content">
+      <!-- Modal Header -->
+      <div class="modal-header">
+         <h4 class="modal-title">{{'framework'|translate}}</h4>
+      </div>
+      <!-- Modal body -->
+      <div class="modal-body form-body" *mobxAutorun>
+         <form  [formGroup]="form" class="organization-multi-stup-form multi-stup-form-common"
+         >
+         <div class="row">
+            <div class="col-sm-12">
+               <div class="form-group">
+                  <label for="name">{{'title'|translate}}<span class="form-error">*</span></label>
+                  <div class="plain-select input-add-report">
+                     <input type="text" class="form-control" formControlName="title" [placeholder]="'title'|translate">
+                     <p style="color: red;" class="pt-1" *ngIf="formErrors && formErrors.title">
+                        {{formErrors.title}}
+                     </p>
+                  </div>
+               </div>
+            </div>
+            <div class="col-sm-12">
+               <!-- <div class="form-group">
+                     <label for="name">Description</label>
+                     <textarea class="form-control " rows="3" id="comment" [(ngModel)]="description"
+                        placeholder="Description"></textarea>
+                        <p style="color: red;" class="pt-1" *ngIf="formErrors && formErrors.description">
+                           {{formErrors.description}}
+                        </p>
+                  </div> -->
+               <div class="form-group">
+                  <span style="float: right;"
+                     class="text-grey mb-0">{{form?.value.description != null ? getDescriptionLength() : 0}}
+                     {{'characters'|translate}}</span>
+                  <label for="fdescription">{{'description' | translate}}</label>
+                  <ckeditor id="description" 
+                  (change)="descriptionValueChange($event)" [editor]="Editor" formControlName="description"></ckeditor>
+               </div>
+               <p style="color: red;" class="pt-1" *ngIf="formErrors && formErrors.description">
+                  {{formErrors.description}}
+               </p>
+            </div>
+
+            <!-- <div class="col-md-12">
+               <div class="d-flex">
+                  <div class="cmn-checkbox clearfix w-100">
+                     <label style="color: #282e34;font-weight: bold;" class="container2 remember-txt float-left mt-2">
+                        <input (change)="setValidation()" type="checkbox" formControlName="is_control_assessment">
+                        <span class="checkmark"></span> {{'cyber_is_control_assessment'|translate}}</label>
+                  </div>
+                 
+
+               </div>
+            </div> -->
+
+            <div class="col-sm-12">
+               <div class="form-group">
+                   <label for="name">{{'maturity_model'|translate}}<sup>*</sup></label>
+                   <div class="clearfix d-flex">
+                       <div class="multiple-plain-ngselect w-100">
+
+                           <ng-select 
+                               [placeholder]="'select_maturity_level'|translate" [multiple]="true" searchable="true"
+                               bindLabel="title" formControlName="maturity_model_ids"
+                               (blur)="getDetailsModel()"
+                               (remove)="removedMaturity($event)"
+                               (search)="searchMaturityModal($event)" (clear)="getAllMaturityModel()"
+                               (open)="getAllMaturityModel()" [closeOnSelect]="true" autocomplete="new-password">
+                               <ng-option [value]="type"
+                                   *ngFor="let type of MaturityModalStore.maturityModalDetails">
+                                   {{type.title}}
+                               </ng-option>
+                           </ng-select>
+                       </div>
+                      
+                     
+
+                   </div>
+                   <p class="form-error pt-1"
+                   *ngIf="formErrors&&formErrors.maturity_model_ids">
+                   {{formErrors.maturity_model_ids}}</p>
+               </div>
+           </div>
+
+           <div class="col-sm-12" >
+            <div class="form-group" *ngFor="let row of listOfMaturityLevels">
+                <div class="cmn-bdr border-radius p-3">
+                    <div class="issue-top-sec">
+                        <div class="clearfix">
+                            <h5 class="d-inline-block cmn-head-style label-tag-style"><span
+                                    class="issue-smoal-head-text">#{{row.reference_code}}</span>
+                                    {{row.title}}</h5>
+                        </div>
+                        <p *ngIf="row.description"
+                            [innerHTML]="row.description | safeHtml"></p>
+                        <p *ngIf="!row.description">
+                            {{AppStore.noContentText}}</p>
+                    </div>
+
+            
+                        <div class="w-100 audit-page-table-main frame-work-table">
+                           <table class="table table-bordered ordinary-table audit-page-table mb-1 no-scroll-table">
+                              <thead>
+                                 <tr>
+                                    <th class="border-top-0" width="4%">#</th>
+                                    <th class="border-top-0" width="40%">{{'options'|translate}}</th>
+                                    <th class="border-top-0 text-center" width="15%">{{'score_from'|translate}}</th>
+                                    <th class="border-top-0 text-center" width="15%">{{'score_to'|translate}}</th>
+                                    <th class="border-top-0 issue-list-org-tab-one text-center" width="15%">
+                                    {{'level'|translate}}
+                                 </th>
+                                 <th class="border-top-0 issue-list-org-tab-one text-center" width="11%">
+                                    {{'color'|translate}}
+                                 </th>
+                                 </tr>
+                              </thead>
+                              <tbody>
+                                 <tr *ngFor="let option of row.maturity_model_levels;let num = index">
+                                    <td class="text-center">{{num+1}}</td>
+                                    <td>{{option.title}}</td>
+                                    <td class="text-center">{{option.score_from}}</td>
+                                    <td class="text-center">{{option.score_to}}</td>
+                                    <td class="text-center">{{option.level?option.level:'NA'}}</td>
+                                    <td class="text-center">
+                                       <span *ngIf="!option.color_code">{{AppStore.noContentText}}</span>
+                                       <div *ngIf="option.color_code" style="width:47px;border-radius: 2px;height: 15px;"  [style.backgroundColor]="option.color_code"></div>
+                                    </td>
+                                 </tr>
+                              </tbody>
+                           </table>
+                        </div>
+                  
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-12" >
+            <div class="row">
+               <div class="col-lg-5 col-sm-12">
+                  <div class="form-group">
+                     <label for="name">{{'options'|translate}}<span class="form-error">*</span></label>
+                     <input type="text" class="form-control" [ngModelOptions]="{standalone: true}" [(ngModel)]="optionTitle" [placeholder]="'option_title'|translate">
+                     <p style="color: red;" class="pt-1"
+                        *ngIf="formErrors && formErrors.business_assessment_framework_options">
+                        {{formErrors.business_assessment_framework_options}}
+                     </p>
+                  </div>
+               </div>
+               <div class="col-lg-2 col-sm-5">
+                  <div class="form-group">
+                     <label for="name">{{'score'|translate}}</label>
+                     <div class="plain-select input-add-report">
+                        <input type="text" class="form-control" [ngModelOptions]="{standalone: true}" [(ngModel)]="optionScore" [placeholder]="'score'|translate">
+
+                     </div>
+                  </div>
+               </div>
+               <div class="col-lg-5 col-sm-7">
+                  <div class="d-flex new-framework-checkbox">
+                     <div class="cmn-checkbox clearfix w-100">
+                        <label class="container2 remember-txt float-left mt-2">
+                           <input type="checkbox"  (change)="setApplicable($event)" [checked]="applicable">
+                           <span class="checkmark"></span> {{'is_not_applicable'|translate}}</label>
+                     </div>
+                     <button type="button" [disabled]="optionTitle==null || optionTitle==''" (click)="addOption()"
+                        class="btn multi-add-user" style="width: 44px;"><i class="fas fa-plus"></i></button>
+                  </div>
+               </div>
+               
+            </div>
+            <div class="mb-3">
+               <p style="color: red;" class="d-block pr-3 mb-0" *ngIf="formErrors==null && optionScore>100">
+                  {{'option_score_warning'|translate}}
+               </p>
+               <p style="color: red;" class="d-block pr-3 mb-0" *ngIf="rangeWarning">
+                  {{'entered_score_not_in_range'|translate}}
+               </p>
+               <p style="color: red;" class="d-block pr-3 mb-0" *ngIf="duplicateScore">
+                  {{'cybe_this_score_already_entered'|translate}}
+               </p>
+            </div>
+        </div>
+
+        
+            <div class="col-sm-12" >
+               <div class="audit-form-table w-100 not-fixed-table mb-0" *ngIf="optionArray?.length>0">
+                  <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                     <thead>
+                        <tr>
+                           <th class="border-top-0 issue-list-org-tab-one text-center" width="5%">
+                              #
+                           </th>
+
+                           <th class="border-top-0 issue-list-org-tab-one" width="30%">
+                              {{'options'|translate}}
+                           </th>
+
+                           <th class="border-top-0 issue-list-org-tab-one text-center" width="20%">
+                              {{'score'|translate}}
+                           </th>
+
+                           <th class="border-top-0 issue-list-org-tab-one" width="15%">
+                              {{'applicable'|translate}}
+                           </th>
+
+                           
+
+                        </tr>
+                     </thead>
+                     <tbody>
+                        <tr class="edit-and-delete-main pointer" *ngFor="let option of optionArray;let op=index">
+                        <ng-container *ngIf="!option.is_deleted">
+                           <td class="text-center">{{op+1}}</td>
+                           <td>{{option.title}}</td>
+                           <td class="text-center">{{option.score}}</td>
+
+                           <td>
+                              <div class="edit-option-show" style="margin:6px 0 0 0">
+                                 <!-- <a [attr.title]="'view'|translate" (click)="viewDetails(row.employee_id,row.id)"><i
+                                       class="fas fa-eye"></i></a> -->
+
+                                 <a [attr.title]="'delete'|translate" (click)="removeOption(op)"><i
+                                       class="fas fa-trash"></i></a>
+                              </div>
+                              {{option.is_applicable==1?'true':'false'}}
+                           </td>
+                        </ng-container>
+                        
+
+                        </tr>
+
+
+
+                     </tbody>
+
+                  </table>
+               </div>
+
+                  <p style="color: red;" class="pt-1" *ngIf="formErrors && formErrors.message">
+                     {{formErrors.message}}
+                  </p>
+            </div>
+         </div>
+         <div class="row">
+            <div class="col-sm-12">
+               <div class="d-block justify-content-left border-0 mt-3">
+                  <button [disabled]="AppStore.loading || form.invalid || optionArray.length==0" type="button" data-toggle="modal" data-target="#signal-lost" (click)="save()"
+                     class="btn btn-active">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save') }}</button>
+                  <button [disabled]="AppStore.loading || form.invalid || optionArray.length==0" type="button" data-toggle="modal" data-target="#signal-lost" (click)="save(true)"
+                     class="btn mr-3">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save_close') }}</button>
+                  <button class="btn" type="button" (click)="closeFormModal()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('cancel') }}</button>
+               </div>
+            </div>
+         </div>
+         </form>
+
+         <!-- Modal footer -->
+      </div>
+   </div>
+</div>
+
+   <!-- <div class="modal modal-style-1 fade" id="delete-popup" #cancelPopup data-backdrop="static" data-keyboard="false">
+      <app-delete-popup [source]="confirmationObject"></app-delete-popup>
+  </div> -->
+  <div class="modal modal-style-1 fade" id="delete-popup" #cancelPopup>
+   <app-delete-popup [source]="confirmationObject"></app-delete-popup>
+</div>
+   <!-- </div> -->
+   <!-- add-business-framework-popup End -->

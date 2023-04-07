@@ -1,0 +1,388 @@
+<button type="button" class="close" (click)="cancel()" data-dismiss="modal"><i
+      class="lni-close"></i><span>esc</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered">
+   <div class="modal-content">
+      <!-- Modal Header -->
+      <div class="modal-header">
+         <h4 class="modal-title" *ngIf="nonConformitySource.type == 'Add'">{{'new_finding' | translate}}</h4>
+         <h4 class="modal-title" *ngIf="nonConformitySource.type != 'Add'">{{'edit_finding' | translate}}</h4>
+      </div>
+      <!-- Modal body -->
+      <form [formGroup]="form">
+         <div class="modal-body form-body">
+            <p class="head-details"> {{'finding_description' | translate}}
+            </p>
+
+            <div class="row">
+
+               <div  class="col-md-12">
+                  <div class="form-group">
+                      <label for="name">{{'finding_category' | translate}}<span class="form-error">*</span></label>
+                      <div class="clearfix d-flex">
+                         <div class="multiple-plain-ngselect select-width-plus w-100">
+                            <ng-select [placeholder]="'select_audit_finding_category' | translate" [multiple]="false"
+                               searchable="true" formControlName="ms_audit_finding_category_id"
+                               (search)="searchFindingCategory($event)"
+                              
+                              
+                               (open)="getFindingCategory()">
+                               <ng-option [value]="type.id" *ngFor="let type of MsAuditFindingCategoryMasterStore?.msAuditFindingCategorys">
+                                  {{type.title.length > 50 ? type.title.substring(0,50)+'...' : type.title}}
+                               </ng-option>
+                            </ng-select>
+                            <p style="color: red;" *ngIf="formErrors && formErrors.ms_audit_finding_category_id">
+                               {{formErrors.ms_audit_finding_category_id}}</p>
+                         </div>
+                         <!-- <button (click)="addNewFindingCategories()" class="btn multi-add-user ml-2" data-toggle="modal" 
+                            style="width: 42px;"><i class="fas fa-plus"></i></button> -->
+                      </div>
+                      <p class="form-error pt-1" *ngIf="formErrors?.ms_audit_finding_category_id"> {{formErrors.ms_audit_finding_category_id}}</p>
+
+                   </div>
+              </div>
+               <div class="col-lg-12 col-sm-12">
+                  <div class="form-group">
+                     <label for="name">{{'finding' | translate}}<span class="form-error">*</span></label>
+                     <input  type="text" formControlName="title" class="form-control"
+                        [placeholder]="'enter_finding' | translate">
+                     <p class="form-error pt-1" *ngIf="formErrors && formErrors.title">{{formErrors.title}}</p>
+                  </div>
+               </div>
+              
+
+                <div class="col-lg-12 col-sm-12" *ngIf="nonConformitySource.component == 'submenu'">
+                  <div class="form-group">
+                     <label for="name"> {{'audit_schedule' | translate}}</label>
+                     <div class="clearfix">
+                         <div class="multiple-plain-ngselect">
+                             <ng-select [placeholder]="'select_audit_schedule' | translate" 
+                                 [multiple]="false" 
+                                 [readonly]="true"
+                                 formControlName="ms_audit_schedule_id"
+                                 bindLabel="title" (open)="getSchedule()" 
+                                 (search)="searchSchedule($event)"
+                                 >
+                                 <!-- <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                     {{item?.title?.length > 100 ? (item.title | slice:0:100)+' ...' : item.title}}
+                                 </ng-template>
+                                 <ng-template ng-option-tmp let-item="item" let-index="index">
+                                     {{item?.title?.length > 100 ? (item.title | slice:0:100)+' ...' : item.title}}
+                                 </ng-template> -->
+                                 <ng-option [value]="type" *ngFor="let type of MsAuditSchedulesStore?.allItems">
+                                    {{type.title.length > 50 ? type.title.substring(0,50)+'...' : type.title}}
+                                 </ng-option>
+                             </ng-select>
+                             <p class="pt-1" style="color: red;" *ngIf="formErrors && formErrors.ms_audit_schedule_id">
+                                 {{formErrors.ms_audit_schedule_id}}
+                             </p>
+                         </div>
+                     </div>
+                 </div>
+               </div> 
+               <!-- <div class="col-lg-12 col-sm-12">
+                  <div class="form-group">
+                     <label for="name">{{'date' | translate}}<span class="form-error">*</span></label>
+                     <div class="input-group">
+                        <input [readonly]="isUser()" class="form-control" id="start_date"
+                           [placeholder]="'select the date' | translate" name="start_date" ngbDatepicker
+                           #s="ngbDatepicker" formControlName="date" [minDate]="{year: 1950, month: 1, day: 1}">
+                        <div class="input-group-append">
+                           <button class="btn btn-outline-secondary calendar" (click)="s.toggle()" type="button"><i
+                                 class="fas fa-calendar-alt"></i></button>
+                        </div>
+
+                     </div>
+                     <p class="form-error pt-1" *ngIf="formErrors && formErrors.date">{{formErrors.date}}</p>
+                  </div>
+               </div> -->
+
+               <div class="col-lg-12 col-sm-12">
+                  <div class="form-group">
+                     <label for="name">{{'description' | translate}}</label>
+                     <textarea [readonly]="isUser()" class="form-control" rows="3" formControlName="description"
+                        id="comment" [placeholder]="'write_a_short_description_finding'|translate"></textarea>
+                  </div>
+               </div>
+
+               <div class="col-md-12" >
+                  <div class="form-group">
+                     <label>{{'ms_audit_types_and_clauses' | translate}}</label>
+                     <div *ngIf="MsAuditDocumetsVersionStore.msAuditDocumentLists.length > 0" class="common-tab-md clearfix active-right-border-none hc-report-tab-style mb-3 tab-same-height">
+                        <div class="tab-common-left-md">
+                           <div class=" issues-tab">
+                              <!-- tab menu start -->
+                              <ul class="nav nav-tabs nav-tabs--vertical nav-tabs--left vertical-tab" role="navigation">
+                                 <li (click)="selectedmsType(i,type.document_version_id)"
+                                    *ngFor="let type  of MsAuditDocumetsVersionStore.msAuditDocumentLists;let i = index"
+                                    class="nav-item"> 
+                                    <a
+                                       [ngClass]="selectedMsTypePos == i ? 'nav-link   active show' : 'nav-link  '"
+                                       data-toggle="tab" role="tab" aria-controls="lorem" aria-selected="false"
+                                       data-original-title="" title="">
+                                       <!-- QMS<span class="small-text-tab">V2. 001</span> -->
+                                       {{type?.ms_type_title}} <span style="color: #7c7a7a;">v {{type.ms_type_version_title}}</span>
+                                    </a>
+                                 </li>
+                              </ul>
+                           </div>
+                        </div>
+
+
+                        <div class="tab-common-left-content-m cmn-bdr padding-bottom-none" style="min-height: 180px;">
+                           <div class="tab-content" *ngIf="MsAuditDocumetsVersionStore.individualLoaded">
+                              <div *ngFor="let type  of MsAuditDocumetsVersionStore.msAuditDocumentLists;let i = index"
+                                 [ngClass]="selectedMsTypePos == i ? 'tab-pane fade active show' : 'tab-pane fade'"
+                                 id="clauses1" role="tabpanel">
+                                 <div class="panel-group panel-drop-white panel-drop-sections " id="jd" role="tablist"
+                                    aria-multiselectable="true">
+                                    <div class="panel panel-default"
+                                       *ngFor="let list of MsAuditDocumetsVersionStore.msDocumentVersionContents ;let mIndex = index">
+                                       <div class=""
+                                          [ngClass]="selectedIndex == mIndex ? 'panel-heading active' : 'panel-heading'"
+                                          role="tab" id="headingOne">
+                                          <div class="panel-title panel-title-check">
+                                             <a role="button" (click)="selectedIndexChange(mIndex)"
+                                                [ngClass]="selectedIndex == mIndex ? '' : 'collapsed'">
+                                                <h5 class="width96pc mt-0 pl-5">
+                                                   {{list.clause_number}}. {{list.title}} <span
+                                                      class="drop-down-icone"><i class="fas fa-chevron-down"></i></span>
+                                                </h5>
+                                             </a>
+                                             <div class="custom-control white-cbox custom-checkbox drop-check-new">
+                                                <input type="checkbox" (change)="getOrganisationMsTypeData(list,type,'all')"
+                                                   [checked]="AuditNonConfirmityStore.checkSelectedStatuss(list,type)"
+                                                   class="custom-control-input" [id]="generateIdforString(type.id.toString()+list.id.toString())" [name]="generateIdforString(type.id.toString()+list.id.toString())"
+                                                   checked="">
+                                                <label class="custom-control-label align-label-check"
+                                                   [for]="generateIdforString(type.id.toString()+list.id.toString())"></label>
+                                             </div>
+
+
+
+                                          </div>
+                                       </div>
+                                       <div
+                                          [ngClass]="selectedIndex == mIndex ? 'panel-collapse show collapse' : 'panel-collapse  collapse'"
+                                          role="tabpanel" aria-labelledby="headingOne">
+                                          <div class="panel-body bg-white">
+
+                                             <div *ngFor="let data of MsAuditDocumetsVersionStore.msDocumentVersionContents[mIndex]?.children_content; let num = index"
+                                                class="ml-4">
+                                                <div class="custom-control white-cbox custom-checkbox">
+                                                   <input (change)="childClick(data,type,'child')"
+                                                      [checked]="AuditNonConfirmityStore.checkSelectedStatuss(data,type)"
+                                                      type="checkbox" class="custom-control-input" [id]="generateIdforString(type.id.toString()+list.id.toString()+data.id.toString())"
+                                                      [name]="generateIdforString(type.id.toString()+list.id.toString()+data.id.toString())">
+                                                   <label class="custom-control-label align-label-check smoothe-slide"
+                                                      [for]="generateIdforString(type.id.toString()+list.id.toString()+data.id.toString())">{{data.clause_number}}.{{data.title}}</label>
+                                                </div>
+                                                <app-non-confirmity-inner-documents *ngIf="data.children.length > 0"
+                                                   [source]="MsAuditDocumetsVersionStore.msDocumentVersionContents[mIndex]?.children_content[num].children" [mainParent]="list" [childParent]="data" [type]="type" [index]="num+1">
+                                                </app-non-confirmity-inner-documents>
+
+                                             </div>
+                                             <ng-container *ngIf="list.children_content.length == 0">
+                                                <app-no-data-list [source]="emptyTier" [height]="false" [border]=false>
+                                                </app-no-data-list>
+                                             </ng-container>
+                                          </div>
+                                       </div>
+                                    </div>
+
+                                 </div>
+                                 <ng-container
+                                    *ngIf="MsAuditDocumetsVersionStore?.msDocumentVersionContents.length == 0">
+                                    <app-no-data-list [source]="emptyTier" [height]="false" [border]=false>
+                                    </app-no-data-list>
+                                 </ng-container>
+                              </div>
+                           </div>
+
+                           <ng-container>
+                              <app-ms-audit-checklist-loader *ngIf="!MsAuditDocumetsVersionStore.individualLoaded">
+                              </app-ms-audit-checklist-loader>
+                           </ng-container>
+
+                        </div>
+                     </div>
+
+
+                  </div>
+                  <!-- <div
+                     *ngIf="MsAuditDocumetsVersionStore.individualLoaded && MsAuditDocumetsVersionStore.msAuditDocumentLists.length > 0"
+                     class="col-sm-12">
+                     <ul class="pagination justify-content-center mt-3">
+                        <div class="list">
+                       
+                        </div>
+                     </ul>
+                  </div> -->
+               </div>
+               
+               <div class="col-lg-12 col-sm-12" *ngIf="nonConformitySource.component == 'submenu' && form.value?.ms_audit_finding_corrective_action_type_id?.type == 'general'">
+                  <div class="form-group">
+                     <label for="name">{{'reason' | translate}}<span class="form-error">*</span></label>
+                     <textarea class="form-control" rows="3" formControlName="reason" id="comment"
+                        [placeholder]="'rca_form_reason_placeholder'|translate"></textarea>
+                        <p class="form-error pt-1" *ngIf="formErrors && formErrors.reason">
+                           {{formErrors.reason}}</p>
+                  </div>
+               </div>
+               
+               <!-- <div  class="col-lg-12 col-sm-12">
+                  <div class="form-group">
+                     <label for="name">{{'responsible_users' | translate}}<span class="form-error">*</span></label>
+                     <div class="clearfix">
+                        <div class="multiple-plain-ngselect">
+                           <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                              [readonly]="isUser()" 
+                              [placeholder]="'select_responsible_users' | translate"
+                              formControlName="responsible_user_ids" [multiple]="false" (search)="searchUers($event)"
+                              [searchFn]="customSearchFn" multiple="false" (open)="getUsers()">
+                              <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                 <img *ngIf="item?.image_token" class="ng-select-user-display" height="15" width="15"
+                                    [attr.src]="createImagePreview('user-profile-picture',item?.image_token)"
+                                    onerror="this.src='/assets/images/user-demo2.png'" />
+                                 <img *ngIf="!item?.image_token" class="ng-select-user-display" height="15" width="15"
+                                    [attr.src]="getDefaultImage('user-logo')" onerror = "this.src='/assets/images/user-demo2.png'" />
+                                 <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,'
+                                    ') |
+                                    titlecase}}</b><span aria-hidden="true" (click)="clear(item)" style="border:none;"
+                                    class="ng-value-icon left">×</span>
+                              </ng-template>
+                              <ng-template ng-option-tmp let-item="item" let-index="index">
+                                 <div class="user-post-department-pic">
+                                    <img *ngIf="item?.image_token" class="ng-select-user-display" height="25" width="25"
+                                       [attr.src]="createImagePreview('user-profile-picture',item?.image_token)"
+                                       onerror="this.src='/assets/images/user-demo2.png'" />
+                                    <img *ngIf="!item?.image_token" class="ng-select-user-display" height="25"
+                                       width="25" [attr.src]="getDefaultImage('user-logo')" onerror = "this.src='/assets/images/user-demo2.png'" />
+                                 </div>
+                                 <div class="user-post-department-div">
+                                    <b>{{getStringsFormatted([item.first_name,item.last_name],35,' ') | titlecase}}</b>
+                                    <p class="user-post-department-multiple">
+                                       {{getStringsFormatted([item.designation_title,'
+                                       '+item.department],35,',')}}</p>
+                                 </div>
+                              </ng-template>
+                           </ng-select>
+                        </div>
+                     </div>
+                     <p class="form-error pt-1" *ngIf="formErrors && formErrors.responsible_user_ids">
+                        {{formErrors.responsible_user_ids}}</p>
+                  </div>
+               </div> -->
+
+               
+
+               <!-- <div class="col-lg-12 col-sm-12">
+                  <div class="form-group">
+                     <label for="name">{{'preventive_action' | translate}}</label>
+                     <textarea class="form-control" rows="3" formControlName="preventive_action" id="comment"
+                        [placeholder]="'preventive_action_placeholder'|translate"></textarea>
+                  </div>
+               </div> -->
+
+               <!-- <div class="col-lg-12 col-sm-12">
+                  <div class="form-group">
+                     <label>{{'audit_correction_or_immidiade_action'|translate}}</label>
+                     <div class="clearfix d-flex">
+                        <input type="text" class="form-control w-100" [(ngModel)]="correction"
+                           [ngModelOptions]="{standalone : true}" [placeholder]="'correction_or_immidiade_action_placeholder' | translate">
+                        <button (click)="addCorrections()" class="btn multi-add-user ml-2" style="width: 42px;"><i
+                              class="fas fa-plus"></i></button>
+                     </div>
+                     <ul class="arrowlist mt-1 mb-0 p-0">
+                        <li *ngFor="let correction of corrections">
+                           <span>{{correction.title}}</span>
+                           <div class="edit-and-delete-small bg-white">
+                              <button type="button" (click)="deleteCorrection(correction)" class="btn-small-icon"
+                                 style="border: none;"><i class="fas fa-trash"></i></button>
+                           </div>
+                        </li>
+                     </ul>
+                  </div>
+               </div> -->
+  
+            </div>
+           
+
+            <div class="row">
+               
+               <!-- <div class="col-lg-12 col-sm-12">
+                  <div class="form-group">
+                     <label for="name">{{'root_cause_analysis' | translate}}</label>
+                     <textarea class="form-control" rows="3" formControlName="rca_description" id="comment"
+                        [placeholder]="'rca_form_description_placeholder'|translate"></textarea>
+                  </div>
+               </div> -->
+               <!-- <div class="col-lg-12 col-sm-12">
+                  <div class="form-group">
+                     <label>Corrective action</label>
+                     <div class="clearfix d-flex">
+                        <input type="text" class="form-control w-100" [(ngModel)]="correctiveAction"
+                           [ngModelOptions]="{standalone : true}"
+                           [placeholder]="'Enter the corrective actions'|translate">
+                        <button class="btn multi-add-user ml-2" (click)="addCorrectiveAction()" style="width: 42px;"><i
+                              class="fas fa-plus"></i></button>
+                     </div>
+                     <ul class="arrowlist mt-1 mb-0 p-0">
+                        <li *ngFor="let action of correctiveActions">
+                           <span>{{action.title}}</span>
+                           <div class="edit-and-delete-small bg-white">
+                              <button type="button" (click)="deleteCorrectiveAction(action)" class="btn-small-icon"
+                                 style="border: none;"><i class="fas fa-trash"></i></button>
+                           </div>
+                        </li>
+                     </ul>
+                  </div>
+               </div> -->
+          
+               <!-- <div class="col-lg-12 col-sm-12">
+                  <div class="form-group">
+                     <label for="name">Agreed date<span class="form-error">*</span></label>
+                     <div class="input-group">
+                        <input class="form-control" id="start_date" [placeholder]="'select the date' | translate"
+                           name="start_date" ngbDatepicker #d="ngbDatepicker" formControlName="target_date"
+                           [minDate]="{year: 1950, month: 1, day: 1}">
+                        <div class="input-group-append">
+                           <button class="btn btn-outline-secondary calendar" (click)="d.toggle()" type="button"><i
+                                 class="fas fa-calendar-alt"></i></button>
+                        </div>
+
+                     </div>
+                     <p class="form-error pt-1" *ngIf="formErrors && formErrors.start_date">{{formErrors.agreed_date}}
+                     </p>
+                  </div>
+               </div> -->
+            </div>
+
+
+            <div class="row">
+               <div class="col-sm-12">
+                  <div class="d-block justify-content-left border-0 mt-3">
+                     <button type="submit" class="btn btn-active" (click)="save()"
+                        [disabled]="form.invalid || AppStore.loading">{{
+                        AppStore.loading ?
+                        getButtonText('loading') : getButtonText('save') }}</button>
+                     <button type="button" data-toggle="modal" data-target="#signal-lost" class="btn"
+                        (click)="save(true)"
+                        [disabled]="form.invalid || AppStore.loading">{{
+                        AppStore.loading ?
+                        getButtonText('loading') : getButtonText('save_close') }}</button>
+                     <button type="button" data-toggle="modal" data-target="#error-message" class="btn"
+                        (click)="cancel()">{{ AppStore.loading ? getButtonText('loading') :
+                        getButtonText('cancel')}}</button>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </form>
+      <!-- Modal footer -->
+   </div>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+   <button type="button" class="close" data-dismiss="modal" (click) ="closeFindingCategoryModal()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+   <app-ms-audit-finding-categories-modal *ngIf="msAuditFindingCategoryObject.type" [source]="msAuditFindingCategoryObject"></app-ms-audit-finding-categories-modal>
+</div>

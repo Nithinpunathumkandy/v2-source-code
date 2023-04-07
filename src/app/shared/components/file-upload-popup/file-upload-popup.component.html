@@ -1,0 +1,505 @@
+<!-- documents-popup starts -->
+<button type="button" class="close" (click)="cancel()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+<div class="modal-dialog modal-xl" *mobxAutorun>
+   <div class="modal-content">
+      <div class="modal-header folder-view-header document-pop-header">
+         <div class="row w-100">
+            <div class="col-md-7">
+               <div class="clearfix line-tab tab-btn-sec-docs">
+                  <ul class="nav nav-tabs float-left">
+                     <li *ngIf="moduleEnabled && khEnabled" class="nav-item"> <a class="nav-link pt-0 active show" data-toggle="tab"
+                           href="#docs-tab-one" data-original-title="" (click)="setTab('kh')" title="">{{'knowledge_hub' | translate}}</a> </li>
+                     <li *ngIf="system" class="nav-item"> <a [ngClass]="!moduleEnabled?'nav-link pt-0 active show':'nav-link pt-0'"
+                           data-toggle="tab" href="#docs-tab-two" (click)="setTab('system')" data-original-title="" title="">{{'system' | translate}}</a> </li>
+                  </ul>
+               </div>
+            </div>
+            <div class="col-md-2 pr-0" *ngIf="moduleEnabled && khEnabled && selectedTab=='kh'">
+               <div class="small-tab-foder">
+                  <ul class="nav nav-tabs clearfix" role="navigation">
+                     <li *ngIf="fileUploadPopupStore.listStyle=='list'" class="nav-item"> <a href="#" (click)="setListStyle('grid')" class="nav-link active show"
+                           data-toggle="tab" role="tab" aria-controls="lorem" aria-selected="false"
+                           data-original-title="" title=""><i class="fas fa-th-large"></i></a>
+                     </li>
+                     <li *ngIf="fileUploadPopupStore.listStyle=='grid'" class="nav-item"> <a href="#" (click)="setListStyle('list')" class="nav-link active show"
+                           data-toggle="tab" role="tab" aria-controls="ipsum" aria-selected="false"
+                           data-original-title="" title=""><i class="fas fa-list"></i></a>
+                     </li>
+                  </ul>
+               </div>
+            </div>
+            <div class="col-md-3 pr-0" *ngIf="moduleEnabled && khEnabled && selectedTab=='kh'">
+               <div class="folder-view-search pb-1">
+                  <div class="form-group has-search mb-0">
+                     <span class="fa fa-search text-search"></span>
+                      <input type="text" autocomplete="off" placeholder="Search.." (keyup)="searchData()" [(ngModel)] = "DocumentsStore.searchText" [ngModelOptions]="{standalone: true}"  name="search" class="form-control">
+                      <a class="search-clear-btn" style="color: gray;" (click) = "clearSearchBar()" *ngIf = "DocumentsStore.searchText">X</a>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+      <div class="modal-body form-body pt-0">
+
+         <div class="row">
+            <div class="col-md-12">
+               <div class="clearfix folder-view-content">
+                  <div class="tab-content mt-3">
+                     <!-- Knowledhe Hub Document Starts Here -->
+                     <div [ngClass]="moduleEnabled && khEnabled?'tab-pane active show':'tab-pane fade'" id="docs-tab-one">
+
+                        <div class="tab-content">
+                           <div
+                              [ngClass]="fileUploadPopupStore.listStyle=='grid'?'tab-pane tab-edit-class active' : 'tab-pane tab-edit-class fade'"
+                              id="grid-view-file">
+                              <app-documents-loader *ngIf="!DocumentsStore.documentsLoaded"></app-documents-loader>
+                              <ng-container *mobxAutorun>
+                                 <app-no-data-list [source]="documentEmptyList"
+                                    *ngIf="DocumentsStore.documentsLoaded && DocumentsStore.documentsList.length == 0">
+                                 </app-no-data-list>
+                              </ng-container>
+                              
+                              <div class="thumb-pics-bg thumb-pics-col-5 clearfix thumb-pics-fix-text">
+                                 <div [ngStyle]="{'display': !docs.is_folder?'block':'none'}" [ngClass]="checkSelectedStatus(docs?.id)==true?'thumb-pics active':'thumb-pics'"
+                                    (click)="selectDocument(docs)"
+                                    *ngFor="let docs of DocumentsStore.documentsList | paginate: {id:'fileUploadPopup',currentPage: DocumentsStore?.currentPage,itemsPerPage: DocumentsStore?.itemsPerPage,totalItems: DocumentsStore?.totalItems} ;let i = index">
+                                 <div *ngIf="!docs.is_folder">
+                                    <label class="container2 document-select-checkbox">
+                                       <input type="checkbox" [id]="docs?.id" [name]="docs?.name"
+                                          [checked]="checkSelectedStatus(docs?.id)">
+                                       <span class="checkmark"></span>
+                                    </label>
+                                    <div class="upload-pics upload-pics-small edit-option">
+                                       <div class="browse-form-pic"
+                                          [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+'), url(' + '/assets/images/no-image-popup-icon.png' + ') no-repeat'}"  onerror="this.src='/assets/images/no-image-popup-icon.png'">
+                                       </div>
+
+                                       <div class="browse-form-name clearfix">
+                                          <div class="float-left">
+                                             <h6>{{docs.title}}.{{docs.ext}}
+                                             </h6>
+                                             <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                                          </div>
+                                          <div class="browse-logo">
+                                             <img *ngIf="checkExtension(docs.ext,'image') != -1" class="folder-picher"
+                                                src="/assets/images/jpg-icone.png">
+                                             <img *ngIf="checkExtension(docs.ext,'doc') != -1" class="folder-picher"
+                                                src="/assets/images/word-icone.png">
+                                             <img *ngIf="checkExtension(docs.ext,'pdf') != -1" class="folder-picher"
+                                                src="/assets/images/pdf-icone.png">
+                                             <img *ngIf="checkExtension(docs.ext,'excel') != -1" class="folder-picher"
+                                                src="/assets/images/excel-icone.png">
+                                             <img *ngIf="checkExtension(docs.ext,'video') != -1" class="folder-picher"
+                                                src="/assets/images/md-video.png">
+                                             <img *ngIf="checkExtension(docs.ext,'audio') != -1" class="folder-picher"
+                                                src="/assets/images/md-audio.png">
+                                             <img *ngIf="checkExtension(docs.ext,'ppt') != -1" class="folder-picher"
+                                                src="/assets/images/md-ppt.png">
+                                          </div>
+                                       </div>
+                                       <!-- <div class="edit-option-show-inner">
+                                <a href="#"><i class="fas fa-download"></i></a>
+                              </div> -->
+                                    </div>
+                                 </div>
+                                 </div>
+                              </div>
+                              <div class="row">
+                                 <div class="col-sm-12">
+                                    <div
+                                       *ngIf="DocumentsStore.totalItems > DocumentsStore.itemsPerPage && DocumentsStore?.documentsLoaded">
+                                       <ul class="pagination justify-content-center mt-3">
+                                          <div class="list">
+                                             <pagination-controls id='fileUploadPopup'
+                                                (pageChange)="pageChange($event,false)" class="my-pagination">
+                                             </pagination-controls>
+                                          </div>
+                                       </ul>
+                                    </div>
+                                 </div>
+                              </div>
+
+
+                           </div>
+
+                           <!-- <div
+                              [ngClass]="fileUploadPopupStore.listStyle=='folder'?'tab-pane tab-edit-class active' : 'tab-pane tab-edit-class fade'">
+                              <div class="folder-section">
+
+                                 <div id="maindiv">
+
+                                    <ul id="allItems" *ngIf="!folderClicked" runat="server"
+                                       class="folder-loop folder-main-page clearfix">
+                                       <li *ngFor="let item of DocumentTypeMasterStore.allItems"
+                                          class="folder-box-document" id="node1">
+                                          <a class="folder-one" (click)="goToFolder(item.id,item.title)">
+                                             <img src="assets/images/folder-icone.png" class="folder-picher">
+                                          </a>
+                                          <p>{{item.title}}</p>
+                                          <h5>{{item.created_at | date :'MMM d, y'}}</h5>
+                                       </li>
+                                    </ul>
+                                    <div *ngIf="folderClicked">
+                                       <div class="row">
+                                          <div class="col-md-12">
+                                             <div class="brudcrumb">
+                                                <ul class="clearfix">
+                                                   <li><a (click)="setRootData()">Home</a></li>
+                                                   <li *ngIf="breadCrumbData" class="right-arow"><a><i
+                                                            class="fas fa-chevron-right"></i></a></li>
+                                                   <li><a
+                                                         (click)="goToFolder(breadCrumbData.documentTypeId,breadCrumbData.title)">{{breadCrumbData?.title}}</a>
+                                                   </li>
+
+                                                </ul>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <app-documents-loader *ngIf="!DocumentsStore.documentsLoaded">
+                                       </app-documents-loader>
+                                       <app-no-data-list [source]="documentEmptyList"
+                                          *ngIf="DocumentsStore.documentsLoaded && DocumentsStore.documentsList.length == 0">
+                                       </app-no-data-list>
+                                       <div class="thumb-pics-bg thumb-pics-col-5 clearfix">
+                                          <div
+                                             [ngClass]="checkSelectedStatus(docs?.id)==true?'thumb-pics active':'thumb-pics'"
+                                             (click)="selectDocument(docs)"
+                                             *ngFor="let docs of DocumentsStore.documentsList | paginate: {id:'folderPagination',currentPage: DocumentsStore?.currentPage,itemsPerPage: DocumentsStore?.itemsPerPage,totalItems: DocumentsStore?.totalItems} ;let i = index">
+                                             <label class="container2 document-select-checkbox">
+                                                <input type="checkbox" [id]="docs?.id" [name]="docs?.name"
+                                                   [checked]="checkSelectedStatus(docs?.id)">
+                                                <span class="checkmark"></span>
+                                             </label>
+                                             <div class="upload-pics upload-pics-small edit-option">
+                                                <div class="browse-form-pic"
+                                                   [ngStyle]="{'background': 'url('+createImageUrl('document-version',docs?.token)+') no-repeat'}">
+                                                </div>
+                                                <div class="browse-form-name clearfix">
+                                                   <div class="float-left">
+                                                      <h6>{{docs.title}}.{{docs.ext}}
+                                                      </h6>
+                                                      <span>{{docs.size/1048576 | number:'0.2-2'}}MB</span>
+                                                   </div>
+                                                   <div class="browse-logo">
+                                                      <img *ngIf="checkExtension(docs.ext,'image') != -1"
+                                                         class="folder-picher" src="/assets/images/jpg-icone.png">
+                                                      <img *ngIf="checkExtension(docs.ext,'doc') != -1"
+                                                         class="folder-picher" src="/assets/images/word-icone.png">
+                                                      <img *ngIf="checkExtension(docs.ext,'pdf') != -1"
+                                                         class="folder-picher" src="/assets/images/pdf-icone.png">
+                                                      <img *ngIf="checkExtension(docs.ext,'excel') != -1"
+                                                         class="folder-picher" src="/assets/images/excel-icone.png">
+                                                      <img *ngIf="checkExtension(docs.ext,'video') != -1"
+                                                         class="folder-picher" src="/assets/images/md-video.png">
+                                                      <img *ngIf="checkExtension(docs.ext,'audio') != -1"
+                                                         class="folder-picher" src="/assets/images/md-audio.png">
+                                                      <img *ngIf="checkExtension(docs.ext,'ppt') != -1"
+                                                         class="folder-picher" src="/assets/images/md-ppt.png">
+                                                   </div>
+                                                </div>
+
+                                             </div>
+                                          </div>
+                                       </div>
+
+                                       <div class="row">
+                                          <div class="col-sm-12">
+                                             <div
+                                                *ngIf="DocumentsStore.totalItems > DocumentsStore.itemsPerPage && DocumentsStore?.documentsLoaded">
+                                                <ul class="pagination justify-content-center mt-3">
+                                                   <div class="list">
+                                                      <pagination-controls id='folderPagination'
+                                                         (pageChange)="pageChange($event,true)" class="my-pagination">
+                                                      </pagination-controls>
+                                                   </div>
+                                                </ul>
+                                             </div>
+                                          </div>
+                                       </div>
+
+                                    </div>
+
+                                 </div>
+
+                              </div>
+                           </div> -->
+
+                           <!-- !List View Starts -->
+                           <div [ngClass]="fileUploadPopupStore.listStyle=='list'?'tab-pane tab-edit-class active' : 'tab-pane tab-edit-class fade'"
+                           id="list-view-file">
+                              <div class="bg-white widg-padding-cmn">
+                                 <div class="clearfix d-flex">                           
+                                    <div class="folder-list-page folder-list-page-table">
+                                       <div id="maindiv">
+                                          <div id="dragdiv">
+                                             <app-documents-loader *ngIf="!DocumentsStore.documentsLoaded"></app-documents-loader>
+                                                <!-- <app-table-loader *ngIf="!DocumentsStore.documentsLoaded"></app-table-loader> -->
+                                             <table class="table table-bordered ordinary-table audit-page-table mb-0 table-scroll" id="allItems" runat="server" *ngIf="DocumentsStore.documentsLoaded && DocumentsStore.documentsList.length > 0">
+                                                <thead>
+                                                <tr> 
+                                                   <th class="border-top-0" width="5%">
+                                                      #
+                                                   </th>                                               
+                                                   <th class="border-top-0" width="25%" >{{'title' | translate}} <img *ngIf = "DocumentsStore.orderItem == 'documents.title'"
+                                                      [attr.src]="DocumentsStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" class="sort-down-pics"></th>
+                                                   <th class="border-top-0" width="10%">
+                                                      {{'file_type' | translate}}
+                                                   </th>
+                                                   <th class="border-top-0" width="10%">
+                                                      {{'size' | translate}}
+                                                   </th>
+                                                   <th class="border-top-0" width="20%">
+                                                      {{'document_version_title' | translate}}
+                                                   </th>
+                                                   <th class="border-top-0" width="15%">
+                                                      {{'created_at' | translate}}
+                                                   </th>
+                                                   <th class="border-top-0" width="15%">
+                                                      {{'created_by' | translate}}
+                                                   </th>
+                                                </tr>
+                                             </thead>
+                                             <tbody>
+                                                <tr *ngFor="let docs of DocumentsStore.documentsList | paginate: {currentPage: DocumentsStore?.currentPage,itemsPerPage: DocumentsStore?.itemsPerPage,totalItems: DocumentsStore?.totalItems} ;;let i = index" class="folder-box-document pointer"  id="node101" >                                                   
+                                                   <td class="pointer">
+                                                      <label class="container2 float-left"
+                                                         style="margin-top: 2px; padding-left: 22px;">
+                                                         <input type="checkbox" [id]="docs.id" [name]="docs.name"
+                                                            [checked]="checkSelectedStatus(docs?.id)"
+                                                            (change)="selectDocument(docs)">
+                                                         <span class="checkmark"></span>
+                                                      </label>
+                                                      {{(DocumentsStore?.currentPage - 1) *
+                                                         DocumentsStore?.itemsPerPage +
+                                                      (i + 1)}}
+                                                   </td>
+                                                   <td class="pointer">
+                                                      <img *ngIf="docs.is_folder"  src="/assets/images/folder-icone.png" class="folder-list-view"> 
+                                                      <img  *ngIf="!docs.is_folder" [attr.src]="createImageUrl('document-version',docs.token)" onerror="this.src='/assets/images/no-image-popup-icon.png'"  class="folder-list-view folder-list-view-document">                                     
+                                                      {{docs?.title}}
+                                                   </td>
+                                                   <td>
+                                                      {{ docs.ext?docs.ext: AppStore.noContentText}}
+                                                   </td>
+                                                   <td *ngIf="docs?.size">
+                                                      {{docs.size/1048576 | number:'0.2-2'}} MB
+                                                   </td>
+                                                   <td *ngIf="!docs?.size">
+                                                      {{AppStore.noContentText}}
+                                                   </td>
+                                                   <td>
+                                                      {{ docs.document_version_title?docs.document_version_title: AppStore.noContentText}}
+                                                   </td>
+                                                   <td>
+                                                      {{ docs.created_at| date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                   </td>
+                                                   <td >
+                                                         <div class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg p-0">
+                                                            <img [attr.src]="docs.created_by_image_token?createImageUrl('user-profile-picture',docs.created_by_image_token):'/assets/images/user-demo.png'"
+                                                               class="rounded-circle rounde-hov" width="35px" height="35px"> 
+                                                            <div class="pointer new-size-text text-left">
+                                                               <p class="mb-0">{{docs.created_by_first_name}} {{docs.created_by_last_name}}  </p>
+                                                               <span>{{docs.created_by_designation}}</span>
+                                                            </div>
+                                                         </div>
+                                                   </td>
+                                                </tr>
+                                             </tbody>
+                                             </table>
+                                             <ng-container *mobxAutorun>
+                                                <app-no-data-list [border]=false [source] = "documentEmptyList" *ngIf="DocumentsStore.documentsLoaded && DocumentsStore.documentsList.length == 0"></app-no-data-list>
+                                             </ng-container>
+                                          </div>
+                                       </div>
+
+                                       <div class="row mt-4">
+                                          <div *ngIf="DocumentsStore.totalItems > DocumentsStore.itemsPerPage && DocumentsStore?.documentsLoaded" class="col-sm-12 ">
+                                             <ul class="pagination justify-content-center mt-3">
+                                                <div class="list">
+                                                   <pagination-controls  (pageChange)="pageChange($event,false)" class="my-pagination"></pagination-controls>
+                                                </div>
+                                             </ul>
+                                          </div> 
+                                       </div>
+
+                                    </div>
+                                 </div>                        
+                              </div>
+                           </div>     
+                           <!-- !List View Ends -->     
+                        </div>
+                     </div>
+                     <!-- Knowledhe Hub Document Ends Here -->
+              
+                     <!-- File Upload Part Starts Here -->
+                     <div [ngClass]="checkCondition()" id="docs-tab-two">
+                        <div class="scroll-documents" #systemFileUploadArea>
+                           <div class="thumb-pics-bg thumb-pics-col-5 clearfix thumb-pics-fix-text" >
+                              <!-- <div class="thumb-pics">
+                                 <div class="question-circle-inp"
+                                    *ngIf="OrganizationGeneralSettingsStore?.organizationSettings?.support_file_allowed_types?.length > 0"
+                                    style="margin-right: 7px;">
+                                    <i class="far fa-question-circle"></i>
+                                    <div class="message-password-inp">
+                                       <p class="mb-0">{{'allowed_file_types' | translate}}
+                                          {{OrganizationGeneralSettingsStore?.organizationSettings?.support_file_allowed_types?.toString()}}
+                                       </p>
+                                    </div>
+                                 </div>
+
+                                 <div class="form-group form-group-upload">
+                                    <div class="darag-dropifile-upload">
+                                       <div class="d-flex justify-content-center align-items-center text-center">
+                                          <div>
+                                             <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                                             <div class="drag-file-name"> {{'drag_drop_file_here' | translate}} </div>
+                                             <div class="upload-btn-wrapper">
+                                                <input type="file" name="myfile"
+                                                   (change)="onFileChange($event,'support-file')"
+                                                   [accept]="checkAcceptFileTypes('support-file')" multiple />
+                                                <button class="btn">{{'browse_files' | translate}}</button>
+                                             </div>
+                                          </div>
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div> -->
+                              <div class="thumb-pics">
+                                 <div class="question-circle-inp"
+                                 *ngIf="OrganizationGeneralSettingsStore?.organizationSettings?.support_file_allowed_types?.length > 0"
+                                 style="margin-right: 7px;">
+                                 <i class="far fa-question-circle"></i>
+                                 <div class="message-password-inp">
+                                    <p class="mb-0">{{'allowed_file_types' | translate}}
+                                       {{OrganizationGeneralSettingsStore?.organizationSettings?.support_file_allowed_types?.toString()}}
+                                    </p>
+                                 </div>
+                              </div>
+                                 <div class="costmz-logo-new" style="padding: 0 !important;">
+                                    <div class="form-group form-group-upload">
+                                       <div class="darag-dropifile-upload">
+                                          <div class="d-flex justify-content-center align-items-center text-center">
+                                             <div>
+                                                <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                                                <div class="drag-file-name"> {{'select_or_upload_your_file_here' | translate}} </div>
+                                                <div class="upload-btn-wrapper">
+                                                   <input type="file" id="file" name="myfile"
+                                                      (change)="onFileChange($event,'support-file')"
+                                                      [accept]="checkAcceptFileTypes('support-file')" multiple />
+                                                   <button class="btn">{{'browse_files' | translate}}</button>
+                                                </div>
+                                             </div>
+                                          </div>
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+                              <div
+                              [ngClass]="files.success || files.file_type != 'support-file' ? 'thumb-pics up-pic-cf hide_loader' : 'thumb-pics up-pic-cf'"
+                                 *ngFor="let files of systemFileArray">
+                                 <div class="upload-pics edit-option file-upload-loader">
+                                    <circle-progress [percent]=files.uploadProgress [title]=files.uploadProgress>
+                                    </circle-progress>
+                                 </div>
+                              </div>
+
+                              <ng-container *ngIf="fileUploadPopupStore.verificationId">
+                                 <div
+                                 [ngClass]="b?.is_deleted ? ' thumb-pics image_deleted':'thumb-pics'"
+                                 *ngFor="let b of fileUploadPopupStore.getSystemFile" [ngStyle]="{'display': fileUploadPopupStore.verificationId != b?.verificationId ? 'none' : 'block' }">
+                                 <div class="upload-pics edit-option"  *ngIf="fileUploadPopupStore.verificationId==b?.verificationId">
+                                    <div class="browse-form-pic"
+                                       [ngStyle]="{'background': 'url(' + b?.preview + ') no-repeat 0 0 / cover'}">
+                                    </div>
+                                    <div class="browse-form-name clearfix">
+                                       <div class="float-left">
+                                          <h6 [attr.title]="b?.name">{{b?.name?.length > 20 ? b?.name?.substring(0,20)+'
+                                             ...' : b?.name}}</h6>
+                                          <span>{{b?.size/1048576 | number:'0.2-2'}}MB</span>
+                                       </div>
+                                       <div class="browse-logo">
+                                          <img *ngIf="checkExtension(b?.ext,'excel') != -1"
+                                             src="/assets/images/md-xl.png">
+                                          <img *ngIf="checkExtension(b?.ext,'image') != -1"
+                                             src="/assets/images/md-jpg.png">
+                                          <img *ngIf="checkExtension(b?.ext,'doc') != -1"
+                                             src="/assets/images/md-doc.png">
+                                          <img *ngIf="checkExtension(b?.ext,'pdf') != -1"
+                                             src="/assets/images/md-pdf.png">
+                                          <img *ngIf="checkExtension(b?.ext,'video') != -1"
+                                             src="/assets/images/md-video.png">
+                                          <img *ngIf="checkExtension(b?.ext,'audio') != -1"
+                                             src="/assets/images/md-audio.png">
+                                          <img *ngIf="checkExtension(b?.ext,'ppt') != -1"
+                                             src="/assets/images/md-ppt.png">
+                                       </div>
+                                    </div>
+                                    <div class="edit-option-show">
+                                       <a (click)="removeBrochure('document-file',b?.token)"><i
+                                             class="fas fa-trash"></i></a>
+                                    </div>
+                                 </div>
+                              </div>  
+                              </ng-container>
+                              <ng-container *ngIf="!fileUploadPopupStore.verificationId">
+                                 <div
+                                 [ngClass]="b?.is_deleted ? ' thumb-pics image_deleted':'thumb-pics'"
+                                 *ngFor="let b of fileUploadPopupStore.getSystemFile">
+                                 <div class="upload-pics edit-option">
+                                    <div class="browse-form-pic"
+                                       [ngStyle]="{'background': 'url(' + b?.preview + ') no-repeat 0 0 / cover'}">
+                                    </div>
+                                    <div class="browse-form-name clearfix">
+                                       <div class="float-left">
+                                          <h6 [attr.title]="b?.name">{{b?.name?.length > 20 ? b?.name?.substring(0,20)+'
+                                             ...' : b?.name}}</h6>
+                                          <span>{{b?.size/1048576 | number:'0.2-2'}}MB</span>
+                                       </div>
+                                       <div class="browse-logo">
+                                          <img *ngIf="checkExtension(b?.ext,'excel') != -1"
+                                             src="/assets/images/md-xl.png">
+                                          <img *ngIf="checkExtension(b?.ext,'image') != -1"
+                                             src="/assets/images/md-jpg.png">
+                                          <img *ngIf="checkExtension(b?.ext,'doc') != -1"
+                                             src="/assets/images/md-doc.png">
+                                          <img *ngIf="checkExtension(b?.ext,'pdf') != -1"
+                                             src="/assets/images/md-pdf.png">
+                                          <img *ngIf="checkExtension(b?.ext,'video') != -1"
+                                             src="/assets/images/md-video.png">
+                                          <img *ngIf="checkExtension(b?.ext,'audio') != -1"
+                                             src="/assets/images/md-audio.png">
+                                          <img *ngIf="checkExtension(b?.ext,'ppt') != -1"
+                                             src="/assets/images/md-ppt.png">
+                                       </div>
+                                    </div>
+                                    <div class="edit-option-show">
+                                       <a (click)="removeBrochure('document-file',b?.token)"><i
+                                             class="fas fa-trash"></i></a>
+                                    </div>
+                                 </div>
+                              </div>
+                              </ng-container>
+                           </div>
+
+                        </div>
+
+                     </div>
+                     <!-- File Upload Part Ends Here -->
+                  </div>
+               </div>
+            </div>
+         </div>
+
+            <div class="row">
+               <div class="col-sm-12">
+                  <div class="d-block justify-content-left border-0 mt-3 ml-3">
+                     <button type="button" [disabled]="checkFileIsUploading()" class="btn mr-2 btn-active"
+                        (click)="submitDocuments()">{{'add_close' | translate}}</button>
+                     <button type="button" class="btn mr-2" (click)="cancel()">{{'cancel' | translate}}</button>
+                  </div>
+               </div>
+            </div>
+
+      </div>
+   </div>
+   <!-- documents-popup ends -->

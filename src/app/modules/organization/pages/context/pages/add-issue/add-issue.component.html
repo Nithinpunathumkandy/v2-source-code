@@ -1,0 +1,800 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #editBar>
+   <app-breadcrumb-menu></app-breadcrumb-menu>
+   <app-sub-menu></app-sub-menu>
+</nav>
+<main
+   [ngClass]="!OrganizationGeneralSettingsStore.organizationSettings?.is_ms_type ? 'mt-3 organization-page' : 'mt-3 organization-page tab-btns-five'">
+   <div class="container-fluid">
+      <div class="organization-form-page" *mobxAutorun>
+         <div [ngStyle]="{'display':!showForm ? 'none' : 'block'}">
+            <form id="regForm" [formGroup]="regForm"
+               [ngClass]="!OrganizationGeneralSettingsStore.organizationSettings?.is_ms_type ? 'organization-multi-stup-form  multi-stup-form-common' : 'organization-multi-stup-form issue-multi-stup-form multi-stup-form-common'">
+               <!-- Circles which indicates the steps of the form: -->
+               <div id="header-sroll-form" class="form-indicates-sec clearfix" #formSteps>
+                  <span class="step pointer" (click)="changeStep(0)"
+                     [ngStyle]="{display: !OrganizationGeneralSettingsStore.organizationSettings?.is_ms_type ? 'none':'block'}"><span
+                        class="multi-form-nbr">1</span>{{'ms_type' | translate}}</span>
+                  <span class="step pointer" (click)="changeStep(1)"><span
+                        class="multi-form-nbr">{{!OrganizationGeneralSettingsStore.organizationSettings?.is_ms_type ?
+                        '1' : '2'}}</span>{{'info' | translate}}</span>
+                  <span class="step pointer" (click)="changeStep(2)"
+                     [ngStyle]="{display: !OrganizationModulesStore.checkOrganizationModules(600) ? 'none':'block'}"><span
+                        class="multi-form-nbr">{{!OrganizationGeneralSettingsStore.organizationSettings?.is_ms_type ?
+                        '2' : '3'}}</span>{{'process' | translate}}</span>
+                  <span class="step pointer" (click)="changeStep(3)"><span
+                        class="multi-form-nbr">{{getStepPosition(3)}}</span>{{'stakeholder_analysis' |
+                     translate}}</span>
+                  <span class="step pointer" (click)="changeStep(4)"><span
+                        class="multi-form-nbr">{{getStepPosition(4)}}</span>{{'preview_save' | translate}}</span>
+               </div>
+               <!-- One "tab" for each step in the form: -->
+               <div class="tab"
+                  [ngStyle]="{display: !OrganizationGeneralSettingsStore.organizationSettings?.is_ms_type ? 'none':'block'}">
+                  <!-- tab start -->
+                  <div class="issue-ms-type-tab">
+                     <p>{{'organization_issue_mstype' | translate}}</p>
+                     <div class="mb-2 mt-2 box-cnt-one">
+                        <label (click)="selectMsType(ms)"
+                           [ngClass]="findSelectedMsTypes(ms) != -1 ? 'outline-tag active pointer' : 'outline-tag pointer'"
+                           *ngFor="let ms of MsTypeStore?.msTypeDetails | paginate: {currentPage:MsTypeStore?.currentPage, itemsPerPage:MsTypeStore?.itemsPerPage,totalItems:MsTypeStore?.totalItems};let num = index">{{ms.ms_type_title}}
+                           <span>V {{ms.ms_type_version_title}}</span></label>
+                     </div>
+                     <p class="form-error" *ngIf="formErrors && formErrors.ms_type_organization_ids">
+                        {{formErrors.ms_type_organization_ids}}</p>
+                     <div class="col-sm-12" *ngIf="MsTypeStore?.totalItems > MsTypeStore?.itemsPerPage">
+                        <ul class="pagination justify-content-center mt-3">
+                           <div class="list">
+                              <pagination-controls [previousLabel]="'previous' | translate"
+                                 [nextLabel]="'next' | translate" (pageChange)="msTypePageChange($event)"
+                                 class="my-pagination"></pagination-controls>
+                           </div>
+                        </ul>
+                     </div>
+                  </div>
+               </div><!-- tab end -->
+               <div class="tab">
+                  <!-- tab start -->
+                  <div class="row">
+
+                     <div class="col-sm-12">
+                        <div class="form-group">
+                            <label class="d-inline-block" for="name">{{'issue' | translate}}<sup>*</sup></label> <span class="text-grey ml-2 mr-1"> ( </span><div class="Preview-checkbox clearfix d-inline-block mb-0 pt-1" style="vertical-align:'middle';margin:-2px 0 0 0">
+                                <label class="container2 float-left pl-4  text-grey" style="font-size: 12px; padding-top:3px;">
+                                    <input type="checkbox"
+                                        [checked]="selectedIssueLibrary" (change)="setIssueLibrary($event)">
+                                    <span class="checkmark mt-1"></span> {{'choose_from_issue_library'|translate}}</label>
+                              
+                            </div> <span class="text-grey ml-1">)</span>
+                            <input *ngIf="!selectedIssueLibrary" type="text" formControlName="title" class="form-control" [attr.placeholder]="'issue_addform_title' | translate">
+                    
+                            <div class="clearfix"   *ngIf="selectedIssueLibrary">
+                                <div class="multiple-plain-ngselect">
+                                   
+                                 <ng-select [items]="IssueMasterStore.issues" bindLabel="title"
+                                    [placeholder]="'select_issue' | translate" [multiple]="false"
+                                    formControlName="issue_id" (search)="searchIssues($event)" (clear)="getIssues()"
+                                    (open)="getIssues()" (change)="issueSelected($event)">
+                                    <!-- <ng-option [value]="item" *ngFor="let item of IssueMasterStore.issues">
+                                        {{item.title.length > 50 ? (item.title | slice:0:50)+' ...' : item.title}}
+                                     </ng-option> -->
+                                    <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                       {{item?.title?.length > 80 ? item?.title?.substring(0,80)+' ...' : item?.title}}
+                                    </ng-template>
+                                    <ng-template ng-option-tmp let-item="item" let-index="index">
+                                       {{item?.title?.length > 80 ? (item?.title | slice:0:80)+' ...' : item?.title}}
+                                    </ng-template>
+                                 </ng-select>
+                              </div>
+                              <button class="btn multi-add-user"
+                                 *ngIf="AuthStore.getActivityPermission(100,'CREATE_ISSUE')" (click)="addIssue()"><i
+                                    class="fas fa-plus"></i></button>
+                           </div>
+                           <p class="form-error pt-1" *ngIf="formErrors && formErrors.title">{{formErrors.title}}</p>
+                        </div>
+
+                    </div>
+
+                     <div class="col-sm-6">
+                        <div class="form-group">
+                           <label for="name">{{'issue_categories' | translate}}<sup>*</sup></label>
+                           <div class="clearfix">
+                              <!-- class="multiple-plain-ngselect select-width-plus" -->
+                              <div
+                                 [ngClass]="AuthStore.getActivityPermission(100,'CREATE_ISSUE_CATEGORY') ? 'multiple-plain-ngselect select-width-plus' : 'multiple-plain-ngselect'">
+                                 <!-- <select class="form-control" name="test" formControlName = "issue_category_ids" multiple = true>
+                                  <option *ngFor = "let ic of IssueCategoryStore.issueCategories" [ngValue]="ic">{{ic.title}}</option>
+                               </select> -->
+                                 <ng-select #select [items]="IssueCategoryStore.issueCategories" bindLabel="title"
+                                    [placeholder]="'select_issue_categories' | translate" multiple="true"
+                                    [closeOnSelect]="false" formControlName="issue_category_ids"
+                                    (change)="searchListclickValueClear(select)"
+                                    (search)="searchIssueCategory($event)" (clear)="getIssueCategory()"
+                                    (open)="getIssueCategory()">
+                                    <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                       {{item?.title?.length > 60 ? (item?.title | slice:0:60)+' ...' : item?.title}}<span
+                                          aria-hidden="true" (click)="clear(item)" style="border:none;"
+                                          class="ng-value-icon left">×</span>
+                                    </ng-template>
+                                    <ng-template ng-option-tmp let-item="item" let-index="index">
+                                       {{item?.title?.length > 80 ? (item?.title | slice:0:80)+' ...' : item?.title}}
+                                    </ng-template>
+                                 </ng-select>
+                              </div>
+                              <button class="btn multi-add-user"
+                                 *ngIf="AuthStore.getActivityPermission(100,'CREATE_ISSUE_CATEGORY')"
+                                 (click)="addIssueCategory()"><i class="fas fa-plus"></i></button>
+                           </div>
+                           <p class="form-error pt-1" *ngIf="formErrors && formErrors.issue_category_ids">
+                              {{formErrors.issue_category_ids}}</p>
+                        </div>
+                     </div>
+                  </div>
+                  <div class="row">
+                     <div class="col-sm-12">
+                        <div class="form-group add-kpi-textarea">
+                           <span style="float: right;">{{regForm?.value.description != null ?
+                              regForm?.value?.description?.length : 0}} {{'characters' | translate}}</span>
+                           <label for="name">{{'description' | translate}}</label>
+                           <textarea class="form-control" formControlName="description" rows="11" id="comment"
+                              [attr.placeholder]="'write_a_short_description_of_the_issue' | translate"></textarea>
+                        </div>
+                     </div>
+                  </div>
+                  <div class="row">
+                     <div class="col-sm-6">
+                        <div class="form-group">
+                           <label for="name">{{'issue_types' | translate}}</label>
+                           <div class="clearfix">
+                              <div class="multiple-plain-ngselect">
+                                 <!-- <select class="form-control" name="test" formControlName = "issue_type_ids" multiple = true>
+                                  <option *ngFor = "let it of IssueTypeStore.issueTypes" [ngValue]="it">{{it.title}}</option>
+                               </select> -->
+                                 <ng-select #typeselect [items]="IssueTypeStore.issueTypes" bindLabel="title"
+                                    [placeholder]="'select_issue_types' | translate" multiple="true"
+                                    [closeOnSelect]="false" formControlName="issue_type_ids"
+                                    (change)="searchListclickValueClear(typeselect)"
+                                    searchable = "false"
+                                    (search)="searchIssueType($event)" (clear)="getIssueType()" (open)="getIssueType()">
+                                    <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                       {{item?.title?.length > 60 ? (item?.title | slice:0:60)+' ...' : item?.title}}<span
+                                          aria-hidden="true" (click)="clear(item)" style="border:none;"
+                                          class="ng-value-icon left">×</span>
+                                    </ng-template>
+                                    <ng-template ng-option-tmp let-item="item" let-index="index">
+                                       {{item?.title?.length > 80 ? (item?.title | slice:0:80)+' ...' : item?.title}}
+                                    </ng-template>
+                                 </ng-select>
+                              </div>
+                              <!-- <button class="btn multi-add-user" (click) = "addIssueType()"><i class="fas fa-plus"></i></button> -->
+                           </div>
+                           <p class="form-error pt-1" *ngIf="formErrors && formErrors.issue_type_ids">
+                              {{formErrors.issue_type_ids}}</p>
+                        </div>
+                     </div>
+                     <div class="col-sm-6">
+                        <div class="form-group">
+                           <label for="name">{{'issue_domains' | translate}}</label>
+                           <div class="clearfix">
+                              <div
+                                 [ngClass]="AuthStore.getActivityPermission(100,'CREATE_ISSUE_DOMAIN') ? 'multiple-plain-ngselect select-width-plus' : 'multiple-plain-ngselect'"
+                                 multiple=true>
+                                 <!-- <select class="form-control" name="test" formControlName = "issue_domain_ids" multiple = true>
+                                    <option *ngFor = "let ido of IssueDomainStore.issueDomains" [ngValue]="ido">{{ido.title}}</option>
+                                 </select> -->
+                                 <ng-select #domainselect [items]="IssueDomainStore.issueDomains" bindLabel="title"
+                                    [placeholder]="'select_issue_domains' | translate" multiple="true"
+                                    [closeOnSelect]="false" formControlName="issue_domain_ids"
+                                    (change)="searchListclickValueClear(domainselect)"
+                                    searchable = "false"
+                                    (search)="searchIssueDomain($event)" (clear)="getIssueDomain()"
+                                    (open)="getIssueDomain()">
+                                    <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                       {{item?.title?.length > 60 ? (item?.title | slice:0:60)+' ...' : item?.title}}<span
+                                          aria-hidden="true" (click)="clear(item)" style="border:none;"
+                                          class="ng-value-icon left">×</span>
+                                    </ng-template>
+                                    <ng-template ng-option-tmp let-item="item" let-index="index">
+                                       {{item?.title?.length > 80 ? (item?.title | slice:0:80)+' ...' : item?.title}}
+                                    </ng-template>
+                                 </ng-select>
+                              </div>
+                              <button class="btn multi-add-user"
+                                 *ngIf="AuthStore.getActivityPermission(100,'CREATE_ISSUE_DOMAIN')"
+                                 (click)="addIssueDomain()"><i class="fas fa-plus"></i></button>
+                           </div>
+                           <p class="form-error pt-1" *ngIf="formErrors && formErrors.issue_domain_ids">
+                              {{formErrors.issue_domain_ids}}</p>
+                        </div>
+                     </div>
+                  </div>
+                  <div class="row">
+                     <div class="col-lg-12 col-sm-12">
+                        <div class="form-group">
+                           <a class="text-light-blue" data-toggle="modal" (click)="organisationChanges()"
+                              style="border-bottom: 1px solid;">{{'change_organization_unit' | translate}}</a>
+                        </div>
+                     </div>
+                  </div>
+
+                  <div class="row">
+                     <div class="col-sm-6">
+                        <div class="form-group">
+
+                           <label for="name">{{'responsible_user' | translate}}</label>
+                           <div class="clearfix">
+                              <div class="multiple-plain-ngselect">
+                                 <ng-select #responsibleselect [items]="UsersStore.usersList" formControlName="issue_user_ids"
+                                    bindLabel="email" labelForId="id"
+                                    [placeholder]="'select_responsible_users' | translate" multiple="true"
+                                    [closeOnSelect]="false" (search)="searchUers($event)" (clear)="getUsers()"
+                                    (change)="searchListclickValueClear(responsibleselect)"
+                                    searchable = "false"
+                                    (open)="getUsers()" [searchFn]="customSearchFn">
+                                    <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                       <img *ngIf="item.image_token" class="ng-select-user-display" height="15"
+                                          width="15"
+                                          [attr.src]="createImagePreview('user-profile-picture',item.image_token)"
+                                          onerror="this.src='/assets/images/user-demo2.png'" />
+                                       <img *ngIf="!item.image_token" class="ng-select-user-display" height="15"
+                                          width="15" [attr.src]="getDefaultImage()"
+                                          onerror="this.src='/assets/images/user-demo2.png'" />
+                                       <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,'
+                                          ') | titlecase}}</b><span aria-hidden="true" (click)="clear(item)"
+                                          style="border:none;" class="ng-value-icon left">×</span>
+                                    </ng-template>
+                                    <ng-template ng-option-tmp let-item="item" let-index="index">
+                                       <div class="user-post-department-pic">
+                                          <img *ngIf="item.image_token" class="ng-select-user-display" height="25"
+                                             width="25"
+                                             [attr.src]="createImagePreview('user-profile-picture',item.image_token)"
+                                             onerror="this.src='/assets/images/user-demo2.png'" />
+                                          <img *ngIf="!item.image_token" class="ng-select-user-display" height="25"
+                                             width="25" [attr.src]="getDefaultImage()"
+                                             onerror="this.src='/assets/images/user-demo2.png'" />
+                                       </div>
+                                       <div class="user-post-department-div">
+                                          <b>{{getStringsFormatted([item.first_name,item.last_name],50,' ') |
+                                             titlecase}}</b>
+                                          <p class="user-post-department-multiple">
+                                             {{getStringsFormatted([item.designation_title,'
+                                             '+item.department],50,',')}}</p>
+                                       </div>
+                                    </ng-template>
+                                 </ng-select>
+                              </div>
+                           </div>
+                           <p class="form-error pt-1" *ngIf="formErrors && formErrors.issue_user_ids">
+                              {{formErrors.issue_user_ids}}</p>
+                        </div>
+                     </div>
+                  </div>
+
+               </div><!-- tab end -->
+               <div class="tab">
+                  <!-- tab start -->
+                  <div class="row process-form-tab">
+                     <div class="col-sm-12">
+                        <div class="processes-issue clearfix">
+                           <h5><img src="/assets/images/issue-processes.png">{{'issue_process_select' | translate}}</h5>
+                           <a data-toggle="modal" data-target="#process-popup" class="btn"
+                              (click)="selectProcesses()">{{'choose_process' | translate}}</a>
+                        </div>
+                        <div class="panel-group panel-drop-sections" id="jd" role="tablist" aria-multiselectable="true">
+                           <div class="panel panel-default"
+                              *ngFor="let pr of ProcessesStore.processesToDisplay; let p = index">
+                              <div class="panel-heading" role="tab" [attr.id]="p">
+                                 <div class="panel-title">
+                                    <a role="button" data-toggle="collapse" [attr.href]="'#ceo'+p" aria-expanded="false"
+                                       aria-controls="collapseOne" class="collapsed">
+                                       <h5 class="width96pc mt-0"> {{pr.process_group}} <span class="drop-down-icone"><i
+                                                class="fas fa-chevron-down"></i></span> </h5>
+                                    </a>
+                                 </div>
+                              </div>
+                              <div [attr.id]="'ceo'+p" class="drop-detail-sec panel-collapse collapse" role="tabpanel"
+                                 [attr.aria-labelledby]="p" [attr.data-parent]="'#ceo'+p">
+                                 <div class="panel-body pb-2">
+                                    <div class="audit-form-table w-100 not-fixed-table mb-3">
+                                       <!-- <ul class="banking-issue">
+                                    <li class="clearfix" *ngFor = "let list of pr.values"><a >{{list}}</a></li>
+                                 </ul> -->
+                                       <table
+                                          class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                                          <tr>
+                                             <th class="border-top-0 text-center" width="5%">
+                                                #</th>
+                                             <th class="border-top-0" width="10%">{{'ref_id' | translate}}</th>
+                                             <th class="border-top-0" width="40%">{{'process' | translate}}</th>
+                                             <th class="border-top-0" width="20%">{{'process_category' | translate}}
+                                             </th>
+                                          </tr>
+                                          <tr class="edit-and-delete-main" *ngFor="let list of pr.values;let n = index">
+                                             <td class="text-center">{{n+1}}</td>
+                                             <td>{{list.ref_code}}</td>
+                                             <td>{{list.title}}</td>
+                                             <td>{{list.process_category_title ? list.process_category_title :
+                                                AppStore.noContentText}}
+                                                <div class="edit-option-show">
+                                                   <a (click)="removeMappedProcess(pr,list)"
+                                                      [attr.title]="'delete' | translate"><i
+                                                         class="fas fa-trash pointer"></i></a>
+                                                </div>
+                                             </td>
+                                          </tr>
+                                       </table>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                        <p class="form-error pt-1" *ngIf="formErrors && formErrors.process_ids">
+                           {{formErrors.process_ids}}</p>
+                     </div>
+                  </div>
+               </div><!-- tab end -->
+               <div class="tab">
+                  <!-- tab start -->
+                  <div class="row">
+                     <div class="col-sm-4">
+                        <div class="form-group">
+                           <label>{{'stakeholder_type' | translate}}</label>
+                           <div class="btn-in-ex-btns-new">
+                              <button type="button" (click)="selectStakeHolderType(stype)"
+                                 *ngFor="let stype of StakeholderTypeMasterStore.stakeholderTypes"
+                                 [ngClass]="getSelectedStakeholderType()?.id == stype.id ? 'btn-in-ex-new in-pic active' : 'btn-in-ex-new in-pic'"><span
+                                    class="in-ex-icon-new"></span>{{ stype.title | titlecase }}</button>
+                              <!-- <button type="button" class="btn-in-ex ex-pic">External</button> -->
+                           </div>
+                        </div>
+                     </div>
+                     <div class="col-sm-8">
+                        <div class="form-group">
+                           <label for="name">{{'stakeholder' | translate}}</label>
+                           <div class="clearfix d-flex">
+                              <div class="multiple-plain-ngselect w-100">
+                                 <ng-select [placeholder]="'select_stakeholder' | translate" [multiple]="false"
+                                    [searchable]="true" [(ngModel)]="selectedStakeHolder"
+                                    [ngModelOptions]="{standalone: true}" (search)="searchStakeHolder($event)"
+                                    (clear)="getStakeHolder()" (open)="getStakeHolder()">
+                                    <ng-option [value]="itemStake.id"
+                                       *ngFor="let itemStake of StakeholdersStore.stakeholders">
+                                       {{itemStake.title}}
+                                    </ng-option>
+                                 </ng-select>
+                              </div>
+                              <button class="btn multi-add-user ml-2" style="width: 46px;"
+                                 *ngIf="AuthStore.getActivityPermission(100,'CREATE_STAKEHOLDER')"
+                                 (click)="addStakeholder()"><i class="fas fa-plus"></i></button>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+                  <div class="row">
+                     <div class="col-sm-12">
+                        <div class="form-group select-full-width-plus">
+                           <label for="name">{{'need_and_expectations' | translate}}</label>
+                           <div class="clearfix d-flex">
+                              <div class="multiple-plain-ngselect w-100">
+                                 <ng-select [placeholder]="'select_need_and_expectation' | translate"
+                                    [items]="NeedsExpectationsStore.needsAndExpecations" [multiple]="false"
+                                    bindLabel="title" bindValue="id" [(ngModel)]="needsAndExpectation"
+                                    [ngModelOptions]="{standalone: true}" (search)="searchNeedsAndExpectations($event)"
+                                    (clear)="getNeedsAndExpectations()" (open)="getNeedsAndExpectations()">
+                                    <!-- <ng-option [value]="itemNeed.id" *ngFor="let itemNeed of NeedsExpectationsStore.needsAndExpecations">
+                                        {{ itemNeed.title.length > 100 ? (itemNeed.title | slice: 0:100) + ' ...' : itemNeed.title }}
+                                     </ng-option> -->
+                                    <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                       {{item?.title?.length > 100 ? item?.title?.substring(0,100)+' ...' : item?.title}}
+                                    </ng-template>
+                                    <ng-template ng-option-tmp let-item="item" let-index="index">
+                                       {{item?.title?.length > 100 ? (item?.title | slice:0:100)+' ...' : item?.title}}
+                                    </ng-template>
+                                 </ng-select>
+                              </div>
+                              <button class="btn multi-add-user ml-2" style="width: 38px;"
+                                 *ngIf="AuthStore.getActivityPermission(100,'CREATE_STAKEHOLDER_NEED_AND_EXPECTATION')"
+                                 (click)="addNeedsExpectation()"><i class="fas fa-plus"></i></button>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+                  <button [disabled]="(needsAndExpectation && selectedStakeHolder) ? false : true" type="button"
+                     data-toggle="modal" data-target="#signal-lost" class="btn  btn-new-space btn-active"
+                     (click)="addNeedsExpectations()">{{'add' | translate}}</button>
+                  <!-- panel-drop-sections starts -->
+                  <div class="row">
+                     <div class="col-sm-12">
+                        <div class="widget-body-light right-block">
+                           <div class="row">
+                              <div class="col-sm-12">
+                                 <div class="panel-group panel-drop-sections" id="jd" role="tablist"
+                                    aria-multiselectable="true">
+                                    <ng-container
+                                       *ngFor="let ne of IssueListStore.selectedNeedsExpectations; let n = index">
+                                       <div class="panel panel-default" *ngIf="ne?.needs_title?.length > 0">
+                                          <div
+                                             [ngClass]="ne.active ? 'panel-heading active pointer' : 'panel-heading pointer'"
+                                             role="tab" id="headingOne">
+                                             <div class="panel-title">
+                                                <a role="button" data-toggle="collapse" aria-expanded="false"
+                                                   aria-controls="collapseOne" class="collapsed"
+                                                   (click)="showhideNeedsExpectations(n)">
+                                                   <h5 class="width96pc mt-0"> <span
+                                                         class="employ-width">{{ne.stakeholder_title}} </span> <span
+                                                         class="risk-type-bx risk-type-bx-drop"
+                                                         [ngStyle]="{color: ne.active ? 'black' : ''}"><i
+                                                            class="relative" style="top: -1px;"><img
+                                                               src="/assets/images/risk-type-icon-two.png"> </i>
+                                                         {{ne.type
+                                                         | titlecase}}</span><span class="drop-down-icone"><i
+                                                            [ngClass]="ne.active ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i></span>
+                                                   </h5>
+                                                </a>
+                                             </div>
+                                          </div>
+                                          <div
+                                             [ngClass]="ne.active?'panel-collapse collapse show':'panel-collapse collapse' "
+                                             role="tabpanel" aria-labelledby="headingOne" data-parent="#ceo111">
+                                             <div class="panel-body">
+                                                <div class="drop-detail-sec">
+                                                   <ul class="banking-issue">
+                                                      <li class="clearfix" *ngFor="let e of ne.needs_title"><a>{{e}}</a>
+                                                         <Button type="button" (click)="removeNeedsAndExpectation(e,n)"
+                                                            class="btn btn-small float-right btn-small-delete"
+                                                            style="border: none;"><i class="fas fa-trash"></i></Button>
+                                                      </li>
+                                                   </ul>
+                                                </div>
+                                             </div>
+                                          </div>
+                                       </div>
+                                    </ng-container>
+
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+
+                     </div>
+                  </div><!-- panel-drop-sections end -->
+                  <p class="form-error pt-1" *ngIf="formErrors && formErrors.stakeholders">{{formErrors.stakeholders}}
+                  </p>
+
+               </div><!-- tab end -->
+               <div class="tab">
+                  <!-- tab start -->
+                  <div class="widget-body-light issuue-new-style">
+
+
+
+                     <div class="row">
+
+                        <div class="col-sm-12 col-lg-6">
+
+                           <div class="left-box-issue-details">
+                              <div class="issue-top-sec">
+                                 <h5 class="d-inline-block ml-2 cmn-head-style"><span class="issue-smoal-head-text"
+                                       *ngIf="IssueListStore.selectedIssueData?.reference_code">#{{IssueListStore.selectedIssueData?.reference_code}}</span><span
+                                       class="issue-smoal-head-text"
+                                       *ngIf="!IssueListStore.selectedIssueData?.reference_code">#XXXXXXXX</span>
+                                    {{displayForm?.issue_id?.title ? displayForm?.issue_id?.title :
+                                       displayForm?.title}}</h5>
+
+                                 <!-- <a class="draft-tag drft-box-new"> Draft</a><span class="risk-type-bx issue-smoal-head-text-two " *ngFor = "let dit of displayForm?.issue_type_ids"><i><img src="/assets/images/risk-type-icon.png"> </i> {{dit.title}}</span><span class="risk-type-bx issue-smoal-head-text-two " *ngIf = "!displayForm?.issue_type_ids"><i><img src="/assets/images/risk-type-icon.png"> </i> {{AppStore.noContentText}}</span> -->
+                                 <div class="in-ex-style-two d-inline-block ml-2">
+                                    <span class="risk-type-bx issue-smoal-head-text-two "
+                                       *ngFor="let dit of displayForm?.issue_type_ids"><i><img
+                                             src="/assets/images/risk-type-icon.png"> </i> {{dit.title}}</span>
+                                    <!-- <span class="risk-type-bx issue-smoal-head-text-two "><i><img  src="images/risk-type-icon-two.png"> </i> External</span> -->
+                                    <!-- <span class="draft-tag label-tag-style-tag label-left-arow-tag" style="line-height: 16px; vertical-align: middle; margin-top: -5px; display: inline-block;"> Draft</span> -->
+                                 </div>
+                              </div>
+
+                              <div class="clearfix"></div>
+                              <div class="mb-2 mt-2"
+                                 *ngIf="OrganizationGeneralSettingsStore.organizationSettings?.is_ms_type"> <label
+                                    *ngFor="let dm of displayForm?.ms_type_organization_ids"
+                                    class="outline-tag">{{dm.ms_type_title}}<span *ngIf="dm.ms_type_version_title">{{'V '+dm.ms_type_version_title}}</span></label>
+                              </div>
+                              <p style="white-space: pre-line;">{{displayForm?.description}}</p>
+
+
+                              <div>
+                                 <h6>{{'issue_categories' | translate}}</h6>
+                                 <p>{{getArrayFormatedString(displayForm?.issue_category_ids)}}</p>
+                                 <!-- <p *ngIf = "!displayForm?.issue_category_ids">{{AppStore.noContentText}}</p> -->
+
+                                 <h6>{{'issue_domains' | translate}}</h6>
+                                 <p>{{getArrayFormatedString(displayForm?.issue_domain_ids)}}</p>
+                                 <!-- <p *ngIf = "!displayForm?.issue_domain_ids">{{AppStore.noContentText}}</p> -->
+
+                                 <h6 *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_subsidiary">{{
+                                    'subsidiaries' | translate }}</h6>
+                                 <p *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_subsidiary">
+                                    {{getArrayFormatedString(displayForm?.organization_ids)}}</p>
+                                 <!-- <p *ngIf = "!displayForm?.organization_ids">{{AppStore.noContentText}}</p> -->
+
+                                 <h6 *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_branch">
+                                    {{'branches' | translate}}</h6>
+                                 <p *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_branch">
+                                    {{getArrayFormatedString(displayForm?.branch_ids)}}</p>
+
+                                 <h6 *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_division">
+                                    {{'divisions' | translate}}</h6>
+                                 <p *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_division">
+                                    {{getArrayFormatedString(displayForm?.division_ids)}}</p>
+                                 <!-- <p *ngIf = "!displayForm?.division_ids">{{AppStore.noContentText}}</p> -->
+
+                                 <h6 *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_department">
+                                    {{'departments' | translate}}</h6>
+                                 <p *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_department">
+                                    {{getArrayFormatedString(displayForm?.department_ids)}}</p>
+                                 <!-- <p *ngIf = "!displayForm?.department_ids">{{AppStore.noContentText}}</p> -->
+
+                                 <h6 *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_section">
+                                    {{'sections' | translate}}</h6>
+                                 <p *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_section">
+                                    {{getArrayFormatedString(displayForm?.section_ids)}}</p>
+                                 <!-- <p *ngIf = "!displayForm?.section_ids">{{AppStore.noContentText}}</p> -->
+
+                                 <h6 *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_sub_section">
+                                    {{'sub_sections' | translate}}</h6>
+                                 <p *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_sub_section">
+                                    {{getArrayFormatedString(displayForm?.sub_section_ids)}}</p>
+                                 <!-- <p *ngIf = "!displayForm?.sub_section_ids">{{AppStore.noContentText}}</p> -->
+                              </div>
+
+
+
+                              <!-- <hr class="mt-4"> -->
+
+
+
+                           </div>
+
+                        </div>
+
+                        <div class="col-sm-12 col-lg-6">
+                           <div class="right-box-issue-details">
+                              <h5 class="cmn-head-style">{{'stakeholder_needs_expecations' | translate}}</h5>
+                              <!-- panel-drop-sections starts -->
+                              <div class="row">
+                                 <div class="col-sm-12">
+                                    <div class="widget-body-light right-block">
+                                       <div class="row">
+                                          <div class="col-sm-12">
+                                             <div class="panel-group panel-drop-sections" id="jd" role="tablist"
+                                                aria-multiselectable="true">
+                                                <div class="panel panel-default"
+                                                   *ngFor="let de of displayForm?.stakeholders; let dn = index">
+                                                   <div [ngClass]="de.active ? 'panel-heading active' : 'panel-heading'"
+                                                      role="tab" id="headingOne">
+                                                      <div class="panel-title pointer"
+                                                         (click)="showhideNeedsExpectations(dn)">
+                                                         <a role="button" data-toggle="collapse" aria-expanded="false"
+                                                            aria-controls="collapseOne" class="collapsed">
+                                                            <h5 class="width96pc mt-0"> <span
+                                                                  class="employ-width">{{de.stakeholder_title}} </span>
+                                                               <span class="risk-type-bx risk-type-bx-drop"
+                                                                  [ngStyle]="{color: de.active ? 'black' : ''}"><i
+                                                                     class="relative" style="top: -1px;"><img
+                                                                        src="/assets/images/risk-type-icon-two.png">
+                                                                  </i> {{de.type | titlecase}}</span><span
+                                                                  class="drop-down-icone"><i
+                                                                     [ngClass]="de.active ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i></span>
+                                                            </h5>
+                                                         </a>
+                                                      </div>
+                                                   </div>
+                                                   <div
+                                                      [ngClass]="de.active?'panel-collapse collapse show':'panel-collapse collapse' "
+                                                      role="tabpanel" aria-labelledby="headingOne"
+                                                      data-parent="#ceo111">
+                                                      <div class="panel-body bg-white">
+                                                         <div class="drop-detail-sec">
+                                                            <ul class="banking-issue">
+                                                               <li class="clearfix" *ngFor="let e of de.needs_title">
+                                                                  <a>{{e}}</a>
+                                                               </li>
+                                                            </ul>
+                                                         </div>
+                                                      </div>
+                                                   </div>
+                                                </div>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <div *ngIf="displayForm?.stakeholders && displayForm?.stakeholders?.length == 0">
+                                          <app-context-no-data [sourceData]="getNoDataSource('center')">
+                                          </app-context-no-data>
+                                       </div>
+                                       <!-- <p *ngIf = "displayForm?.stakeholders && displayForm?.stakeholders.length == 0">{{AppStore?.noContentText}}</p> -->
+                                    </div>
+
+                                 </div>
+                              </div><!-- panel-drop-sections end -->
+                              <!------Process -->
+                              <div class="row">
+                                 <div class="col-sm-12">
+                                    <div class="right-box-issue-details">
+                                       <h5 class="cmn-head-style">{{'processes' | translate}}</h5>
+
+                                       <!-- panel-drop-sections starts -->
+                                       <div class="row">
+                                          <div class="col-sm-12">
+                                             <div class="widget-body-light right-block">
+                                                <div class="row" *ngIf="ProcessesStore?.processesToDisplay?.length != 0">
+                                                   <div class="col-sm-12">
+                                                      <div class="panel-group panel-drop-sections pt-0" id="jd"
+                                                         role="tablist" aria-multiselectable="true">
+                                                         <div class="panel panel-default"
+                                                            *ngFor="let pr of ProcessesStore.processesToDisplay; let p = index">
+                                                            <div class="panel-heading" role="tab" [attr.id]="p">
+                                                               <div class="panel-title pointer">
+                                                                  <a role="button" data-toggle="collapse"
+                                                                     (click)="openProcess(p)" [attr.href]="'#ceopr'+p"
+                                                                     aria-expanded="false" aria-controls="collapseOne"
+                                                                     class="collapsed">
+                                                                     <h5 class="width96pc mt-0">
+                                                                        {{pr.process_group}}<span
+                                                                           class="drop-down-icone"><i
+                                                                              [ngClass]="selectedProcessIndex == p ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i></span>
+                                                                     </h5>
+                                                                  </a>
+                                                               </div>
+                                                            </div>
+                                                            <div [attr.id]="'ceopr'+p"
+                                                               class="drop-detail-sec panel-collapse collapse"
+                                                               role="tabpanel" [attr.aria-labelledby]="p"
+                                                               [attr.data-parent]="'#ceopr'+p">
+                                                               <div class="panel-body bg-white">
+                                                                  <div class="drop-detail-sec">
+                                                                     <ul class="banking-issue">
+                                                                        <li class="clearfix"
+                                                                           *ngFor="let list of pr.values">
+                                                                           <a>{{list.title}}</a>
+                                                                        </li>
+                                                                     </ul>
+                                                                  </div>
+                                                               </div>
+                                                            </div>
+                                                         </div>
+                                                      </div>
+                                                   </div>
+                                                </div>
+                                             </div>
+
+                                          </div>
+                                       </div><!-- panel-drop-sections end -->
+                                       <p *ngIf="ProcessesStore?.processesToDisplay?.length == 0">
+                                          {{AppStore?.noContentText}}</p>
+
+                                    </div>
+                                 </div>
+                              </div>
+
+                              <!----------------->
+                              <div class="bg-white">
+                                 <h5 class="cmn-head-style">{{'responsible_user' | translate}}</h5>
+                                 <ul class="arci-user-tab-dtl workflow-lst-pics-loop clearfix">
+                                    <li class="rounde-hov-bg"
+                                       *ngFor="let du of displayForm?.issue_user_ids; let i = index">
+                                       <app-user-popup-box [source]="getPopupDetails(du)" [showName]="false"
+                                          [activateButtons]="false"></app-user-popup-box>
+
+                                    </li>
+                                 </ul>
+                                 <div *ngIf="!displayForm?.issue_user_ids || displayForm?.issue_user_ids?.length == 0">
+                                    <app-table-no-data-image></app-table-no-data-image>
+                                 </div>
+                                 <!-- <p *ngIf = "!displayForm?.issue_user_ids">{{AppStore?.noContentText}}</p> -->
+                              </div>
+
+                           </div>
+                        </div>
+
+
+
+                     </div>
+                     <div class="row">
+                        <div class="col-sm-12">
+                           <div class="d-flex flex-row user-list-sm selected">
+                              <app-user-popup-box
+                                 [source]="getPopupDetails(IssueListStore.selectedIssueData?.created_by,true)"
+                                 [showName]="true" [activateButtons]="false"></app-user-popup-box>
+                           </div>
+                        </div>
+
+                     </div>
+                  </div>
+
+
+
+
+
+               </div><!-- tab end -->
+               <div style="overflow:auto;">
+                  <div class="form-next-page-btns" style="float:left;">
+                     <button class="btn btn-active" type="button" id="nextBtn" (click)="nextPrev(1)"
+                        [disabled]="AppStore.loading || !checkFormObject()">{{getButtonText(nextButtonText)}}</button>
+                     <button class="btn" type="button" id="prevBtn" (click)="nextPrev(-1)"
+                        [disabled]="AppStore.loading">{{getButtonText(previousButtonText)}}</button>
+                     <button class="btn" type="button" (click)="cancelClicked()">{{getButtonText('cancel')}}</button>
+                  </div>
+               </div>
+
+            </form>
+         </div>
+
+         <div [ngStyle]="{'display':!showForm ? 'block' : 'none'}">
+            <app-table-loader></app-table-loader>
+         </div>
+
+
+
+      </div>
+
+
+
+
+
+
+
+   </div>
+   <!-- <div class="modal modal-style-1 popup-full-width fade" id="add-four-popup" data-keyboard="false"
+      data-backdrop="static" #issueFormModal *mobxAutorun>
+      <button type="button" class="close" data-dismiss="modal"><i class="lni-close"></i><span>esc</span></button>
+      <app-issue *ngIf = "IssueListStore.issue_form_modal"></app-issue>
+   </div> -->
+</main>
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopup data-backdrop="static" data-keyboard="false">
+   <app-delete-popup [source]="confirmationObject"></app-delete-popup>
+</div>
+<div class="modal modal-style-1 popup-full-width fade" id="add-four-popup" data-keyboard="false" data-backdrop="static"
+   #issueFormModal *mobxAutorun>
+   <button type="button" class="close" data-dismiss="modal" (click)="closeIssueModal()"><i
+         class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+   <app-issue *ngIf="IssueListStore.issue_form_modal"></app-issue>
+</div>
+<div class="modal modal-style-1 popup-full-width fade" id="add-four-popup" data-keyboard="false" data-backdrop="static"
+   #issueTypeFormModal *mobxAutorun>
+   <button type="button" class="close" data-dismiss="modal" (click)="closeIssueTypeModal()"><i
+         class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+   <app-add-issue-type *ngIf="IssueListStore.issue_type_form_modal"></app-add-issue-type>
+</div>
+<div class="modal modal-style-1 popup-full-width fade" id="add-four-popup" data-keyboard="false" data-backdrop="static"
+   #stakeholderFormModal *mobxAutorun>
+   <!-- <button type="button" class="close" data-dismiss="modal" (click) = "closeStakeholderModal()"><i class="lni-close"></i><span>esc</span></button>
+   <app-add-stakeholder *ngIf = "IssueListStore.stakeholder_form_modal"></app-add-stakeholder> -->
+   <app-stakeholder-modal *ngIf="IssueListStore.stakeholder_form_modal"></app-stakeholder-modal>
+</div>
+<div class="modal modal-style-1 popup-full-width fade" id="add-four-popup" data-keyboard="false" data-backdrop="static"
+   #issueCategoryFormModal *mobxAutorun>
+   <button type="button" class="close" data-dismiss="modal" (click)="closeIssueCategoryModal()"><i
+         class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+   <app-add-issue-category *ngIf="IssueListStore.issue_category_form_modal"></app-add-issue-category>
+</div>
+<div class="modal modal-style-1 popup-full-width fade" id="add-four-popup" data-keyboard="false" data-backdrop="static"
+   #issueDomainFormModal *mobxAutorun>
+   <button type="button" class="close" data-dismiss="modal" (click)="closeIssueDomainModal()"><i
+         class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+   <app-add-issue-domain *ngIf="IssueListStore.issue_domain_form_modal"></app-add-issue-domain>
+</div>
+<div class="modal modal-style-1 popup-full-width fade" id="process-popup" data-keyboard="false" data-backdrop="static"
+   #processFormModal *mobxAutorun>
+   <app-addprocess *ngIf="IssueListStore.processes_form_modal" [processModalTitle]="processMappingTitle">
+   </app-addprocess>
+</div>
+<div class="modal modal-style-1 popup-full-width fade" id="process-popup" data-keyboard="false" data-backdrop="static"
+   #needsExpectationsFormModal *mobxAutorun>
+   <button type="button" class="close" data-dismiss="modal" (click)="closeNeedsExpectations()"><i
+         class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+   <app-add-needs-expectation *ngIf="IssueListStore.needs_expectation_form_modal"></app-add-needs-expectation>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static"
+   #organisationChangeFormModal *mobxAutorun>
+   <app-organisation-change-modal *ngIf="openModelPopup" [source]="regForm.value"
+      (organizationChangeEvent)="closeModal($event)"></app-organisation-change-modal>
+</div>

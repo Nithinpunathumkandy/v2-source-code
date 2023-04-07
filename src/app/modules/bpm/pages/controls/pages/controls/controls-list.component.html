@@ -1,0 +1,113 @@
+
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navBar>
+  <div class="module-name-block module-name-block-space float-left">
+    <a class="dropdown module-title">{{'controls'|translate}}</a>
+  </div>
+  <app-sub-menu>-</app-sub-menu>
+  <!-- <app-sub-menu-drop-down></app-sub-menu-drop-down> -->
+  <!-- <ul class="nav nav-pills float-left d-none d-lg-block" role="tablist">
+    <li class="nav-item">
+       <a class="nav-link nav-link-show" [routerLink]="['/bpm/controls']"
+           routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"> {{'controls' | translate}} </a>
+   </ul> -->
+</nav>
+<main class="mt-3 control-list-page">
+
+  <div class="container-fluid">
+    <app-filter-menu></app-filter-menu>
+    <div class="control-program-box control-page-table-main">
+      <div class="row">
+        <div class="col-sm-12" *ngIf="ControlStore?.control_loaded && ControlStore.controlList.length > 0 && AuthStore.getActivityPermission(100,'CONTROL_LIST')">
+          <div class="full-width-table">
+          <table  class="table table-bordered ordinary-table control-page-table mb-1 table-scroll">
+            <thead>
+              
+              <tr>
+                 <th class="border-top-0" width="3%">{{'sl' | translate}}</th>
+                <th class="border-top-0 issue-list-org-tab-three pointer" width="7%" (click) = "setControlSort('ref_no')">{{'ref_no' | translate}} <img *ngIf = "ControlStore.orderItem == 'ref_no'"
+                  [attr.src]="ControlStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" class="sort-down-pics"></th>
+                <th class="border-top-0 issue-list-org-tab-three pointer" width="42%" (click) = "setControlSort('control_title')">{{'title' | translate}} <img *ngIf = "ControlStore.orderItem == 'control_title'"
+                    [attr.src]="ControlStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" class="sort-down-pics"></th>
+                <th class="border-top-0 issue-list-org-tab-three pointer" width="20%" (click) = "setControlSort('control_category')">{{'control_category' | translate}} <img *ngIf = "ControlStore.orderItem == 'control_category'"
+                      [attr.src]="ControlStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" class="sort-down-pics"></th>
+                <th class="border-top-0 issue-list-org-tab-three pointer" width="20%" (click) = "setControlSort('control_type')">{{'control_types' | translate}} <img *ngIf = "ControlStore.orderItem == 'control_type'"
+                        [attr.src]="ControlStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'" class="sort-down-pics"></th>
+                 <th class="border-top-0 text-center" width="8%">{{'status' | translate}}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *mobxAutorun>
+                <tr (click) = "AuthStore.getActivityPermission(600,'CONTROL_DETAILS') ? gotoControlDetails(row.id) : ''" class="cursor-pointer edit-and-delete-main"  *ngFor="
+                    let row of ControlStore?.controlList
+                      | paginate
+                        : {
+                            currentPage: ControlStore?.currentPage,
+                            itemsPerPage: ControlStore?.itemsPerPage,
+                            totalItems: ControlStore?.totalItems
+                          };
+                    let num = index
+                  "   >
+                  <td class="text-center" style="text-align: center;" style="padding:0.75rem">
+                    {{
+                      (ControlStore?.currentPage - 1) *
+                        ControlStore?.itemsPerPage +
+                        (num + 1)
+                    }}
+                  </td>
+                  <td style="padding:0.75rem">{{ row.reference_code }}</td>
+                  <td style="padding:0.75rem">{{ row.title?row?.title:AppStore.noContentText }}</td>
+                  <td style="padding:0.75rem">{{ (row.control_category_title && row.control_category_title.length > 50) ? row.control_category_title.substring(0,50)+'...' : !row.control_category_title ? AppStore.noContentText : row.control_category_title }}</td>
+                  <td style="padding:0.75rem">{{ (row.control_type_title && row.control_type_title.length > 50) ? row.control_type_title.substring(0,50)+'...' : !row.control_type_title ? AppStore.noContentText : row.control_type_title }}</td>
+                  <td class="text-center" style="padding:0.75rem">
+                    <div [attr.class]="'dot-div '+row.status_label">{{row.status}}</div>
+                    <div class="edit-option-show">
+                      
+                      <a [attr.title]="'edit'|translate" (click) = "getControl(row.id)"  *ngIf = "AuthStore.getActivityPermission(100,'UPDATE_CONTROL')"><i class="fas fa-pen pointer"></i></a>
+                      <a [attr.title]="'delete'|translate" (click) = "deleteConfirm(row.id,row.status)" *ngIf = "AuthStore.getActivityPermission(100,'DELETE_CONTROL')"><i class="fas fa-trash pointer"></i></a>
+                      <a [attr.title]="'activate'|translate" *ngIf="row.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(100,'ACTIVATE_CONTROL')" (click) = "activateConfirm(row.id)"><i class="fas fa-check pointer"></i></a>                 
+                      <a [attr.title]="'deactivate'|translate" *ngIf="row.status_id == AppStore.activeStatusId && AuthStore.getActivityPermission(100,'DEACTIVATE_CONTROL')" (click) = "deactivateConfirm(row.id)"><i class="fas fa-ban pointer"></i></a>
+                   </div>
+                  </td>                
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
+        </div>
+        <p class="float-right bold mb-0" *ngIf="ControlStore?.control_loaded && ControlStore.totalItems > 0">{{'total_Items' | translate}}:{{ControlStore.totalItems}}</p>
+          <div *ngIf="ControlStore.totalItems > ControlStore.itemsPerPage && ControlStore?.control_loaded" class="col-sm-12">
+            <ul class="pagination justify-content-center mt-3">
+              <div class="list">
+                <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate" (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+              </div>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <ng-container *mobxAutorun>
+      <app-no-data *ngIf = "ControlStore.control_loaded && ControlStore.controlList.length == 0"></app-no-data>
+    </ng-container>
+  </div>
+  <ng-container *mobxAutorun>
+    <div *ngIf="!ControlStore?.control_loaded">
+      <app-six-column-loader></app-six-column-loader>
+    </div>
+  </ng-container>
+</main>
+
+
+<!-- ---------------------Form Modal------------------------- -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+ 
+  <app-add-control *ngIf = "controlObject.type" [source] = "controlObject"></app-add-control>
+
+</div>
+<!--------------------- Ends Here---------------------------- -->
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp>
+  <app-delete-popup [source] = "popupObject"></app-delete-popup>
+</div>
+
+<!------------------- Delete Confirmation Modal End --------------------------->

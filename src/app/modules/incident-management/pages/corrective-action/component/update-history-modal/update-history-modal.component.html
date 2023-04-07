@@ -1,0 +1,243 @@
+<!-- <div class="modal modal-style-1 fade popup-full-width" id="risk-update-treatment-popup" data-keyboard="false"
+    data-backdrop="static" #historyPopup *mobxAutorun> -->
+    <button type="button" class="close" (click)="cancel()" ><i class="lni-close"></i><span>{{'esc' |
+            translate}}</span></button>
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4
+                    [ngClass]="IncidentCorrectiveActionStore.treatmentUpdateDataLoaded && IncidentCorrectiveActionStore.historyData.length>0?'modal-title text-center':'modal-title'">
+                    {{'corrective_action_update_history' | translate}}</h4>
+            </div>
+
+            <div class="modal-body form-body">
+
+                <div class="row">
+                    <div class="col-sm-12"
+                        *ngIf="IncidentCorrectiveActionStore.treatmentUpdateDataLoaded && IncidentCorrectiveActionStore.historyData.length>0">
+                        <div class="cmn-bdr risk-treatment-update-history mb-3"
+                            *ngFor="let history of IncidentCorrectiveActionStore.historyData| paginate: {id:'history',currentPage:IncidentCorrectiveActionStore?.historyCurrentPage, itemsPerPage:IncidentCorrectiveActionStore?.historyItemsPerPage,totalItems:IncidentCorrectiveActionStore?.historyTotalItems};let num = index">
+                            <div class="row mb-3 align-items-center">
+                                <div class="col-lg-6 col-sm-6 col-6">
+                                    <div class="d-flex flex-row user-list-sm p-0">
+                                        <img [attr.src]="history.created_by_image_token?createImageUrl('user',history.created_by_image_token):getDefaultImage('user-logo')"
+                                            class="rounded-circle" width="40px" height="40px">
+                                        <div>
+                                            <h6>{{history.created_by_first_name}} {{history.created_by_last_name}}</h6>
+                                            <span>{{history.created_by_designation}} | Updated at
+                                                {{history.created_at|date:OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 col-sm-6 col-6 text-right">
+                                    <div [ngClass]="history.label?'dot-div '+history.label+'-dot':'dot-div green-dot'">
+                                        {{history.incident_corrective_action_status_title}}
+                                    </div>
+                                    <!-- <p class="dot-color-p mb-0 d-inline-block"><span
+                                            [ngClass]="history.label?'dot-div '+history.label+'-dot':'dot-div green-dot'"></span>{{history.incident_corrective_action_status_title}}
+                                    </p> -->
+                                    <h6 class="d-inline-block text-light-blue bold mb-0 cmn-head-style ml-3">
+                                        {{history.percentage?history.percentage:0}}%</h6>
+                                </div>
+                                <!-- <div class="col-lg-3 col-sm-12"
+                                    *ngIf="RiskManagementSettingStore.loaded && RiskManagementSettingStore.riskManagementSettings.is_budget">
+                                    <h3 class="price-text-cmn mb-0">
+                                        {{OrganizationGeneralSettingsStore?.organizationSettings?.currency}}
+                                        {{history.amount_used?history.amount_used:0}}</h3>
+                                </div> -->
+                            </div>
+
+                            <!-- <div class="row">
+                                <div class="col-lg-6 col-sm-12">
+                                    <h6>{{'actual_start_date'|translate}}</h6>
+                                    <p *ngIf="history.actual_start_date">{{history.actual_start_date|date:OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</p>
+                                    <p *ngIf="!history.actual_start_date">{{AppStore.noContentText}}</p>
+                                
+                                </div>
+                                <div class="col-lg-6 col-sm-12">
+                                    <h6>{{'revised_due_date'|translate}}</h6>
+                                    <p *ngIf="history.revised_target_date">{{history.revised_target_date|date:OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</p>
+                                    <p *ngIf="!history.revised_target_date">{{AppStore.noContentText}}</p>
+                             
+                                </div>
+                            </div> -->
+
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <p>{{history.comment?history.comment:''}}</p>
+                                </div>
+                            </div>
+                            <div class="row" *ngIf="history.documents.length>0">
+                                <div class="col-sm-12">
+                                    <h6>{{'attachments' | translate}}</h6>
+                                    <div class="thumb-pics-bg thumb-pics-col-3 clearfix">
+                                        <div [ngClass]="AuthStore.getActivityPermission(1900,'PREVIEW_INCIDENT_CORRECTIVE_ACTION_UPDATE_DOCUMENT_FILE') ? 'thumb-pics pointer' : 'thumb-pics'" *ngFor="let document of history.documents">
+                                            <div class="upload-pics upload-pics-small edit-option">
+                                                <div class="browse-form-pic"
+                                                    [ngStyle]="{'background': 'url(' + createImageUrl('document',document.token) + '), url(' + getDefaultImage('no-preview') + ') no-repeat 0 0 / cover'}"
+                                                    (click)="AuthStore.getActivityPermission(1900,'PREVIEW_INCIDENT_CORRECTIVE_ACTION_UPDATE_DOCUMENT_FILE') ? viewDocument(document,history.id) : ''">
+                                                </div>
+                                                <div class="browse-form-name clearfix">
+                                                    <div class="float-left">
+                                                        <h6
+                                                            [attr.title]="document.title.length > 10 ? document.title:''">
+                                                            {{document.title.length > 10 ?
+                                                            document.title.substring(0,10)+' ...': document.title}}
+                                                        </h6>
+                                                        <span>{{document.size/1048576 | number:'0.2-2'}}MB</span>
+                                                    </div>
+                                                    <div class="browse-logo">
+                                                        <img *ngIf="checkExtension(document.ext,'image') != -1"
+                                                            src="/assets/images/md-jpg.png">
+                                                        <img *ngIf="checkExtension(document.ext,'doc') != -1"
+                                                            src="/assets/images/md-doc.png">
+                                                        <img *ngIf="checkExtension(document.ext,'pdf') != -1"
+                                                            src="/assets/images/pdf-icone.png">
+                                                        <img *ngIf="checkExtension(document.ext,'excel') != -1"
+                                                            src="/assets/images/md-xl.png">
+                                                        <img *ngIf="checkExtension(document.ext,'video') != -1"
+                                                            src="/assets/images/md-video.png">
+                                                        <img *ngIf="checkExtension(document.ext,'audio') != -1"
+                                                            src="/assets/images/md-audio.png">
+                                                        <img *ngIf="checkExtension(document.ext,'ppt') != -1"
+                                                            src="/assets/images/md-ppt.png">
+
+                                                    </div>
+                                                </div>
+                                                <div class="edit-option-show-inner">
+                                                    <a [attr.title]="'download'|translate"
+                                                        (click)="AuthStore.getActivityPermission(1900,'DOWNLOAD_INCIDENT_CORRECTIVE_ACTION_UPDATE_DOCUMENT_FILE') ? downloadDocument(document.incident_corrective_action_update_id,document.title,document.id,document) : ''"><i
+                                                            class="fas fa-download"></i></a>
+                                                </div>
+                                            </div>
+                                        </div>
+
+
+
+
+
+                                        <!-- <div class="col-xl-2" *ngFor="let document of row.jd?.documents">
+                        <div class="upload-pics upload-pics-small edit-option">
+                          <div class="browse-form-pic"
+                            [ngStyle]="{'background': 'url(' + createImagePreview('user-jobs',document.token) + '), url(' + getDefaultImage('no-preview') + ') no-repeat 0 0 / cover'}"
+                            (click)="viewDocument(document)">
+                          </div>
+                          <div class="browse-form-name clearfix">
+                            <div class="float-left">
+                              <h6 [attr.title]="document.title.length > 10 ? document.title:''">
+                                {{document.title.length > 10 ? document.title.substring(0,10)+' ...': document.title}}
+                              </h6>
+                              <span>{{document.size/1048576 | number:'0.2-2'}}MB</span>
+                            </div>
+                            <div class="browse-logo">
+
+                              <img *ngIf="checkExtension(document.ext,'image') != -1" src="/assets/images/md-jpg.png">
+                              <img *ngIf="checkExtension(document.ext,'doc') != -1" src="/assets/images/md-doc.png">
+                              <img *ngIf="checkExtension(document.ext,'pdf') != -1" src="/assets/images/pdf-icone.png">
+                              <img *ngIf="checkExtension(document.ext,'excel') != -1" src="/assets/images/md-xl.png">
+                              <img *ngIf="checkExtension(document.ext,'video') != -1" src="/assets/images/md-video.png">
+                              <img *ngIf="checkExtension(document.ext,'audio') != -1" src="/assets/images/md-audio.png">
+                              <img *ngIf="checkExtension(document.ext,'ppt') != -1" src="/assets/images/md-ppt.png">
+
+                            </div>
+                          </div>
+                          <div class="edit-option-show-inner">
+                            <a class="pointer" [attr.title]="'download'|translate"><i class="fas fa-download"
+                                (click)="downloadDocument(document.jd_id,document.title,document.id,document)"></i></a>
+
+                          </div>
+                        </div>
+                      </div> -->
+
+                                    </div>
+                                    <!-- <div class="thumb-pics-bg thumb-pics-col-3 clearfix">
+                                       <div class="thumb-pics">
+                                          <div class="upload-pics upload-pics-small edit-option">
+                                             <div class="browse-form-pic" style="background: url(images/mba.jpg) no-repeat;">
+                                             </div>
+                                              <div class="browse-form-name clearfix">
+                                               <div class="float-left">
+                                                <h6>Certificate.png</h6>
+                                                <span>96KB</span>
+                                               </div>
+                                               <div class="browse-logo">
+                                                 <img src="images/md-xl.png">
+                                               </div>
+                                              </div>
+                                              <div class="edit-option-show-inner">
+                                               <a href="#"><i class="fas fa-download"></i></a>
+                                             </div>
+                                           </div>
+                                        </div>
+                                       <div class="thumb-pics">
+                                          <div class="upload-pics upload-pics-small edit-option">
+                                             <div class="browse-form-pic" style="background: url(images/mba.jpg) no-repeat;">
+                                             </div>
+                                              <div class="browse-form-name clearfix">
+                                               <div class="float-left">
+                                                <h6>Certificate.png</h6>
+                                                <span>96KB</span>
+                                               </div>
+                                               <div class="browse-logo">
+                                                 <img src="images/md-xl.png">
+                                               </div>
+                                              </div>
+                                              <div class="edit-option-show-inner">
+                                               <a href="#"><i class="fas fa-download"></i></a>
+                                             </div>
+                                           </div>
+                                        </div>
+                                       </div> -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- <div class="col-sm-12" *ngIf="RisksStore?.totalItems>RisksStore?.itemsPerPage"> -->
+                        <ul class="pagination justify-content-center mt-3"
+                            *ngIf="IncidentCorrectiveActionStore?.historyTotalItems>IncidentCorrectiveActionStore?.historyItemsPerPage">
+                            <!-- <pagination-controls (pageChange)="historyPageChange($event)" class="my-pagination"
+                                id="history"></pagination-controls> -->
+                        </ul>
+
+                        <!-- </div> -->
+                    </div>
+                    <div class="col-sm-12"
+                        *ngIf="IncidentCorrectiveActionStore.treatmentUpdateDataLoaded && IncidentCorrectiveActionStore.historyData.length==0">
+                        <app-no-data-list [source]="historyEmptyList" [border]=false>
+
+                        </app-no-data-list>
+                    </div>
+                </div>
+
+                
+
+
+
+
+
+
+
+
+
+                <!-- <div class="row">
+                        <div class="col-sm-12">
+                            <div class="d-block justify-content-left border-0 mt-3">
+                                <button type="button" data-toggle="modal" data-target="#signal-lost" class="btn ordinary-btn mr-3 btn-active">Save</button>
+                                <button type="button" data-toggle="modal" data-target="#signal-lost" class="btn ordinary-btn mr-3">Save & Close</button>
+                                <button type="button" data-toggle="modal" data-target="#error-message" class="btn ordinary-btn mr-2">Cancel</button>
+                            </div>
+                        </div>
+                    </div> -->
+            </div>
+
+        </div>
+    </div>
+<!-- </div> -->
+
+<div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup" data-keyboard="false"
+    data-backdrop="static" #filePreviewModal *mobxAutorun>
+    <button type="button" class="close"  (click)="closePreviewModal($event)"><i
+            class="lni-close"></i><span>esc</span></button>
+    <app-incident-preview-modal *ngIf="previewObject" [source]="previewObject" (close)="closePreviewModal($event)">
+    </app-incident-preview-modal>
+</div>

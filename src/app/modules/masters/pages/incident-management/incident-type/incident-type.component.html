@@ -1,0 +1,82 @@
+<div class="widget bg-white">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item pointer" [routerLink]="['/masters/incident-management']"><a>{{'incident_management' | translate}}</a></li>
+            <li class="breadcrumb-item active">{{'incident_type' | translate}}</li>
+        </ol>
+    </nav>
+
+    <table class="table-master table" *ngIf="IncidentTypeMasterStore?.loaded && IncidentTypeMasterStore.allItems.length > 0">
+
+
+        <tr>
+            <th style="width: 10%; text-align: center;">{{'sl' | translate}}</th>
+            <th (click)="sortTitle('incident_types.title')" class="border-top-0 issue-list-org-tab-three pointer" style="width: 30%;"><span>{{'incident_type' | translate}}</span>
+                <img _ngcontent-twv-c17="" *ngIf="IncidentTypeMasterStore.orderItem=='incident_types.title'" class="sort-down-pics pl-2" 
+                [attr.src]="IncidentTypeMasterStore.orderBy=='desc' ? 
+                'assets/images/sort-up.png' : IncidentTypeMasterStore.orderBy=='asc' ? 
+                'assets/images/sort-down.png' : 'assets/images/sort-empty.png'">
+
+
+            </th>
+
+            <th>{{'description' | translate}}</th>
+            <th style="width: 15%;">{{'status' | translate}}</th>
+        </tr>
+        <ng-container *mobxAutorun>
+
+
+
+            <tr class="edit-and-delete-main"
+                *ngFor="let row of IncidentTypeMasterStore.allItems| paginate: {currentPage:IncidentTypeMasterStore.currentPage, itemsPerPage:IncidentTypeMasterStore.itemsPerPage,totalItems:IncidentTypeMasterStore.totalItems};let num=index ">
+                <td style="text-align: center;">{{(IncidentTypeMasterStore.currentPage - 1) * IncidentTypeMasterStore.itemsPerPage + (num + 1)}}</td>
+                <td><a (click)=" getIncidentTypes(row.id)" [ngStyle] = "{ 'pointer-events' : AuthStore.getActivityPermission(1100,'UPDATE_INCIDENT_TYPE') ? '' : 'none'}" >{{row.title}}</a></td>
+                <td>{{row.description}}</td>
+                <td style="padding:0.75rem;" >
+                    <div [attr.class]="'dot-div '+row.status_label">{{row.status}}</div>
+                    <div class="edit-option-show">
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'UPDATE_INCIDENT_TYPE')" (click)=" getIncidentTypes(row.id)" [attr.title]="'edit' | translate" ><i class="fas fa-pen pointer"></i></a>
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'DELETE_INCIDENT_TYPE')" (click)="delete(row.id)" [attr.title]="'delete' | translate"><i class="fas fa-trash pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(1100,'ACTIVATE_INCIDENT_TYPE')" (click)="activate(row.id)" [attr.title]="'activate' | translate"><i
+                                class="fas fa-check pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.activeStatusId && AuthStore.getActivityPermission(1100,'DEACTIVATE_INCIDENT_TYPE')" (click)="deactivate(row.id)" [attr.title]="'deactivate' | translate"><i
+                                class="fas fa-ban pointer"></i></a>
+                    </div>
+                </td>
+
+            </tr>
+        </ng-container>
+    </table>
+    <p class="float-right" *ngIf="IncidentTypeMasterStore?.loaded && IncidentTypeMasterStore.totalItems > 0"><b>{{'total_Items' | translate}}:{{IncidentTypeMasterStore?.totalItems}}</b></p>
+
+    <ng-container *mobxAutorun>
+        <div *ngIf="!IncidentTypeMasterStore.loaded">
+            <app-table-loader></app-table-loader>
+        </div>
+       
+
+
+        <app-no-data *ngIf = "IncidentTypeMasterStore.totalItems == 0 && IncidentTypeMasterStore.loaded == true"></app-no-data>
+    </ng-container>
+
+    <div *ngIf="IncidentTypeMasterStore.totalItems>IncidentTypeMasterStore.itemsPerPage" class="col-sm-12">
+        <ul class="pagination justify-content-center mt-3">
+            <div class="list">
+                <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate" (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls> 
+            </div>
+        </ul>
+    </div>
+</div>
+
+<!-- Modal part -->
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+    <app-incident-type-modal *ngIf="incidentTypesObject.type" [source]="incidentTypesObject">
+    </app-incident-type-modal>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>

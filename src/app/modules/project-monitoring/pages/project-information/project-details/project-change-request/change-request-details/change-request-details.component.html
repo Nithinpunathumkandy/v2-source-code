@@ -1,0 +1,697 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navBar>
+   <app-breadcrumb-menu></app-breadcrumb-menu>
+   <app-sub-menu></app-sub-menu>
+   <ul class="nav nav-pills float-left d-none d-lg-block" role="tablist">
+      <li class="nav-item">
+         <a class="nav-link nav-link-show"
+            [routerLink]="['/project-monitoring/projects/'+ProjectMonitoringStore.selectedProjectId+'/project-change-request/'+ProjectChangeRequestStore.selectedId]"
+            routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Change Request</a>
+      </li>
+
+   </ul>
+</nav>
+<app-change-request-details-loaer
+   *ngIf="!ProjectChangeRequestStore.individualLoaded"></app-change-request-details-loaer>
+
+<main class="audit-program-details-page mt-3">
+   <div class="container-fluid">
+      <div class="row" *ngIf="ProjectChangeRequestStore.individualLoaded">
+         <div class="col-sm-12">
+            <div class="widget">
+
+               <div class="bg-white widg-padding-cmn">
+                  <div class="min-height-64">
+
+                     <div class="issue-top-sec">
+                        <div class="clearfix">                                                                     
+                           <h5 class="d-inline-block cmn-head-style label-tag-style mr-2">
+                              <span class="issue-smoal-head-text">#{{ProjectChangeRequestStore.individualChangeRequestItem?.reference_code}}</span>{{ProjectChangeRequestStore.individualChangeRequestItem?.project?.title}}
+                              <span [ngClass]="'draft-tag label-tag-style-tag label-left-arow-tag d-inline-block status-tag-new-one ml-3 draft-tag-'+labelDot(ProjectChangeRequestStore.individualChangeRequestItem?.project_change_request_status?.label)">
+                              {{ProjectChangeRequestStore.individualChangeRequestItem?.project_change_request_status?.language[0].pivot?.title}}</span>
+                          </h5>
+                        </div>
+                        <div class="clearfix">
+                           <p class="label-tag-style"><i class="fas fa-calendar-alt date-pics-two"></i>
+                              {{ProjectChangeRequestStore.individualChangeRequestItem?.project?.start_date | date:
+                              OrganizationGeneralSettingsStore.organizationSettings?.date_format}} To
+                              {{ProjectChangeRequestStore.individualChangeRequestItem?.project?.target_date | date:
+                              OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</p>
+                        </div>
+                        <p style="white-space: pre-wrap;">
+                           {{ProjectChangeRequestStore.individualChangeRequestItem?.project?.description ?
+                           ProjectChangeRequestStore.individualChangeRequestItem?.project?.description :
+                           AppStore.noContentText }} </p>
+
+                     </div>
+
+                     <!-- common-tab-md starts -->
+                     <div class="common-tab-md clearfix bg-body-color-menu tab-same-height">
+                        <div class="tab-common-left-md">
+                           <div class=" issues-tab">
+                              <!-- tab menu start -->
+                              <ul class="nav nav-tabs nav-tabs--vertical nav-tabs--left vertical-tab" role="navigation">
+                                 <li (click)="selectReqItems(i,req.id)"
+                                    *ngFor="let req of ProjectChangeRequestStore.individualChangeRequestItem?.change_request_items;let i = index"
+                                    class="nav-item"> <a
+                                       [ngClass]="selectedItemPos == i ? 'nav-link active show' : 'nav-link'"
+                                       data-toggle="tab" role="tab" aria-controls="lorem"
+                                       aria-selected="false">{{req.language[0]?.pivot?.title}} </a>
+                                 </li>
+
+                              </ul>
+                           </div>
+                           <!-- tab menu end -->
+                        </div>
+
+
+                        <div class="tab-common-left-content-m bg-white cmn-bdr widg-padding-cmn-small min-height-64">
+                           <div class="tab-content"
+                              *ngIf="ProjectChangeRequestStore.individualChangeRequestItem?.change_request_items.length > 0">
+                              <div
+                                 *ngFor="let req of ProjectChangeRequestStore.individualChangeRequestItem?.change_request_items;let i = index"
+                                 [ngClass]="selectedItemPos == i ? 'tab-pane fade active show' : 'tab-pane fade'"
+                                 id="tab-one" role="tabpanel">
+                                 <div class="edit-option" *ngIf="req?.type=='duration' ">
+                                    <!-- <div class="edit-option-show" style="margin: 20px -15px 0 0;"> -->
+                                    <!-- edit-and-delete starts -->
+                                    <!-- <a href="#"><i class="fas fa-pen"></i></a> -->
+                                    <!-- </div> -->
+                                    <!-- edit-and-delete starts -->
+                                    <div class="row">
+                                       <div class="col-lg-5 col-sm-12">
+                                          <h6>Existing Date</h6>
+                                          <hr class="mt-0">
+                                          <div class="row sm-row">
+                                             <div class="col-sm-6 sm-col">
+                                                <h6>{{'start_date' | translate}}</h6>
+                                                <p>{{ProjectMonitoringStore.individualDetails?.start_date | date:
+                                                   OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                </p>
+                                             </div>
+                                             <div class="col-sm-6 sm-col">
+                                                <h6>{{'end_date' | translate}}</h6>
+                                                <p>{{ProjectMonitoringStore.individualDetails?.target_date | date:
+                                                   OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                </p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                       <div class="col-lg-7 col-sm-12">
+                                          <h6>New Date</h6>
+                                          <hr class="mt-0">
+                                          <div class="row sm-row">
+                                             <div class="col-sm-6 sm-col">
+                                                <h6>{{'start_date' | translate}} <span
+                                                      [ngClass]="ProjectMonitoringStore.individualDetails?.start_date > ProjectChangeRequestStore.individualChangeRequestItem?.durations?.start_date ? 'text-red font-normal small-text' : 'text-green font-normal small-text'">({{selectDaysDiffrence()}}
+                                                      {{ProjectChangeRequestStore.individualChangeRequestItem?.durations?.start_date
+                                                      > ProjectMonitoringStore.individualDetails?.start_date ? 'more
+                                                      days added' : 'days shortened'}})</span></h6>
+                                                <p>{{ProjectChangeRequestStore.individualChangeRequestItem?.durations?.start_date
+                                                   | date:
+                                                   OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                </p>
+                                             </div>
+                                             <div class="col-sm-6 sm-col">
+                                                <h6>{{'end_date' | translate}} <span
+                                                      [ngClass]="ProjectMonitoringStore.individualDetails?.target_date > ProjectChangeRequestStore.individualChangeRequestItem?.durations?.end_date ? 'text-red font-normal small-text' : 'text-green font-normal small-text'">({{selectEndDaysDiffrence()}}
+                                                      {{ProjectChangeRequestStore.individualChangeRequestItem?.durations?.end_date
+                                                      > ProjectMonitoringStore.individualDetails?.target_date ? 'more
+                                                      days added' : 'days shortened'}})</span></h6>
+                                                <p>{{ProjectChangeRequestStore.individualChangeRequestItem?.durations?.end_date
+                                                   | date:
+                                                   OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                </p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                    </div>
+
+                                    <h6>{{'justification' | translate}}</h6>
+                                    <p style="white-space: pre-wrap;">
+                                       {{ProjectChangeRequestStore.individualChangeRequestItem?.durations?.justification
+                                       ? ProjectChangeRequestStore.individualChangeRequestItem?.durations?.justification
+                                       : AppStore.noContentText}} </p>
+
+                                 </div>
+
+                                 <div class="edit-option" *ngIf="req?.type=='teams'">
+
+                                    <div class="row">
+                                       <div class="col-lg-6 col-sm-12 bdr-right-pc-sm-none">
+
+                                          <h6>Existing Team</h6>
+                                          <hr class="mt-0">
+
+                                          <h6>Project Managers</h6>
+
+                                          <div class="row sm-row mb-2">
+                                             <div class="col-lg-6 col-sm-6 sm-col">
+                                                <div
+                                                   class="d-flex align-items-center name-and-position name-and-position-bdr cmn-bdr text-left relative">
+                                                   <img
+                                                      *ngIf="
+                                                                        ProjectChangeRequestStore.individualChangeRequestItem?.project_manager?.user?.image_token"
+                                                      data-toggle="modal" data-target="#user02" data-ui-class="a-zoom"
+                                                      [attr.src]="
+                                                                          createImagePreview(
+                                                                            'user-profile-picture',
+                                                                            ProjectChangeRequestStore.individualChangeRequestItem?.project_manager?.user?.image_token
+                                                                          )
+                                                                        " width="30px" height="30px"
+                                                      class="rounded-circle rounde-hov details-show-popup"
+                                                      onerror="this.src='/assets/images/user-demo2.png'" />
+                                                   <img
+                                                      *ngIf="
+                                                                          !ProjectChangeRequestStore.individualChangeRequestItem?.project_manager?.user?.image_token"
+                                                      [attr.src]="getDefaultImage('user-logo')" width="30px"
+                                                      height="30px" class="rounded-circle"
+                                                      onerror="this.src='/assets/images/user-demo2.png'" />
+                                                   <div class="ml-2">
+                                                      <h6 class="elips-1 mb-1">
+                                                         {{ProjectChangeRequestStore.individualChangeRequestItem?.project_manager?.user?.first_name}}
+                                                         {{ProjectChangeRequestStore.individualChangeRequestItem?.project_manager?.user?.last_name}}
+                                                      </h6>
+                                                      <span
+                                                         class="elips-1">{{ProjectChangeRequestStore.individualChangeRequestItem?.project_manager?.user?.designation
+                                                         ?
+                                                         ProjectChangeRequestStore.individualChangeRequestItem?.project_manager?.user?.designation?.title
+                                                         : 'NA' }}</span>
+                                                   </div>
+                                                </div>
+                                             </div>
+
+                                          </div>
+
+                                          <h6>{{'assistant_managers' | translate}}</h6>
+
+                                          <div class="row sm-row mb-2">
+                                             <div [ngStyle]="{display: user.type=='new'? 'none' : 'block'}"
+                                                class="col-lg-6 col-sm-6 sm-col"
+                                                *ngFor="let user of ProjectChangeRequestStore.individualChangeRequestItem?.associate_manager">
+                                                <div *ngIf="user.type=='deleted' || user.type=='existing'"
+                                                   class="d-flex align-items-center name-and-position name-and-position-bdr cmn-bdr text-left relative">
+                                                   <span *ngIf="user.type=='deleted'"
+                                                      class="user-box-right-icon text-red"><i
+                                                         class="far fa-times-circle"></i></span>
+
+                                                   <img *ngIf="
+                                                                         user.users?.image_token" data-toggle="modal"
+                                                      data-target="#user02" data-ui-class="a-zoom" [attr.src]="
+                                                                           createImagePreview(
+                                                                             'user-profile-picture',
+                                                                             user.users?.image_token
+                                                                           )
+                                                                         " width="30px" height="30px"
+                                                      class="rounded-circle rounde-hov details-show-popup"
+                                                      onerror="this.src='/assets/images/user-demo2.png'" />
+                                                   <img *ngIf="
+                                                                           !user.users?.image_token"
+                                                      [attr.src]="getDefaultImage('user-logo')" width="30px"
+                                                      height="30px" class="rounded-circle"
+                                                      onerror="this.src='/assets/images/user-demo2.png'" />
+                                                   <div class="ml-2">
+                                                      <h6 class="elips-1 mb-1">{{user.users?.first_name}}
+                                                         {{user.users?.last_name}} </h6>
+                                                      <span class="elips-1">{{user.users?.designation ?
+                                                         user.users?.designation?.title : 'NA' }}</span>
+                                                   </div>
+                                                </div>
+                                             </div>
+
+
+                                          </div>
+
+                                          <h6>{{'project_members' | translate}}</h6>
+
+                                          <div class="row sm-row mb-2">
+                                             <div [ngStyle]="{display: user.type=='new'? 'none' : 'block'}"
+                                                class="col-lg-6 col-sm-6 sm-col"
+                                                *ngFor="let user of ProjectChangeRequestStore.individualChangeRequestItem?.members">
+                                                <div *ngIf="user.type=='deleted'||user.type=='existing'"
+                                                   class="d-flex align-items-center name-and-position name-and-position-bdr cmn-bdr text-left relative">
+                                                   <span *ngIf="user.type=='deleted'"
+                                                      class="user-box-right-icon text-red"><i
+                                                         class="far fa-times-circle"></i></span>
+
+                                                   <img *ngIf="
+                                                                            user.users?.image_token"
+                                                      data-toggle="modal" data-target="#user02" data-ui-class="a-zoom"
+                                                      [attr.src]="
+                                                                              createImagePreview(
+                                                                                'user-profile-picture',
+                                                                                user.users?.image_token
+                                                                              )
+                                                                            " width="30px" height="30px"
+                                                      class="rounded-circle rounde-hov details-show-popup"
+                                                      onerror="this.src='/assets/images/user-demo2.png'" />
+                                                   <img *ngIf="
+                                                                              !user.users?.image_token"
+                                                      [attr.src]="getDefaultImage('user-logo')" width="30px"
+                                                      height="30px" class="rounded-circle"
+                                                      onerror="this.src='/assets/images/user-demo2.png'" />
+                                                   <div class="ml-2">
+                                                      <h6 class="elips-1 mb-1">{{user.users?.first_name}}
+                                                         {{user.users?.last_name}} </h6>
+                                                      <span class="elips-1">{{user.users?.designation ?
+                                                         user.users?.designation?.title : 'NA' }}</span>
+                                                   </div>
+                                                </div>
+                                             </div>
+
+                                          </div>
+
+                                          <!-- <h6>External Users </h6>
+
+                                                                 <div class="row sm-row mb-2">
+                                                                    <div class="col-lg-6 col-sm-6 sm-col">
+                                                                       <div class="d-flex align-items-center name-and-position name-and-position-bdr cmn-bdr text-left relative">
+                                                                          <div class="w-100">
+                                                                              <h6 class="elips-1 mb-1">Manuel Henry </h6>
+                                                                              <span class="elips-1"><i class="fas fa-phone-alt"></i> 8086755288</span>
+                                                                           </div>
+                                                                      </div>
+                                                                    </div>
+                                                                    <div class="col-lg-6 col-sm-6 sm-col">
+                                                                       <div class="d-flex align-items-center name-and-position name-and-position-bdr cmn-bdr text-left relative">
+                                                                          <div class="w-100">
+                                                                              <h6 class="elips-1 mb-1">Manuel Henry </h6>
+                                                                              <span class="elips-1"><i class="fas fa-phone-alt"></i> 8086755288</span>
+                                                                           </div>
+                                                                      </div>
+                                                                    </div>
+                                                                    <div class="col-lg-6 col-sm-6 sm-col">
+                                                                       <div class="d-flex align-items-center name-and-position name-and-position-bdr cmn-bdr text-left relative">
+                                                                          <span class="user-box-right-icon text-red"><i class="far fa-times-circle"></i></span>
+                                                                          <div class="w-100">
+                                                                              <h6 class="elips-1 mb-1">Manuel Henry </h6>
+                                                                              <span class="elips-1"><i class="fas fa-phone-alt"></i> 8086755288</span>
+                                                                           </div>
+                                                                      </div>
+                                                                    </div>
+
+                                                                 </div> -->
+
+                                       </div>
+                                       <div class="col-lg-6 col-sm-12">
+                                          <h6>New Team</h6>
+                                          <hr class="mt-0">
+
+                                          <h6>Project Managers</h6>
+
+                                          <div class="row sm-row mb-2">
+                                             <div class="col-lg-6 col-sm-6 sm-col">
+                                                <div
+                                                   class="d-flex align-items-center name-and-position name-and-position-bdr cmn-bdr text-left relative">
+                                                   <img
+                                                      *ngIf="
+                                                                     ProjectChangeRequestStore.individualChangeRequestItem?.project_manager?.user?.image_token"
+                                                      data-toggle="modal" data-target="#user02" data-ui-class="a-zoom"
+                                                      [attr.src]="
+                                                                       createImagePreview(
+                                                                         'user-profile-picture',
+                                                                         ProjectChangeRequestStore.individualChangeRequestItem?.project_manager?.user?.image_token
+                                                                       )
+                                                                     " width="30px" height="30px"
+                                                      class="rounded-circle rounde-hov details-show-popup"
+                                                      onerror="this.src='/assets/images/user-demo2.png'" />
+                                                   <img
+                                                      *ngIf="
+                                                                       !ProjectChangeRequestStore.individualChangeRequestItem?.project_manager?.user?.image_token"
+                                                      [attr.src]="getDefaultImage('user-logo')" width="30px"
+                                                      height="30px" class="rounded-circle"
+                                                      onerror="this.src='/assets/images/user-demo2.png'" />
+                                                   <div class="ml-2">
+                                                      <h6 class="elips-1 mb-1">
+                                                         {{ProjectChangeRequestStore.individualChangeRequestItem?.project_manager?.user?.first_name}}
+                                                         {{ProjectChangeRequestStore.individualChangeRequestItem?.project_manager?.user?.last_name}}
+                                                      </h6>
+                                                      <span
+                                                         class="elips-1">{{ProjectChangeRequestStore.individualChangeRequestItem?.project_manager?.user?.designation
+                                                         ?
+                                                         ProjectChangeRequestStore.individualChangeRequestItem?.project_manager?.user?.designation?.title
+                                                         : 'NA' }}</span>
+                                                   </div>
+                                                </div>
+                                             </div>
+
+                                          </div>
+
+                                          <h6>{{'assistant_managers' | translate}}</h6>
+
+                                          <div class="row sm-row mb-2">
+                                             <div [ngStyle]="{display: user.type=='deleted'? 'none' : 'block'}"
+                                                class="col-lg-6 col-sm-6 sm-col"
+                                                *ngFor="let user of ProjectChangeRequestStore.individualChangeRequestItem?.associate_manager">
+                                                <div *ngIf="user.type=='new' || user.type=='existing'"
+                                                   class="d-flex align-items-center name-and-position name-and-position-bdr cmn-bdr text-left relative">
+                                                   <span *ngIf="user.type=='new'"
+                                                      class="user-box-right-icon text-green"><i
+                                                         class="fas fa-retweet"></i></span>
+
+                                                   <img *ngIf="
+                                                                         user.users?.image_token" data-toggle="modal"
+                                                      data-target="#user02" data-ui-class="a-zoom" [attr.src]="
+                                                                           createImagePreview(
+                                                                             'user-profile-picture',
+                                                                             user.users?.image_token
+                                                                           )
+                                                                         " width="30px" height="30px"
+                                                      class="rounded-circle rounde-hov details-show-popup"
+                                                      onerror="this.src='/assets/images/user-demo2.png'" />
+                                                   <img *ngIf="
+                                                                           !user.users?.image_token"
+                                                      [attr.src]="getDefaultImage('user-logo')" width="30px"
+                                                      height="30px" class="rounded-circle"
+                                                      onerror="this.src='/assets/images/user-demo2.png'" />
+                                                   <div class="ml-2">
+                                                      <h6 class="elips-1 mb-1">{{user.users?.first_name}}
+                                                         {{user.users?.last_name}} </h6>
+                                                      <span class="elips-1">{{user.users?.designation ?
+                                                         user.users?.designation?.title : 'NA' }}</span>
+                                                   </div>
+                                                </div>
+                                             </div>
+                                             <!-- <div class="col-lg-6 col-sm-6 sm-col">
+                                                                       <div class="d-flex align-items-center name-and-position name-and-position-bdr cmn-bdr text-left relative">
+                                                                          <span class="user-box-right-icon text-green"><i class="fas fa-retweet"></i></span>
+                                                                          <img src="images/round-9.png" class="rounded-circle" width="40px;" height="40px;">
+                                                                          <div class="ml-2">
+                                                                              <h6 class="elips-1 mb-1">Henry Bell </h6>
+                                                                              <span class="elips-1">Service Manager</span>
+                                                                           </div>
+                                                                      </div>
+                                                                    </div> -->
+
+                                          </div>
+
+                                          <h6>{{'project_members' | translate}}</h6>
+
+                                          <div class="row sm-row mb-2">
+                                             <div [ngStyle]="{display: user.type=='deleted'? 'none' : 'block'}"
+                                                class="col-lg-6 col-sm-6 sm-col"
+                                                *ngFor="let user of ProjectChangeRequestStore.individualChangeRequestItem?.members">
+                                                <div *ngIf="user.type=='new'||user.type=='existing'"
+                                                   class="d-flex align-items-center name-and-position name-and-position-bdr cmn-bdr text-left relative">
+                                                   <span *ngIf="user.type=='new'"
+                                                      class="user-box-right-icon text-green"><i
+                                                         class="fas fa-retweet"></i></span>
+
+                                                   <img *ngIf="
+                                                                            user.users?.image_token"
+                                                      data-toggle="modal" data-target="#user02" data-ui-class="a-zoom"
+                                                      [attr.src]="
+                                                                              createImagePreview(
+                                                                                'user-profile-picture',
+                                                                                user.users?.image_token
+                                                                              )
+                                                                            " width="30px" height="30px"
+                                                      class="rounded-circle rounde-hov details-show-popup"
+                                                      onerror="this.src='/assets/images/user-demo2.png'" />
+                                                   <img *ngIf="
+                                                                              !user.users?.image_token"
+                                                      [attr.src]="getDefaultImage('user-logo')" width="30px"
+                                                      height="30px" class="rounded-circle"
+                                                      onerror="this.src='/assets/images/user-demo2.png'" />
+                                                   <div class="ml-2">
+                                                      <h6 class="elips-1 mb-1">{{user.users?.first_name}}
+                                                         {{user.users?.last_name}} </h6>
+                                                      <span class="elips-1">{{user.users?.designation?
+                                                         user.users?.designation?.title : 'NA' }}</span>
+                                                   </div>
+                                                </div>
+                                             </div>
+
+
+                                          </div>
+
+                                          <!-- <h6>External Users </h6>
+
+                                                                 <div class="row sm-row mb-2">
+                                                                    <div class="col-lg-6 col-sm-6 sm-col">
+                                                                       <div class="d-flex align-items-center name-and-position name-and-position-bdr cmn-bdr text-left relative">
+                                                                          <div class="w-100">
+                                                                              <h6 class="elips-1 mb-1">Manuel Henry </h6>
+                                                                              <span class="elips-1"><i class="fas fa-phone-alt"></i> 8086755288</span>
+                                                                           </div>
+                                                                      </div>
+                                                                    </div>
+                                                                    <div class="col-lg-6 col-sm-6 sm-col">
+                                                                       <div class="d-flex align-items-center name-and-position name-and-position-bdr cmn-bdr text-left relative">
+                                                                          <div class="w-100">
+                                                                              <h6 class="elips-1 mb-1">Manuel Henry </h6>
+                                                                              <span class="elips-1"><i class="fas fa-phone-alt"></i> 8086755288</span>
+                                                                           </div>
+                                                                      </div>
+                                                                    </div>
+                                                                    <div class="col-lg-6 col-sm-6 sm-col">
+                                                                       <div class="d-flex align-items-center name-and-position name-and-position-bdr cmn-bdr text-left relative">
+                                                                          <span class="user-box-right-icon text-green"><i class="fas fa-retweet"></i></span>
+                                                                          <div class="w-100">
+                                                                              <h6 class="elips-1 mb-1">Manuel Henry </h6>
+                                                                              <span class="elips-1"><i class="fas fa-phone-alt"></i> 8086755288</span>
+                                                                           </div>
+                                                                      </div>
+                                                                    </div>
+
+                                                                 </div> -->
+
+                                       </div>
+                                    </div>
+
+                                    <h6>{{'justification' | translate}}</h6>
+                                    <p style="white-space: pre-wrap;">
+                                       {{ProjectChangeRequestStore.individualChangeRequestItem?.team_justification ?
+                                       ProjectChangeRequestStore.individualChangeRequestItem?.team_justification :
+                                       AppStore.noContentText}} </p>
+
+                                 </div>
+
+                                 <div class="edit-option" *ngIf="req?.type=='scope-of-work'">
+                                    <div class="row">
+                                       <div class="col-lg-6 col-sm-12 bdr-right-pc-sm-none">
+                                          <h6>Existing Scope of Work</h6>
+                                          <hr class="mt-0">
+
+                                          <h6>{{'in_scope' | translate}}</h6>
+                                          <ul class="arrowlist mt-0 p-0">
+                                             <li
+                                                *ngFor="let scope of ProjectChangeRequestStore.individualChangeRequestItem?.scopes">
+                                                <span [ngClass]="scope.type == 'deleted' ? 'line-through text-red' : ''"
+                                                   *ngIf="scope.scope_type =='in_scope'&&(scope.type=='existing'||scope.type=='deleted')">{{scope.title}}</span>
+                                             </li>
+                                          </ul>
+
+                                          <h6>{{'am_out_of_scope' | translate}}</h6>
+                                          <ul class="arrowlist mt-0 p-0">
+                                             <li
+                                                *ngFor="let scope of ProjectChangeRequestStore.individualChangeRequestItem?.scopes">
+                                                <span [ngClass]="scope.type == 'deleted' ? 'line-through text-red' : ''"
+                                                   *ngIf="scope.scope_type =='out_scope'&&(scope.type=='existing'||scope.type=='deleted')">{{scope.title}}</span>
+                                             </li>
+                                          </ul>
+
+                                          <h6>{{'assumptions' | translate}}</h6>
+                                          <ul class="arrowlist mt-0 p-0">
+                                             <li
+                                                *ngFor="let scope of ProjectChangeRequestStore.individualChangeRequestItem?.scopes">
+                                                <span [ngClass]="scope.type == 'deleted' ? 'line-through text-red' : ''"
+                                                   *ngIf="scope.scope_type =='assumption'&&(scope.type=='existing'||scope.type=='deleted')">{{scope.title}}</span>
+                                             </li>
+                                          </ul>
+
+                                       </div>
+                                       <div class="col-lg-6 col-sm-12">
+                                          <h6>New Scope of Work</h6>
+                                          <hr class="mt-0">
+
+                                          <h6>{{'in_scope' | translate}}</h6>
+                                          <ul class="arrowlist mt-0 p-0">
+                                             <li
+                                                *ngFor="let scope of ProjectChangeRequestStore.individualChangeRequestItem?.scopes">
+                                                <span [ngClass]="scope.type == 'new' ? 'text-green' : ''"
+                                                   *ngIf="scope.scope_type =='in_scope'&&(scope.type=='new'||scope.type=='existing')">{{scope.title}}</span>
+                                             </li>
+                                          </ul>
+
+                                          <h6>{{'am_out_of_scope' | translate}}</h6>
+                                          <ul class="arrowlist mt-0 p-0">
+                                             <li
+                                                *ngFor="let scope of ProjectChangeRequestStore.individualChangeRequestItem?.scopes">
+                                                <span [ngClass]="scope.type == 'new' ? 'text-green' : ''"
+                                                   *ngIf="scope.scope_type =='out_scope'&&(scope.type=='new'||scope.type=='existing')">{{scope.title}}</span>
+                                             </li>
+                                          </ul>
+
+                                          <h6>{{'assumptions' | translate}}</h6>
+                                          <ul class="arrowlist mt-0 p-0">
+                                             <li
+                                                *ngFor="let scope of ProjectChangeRequestStore.individualChangeRequestItem?.scopes">
+                                                <span [ngClass]="scope.type == 'new' ? 'text-green' : ''"
+                                                   *ngIf="scope.scope_type =='assumption'&&(scope.type=='new'||scope.type=='existing')">{{scope.title}}</span>
+                                             </li>
+                                          </ul>
+
+                                       </div>
+                                    </div>
+
+                                    <h6>{{'justification' | translate}}</h6>
+                                    <p style="white-space: pre-wrap;">
+                                       {{ProjectChangeRequestStore.individualChangeRequestItem?.scope_justification ?
+                                       ProjectChangeRequestStore.individualChangeRequestItem?.scope_justification :
+                                       AppStore.noContentText}} </p>
+
+                                 </div>
+                                 <div *ngIf="req?.type=='budget'">
+                                    <h6>{{'budget' | translate}}</h6>
+
+                                    <div class="audit-form-table w-100 not-fixed-table mb-3">
+                                       <table
+                                          class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll text-center">
+                                          <thead>
+                                             <tr>
+                                                <th class="border-top-0" width="4%">#</th>
+                                                <th class="border-top-0" width="32%">Year</th>
+                                                <th class="border-top-0" width="32%">Existing Budget</th>
+                                                <th class="border-top-0" width="32%">New Budget</th>
+                                             </tr>
+                                          </thead>
+                                          <tbody>
+                                             <tr
+                                                *ngFor="let budget of ProjectChangeRequestStore.individualChangeRequestItem?.budgets;let num=index">
+                                                <td [ngStyle]="{color: budget.type=='deleted'? 'red' : ''}">{{num+1}}
+                                                </td>
+                                                <td [ngStyle]="{color: budget.type=='deleted'? 'red' : ''}">
+                                                   {{budget.year}}</td>
+                                                <td [ngStyle]="{color: budget.type=='deleted'? 'red' : ''}">
+                                                   {{budget.existing_amount}}</td>
+                                                <td [ngStyle]="{color: budget.type=='deleted'? 'red' : ''}">
+                                                   {{budget.new_amount}} <span
+                                                      [ngClass]="budget.new_amount >= budget.existing_amount ? 'text-green' : 'text-red'">(
+                                                      {{budget.new_amount > budget.existing_amount ? '+' : ''}}
+                                                      {{budget.new_amount - budget.existing_amount }} )</span></td>
+                                             </tr>
+
+                                             <tr>
+                                                <td colspan="2">Total</td>
+                                                <td>{{getExistingTotal()}}</td>
+                                                <td>{{getNewAmountTotal()}}<span
+                                                      [ngClass]="getNewAmountTotal() >= getExistingTotal() ? 'text-green' : 'text-red'">(
+                                                      {{getNewAmountTotal() > getExistingTotal() ? '+' : ''}}
+                                                      {{getNewAmountTotal() - getExistingTotal()}} )</span></td>
+                                             </tr>
+                                          </tbody>
+                                       </table>
+
+                                    </div>
+
+                                    <h6>Justification</h6>
+                                    <p style="white-space: pre-wrap;">
+                                       {{ProjectChangeRequestStore.individualChangeRequestItem?.budgets[0]?.justification
+                                       ?
+                                       ProjectChangeRequestStore.individualChangeRequestItem?.budgets[0]?.justification
+                                       : AppStore.noContentText }} </p>
+                                 </div>
+
+                                 <div class="edit-option" *ngIf="req?.type=='delivarables'">
+                                    <div class="row">
+                                       <div class="col-lg-6 col-sm-12 bdr-right-pc-sm-none">
+                                          <h6>Existing Deliverables</h6>
+                                          <hr class="mt-0">
+
+                                          <!-- <h6>In scope</h6> -->
+                                          <ul class="arrowlist mt-0 p-0">
+                                             <li
+                                                *ngFor="let del of ProjectChangeRequestStore.individualChangeRequestItem?.deliverables">
+                                                <span [ngClass]="del.type == 'deleted'? 'line-through' : ''"
+                                                   *ngIf="del.type == 'existing'|| del.type == 'deleted'">{{del.title}}</span>
+                                             </li>
+
+                                          </ul>
+
+                                       </div>
+                                       <div class="col-lg-6 col-sm-12 bdr-right-pc-sm-none">
+                                          <h6>New Deliverables</h6>
+                                          <hr class="mt-0">
+
+                                          <!-- <h6>In scope</h6> -->
+                                          <ul class="arrowlist mt-0 p-0">
+                                             <li
+                                                *ngFor="let del of ProjectChangeRequestStore.individualChangeRequestItem?.deliverables">
+                                                <span
+                                                   *ngIf="del.type == 'existing'|| del.type == 'new'">{{del.title}}</span>
+                                             </li>
+
+                                          </ul>
+
+                                       </div>
+                                    </div>
+
+                                    <h6>Justification</h6>
+                                    <p style="white-space: pre-wrap;">
+                                       {{ProjectChangeRequestStore.individualChangeRequestItem?.deliverables[0]?.justification
+                                       ?
+                                       ProjectChangeRequestStore.individualChangeRequestItem?.deliverables[0]?.justification
+                                       : AppStore.noContentText}} </p>
+
+                                 </div>
+
+                              </div>
+
+                           </div>
+                        </div>
+                     </div><!-- common-tab-md end -->
+
+                  </div>
+
+                  <div class="row">
+                     <div class="col-xl-12">
+                        <hr class="mb-2">
+                        <!-- <img src="images/user-gate.jpg" width="40px" height="40px" class="rounded-circle">
+                          <div>
+                            <h6>Mohammed Shihabudheen</h6>
+                            <span>Project Manger | Created on jan 31,2020 11:41:AM</span>
+                          </div> -->
+                        <app-user-popup-box
+                           [source]="getPopupDetails(ProjectChangeRequestStore.individualChangeRequestItem?.created_by,true)"
+                           [showName]="true" [activateButtons]="false"></app-user-popup-box>
+                     </div>
+                  </div>
+
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+</main>
+
+
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+   <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+
+<ng-container>
+   <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #commentModal>
+      <app-project-change-request-workflow-comment *ngIf="ProjectChangeRequestWorkflowStore.commentForm">
+      </app-project-change-request-workflow-comment>
+   </div>
+</ng-container>'
+<div class="modal modal-style-1 popup-full-width fade" id="process-popup" data-keyboard="false" data-backdrop="static"
+   #workflowHistory *mobxAutorun>
+   <app-project-change-request-workflow-history
+      *ngIf="workflowHistoryOpened == true"></app-project-change-request-workflow-history>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="process-popup" data-keyboard="false" data-backdrop="static"
+   #workflowModal *mobxAutorun>
+   <app-project-change-request-workflow-popup
+      *ngIf="workflowModalOpened == true"></app-project-change-request-workflow-popup>
+</div>
+
+<!-- change request modal -->
+<div class="modal modal-style-1 popup-full-width fade " data-keyboard="false" data-backdrop="static" #addChangeReq>
+   <app-change-request-items [source]="changeRequestObject" *ngIf="changeRequestObject.type">
+   </app-change-request-items>
+
+</div>

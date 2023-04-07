@@ -1,0 +1,117 @@
+<main class="mt-3 acl-page" >
+    <app-filter-menu></app-filter-menu>
+    <div class="container-fluid"  *mobxAutorun>
+        <div class="audit-program-box audit-page-table-main">
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="full-width-table mb-3">
+                    <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll"
+                        *ngIf="JsoObservationStore.loaded && JsoObservationStore?.jsoObservationsList.length>0 && AuthStore.getActivityPermission(1900,'JSO_OBSERVATION_LIST')">
+                        <thead>
+                            <tr>
+                                <th class="border-top-0 text-center" width="2%">#</th>
+                                <th class="border-top-0 pointer" width="24%" (click)="setJsoSort('jso_observation_types.title')">{{'jso_observation_type'
+                                    | translate}}
+                                    <img *ngIf="JsoObservationStore.orderItem == 'jso_observation_types.title'"
+                                        [attr.src]="JsoObservationStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                        class="sort-down-pics">
+                                </th>
+                                <th class="border-top-0 pointer" width="27%" (click)="setJsoSort('jso_observations.work_area')">{{'work_plant_area' |
+                                    translate}}
+                                    <img *ngIf="JsoObservationStore.orderItem == 'jso_observations.work_area'"
+                                        [attr.src]="JsoObservationStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                        class="sort-down-pics">
+                                </th>
+                                <th class="border-top-0 pointer" width="11%" (click)="setJsoSort('jso_observations.created_by')">{{'observed_by' |
+                                    translate}}
+                                    <img *ngIf="JsoObservationStore.orderItem == 'jso_observations.created_by'"
+                                        [attr.src]="JsoObservationStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                        class="sort-down-pics">
+                                </th>
+                
+                                <th class="border-top-0 pointer" width="10%" (click)="setJsoSort('jso_observations.created_at')"> {{'date' | translate}}
+                                    <img *ngIf="JsoObservationStore.orderItem == 'jso_observations.created_at'"
+                                        [attr.src]="JsoObservationStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                        class="sort-down-pics">
+                                </th>
+                
+                                <th class="border-top-0 text-center" width="8%">{{'status' | translate}}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr [ngClass]="AuthStore.getActivityPermission(1900,'JSO_OBSERVATION_DETAILS') ? 'pointer edit-and-delete-main' : 'edit-and-delete-main'"
+                                *ngFor="let row of JsoObservationStore?.jsoObservationsList | paginate: {currentPage:JsoObservationStore?.currentPage, itemsPerPage:JsoObservationStore?.itemsPerPage,totalItems:JsoObservationStore?.totalItems}; let num = index">
+                                <td class="text-center">{{(JsoObservationStore?.currentPage -1) * JsoObservationStore?.itemsPerPage + (num + 1)}}</td>
+                                <td (click)="getDetails(row.id)">{{row.jso_observation_type_title}}
+                                    <p *ngIf="!row.jso_observation_type_title"> {{AppStore.noContentText}}</p>
+                                </td>
+                                <td (click)="getDetails(row.id)">{{row.work_area}}
+                                    <p *ngIf="!row.work_area"> {{AppStore.noContentText}}</p>
+                                </td>
+                                <td class="pointer" (click)="getDetails(row.id)">
+                                    <div class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg"
+                                        *ngIf="row.created_by">
+                                        <img [attr.src]="row.created_by_image_token?createImagePreview('user-profile-picture',row.created_by_image_token):getDefaultImage('user-logo')"
+                                            width="30px" height="30px" class="rounded-circle" onerror = "this.src='/assets/images/user-demo2.png'">
+                
+                                        <div>
+                                            <h6 class="elips-1" title="{{row.created_by_first_name}}&nbsp;{{row.created_by_last_name}}">{{row.created_by_first_name}} {{row.created_by_last_name}}</h6>
+                                            <span>{{row.created_by_designation}} </span>
+                                        </div>
+                                    </div>
+                                    <p *ngIf="!row.created_by"> {{AppStore.noContentText}}</p>
+                                </td>
+                                <td (click)="getDetails(row.id)">{{getTimezoneFormatted(row?.created_at) | date:
+                                    OrganizationGeneralSettingsStore.organizationSettings?.date_format}} 
+                                    <p *ngIf="!row.created_at"> {{AppStore.noContentText}}</p>
+                                </td>
+                                <td class="text-center">
+                                    <div *ngIf="row.unsafe_action_status_title" [attr.class]="'dot-div '+row?.unsafe_action_status_label">{{row?.unsafe_action_status_title}}</div> 
+                                    <p *ngIf="!row.unsafe_action_status_title">{{AppStore.noContentText}}</p>
+                                    <div class="edit-option-show" style="margin: 30px 0 0 0; ">
+                                        <!-- edit-and-delete starts -->
+                                        <a *ngIf="AuthStore.getActivityPermission(1900,'UPDATE_JSO_OBSERVATION')" (click)="editJsoObservations(row.id,row)"><i class="fas fa-pen"></i></a>
+                                        <a *ngIf="AuthStore.getActivityPermission(1900,'DELETE_JSO_OBSERVATION')" (click)="deleteJsoObservation(row.id)"><i class="fas fa-trash"></i></a>
+                                    </div><!-- edit-and-delete end -->
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="float-right bold mb-0" *ngIf="JsoObservationStore.loaded && JsoObservationStore.totalItems > 0">{{'total_Items' | translate}}:{{JsoObservationStore.totalItems}}</p>
+                    <ng-container >
+                        <div *ngIf="!JsoObservationStore.loaded">
+                            <app-six-column-loader></app-six-column-loader>
+                        </div>
+                    </ng-container>
+                    <ng-container >
+                        <app-no-data *ngIf="JsoObservationStore.loaded && JsoObservationStore?.jsoObservationsList.length==0"
+                            [border]=false>
+                        </app-no-data>
+                    </ng-container>
+                </div>
+                <div *ngIf="JsoObservationStore.totalItems > JsoObservationStore.itemsPerPage" class="col-sm-12">
+                    <ul class="pagination justify-content-center mt-3">
+                        <div class="list">
+                            <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate" (pageChange)="getItems($event)" class="my-pagination">
+                            </pagination-controls>
+                        </div>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+
+<div class="modal modal-style-1 popup-full-width fade show" data-keyboard="false" data-backdrop="static" #formModal>
+    <app-jso-observations-model *ngIf="formObject.type != null" [source]="formObject">
+    </app-jso-observations-model>
+</div>
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 show" id="delete-popup" data-backdrop="static" data-keyboard="false" #deletePopup>
+  <app-delete-popup [source]="deleteObject" *ngIf="deleteObject.id != null"></app-delete-popup>
+</div>
+
+<!------------------- Delete Confirmation Modal End --------------------------->

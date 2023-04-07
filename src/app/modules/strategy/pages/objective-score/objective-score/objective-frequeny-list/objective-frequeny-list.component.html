@@ -1,0 +1,147 @@
+<div #plainDev></div>
+
+      <div class="audit-program-box audit-page-table-main">
+        <div class="row">
+           <div class="col-sm-12 full-width-table">
+            <table *ngIf="StrategyStore.objectiveTargetBreakdownLoaded"  class="table table-bordered ordinary-table audit-page-table mb-3 table-scroll">
+                <thead>
+                    <tr>
+                        <th class="border-top-0 text-center" width="2%">#</th>
+
+                        <th class="border-top-0" width="15%">{{'frequency' | translate}}</th>
+                        <th class="border-top-0" width="8%">{{'achieved' | translate}}</th>
+                        <th class="border-top-0" width="8%">{{'target' | translate}}</th>
+                        <th class="border-top-0" width="22%">{{'justifications' | translate}}</th>
+                        <th class="border-top-0" width="15%">{{'attachement' | translate}}</th>
+                        <th class="border-top-0" width="10%">{{'status' | translate}}</th> 
+                        <th class="border-top-0" width="20%">{{'review' | translate}}</th>
+
+
+
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let reviewFrequency of StrategyStore.getObjectiveTargetBreakdown?.strategy_profile_objective_review_frequency_targets;let i=index"  class="edit-option">
+                        <td class="text-center">{{i+1}}</td>
+
+                        <td>{{reviewFrequency?.review_frequency}}</td>
+                        <td>{{StrategyManagementSettingStore?.strategyManagementSettings?.is_weightage_fraction
+                          ? (reviewFrequency.actual_value ? reviewFrequency.actual_value : AppStore.noContentText) : reviewFrequency.actual_value? (reviewFrequency.actual_value | number : '1.0-0') :
+                          AppStore.noContentText}} {{reviewFrequency.actual_value ? ObjectiveScoreStore.induvalObjective?.target_unit_id?.title : ''}}</td>
+                        <!-- <td>{{reviewFrequency.actual_value ? reviewFrequency.actual_value : AppStore.noContentText}}{{reviewFrequency.actual_value ? ObjectiveScoreStore.induvalObjective?.target_unit_id?.title : ''}} </td> -->
+                        <!-- <td>{{reviewFrequency.target ? reviewFrequency.target : AppStore.noContentText}} {{reviewFrequency.target ? reviewFrequency.target_unit_id : ''}}</td> -->
+                        <td>{{StrategyManagementSettingStore?.strategyManagementSettings?.is_weightage_fraction
+                          ? (reviewFrequency.target ? reviewFrequency.target : AppStore.noContentText) : reviewFrequency.target? (reviewFrequency.target | number : '1.0-0') :
+                          AppStore.noContentText}} {{reviewFrequency.target ? ObjectiveScoreStore.induvalObjective?.target_unit_id?.title : ''}}</td>
+                        <td>{{reviewFrequency.justification ? reviewFrequency.justification : AppStore.noContentText}}
+                        </td>
+                         <td [ngClass]="reviewFrequency.strategy_profile_objective_review_frequency_target_documents?.length > 0 ? 'pointer' : ''">
+                          <p *ngIf="reviewFrequency.strategy_profile_objective_review_frequency_target_documents?.length == 0">{{AppStore.noContentText}}</p>
+                            <div *ngIf="reviewFrequency.strategy_profile_objective_review_frequency_target_documents?.length == 1" class="d-flex align-items-center">
+                                <img *ngIf="!reviewFrequency.strategy_profile_objective_review_frequency_target_documents[0]?.document_id" [src]="createImageUrl('kpi-measure',reviewFrequency.strategy_profile_objective_review_frequency_target_documents[0]?.token)" (click)="viewObjectiveDocument('kpi-document',reviewFrequency.strategy_profile_objective_review_frequency_target_documents[0],reviewFrequency.id,reviewFrequency.strategy_profile_objective_review_frequency_target_documents[0])" class="img-fluid" style="width: 30px; height: 26px;">
+                                <img *ngIf="reviewFrequency.strategy_profile_objective_review_frequency_target_documents[0]?.document_id" [src]="createImageUrl('document-version', getToken(reviewFrequency.strategy_profile_objective_review_frequency_target_documents[0]).token)" (click)="viewObjectiveDocument('document-version',reviewFrequency.strategy_profile_objective_review_frequency_target_documents[0],reviewFrequency.id,getToken(reviewFrequency.strategy_profile_objective_review_frequency_target_documents[0]))" class="img-fluid" style="width: 30px; height: 26px;">
+
+                                <div  class="w-100 ml-2">
+                                    <p *ngIf="!reviewFrequency.strategy_profile_objective_review_frequency_target_documents[0].document_id" class="mb-0">{{reviewFrequency.strategy_profile_objective_review_frequency_target_documents[0].title ? reviewFrequency.strategy_profile_objective_review_frequency_target_documents[0].title : AppStore.noContentText }} {{reviewFrequency.strategy_profile_objective_review_frequency_target_documents[0].size ? reviewFrequency.strategy_profile_objective_review_frequency_target_documents[0].size : ""}}</p>
+                                    <p *ngIf="reviewFrequency.strategy_profile_objective_review_frequency_target_documents[0].document_id" class="mb-0">{{getToken(reviewFrequency.strategy_profile_objective_review_frequency_target_documents[0]).title ? getToken(reviewFrequency.strategy_profile_objective_review_frequency_target_documents[0]).title : AppStore.noContentText }} {{getToken(reviewFrequency.strategy_profile_objective_review_frequency_target_documents[0]).size ? getToken(reviewFrequency.strategy_profile_objective_review_frequency_target_documents[0]).size : ""}}</p>
+
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-center ml-3">
+                              <div *ngIf="reviewFrequency.strategy_profile_objective_review_frequency_target_documents.length > 1">
+                                <div  class="row">
+                                  <div  *ngFor="let doc of reviewDocuments(reviewFrequency.strategy_profile_objective_review_frequency_target_documents)">
+                                    <img *ngIf="!doc.document_id && AuthStore.getActivityPermission(3200, 'PREVIEW_STRATEGY_REVIEW_DOCUMENT_FILE')"  (click)="viewObjectiveDocument('kpi-document',doc,reviewFrequency.id,doc)" [src]="createImageUrl('kpi-measure',doc.token)" class="img-fluid" style="width: 30px; height: 26px;">
+                                    <img *ngIf="doc.document_id && AuthStore.getActivityPermission(3200, 'PREVIEW_STRATEGY_REVIEW_DOCUMENT_FILE')"  (click)="viewObjectiveDocument('document-version',doc,reviewFrequency.id,getToken(doc))" [src]="createImageUrl('document-version',getToken(doc).token )" class="img-fluid" style="width: 30px; height: 26px;">
+
+                                  </div>
+                                </div>
+
+                              </div>
+                              
+
+                              <div *ngIf="reviewFrequency.strategy_profile_objective_review_frequency_target_documents.length > 3" class="attachment-more9">
+                                  <p  (click)="openOtherDocumentsModal(reviewFrequency.strategy_profile_objective_review_frequency_target_documents,reviewFrequency.id)" class="mb-0">{{reviewFrequency.strategy_profile_objective_review_frequency_target_documents.length - 3}}..</p>
+                              </div>
+
+                          </div>
+                        </td> 
+                     
+                        <td class="text-center">
+                            <div [attr.class]="'dot-div '+reviewFrequency?.strategy_profile_objective_review_frequency_target_status?.label+'-dot'" >{{reviewFrequency?.strategy_profile_objective_review_frequency_target_status ? reviewFrequency?.strategy_profile_objective_review_frequency_target_status?.language[0]?.pivot?.title : AppStore.noContentText}}</div> </td> 
+                           <td class="text-center">
+                              
+                                    <!-- <button [ngStyle]="{ 'cursor': !responsibleUser() || reviewFrequency?.strategy_profile_objective_review_frequency_target_status?.type !='draft' || !reviewFrequency?.actual_value ? 'unset' :'pointer'}" [disabled]="!isUser() || reviewFrequency?.strategy_profile_objective_review_frequency_target_status?.type !='draft' || !reviewFrequency?.actual_value" class="btn btn-small float-none" (click)="submitProjectForReview(reviewFrequency.id)">{{'submit' | translate}}</button>
+                                    
+                                    <button [ngStyle]="{ 'cursor': !isUser() || reviewFrequency?.strategy_profile_objective_review_frequency_target_status?.type !='in-review'|| !reviewFrequency?.actual_value ? 'unset' :'pointer'}" [disabled]="!isUser() || reviewFrequency?.strategy_profile_objective_review_frequency_target_status?.type !='in-review'|| !reviewFrequency?.actual_value" class="btn btn-small btn-green-hov float-none" (click)="approveWorkflow('approve',reviewFrequency.id)">{{'approve' | translate}}</button>
+                                    
+                                    <button [ngStyle]="{ 'cursor': !isUser() || reviewFrequency?.strategy_profile_objective_review_frequency_target_status?.type !='in-review'|| !reviewFrequency?.actual_value ? 'unset' :'pointer'}" [disabled]="!isUser() || reviewFrequency?.strategy_profile_objective_review_frequency_target_status?.type !='in-review'|| !reviewFrequency?.actual_value" class="btn btn-small btn-orange-hov float-none" (click)="approveWorkflow('revert',reviewFrequency.id)">Revert</button> -->
+
+                                    <button [ngStyle]="{ 'cursor': !responsibleUser() || reviewFrequency?.strategy_profile_objective_review_frequency_target_status?.type !='draft' || !reviewFrequency?.actual_value ? 'unset' :'pointer'}" *ngIf="responsibleUser() && reviewFrequency?.strategy_profile_objective_review_frequency_target_status?.type =='draft' && reviewFrequency?.actual_value && ObjectiveScoreStore.induvalObjective?.strategy_profile_objective_status?.type != 'closed'" class="btn btn-small float-none" (click)="submitProjectForReview(reviewFrequency.id)"
+                                    [disabled]="AppStore.loading">{{'submit' | translate}}</button>
+                                    
+                                    <button [ngStyle]="{ 'cursor': !isUser() || reviewFrequency?.strategy_profile_objective_review_frequency_target_status?.type !='in-review'|| !reviewFrequency?.actual_value ? 'unset' :'pointer'}" *ngIf="isUser() && reviewFrequency?.strategy_profile_objective_review_frequency_target_status?.type =='in-review' && reviewFrequency?.actual_value && ObjectiveScoreStore.induvalObjective?.strategy_profile_objective_status?.type != 'closed' " class="btn btn-small btn-green-hov float-none" (click)="approveWorkflow('approve',reviewFrequency.id)"
+                                    [disabled]="AppStore.loading">{{'approve' | translate}}</button>
+                                    
+                                    <button [ngStyle]="{ 'cursor': !isUser() || reviewFrequency?.strategy_profile_objective_review_frequency_target_status?.type !='in-review'|| !reviewFrequency?.actual_value ? 'unset' :'pointer'}" *ngIf="isUser() && reviewFrequency?.strategy_profile_objective_review_frequency_target_status?.type =='in-review' && reviewFrequency?.actual_value && ObjectiveScoreStore.induvalObjective?.strategy_profile_objective_status?.type != 'closed'" class="btn btn-small btn-orange-hov float-none" (click)="approveWorkflow('revert',reviewFrequency.id)"
+                                    [disabled]="AppStore.loading">{{'revert' | translate}}</button>
+                                    <div class="edit-option-show-inner edit-option-full-time-show" style="margin: -5px 0 0 0 !important;">
+                                        <a *ngIf="responsibleUser() && reviewFrequency?.strategy_profile_objective_review_frequency_target_status?.type =='draft' && ObjectiveScoreStore.induvalObjective?.strategy_profile_objective_status?.type != 'closed'" (click)="openObjectiveMesureModal(reviewFrequency)"><i class="fas fa-pen-alt"></i></a>
+                                        <a class="pointer" [attr.title]="'Review History'|translate" (click)="openHistoryPopup(reviewFrequency)"><i
+                                            class="fas fa-history"></i></a>
+                                    </div>
+                                
+                             </td>
+                             
+
+                    </tr>
+                </tbody>
+            </table>
+              <ng-container *mobxAutorun>
+               <div *ngIf="!StrategyStore.objectiveTargetBreakdownLoaded">
+                  <app-profile-list-loader></app-profile-list-loader>
+              </div>
+               <app-no-data *ngIf = "StrategyStore.getObjectiveTargetBreakdown?.strategy_profile_objective_review_frequency_targets.length == 0 && StrategyStore.objectiveTargetBreakdownLoaded == true"></app-no-data>
+             </ng-container>
+           </div>           
+        </div>
+      </div>
+
+
+  <ng-container>
+    <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #commentModal>
+      <app-objective-review-comment-modal *ngIf="ObjectiveScoreStore.commentForm">
+      </app-objective-review-comment-modal>
+    </div>
+  </ng-container>
+
+  <div class="modal modal-style-1 popup-full-width fade" id="process-popup" data-keyboard="false" data-backdrop="static"
+  #workflowHistory *mobxAutorun>
+  <app-objective-workflow-history *ngIf="workflowHistoryOpened == true"></app-objective-workflow-history>
+  </div>
+  
+  <div class="modal modal-style-1 popup-full-width fade" id="add-new-notes-popup" data-keyboard="false"
+  data-backdrop="static" #objectiveScore>
+  <app-add-objective-score *ngIf="objectiveMesureObject.type" [source]="objectiveMesureObject" ></app-add-objective-score>
+  </div>
+
+  <div class="modal modal-style-1 popup-full-width fade" id="add-milestone-popup" data-keyboard="false"
+  data-backdrop="static" #otherDocumentes>
+ <app-other-documents-modal [source] = "otherDocumentesObject" *ngIf = "otherDocumentesObject.type"></app-other-documents-modal>
+ </div>
+
+  <!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+  </div>
+
+  <!-- preview -->
+<div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup" data-keyboard="false"
+data-backdrop="static" #filePreviewModal *mobxAutorun>
+<button type="button" class="close" data-dismiss="modal" (click)="closePreviewModal($event)"><i
+    class="lni-close"></i><span>esc</span></button>
+<app-preview-modal *ngIf="previewObject" [source]="previewObject" (close)="closePreviewModal($event)">
+</app-preview-modal>
+</div>

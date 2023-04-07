@@ -1,0 +1,94 @@
+<div class="widget bg-white">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item pointer" [routerLink]="['/masters/human-capital']"><a>{{'human_capital' | translate}}</a></li>
+            <li class="breadcrumb-item active">{{'job_description' | translate}}</li>
+        </ol>
+    </nav>
+
+    <!-- Nav tabs -->
+    <div class="audit-form-table w-100 not-fixed-table mb-0">
+    <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scrol" *ngIf="JobMasterStore?.loaded && JobMasterStore.jobs.length > 0">
+
+        <tr>
+            <th style="width: 5%; text-align: center;">{{'sl' | translate}}</th>
+            <th (click)="sortTitle('jds.title')" class="border-top-0 issue-list-org-tab-three pointer" style="width: 83%;"><span>{{'job_description' | translate}}</span>
+                <img _ngcontent-twv-c17="" *ngIf="JobMasterStore.orderItem=='jds.title'" class="sort-down-pics pl-2" 
+                [attr.src]="JobMasterStore.orderBy=='desc' ? 
+                'assets/images/sort-up.png' : JobMasterStore.orderBy=='asc' ? 
+                'assets/images/sort-down.png' : 'assets/images/sort-empty.png'">
+            </th>
+            <th style="width: 12%; text-align:center;">{{'status' | translate}}</th>
+        </tr>
+        
+        <ng-container *mobxAutorun>
+
+            <tr  class="edit-and-delete-main pointer"
+            (click)="getJob(row.id)" [ngStyle] = "{ 'pointer-events' : AuthStore.getActivityPermission(1100,'UPDATE_JD') ? '' : 'none'}"
+                *ngFor="let row of JobMasterStore.jobs | paginate: {currentPage:JobMasterStore?.currentPage, itemsPerPage:JobMasterStore?.itemsPerPage,totalItems:JobMasterStore?.totalItems}; let num = index">
+                <td style="text-align: center;">
+                    {{(JobMasterStore?.currentPage - 1) * JobMasterStore?.itemsPerPage + (num + 1)}}
+                </td>
+                <td>{{row.title}}</td>
+                <td class="text-center" style="padding:0.75rem;">
+                    <div [attr.class]="'dot-div '+row.status_label">{{row.status}}</div>
+                    <div class="edit-option-show">
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'UPDATE_JD')" (click)=" getJob(row.id)" [attr.title]="'edit' | translate"><i class="fas fa-pen pointer"></i></a>
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'DELETE_JD')" (click)="delete(row.id)" [attr.title]="'delete' | translate"><i class="fas fa-trash pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(1100,'ACTIVATE_JD')" (click)="activate(row.id)" [attr.title]="'activate' | translate"><i
+                                class="fas fa-check pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.activeStatusId && AuthStore.getActivityPermission(1100,'DEACTIVATE_JD')" (click)="deactivate(row.id)" [attr.title]="'deactivate' | translate"><i
+                                class="fas fa-ban pointer"></i></a>
+                    </div>
+                </td>         
+            </tr>
+        </ng-container>
+    </table>
+    </div>
+
+    <p class="float-right" *ngIf="JobMasterStore?.loaded && JobMasterStore.totalItems > 0"><b>{{'total_Items' | translate}}:{{JobMasterStore?.totalItems}}</b></p>
+
+    <ng-container *mobxAutorun>
+        <div *ngIf="!JobMasterStore.loaded">
+            <app-table-loader></app-table-loader>
+
+        </div>
+        <app-no-data *ngIf = "JobMasterStore.jobs.length == 0 && JobMasterStore.loaded == true"></app-no-data>
+   
+    </ng-container>
+
+    <!-- <div *ngIf = "JobMasterStore.totalItems == 0 && JobMasterStore.loaded == true" class="no-policy-demo-text bg-white d-flex align-items-center w-100 mt-2" style="height: 200px">
+        <div class="no-policy-demo">
+           <div class="no-file-icon">
+             <i class="far fa-file"></i>
+           </div>
+           <h6 class="bold mb-0">Nothing To Show</h6>
+        </div>
+     </div> -->
+
+    <div class="col-sm-12" *ngIf="JobMasterStore.totalItems>JobMasterStore.itemsPerPage">
+        <ul class="pagination justify-content-center mt-3">
+            <div class="list">
+                <pagination-controls [previousLabel]="'previous' | translate"  [nextLabel]="'next' | translate" (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+            </div>
+        </ul>
+    </div>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" style="z-index: 999999 !important;" data-keyboard="false" data-backdrop="static" #formModal>
+    <app-user-jd-modal *ngIf="userJdObject.type" [source]="userJdObject">
+      
+    </app-user-jd-modal>
+  </div>
+  <!------------------- Delete Confirmation Modal Start ---------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+  <app-delete-popup [source] = "popupObject"></app-delete-popup>
+</div>
+
+<!------------------- Delete Confirmation Modal End --------------------------->
+
+<div class="modal modal-style-1 email-popup-new fade" data-backdrop="static" data-keyboard="false"
+  id="email-notification-popup" #mailConfirmationPopup>
+  <app-mail-send-popup [source] = "mailConfirmationData"></app-mail-send-popup>
+</div>

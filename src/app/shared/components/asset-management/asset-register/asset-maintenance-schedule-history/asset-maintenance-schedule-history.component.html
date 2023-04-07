@@ -1,0 +1,168 @@
+
+    <button type="button" class="close" (click)="closeHistoryModal()"><i class="lni-close"></i><span>{{'esc' |
+            translate}}</span></button>
+    <div [ngClass]="AssetMaintenanceScheduleStore.allItemsHistory.length==0 ? 'modal-dialog modal-md modal-dialog-centered' : 'modal-dialog modal-lg modal-dialog-centered'">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4
+                   >
+                    {{'maintenance_schedule_history' | translate}}</h4>
+            </div>
+
+            <div class="modal-body form-body">
+                <p class="head-details">{{'asset_maintenance_schedule_history_message' | translate}}</p>
+                <div class="row">
+                    <div class="col-sm-12"
+                        *ngIf="AssetMaintenanceScheduleStore?.loadedHistory && AssetMaintenanceScheduleStore?.allItemsHistory.length>0">
+                        <div class="cmn-bdr risk-treatment-update-history mb-3"
+                            *ngFor="let history of AssetMaintenanceScheduleStore?.allItemsHistory| paginate: {id:'history',currentPage:AssetMaintenanceScheduleStore?.currentPageHistory, itemsPerPage:AssetMaintenanceScheduleStore?.itemsPerPageHistory,totalItems:AssetMaintenanceScheduleStore?.totalItemsHistory};let num = index">
+                            <div class="row mb-3 align-items-center">
+                                <div class="col-lg-6 col-md-6 col-6">
+                                    <div class="d-flex flex-row user-list-sm p-0">
+                                        <img [attr.src]="history.created_by_image_token?createImageUrl('user',history.created_by_image_token):getDefaultImage('user-logo')"
+                                            class="rounded-circle" width="40px" height="40px">
+                                        <div>
+                                            <h6>{{history.created_by_first_name}} {{history.created_by_last_name}}</h6>
+                                            <span>{{history.created_by_designation}} | {{'updated_at'|translate}}
+                                                {{history.created_at|date:OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 col-md-6 col-6 text-right">
+                                    <span>
+                                        <div
+                                            [ngClass]="'dot-div '+history.label+' ml-3'">
+                                            {{history?.schedule_status_title}}
+                                        </div>
+                                    </span>
+                                </div>
+                                <!-- <div class="col-lg-3 col-sm-12">
+                                    <p class="dot-color-p mb-0 d-inline-block"><span
+                                            [ngClass]="history.label?'dot-div '+history.label+'-dot':'dot-div green-dot'"></span>{{history.risk_treatment_status_title}}
+                                    </p>
+                                    <h6 class="d-inline-block text-light-blue bold mb-0 cmn-head-style ml-3">
+                                        {{history.percentage?history.percentage:0}}%</h6>
+                                </div> -->
+                                <!-- <div class="col-lg-3 col-sm-12"
+                                    *ngIf="RiskManagementSettingStore.loaded && RiskManagementSettingStore.riskManagementSettings.is_budget">
+                                    <h3 class="price-text-cmn mb-0">
+                                        {{OrganizationGeneralSettingsStore?.organizationSettings?.currency}}
+                                        {{history.amount_used?history.amount_used:0}}</h3>
+                                </div> -->
+                            </div>
+
+                            <!-- <div class="row">
+                                <div class="col-lg-6 col-sm-12">
+                                    <h6>{{'actual_start_date'|translate}}</h6>
+                                    <p *ngIf="history.actual_start_date">{{history.actual_start_date|date:OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</p>
+                                    <p *ngIf="!history.actual_start_date">{{AppStore.noContentText}}</p>
+                                
+                                </div>
+                                <div class="col-lg-6 col-sm-12">
+                                    <h6>{{'revised_due_date'|translate}}</h6>
+                                    <p *ngIf="history.revised_target_date">{{history.revised_target_date|date:OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</p>
+                                    <p *ngIf="!history.revised_target_date">{{AppStore.noContentText}}</p>
+                             
+                                </div>
+                            </div> -->
+
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <p style="white-space: pre-wrap;">{{history.comment?history.comment:''}}</p>
+                                </div>
+                            </div>
+                            <div class="row" *ngIf="history.documents.length>0">
+                                <div class="col-sm-12">
+                                    <h6>{{'attachments' | translate}}</h6>
+                                    <div class="thumb-pics-bg thumb-pics-col-3 thumb-pics-fix-text clearfix">
+                                        <div class="thumb-pics" *ngFor="let document of history.documents">
+                                            <div class="upload-pics edit-option">
+                                                <div class="browse-form-pic"
+                                                    [ngStyle]="{'background': 'url(' + createImageUrl('maintenance-schedule',document.token) + '), url(' + getDefaultImage('no-preview') + ') no-repeat 0 0 / cover'}"
+                                                    (click)="viewDocument(document,AssetMaintenanceScheduleStore?.individualSchedule,document?.asset_maintenance_schedule_update_id)">
+                                                </div>
+                                                <div class="browse-form-name clearfix">
+                                                    <div class="float-left">
+                                                        <h6
+                                                            [attr.title]="document.title.length > 10 ? document.title:''">
+                                                            {{document.title.length > 10 ?
+                                                            document.title.substring(0,10)+' ...': document.title}}
+                                                        </h6>
+                                                        <span>{{document.size/1048576 | number:'0.2-2'}}MB</span>
+                                                    </div>
+                                                    <div class="browse-logo">
+                                                        <img *ngIf="checkExtension(document.ext,'image') != -1"
+                                                            src="/assets/images/md-jpg.png">
+                                                        <img *ngIf="checkExtension(document.ext,'doc') != -1"
+                                                            src="/assets/images/md-doc.png">
+                                                        <img *ngIf="checkExtension(document.ext,'pdf') != -1"
+                                                            src="/assets/images/pdf-icone.png">
+                                                        <img *ngIf="checkExtension(document.ext,'excel') != -1"
+                                                            src="/assets/images/md-xl.png">
+                                                        <img *ngIf="checkExtension(document.ext,'video') != -1"
+                                                            src="/assets/images/md-video.png">
+                                                        <img *ngIf="checkExtension(document.ext,'audio') != -1"
+                                                            src="/assets/images/md-audio.png">
+                                                        <img *ngIf="checkExtension(document.ext,'ppt') != -1"
+                                                            src="/assets/images/md-ppt.png">
+
+                                                    </div>
+                                                </div>
+                                                <div class="edit-option-show-inner" style="margin: 0 -9px 0 0;">
+                                                    <a [attr.title]="'download'|translate"
+                                                        (click)="downloadDocument(document,AssetMaintenanceScheduleStore?.individualSchedule,document?.asset_maintenance_schedule_update_id)"><i
+                                                            class="fas fa-download"></i></a>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        
+                                    </div>
+                                   
+                                </div>
+                            </div>
+                        </div>
+
+                        
+                        <ul class="pagination justify-content-center mt-3"
+                            *ngIf="AssetMaintenanceScheduleStore?.totalItemsHistory>AssetMaintenanceScheduleStore?.itemsPerPageHistory">
+                            <pagination-controls (pageChange)="historyPageChange($event)" class="my-pagination"
+                                id="history"></pagination-controls>
+                        </ul>
+
+                       
+                    </div>
+                    <div class="col-sm-12" *ngIf="!AssetMaintenanceScheduleStore?.loadedHistory">
+                        <app-history-loader>
+
+                        </app-history-loader>
+                    </div>
+
+
+                    <div class="col-sm-12"
+                        *ngIf="AssetMaintenanceScheduleStore.loadedHistory && AssetMaintenanceScheduleStore.allItemsHistory.length==0">
+                        <!-- <app-no-data-list [source]="historyEmptyList" [border]=false>
+
+                        </app-no-data-list> -->
+                        <app-report-no-data [source]="historyEmptyList" [border]=false></app-report-no-data>
+                        <!-- <app-no-data [source]="hi"
+                        [border]=false>
+                    </app-no-data> -->
+                    </div>
+                </div>
+
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- preview component for image preview -->
+<div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup" data-keyboard="false"
+data-backdrop="static" #filePreviewModal *mobxAutorun>
+<button type="button" class="close" data-dismiss="modal" (click)="closePreviewModal($event)"><i
+        class="lni-close"></i><span>{{'esc'|translate}}</span></button>
+<app-asset-maintenance-schedule-history-preview *ngIf="previewObjectHistory" [source]="previewObjectHistory" (close)="closePreviewModal($event)">
+</app-asset-maintenance-schedule-history-preview>
+</div>
+<!-- preview modal end -->

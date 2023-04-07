@@ -1,0 +1,116 @@
+<div class="tab-pane" id="stakehldrs">
+    <div class="container-fluid">
+        <div class="audit-program-box audit-page-table-main"> 
+           <div class="row" *mobxAutorun>
+               <div class="col-sm-12">
+                  <div class="full-width-table">
+                    <table *ngIf="ProjectDocumentStore.loaded && ProjectDocumentStore.allItems.length > 0"  
+                        class="table table-bordered ordinary-table audit-page-table mb-4 table-scroll">
+                        <thead>
+                            <tr>
+                                <th class="border-top-0 text-center" width="4%">#</th>
+                                <th class="border-top-0">{{'document_title' | translate}}</th>
+                                <th class="border-top-0" width="14%">{{'uploaded_by' | translate}}</th>
+                                <th class="border-top-0" width="14%">{{'date' | translate}}</th>
+                                <th class="border-top-0" width="29%">{{'attachment' | translate}}</th>
+                            </tr>
+                        </thead>  
+                        <tbody>
+                            <tr class="edit-and-delete-main" *ngFor="let items of ProjectDocumentStore.allItems| paginate: {currentPage:ProjectDocumentStore.currentPage, itemsPerPage:ProjectDocumentStore.itemsPerPage,totalItems:ProjectDocumentStore.totalItems};let num=index" >
+                                <td class="pointer text-center"> {{(ProjectDocumentStore.currentPage - 1) * ProjectDocumentStore.itemsPerPage + (num + 1)}}</td>
+                                <td >{{items.title}}</td>
+                                <td >
+                                    <div
+                                    class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                                    <img *ngIf="items.created_by_image_token" data-toggle="modal" data-target="#user02"
+                                        data-ui-class="a-zoom"
+                                        [attr.src]="createImagePreview('user-profile-picture',items.created_by_image_token)"
+                                        width="30px" height="30px" class="rounded-circle rounde-hov details-show-popup"
+                                        onerror="this.src='/assets/images/user-demo2.png'">
+                                    <img *ngIf="!items.created_by_image_token" [attr.src]="getDefaultImage('user-logo')"
+                                        width="30px" height="30px" class="rounded-circle"
+                                        onerror="this.src='/assets/images/user-demo2.png'">
+                                    <div class="pointer">
+                                        <h6>{{items.created_by_first_name ? items.created_by_first_name : AppStore.noContentText
+                                            }} {{items.created_by_last_name ? items.created_by_last_name :
+                                            AppStore.noContentText }}</h6>
+                                        <span>{{items.created_by_designation ? items.created_by_designation :
+                                            AppStore.noContentText}}</span>
+                                    </div>
+                                </div>
+                                </td>
+                                <td >{{items.created_at | date: OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</td>
+                                <td class="pointer">
+                                    <div  *ngFor="let docs of documentArray">
+                                        <div class="d-flex align-items-center" *ngIf = "!docs.document_id && docs.id == items.id">
+                                            <img *ngIf = "!docs.document_id"  [attr.src]="createImageUrl('project-documents',docs.token)" 
+                                             class="mr-2" width="50" style="height: 30px"
+                                            (click)="viewDocument('project-documents',docs,docs)"/>
+                                            <small *ngIf = "items.token">{{docs.document_title}}<br>{{items.size}}{{docs.size ? 'MB' : ''}}</small>
+                                        </div>
+
+                                        <div   *ngIf = "docs.document_id && docs.id == items.id">
+                                            <div class="d-flex" *ngFor="let mainDoc of docs.kh_document.versions">
+                                        <img *ngIf = "mainDoc.document_id"  [attr.src]="createImageUrl('document-version',mainDoc.token)" 
+                                         class="mr-2" width="50"  style="height: 30px"
+                                        (click)="viewDocument('document-version',docs,mainDoc)"/>
+                                        <small *ngIf = "mainDoc.token">{{mainDoc.title}}<br>{{mainDoc.size}}{{mainDoc.size ? 'MB' : ''}}</small>
+                                        </div>
+                                    </div>
+                                    </div>
+                                         <div class="edit-option-show" style="margin: 33px 0px 0px 0px; ">
+                                            <a *ngIf="AuthStore.getActivityPermission(1600,'UPDATE_PROJECT_MONITORING_DOCUMENT')"
+                                            (click)="editDocument(items.id)" [attr.title]="'edit' | translate"><i
+                                                class="fas fa-pen"></i></a>
+                                            <a *ngIf="AuthStore.getActivityPermission(1600,'DELETE_PROJECT_MONITORING_DOCUMENT')"
+                                            (click)="delete(items.id)" [attr.title]="'delete' | translate"><i class="fas fa-trash"></i></a>
+                                </div>
+                                </td>
+                            </tr>   
+                        </tbody>
+                    </table>
+                    <ng-container *mobxAutorun>
+                        <!-- <div *ngIf="!ProjectDocumentStore.loaded">
+                            <app-project-monitoring-list-loader></app-project-monitoring-list-loader>
+                       </div> -->
+                        <app-no-data *ngIf = "ProjectDocumentStore.allItems.length == 0 && ProjectDocumentStore.loaded == true"></app-no-data>
+                    </ng-container> 
+                </div>
+            </div> 
+        </div>     
+        <div *ngIf="ProjectDocumentStore.totalItems>ProjectDocumentStore.itemsPerPage"
+            class="col-sm-12">
+            <ul class="pagination justify-content-center mt-3">
+                <div class="list">
+                    <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"  class="my-pagination" (pageChange)="pageChange($event)">
+                    </pagination-controls>
+                </div>
+            </ul>
+        </div> 
+    </div>   
+</div>                  
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade"  data-keyboard="false"
+data-backdrop="static" #addDocument>
+<app-documents-add-modal [source] ="projectDocumentObject" *ngIf="projectDocumentObject.type">
+</app-documents-add-modal>
+</div>
+
+
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+<app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+<!------------------- Delete Confirmation Modal End --------------------------->
+
+
+<!-- ---------File Preview-------------- -->
+<div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup" data-keyboard="false"
+data-backdrop="static" #filePreviewModal *mobxAutorun>
+<button type="button" class="close" data-dismiss="modal" (click)="closePreviewModal($event)"><i
+     class="lni-close"></i><span>esc</span></button>
+<app-the-preview-component *ngIf="previewObject" [source]="previewObject" (close)="closePreviewModal($event)"></app-the-preview-component>
+</div>
+<!--------------- Ends Here ------------>

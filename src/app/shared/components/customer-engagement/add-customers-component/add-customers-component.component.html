@@ -1,0 +1,163 @@
+<button type="button" class="close" data-dismiss="modal" (click)="cancel()"><i
+   class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+       <div class="modal-header">
+          <h4 class="modal-title" *ngIf = "CustomersSource.type == 'Add'">{{'add_customer' | translate}}</h4>
+          <h4 class="modal-title" *ngIf = "CustomersSource.type == 'Edit'">{{'edit_customer' | translate}}</h4>
+       </div>
+
+         <!-- Modal body -->
+         <div class="modal-body form-body">
+
+            <p class="head-details">{{ 'customer_form_message' | translate }}</p>
+
+            <label class="label-style mb-0">{{'customer_logo' | translate}}</label>
+            <div class="row m-0 upload-section" style="padding-top: 0">
+               <div class="col-sm-4 costmz-logo-new mt-2">
+                  <div class="question-circle-inp" *ngIf = "OrganizationGeneralSettingsStore.organizationSettings?.logo_allowed_types.length > 0" style="margin-right: 7px;">
+                     <i class="far fa-question-circle"></i>
+                     <div class="message-password-inp">
+                         <p class="mb-0">{{'allowed_file_types' | translate}} {{OrganizationGeneralSettingsStore.organizationSettings?.logo_allowed_types.toString()}}</p>
+                     </div>
+                  </div>
+                  <div class="form-group form-group-upload">
+                     <div class="darag-dropifile-upload">
+                        <div class="d-flex justify-content-center align-items-center text-center">
+                           <div>
+                              <img src="/assets/images/drag-pic.png" alt="image" class="drag-pic-files">
+                              <div class="drag-file-name">{{'drag_drop_file_here' | translate}}</div>
+                              <div class="upload-btn-wrapper">
+                                 <input [disabled] = "CustomersStore.logo_preview_available" type="file" name="myfile" (change)="onFileChange($event,'logo')" [accept]="checkAcceptFileTypes('logo')" >
+                                 <button class="btn">{{'browse_files' | translate}}</button>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+               <div class="col-sm-4 up-pic-cf mt-2" *ngIf = "CustomersStore.logo_preview_available">
+                  <div class="upload-pics edit-option file-upload-loader">
+                     <circle-progress  class="browse-form-pic"
+                        [percent] = fileUploadProgress
+                        [title] = fileUploadProgress
+                     ></circle-progress>
+                  </div>
+               </div> 
+               <div [ngClass]="CustomersStore.getFileDetailsByType('logo')?.is_deleted ? 'col-sm-4 up-pic-cf mt-2 image_deleted':'col-sm-4 up-pic-cf mt-2'" *ngIf = "CustomersStore.getFileDetailsByType('logo')">
+                  <div class="upload-pics edit-option">
+                     <div class="browse-form-pic" [ngStyle]="{'background': 'url(' + CustomersStore.getFileDetailsByType('logo')?.preview + ') no-repeat 0 0 / cover'}">
+                     </div>
+                      <div class="browse-form-name clearfix">
+                       <div class="float-left">
+                        <h6 [attr.title] = "CustomersStore.getFileDetailsByType('logo')?.name">{{CustomersStore.getFileDetailsByType('logo')?.name.length > 20 ? CustomersStore.getFileDetailsByType('logo')?.name.substring(0,20)+' ...' : CustomersStore.getFileDetailsByType('logo')?.name}}</h6>
+                        <span>{{CustomersStore.getFileDetailsByType('logo')?.size/1048576 | number:'0.2-2'}}MB</span>
+                       </div>
+                       <div class="browse-logo">
+                         <img *ngIf = "checkExtension(CustomersStore.getFileDetailsByType('logo')?.ext,'excel') != -1" src="/assets/images/md-xl.png">
+                         <img *ngIf = "checkExtension(CustomersStore.getFileDetailsByType('logo')?.ext,'image') != -1" src="/assets/images/md-jpg.png">
+                         <img *ngIf = "checkExtension(CustomersStore.getFileDetailsByType('logo')?.ext,'doc') != -1" src="/assets/images/md-doc.png">
+                         <img *ngIf = "checkExtension(CustomersStore.getFileDetailsByType('logo')?.ext,'pdf') != -1" src="/assets/images/md-pdf.png">
+                       </div>
+                      </div>
+                      <div class="edit-option-show">
+                       <a (click) = "CustomersStore.unsetFileDetails('logo')"><i class="fas fa-trash"></i></a>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+            <form [formGroup]="customersForm" *mobxAutorun>
+                <div class="row">
+                   <div class="col-sm-6">
+                      <div class="form-group">
+                         <label for="title">{{'name' | translate}}<span class="form-error">*</span></label>
+                         <input type="text" id="title" class="form-control" formControlName = "title" [attr.placeholder]="'name_of_the_customer' | translate">
+                         <p class="form-error pt-1" *ngIf="customersErrors"> {{customersErrors.title}}</p>
+                         <p class="form-error pt-1" *ngIf = "!customersErrors && customersForm.get('title').invalid && (customersForm.controls.title.dirty || customersForm.controls.title.touched)">{{ customersForm.hasError('required', ['title']) ? 'Title required' : 'Maximum 500 characters allowed' }}</p>
+                      </div>
+                   </div>
+                   <div class="col-sm-6">
+                    <div class="form-group">
+                       <label for="mobile">{{'contact_number' | translate}}</label>
+                       <input type="number" id="mobile" class="form-control input-number" formControlName = "mobile" [attr.placeholder]="'write_customer_contact_number' | translate">
+                       <p class="form-error pt-1" *ngIf="customersErrors"> {{customersErrors.mobile}}</p>
+                       <p class="form-error pt-1" *ngIf = "!customersErrors && customersForm.get('mobile').invalid && (customersForm.controls.mobile.dirty || customersForm.controls.mobile.touched)">Enter a valid contact number</p>
+                    </div>
+                 </div>
+                 <div class="col-sm-6">
+                    <div class="form-group">
+                       <label for="email">{{'email_id' | translate}}</label>
+                       <input type="text" id="email" class="form-control" formControlName = "email" [attr.placeholder]="'write_customer_email_adderss' | translate">
+                       <p class="form-error pt-1" *ngIf="customersErrors"> {{customersErrors.email}}</p>
+                       <p class="form-error pt-1" *ngIf = "!customersErrors && customersForm.get('email').invalid && (customersForm.controls.email.dirty || customersForm.controls.email.touched)">Enter a valid email</p>
+                    </div>
+                 </div>
+                 <div class="col-sm-6">
+                    <div class="form-group">
+                       <label for="website">{{'website' | translate}}</label>
+                       <input type="text" id="website" class="form-control" formControlName = "website" [attr.placeholder]="'write_customer_website' | translate">
+                       <p class="form-error pt-1" *ngIf="customersErrors"> {{customersErrors.website}}</p>
+                       <p class="form-error pt-1" *ngIf = "!customersErrors && customersForm.get('website').invalid && (customersForm.controls.website.dirty || customersForm.controls.website.touched)">Enter a valid url</p>
+                    </div>
+                 </div>
+              </div>
+              <label class="contact-sec-form">{{'contact_person_details' | translate}}</label>
+              <div class="row">
+                 <div class="col-sm-6">
+                    <div class="form-group">
+                       <label for="contact_person">{{'contact_person_details' | translate }}</label>
+                       <input type="text" class="form-control" formControlName = "contact_person" id="contact_person" [attr.placeholder]="'write_contact_person_name' | translate">
+                       <p class="form-error pt-1" *ngIf="customersErrors"> {{customersErrors.contact_person}}</p>
+                    </div>
+                 </div>
+                 <div class="col-sm-6">
+                    <div class="form-group">
+                       <label for="contact_person_role">{{'role' | translate}}</label>
+                       <input type="text" class="form-control" formControlName = "contact_person_role" id="contact_person_role" [attr.placeholder]="'write_contact_person_role' | translate">
+                       <p class="form-error pt-1" *ngIf="customersErrors"> {{customersErrors.contact_person_role}}</p>
+                    </div>
+                 </div>
+                 <div class="col-sm-6">
+                    <div class="form-group">
+                       <label for="contact_person_number">{{'mobile' | translate}}</label>
+                       <input type="number" class="form-control input-number" formControlName = "contact_person_number" id="contact_person_number"  [attr.placeholder]="'write_contact_person_mobile_number' | translate">
+                       <p class="form-error pt-1" *ngIf="customersErrors"> {{customersErrors.contact_person_number}}</p>
+                       <p class="form-error pt-1" *ngIf = "!customersErrors && customersForm.get('contact_person_number').invalid && (customersForm.controls.contact_person_number.dirty || customersForm.controls.contact_person_number.touched)">Enter valid mobile number</p>
+                    </div>
+                 </div>
+                 <div class="col-sm-6">
+                    <div class="form-group">
+                       <label>{{'contact_email' | translate}}</label>
+                       <input type="text" class="form-control" id="contact_person_email" formControlName = "contact_person_email" [attr.placeholder]="'write_contact_person_email' | translate">
+                       <p class="form-error pt-1" *ngIf="customersErrors"> {{customersErrors.contact_person_email}}</p>
+                       <p class="form-error pt-1" *ngIf = "!customersErrors && customersForm.get('contact_person_email').invalid && (customersForm.controls.contact_person_email.dirty || customersForm.controls.contact_person_email.touched)">Enter valid email</p>
+                    </div>
+                 </div>
+                 <div class="col-sm-12">
+                    <div class="form-group add-kpi-textarea">
+                       <span style="float: right;" class="text-grey">{{customersForm?.value.address != null ? customersForm?.value.address?.length : 0}} {{'characters' | translate}}</span>
+                       <label for="address">{{'address' | translate}}</label>
+                       <textarea class="form-control" rows="11" id="address" formControlName = "address" [attr.placeholder]="'write_contact_person_address' | translate"></textarea>
+                    </div>
+                 </div>
+              </div>
+              <div class="row">
+                 <div class="col-sm-12">
+                    <div class="d-block justify-content-left border-0 mt-3">
+                     <button type="submit" class="btn btn-active" (click)="saveCustomers()"
+                     [disabled]="customersForm.invalid || AppStore.loading || (fileUploadProgress != 0 && fileUploadProgress != 100)">{{  AppStore.loading  ? getButtonText('loading') : getButtonText('save') }}</button>
+                    <button type="button" data-toggle="modal" data-target="#signal-lost"
+                     class="btn" (click)="saveCustomers(true)"
+                     [disabled]="customersForm.invalid || AppStore.loading || (fileUploadProgress != 0 && fileUploadProgress != 100)">{{  AppStore.loading  ? getButtonText('loading') : getButtonText('save_close')}}</button>
+                    <button type="button" data-toggle="modal" data-target="#error-message"
+                     class="btn"
+                     (click)="cancel()">{{  AppStore.loading  ? getButtonText('loading') : getButtonText('cancel') }}</button>
+                    </div>
+                 </div>
+              </div>
+           </form>
+         </div>
+      </div>
+   </div>
+     

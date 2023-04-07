@@ -1,0 +1,87 @@
+<div class="widget bg-white">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item pointer" [routerLink]="['/masters/compliance-management']"><a>{{'compliance_management' | translate}}</a></li>
+            <li class="breadcrumb-item active">{{'compliance_status' | translate}}</li>
+        </ol>
+    </nav>
+    <!-- Nav tabs -->
+    <table class="table-master table" *ngIf="ComplianceStatusMasterStore?.loaded && ComplianceStatusMasterStore.allItems.length > 0">
+        <tr>
+            <th class="border-top-0" width="5%">{{'sl' | translate}}</th>
+            <th class="border-top-0 pointer" width="43%" (click)="sortTitle('compliance_status_language.title')">{{'compliance_status_type' | translate}}
+                <img _ngcontent-twv-c17="" *ngIf="ComplianceStatusMasterStore.orderItem=='compliance_status_language.title'" class="sort-down-pics pl-2" 
+                [attr.src]="ComplianceStatusMasterStore.orderBy=='desc' ? 
+                'assets/images/sort-up.png' : ComplianceStatusMasterStore.orderBy=='asc' ? 
+                'assets/images/sort-down.png' : 'assets/images/sort-empty.png'">
+            </th>
+            <th style="width: 40%;">{{'compliance_status' | translate}}</th>
+            <th style="width: 12%; text-align: center;" >{{'status' | translate}}</th>
+            <!-- <th class="border-top-0" width="19%" *ngFor = "let lang of LanguageSettingsStore.activeLanguages">{{lang.title}}</th> -->
+        </tr>
+        <ng-container *mobxAutorun>
+            <tr class="edit-and-delete-main" *ngFor="let row of ComplianceStatusMasterStore?.allItems| paginate: {currentPage:ComplianceStatusMasterStore.currentPage, itemsPerPage:ComplianceStatusMasterStore.itemsPerPage,totalItems:ComplianceStatusMasterStore.totalItems};let num=index">
+                <td valign="middle">{{(ComplianceStatusMasterStore.currentPage - 1) * ComplianceStatusMasterStore.itemsPerPage + (num + 1)}}</td>
+                <td valign="middle">{{row.type}}</td>
+                <td><div [attr.class]="'dot-div '+row.label">{{row.compliance_status_language}}</div></td>
+                <td style="padding:0.75rem;text-align: center;" >
+                    <div [attr.class]="'dot-div '+row.status_label">{{row.status}}</div>
+                    <div class="edit-option-show">
+                        <!-- <a  *ngIf="AuthStore.getActivityPermission(1100,'UPDATE_COMPLIANCE_STATUS')" (click)=" getComplianceStatus(row.id)" title="Edit"><i class="fas fa-pen pointer"></i></a> -->
+                        <a  *ngIf="AuthStore.getActivityPermission(1100,'DELETE_COMPLIANCE_STATUS')" (click)="delete(row.id)" [attr.title]="'delete' | translate"><i class="fas fa-trash pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(1100,'ACTIVATE_COMPLIANCE_STATUS')" (click)="activate(row.id)" [attr.title]="'activate' | translate"><i
+                                class="fas fa-check pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.activeStatusId && AuthStore.getActivityPermission(1100,'DEACTIVATE_COMPLIANCE_STATUS')" (click)="deactivate(row.id)" [attr.title]="'deactivate' | translate"><i
+                                class="fas fa-ban pointer"></i></a>
+                    </div>
+                </td>
+                <!-- <td valign="middle" class="edit-option" *ngFor = "let items of row.languages;let itemLength = index"> -->
+                    <!-- <div *ngIf = "row.languages.length - 1 == itemLength" class="edit-option-show-inner" style="margin-top: -6px;">
+                        <a  *ngIf="AuthStore.getActivityPermission(1100,'UPDATE_LABEL')" (click)="getLabel(row.id)" title="Edit" ><i class="fas fa-pen pointer"></i></a>
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'DELETE_LABEL')" (click)="delete(row.id)" title="Delete"><i class="fas fa-trash pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(1100,'LABEL_ACTIVATE')" (click)="activate(row.id)" title="Activate"><i
+                                class="fas fa-check pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.activeStatusId && AuthStore.getActivityPermission(1100,'LABEL_DEACTIVATE')" (click)="deactivate(row.id)" title="Deactivate"><i
+                                class="fas fa-ban pointer"></i></a>
+                   </div> -->
+                 <!-- {{items.pivot.title}}</td> -->
+            </tr>
+        </ng-container>
+    </table>
+    <p class="float-right" *ngIf="ComplianceStatusMasterStore?.loaded && ComplianceStatusMasterStore.totalItems > 0"><b>{{'total_Items' | translate}}:{{ComplianceStatusMasterStore?.totalItems}}</b></p>
+
+    <ng-container *mobxAutorun>
+        <div *ngIf="!ComplianceStatusMasterStore.loaded">
+            <app-table-loader></app-table-loader>
+        </div>
+        <app-no-data *ngIf = "ComplianceStatusMasterStore.totalItems == 0 && ComplianceStatusMasterStore.loaded == true"></app-no-data>
+    </ng-container>
+
+    <div *ngIf="ComplianceStatusMasterStore.totalItems>ComplianceStatusMasterStore.itemsPerPage" class="col-sm-12">
+        <ul class="pagination justify-content-center mt-3">
+            <div class="list">
+                <pagination-controls 
+                    [previousLabel]="'previous' | translate" 
+                    [nextLabel]="'next' | translate"
+                    (pageChange)="pageChange($event)" 
+                    class="my-pagination"
+                    previousLabel="Previous"
+                    nextLabel="Next"></pagination-controls> 
+            </div>
+        </ul>
+    </div>
+</div>
+
+
+<!-- Modal part -->
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+    <app-compliance-status-modal *ngIf="complianceStatusObject.type" [source]="complianceStatusObject">
+    </app-compliance-status-modal>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>

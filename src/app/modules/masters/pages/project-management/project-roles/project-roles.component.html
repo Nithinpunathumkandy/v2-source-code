@@ -1,0 +1,68 @@
+<div class="widget bg-white">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item pointer" [routerLink]="['/masters/project-management']"><a> {{'project_management' | translate}}</a></li>
+            <li class="breadcrumb-item active">{{'project_roles' | translate}}</li>
+        </ol>
+    </nav>
+    
+    <table class="table-master table" *ngIf="ProjectRolesMasterStore?.loaded && ProjectRolesMasterStore.allItems.length > 0">
+        <tr>
+            <th style="width: 10%; text-align: center;">{{'sl' | translate}}</th>
+            <th (click)="sortTitle('project_roles.title')" class="border-top-0 issue-list-org-tab-three pointer" style="width: 40%;"><span>{{'title' | translate}}</span>
+                <img _ngcontent-twv-c17="" *ngIf="ProjectRolesMasterStore.orderItem=='project_roles.title'" class="sort-down-pics pl-2" 
+                [attr.src]="ProjectRolesMasterStore.orderBy=='desc' ? 
+                'assets/images/sort-up.png' : ProjectRolesMasterStore.orderBy=='asc' ? 
+                'assets/images/sort-down.png' : 'assets/images/sort-empty.png'">
+            </th>
+            <th style="width: 15%;">{{'status' | translate}}</th>
+        </tr>
+        <ng-container *mobxAutorun>
+            <tr class="edit-and-delete-main" *ngFor="let row of ProjectRolesMasterStore?.allItems | paginate: {currentPage:ProjectRolesMasterStore?.currentPage, itemsPerPage:ProjectRolesMasterStore?.itemsPerPage,totalItems:ProjectRolesMasterStore?.totalItems}; let num = index">
+                <td style="text-align: center;">{{(ProjectRolesMasterStore?.currentPage - 1) * ProjectRolesMasterStore?.itemsPerPage + (num + 1)}}</td>
+                <td><a (click)=" getProjectRoles(row.id)"  [ngStyle] = "{ 'pointer-events' : AuthStore.getActivityPermission(1100,'UPDATE_PROJECT_ROLE') ? '' : 'none'}">{{row.title}}</a></td>
+                <td style="padding:0.75rem;" >
+                    <div [attr.class]="'dot-div '+row.status_label">{{row.status}}</div>
+                    <div class="edit-option-show" >     
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'UPDATE_PROJECT_ROLE')" (click)=" getProjectRoles(row.id)" title="Edit"><i class="fas fa-pen pointer"></i></a>
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'DELETE_PROJECT_ROLE')" (click)="delete(row.id)" title="Delete"><i class="fas fa-trash pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(1100,'ACTIVATE_PROJECT_ROLE')" (click)="activate(row.id)" title="Activate"><i class="fas fa-check pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.activeStatusId && AuthStore.getActivityPermission(1100,'DEACTIVATE_PROJECT_ROLE')" (click)="deactivate(row.id)" title="Deactivate"><i class="fas fa-ban pointer"></i></a>
+                    </div>
+                </td>    
+            </tr>
+        </ng-container>
+    </table>
+
+    <ng-container *mobxAutorun>
+        <div *ngIf="!ProjectRolesMasterStore.loaded">
+            <app-table-loader></app-table-loader>
+        </div>
+        <app-no-data *ngIf = "ProjectRolesMasterStore.allItems.length == 0 && ProjectRolesMasterStore.loaded == true"></app-no-data>
+
+    </ng-container>
+    <!-- page change bottum  -->
+    <div *ngIf="ProjectRolesMasterStore.totalItems>ProjectRolesMasterStore.itemsPerPage" class="col-sm-12">
+        <ul class="pagination justify-content-center mt-3">
+            <div class="list">
+                <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate" (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls> 
+            </div>
+        </ul>
+    </div>
+</div>
+
+ <!-- New & delete data passing  -->
+ <div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+    <app-project-roles-modal *ngIf="projectRolesObject.type" [source]="projectRolesObject"></app-project-roles-modal>    
+ </div>  
+
+ <!--Delete Confirmation data passing -->
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>  
+
+<div class="modal modal-style-1 email-popup-new fade" data-backdrop="static" data-keyboard="false"
+  id="email-notification-popup" #mailConfirmationPopup>
+  <app-mail-send-popup [source] = "mailConfirmationData"></app-mail-send-popup>
+</div>
+ 

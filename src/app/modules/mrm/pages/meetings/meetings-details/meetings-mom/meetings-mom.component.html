@@ -1,0 +1,190 @@
+<div class="tab-pane active" id="assessment" *mobxAutorun>
+    <div class="row"
+        *ngIf="MeetingsStore.meetingMomDetialLoaded && AuthStore.getActivityPermission(1600,'MEETING_DETAILS')">
+        <div class="col-lg-12 col-sm-12 padding-right-none">
+            <div class="widg-padding-cmn bg-white">
+                <div class="min-height-64">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <app-no-data
+                                *ngIf="!MeetingsStore?.individualMeetingsDetails?.is_unplanned && MeetingsStore.individualMeetingsDetails?.meeting_minutes.length==0">
+                            </app-no-data>
+                        </div>
+                        <div class="col-sm-8">
+                            <div class="form-group ml-4">
+
+                                <div class="audit-form-table w-100 no-fixed-table mb-4"
+                                    *ngIf="!MeetingsStore?.individualMeetingsDetails?.is_unplanned && MeetingsStore.individualMeetingsDetails?.meeting_minutes.length>0">
+                                    <label>{{'minutes_of_the_meeting' | translate}}</label>
+                                    <table class="table table-bordered ordinary-table cmn-table-style mb-1 word-break">
+                                        <tr>
+                                            <th class="border-top-0 text-center" width="5%">{{'sl' | translate}}</th>
+                                            <th class="border-top-0" width="35%">{{'agenda' | translate}}</th>
+                                            <th class="border-top-0" width="35%">{{'mom' | translate}}</th>
+                                            <th class="border-top-0 " width="25%">{{'action' | translate}}</th>
+                                            <!-- <th class="border-top-0" width="15%">{{'responsible_user' | translate}}</th> -->
+                                        </tr>
+                                        <tr class="edit-and-delete-main"
+                                            *ngFor="let row of MeetingsStore.individualMeetingsDetails.meeting_minutes; let MOMIndex=index">
+                                            <td class="text-center">{{MOMIndex+1}}</td>
+                                            <td>{{row?.agenda?row.agenda.title: AppStore.noContentText }}</td>
+                                            <td>
+                                                <p style="white-space: pre-wrap;">{{row?.title?row.title:
+                                                    AppStore.noContentText }}</p>
+                                            </td>
+                                            <td>
+
+                                                <button (click)="openDetailsMeetingAtionPlan(row)"
+                                                    [disabled]="row?.action_plan.length==0"
+                                                    [ngClass]="{'my_class_disablepointer': row?.action_plan.length==0}"
+                                                    type="button" class="btn btn-small float-none mr-0">{{'view_details'
+                                                    | translate}}</button>
+                                                <div class="pointer edit-option-show">
+                                                    <a (click)="delete(row.id,$event)"
+                                                        [attr.title]="'delete' | translate"><i
+                                                            class="fas fa-trash pointer"></i></a>
+                                                    <a (click)="openMeetingAtionPlan(row)"
+                                                        [attr.title]="'edit' | translate"><i
+                                                            class="fas fa-pen pointer"></i></a>
+                                                </div>
+                                            </td>
+                                            <!-- target_date | date:OrganizationGeneralSettingsStore?.organizationSettings?.date_format -->
+                                            <!-- <td *ngIf="row?.action_plan.length > 0">{{row.action_plan[0].target_date| date:OrganizationGeneralSettingsStore?.organizationSettings?.date_format}}</td>
+                                <td *ngIf="row.action_plan.length==0">{{AppStore.noContentText}}</td>
+                                <td *ngIf="row?.action_plan.length > 0">
+                                    <app-user-popup-box [source]="assignUserValues(row.action_plan[0].responsible_user)">
+                                    </app-user-popup-box>
+                                    <div class="pointer edit-option-show">
+                                        <a 
+                                            (click)="delete(row.id,$event)"
+                                            [attr.title]="'delete' | translate"><i class="fas fa-trash pointer"></i></a>
+                                        <a *ngIf="row.is_editable"
+                                            (click)="editMOM(MOMIndex,row)"
+                                            [attr.title]="'edit' | translate"><i class="fas fa-pen pointer"></i></a>
+                                    </div>
+                                </td> 
+                                <td *ngIf="row.action_plan.length==0">
+                                    <div *ngIf="!row.responsible_user_id">
+                                        {{AppStore.noContentText}}</div>
+
+                                       
+                                </td>                                -->
+                                        </tr>
+                                    </table>
+                                </div>
+                                <ng-container *ngIf="MeetingsStore?.individualMeetingsDetails?.is_unplanned">
+                                    <div class="clearfix d-flex">
+                                        <input type="text" class="form-control w-100"
+                                            [ngModelOptions]="{standalone: true}" [(ngModel)]="newMom"
+                                            [placeholder]="'write_a_minutes_of_the_meeting'|translate"
+                                            (input)="meetingMomSameDataErrorClick($event)">
+                                        <button [disabled]="!newMom" class="btn multi-add-user ml-2"
+                                            (click)="addMomTitle(newMom)" style="width: 38px;"><i
+                                                class="fas fa-plus"></i></button>
+                                        <button *ngIf="newMom" class="btn multi-add-user ml-2" (click)="cancelMom()"
+                                            style="width: 38px;"><i class="fas fa-times"></i></button>
+                                    </div>
+                                    <p class="pt-1" style="color: red;" *ngIf="momSameDataError">
+                                        {{'this_item_is_already_added' |
+                                        translate}}</p>
+                                    <div class="mt-2">
+                                        <ul class="arrowlist m-0 p-0">
+                                            <div *ngFor="let items of MeetingsStore.newMeetingsMom">
+                                                <li
+                                                    *ngIf="!MeetingsStore.updateItem || (MeetingsStore.updateItem.id != items.id)">
+                                                    {{items.title}}
+
+
+                                                    <div class="arrowlist-edit-and-add">
+                                                        <a (click)="addMinutesClicked(items)"><i
+                                                                class="fas fa-plus"></i></a>
+
+                                                        <a (click)="editValue(items)"><i class="fas fa-pen"></i></a>
+                                                        <a (click)="deleteMinutes(items,MeetingsStore.newMeetingsMom)"><i
+                                                                class="fas fa-trash"></i></a>
+                                                    </div>
+                                                </li>
+                                                <div class="clearfix d-flex"
+                                                    *ngIf="MeetingsStore.updateItem && items.id==MeetingsStore.updateItem.id">
+                                                    <input type="text" class="form-control w-100"
+                                                        [ngModelOptions]="{standalone: true}" [(ngModel)]="newMomEdit"
+                                                        [placeholder]="'write_a_subtitle_of_minutes'|translate">
+                                                    <button [disabled]="!newMomEdit" class="btn multi-add-user ml-2"
+                                                        (click)="addMomTitle(newMomEdit)" style="width: 38px;"><i
+                                                            class="fas fa-plus"></i></button>
+                                                    <button *ngIf="newMomEdit" class="btn multi-add-user ml-2"
+                                                        (click)="cancelMom()" style="width: 38px;"><i
+                                                            class="fas fa-times"></i></button>
+                                                </div>
+                                                <div class="clearfix d-flex"
+                                                    *ngIf="MeetingsStore.selectedMeeting && items.id == MeetingsStore.selectedMeeting.id">
+                                                    <input type="text" class="form-control w-100"
+                                                        [ngModelOptions]="{standalone: true}"
+                                                        [(ngModel)]="items.text_box_value"
+                                                        [placeholder]="'write_a_subtitle_of_minutes'|translate"
+                                                        (keyup)="keyboardEvent($event,items)">
+                                                    <button class="btn multi-add-user ml-2"
+                                                        (click)="addToMeetingsMom(items)" style="width: 38px;"><i
+                                                            class="fas fa-plus"></i></button>
+                                                    <button class="btn multi-add-user ml-2" (click)="cancelMom(items)"
+                                                        style="width: 38px;"><i class="fas fa-times"></i></button>
+                                                </div>
+                                                <app-mom-add-repeat-modal *ngIf="items.meeting_minutes.length > 0"
+                                                    [details]="items.meeting_minutes"
+                                                    [meetingMomTab]="true"></app-mom-add-repeat-modal>
+                                            </div>
+                                            <p *ngIf="MeetingsStore.newMeetingsMom.length==0">{{AppStore.noContentText}}
+                                            </p>
+                                        </ul>
+                                    </div>
+                                </ng-container>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-xl-12">
+                        <hr class="mb-2">
+                        <div *ngIf="MeetingsStore.individualMeetingsDetails?.created_by?.first_name">
+                            <app-user-popup-box
+                                [source]=" getEmployeePopupDetails( MeetingsStore.individualMeetingsDetails?.created_by, MeetingsStore.individualMeetingsDetails?.created_at)"></app-user-popup-box>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <ng-container *mobxAutorun>
+        <div *ngIf="!MeetingsStore.meetingMomDetialLoaded">
+            <app-meeting-mom-detials-loader></app-meeting-mom-detials-loader>
+        </div>
+    </ng-container>
+    <div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static"
+        data-keyboard="false">
+        <app-delete-popup [source]="popupObject"></app-delete-popup>
+    </div>
+
+    <div class="modal modal-style-1 popup-full-width fade" id="time-tracker1" data-keyboard="false"
+        data-backdrop="static" #detailsMapActionPlan>
+        <app-details-added-action-plan [source]="detailsActionPlanObject" *ngIf="detailsActionPlanObject.type">
+        </app-details-added-action-plan>
+    </div>
+
+    <div class="modal modal-style-1 popup-full-width fade" id="time-tracker" data-keyboard="false"
+        data-backdrop="static" #mapActionPlan>
+        <app-meeting-action-plan [source]="mappingActionPlanObject" *ngIf="mappingActionPlanObject.type">
+        </app-meeting-action-plan>
+    </div>
+
+    <div class="modal modal-style-1 popup-full-width fade" id="time-tracker" data-keyboard="false"
+        data-backdrop="static" #mapActionPlanPreview>
+        <app-preview-meeting-minutes [source]="mappingActionPlanPreviewObject"
+            *ngIf="mappingActionPlanPreviewObject.type">
+        </app-preview-meeting-minutes>
+    </div>
+
+</div>

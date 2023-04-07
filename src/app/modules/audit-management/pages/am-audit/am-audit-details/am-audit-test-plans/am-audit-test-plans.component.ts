@@ -1,0 +1,397 @@
+import { ChangeDetectorRef, Component, ElementRef, OnInit, Renderer2, ViewChild } from '@angular/core';
+import { Router } from '@angular/router';
+import { autorun, IReactionDisposer } from 'mobx';
+import { Subscription } from 'rxjs';
+import { AmAuditTestPlanService } from 'src/app/core/services/audit-management/am-audit/am-audit-test-plan/am-audit-test-plan.service';
+import { AuditManagementService } from 'src/app/core/services/audit-management/audit-management-service/audit-management.service';
+import { FileUploadPopupService } from 'src/app/core/services/fileUploadPopup/file-upload-popup.service';
+import { EventEmitterService } from 'src/app/core/services/general/event-emitter/event-emitter.service';
+import { HelperServiceService } from 'src/app/core/services/general/helper-service/helper-service.service';
+import { RightSidebarFilterService } from 'src/app/core/services/general/right-sidebar-filter/right-sidebar-filter.service';
+import { UtilityService } from 'src/app/shared/services/utility.service';
+import { AppStore } from 'src/app/stores/app.store';
+import { AmAuditTestPlanStore } from 'src/app/stores/audit-management/am-audit/am-audit-test-plan.store';
+import { AmAuditsStore } from 'src/app/stores/audit-management/am-audit/am-audit.store';
+import { AuthStore } from 'src/app/stores/auth.store';
+import { fileUploadPopupStore } from 'src/app/stores/file-upload-popup/fileUploadPopup.store';
+import { NoDataItemStore } from 'src/app/stores/general/no-data-item.store';
+import { RightSidebarLayoutStore } from 'src/app/stores/general/right-sidebar-layout.store';
+import { SubMenuItemStore } from 'src/app/stores/general/sub-menu-item.store';
+import { OrganizationGeneralSettingsStore } from 'src/app/stores/settings/organization-general-settings.store';
+
+declare var $: any;
+@Component({
+  selector: 'app-am-audit-test-plans',
+  templateUrl: './am-audit-test-plans.component.html',
+  styleUrls: ['./am-audit-test-plans.component.scss']
+})
+export class AmAuditTestPlansComponent implements OnInit {
+  @ViewChild('deletePopup') deletePopup: ElementRef;
+  @ViewChild('formModal') formModal: ElementRef;
+  AmAuditTestPlanStore = AmAuditTestPlanStore;
+  OrganizationGeneralSettingsStore = OrganizationGeneralSettingsStore;
+  AmAuditsStore = AmAuditsStore;
+  idleTimeoutSubscription: any;
+  networkFailureSubscription: any;
+  AuthStore = AuthStore;
+  reactionDisposer: IReactionDisposer;
+  deleteEventSubscription: any;
+  testPlanModal: any;
+  AppStore = AppStore;
+
+  filterSubscription: Subscription = null;
+  testPlanObject = {
+    component: 'Audit',
+    values: null,
+    type: null,
+  };
+
+  deleteObject = {
+    id: null,
+    type: '',
+    subtitle: ''
+  };
+
+  constructor(private _auditTestPlanService: AmAuditTestPlanService,
+    private _utilityService: UtilityService,
+    private _cdr: ChangeDetectorRef,
+    private _helperService: HelperServiceService,
+    private _eventEmitterService: EventEmitterService,
+    private _router: Router,
+    private _auditManagementService: AuditManagementService,
+    private _fileUploadPopupService: FileUploadPopupService,
+    private _rightSidebarFilterService: RightSidebarFilterService,
+    private _renderer2: Renderer2
+  ) { }
+
+  ngOnInit(): void {
+    RightSidebarLayoutStore.showFilter = true;
+
+    this.filterSubscription = this._eventEmitterService.sidebarFilterChanged.subscribe(filter => {
+      this.AmAuditTestPlanStore.loaded = false;
+      this.pageChange(1);
+    });
+    NoDataItemStore.setNoDataItems({ title: "common_nodata_title", subtitle: 'common_nodata_subtitle', buttonText: 'add_audit_test_plan' });
+     
+
+    this.reactionDisposer = autorun(() => {
+     
+     
+      if ((AuthStore.userPermissionsLoaded && !AuthStore.getActivityPermission(3900, 'CREATE_AM_AUDIT_TEST_PLAN')) || AmAuditsStore?.individualAuditDetails?.am_audit_field_work_status?.type=='completed' || !AmAuditsStore.editAccessUser()) {
+        NoDataItemStore.deleteObject('subtitle');
+        NoDataItemStore.deleteObject('buttonText');
+      }
+      if (NoDataItemStore.clikedNoDataItem) {
+        this.openFormModal();
+        NoDataItemStore.unSetClickedNoDataItem();
+      }
+
+     
+      if (SubMenuItemStore.clikedSubMenuItem) {
+        switch (SubMenuItemStore.clikedSubMenuItem.type) {
+          case "new_modal":
+            setTimeout(() => {
+
+              this._utilityService.detectChanges(this._cdr);
+              this.openFormModal();
+            }, 1000);
+            break;
+
+          case 'refresh':
+            this.pageChange(1);
+            break;
+            case "export_to_excel":
+              this._auditTestPlanService.exportToExcel('am_audit_ids=' + AmAuditsStore.auditId);
+              break;
+  
+
+          case "search":
+            AmAuditTestPlanStore.searchText = SubMenuItemStore.searchText;
+
+            this.pageChange(1);
+            break;
+
+          default:
+            break;
+        }
+        // Don't forget to unset clicked item immediately after using it
+        SubMenuItemStore.unSetClickedSubMenuItem();
+      }
+
+    })
+
+    AppStore.showDiscussion = false;
+
+    this.deleteEventSubscription = this._eventEmitterService.deletePopup.subscribe(item => {
+      this.delete(item);
+    })
+
+    this.testPlanModal = this._eventEmitterService.amAuditTestPlanModal.subscribe(item => {
+      this.closeFormModal();
+    })
+
+    this.idleTimeoutSubscription = this._eventEmitterService.idleTimeoutModal.subscribe(status => {
+      if (!status) {
+        this.changeZIndex();
+      }
+    })
+
+    this.networkFailureSubscription = this._eventEmitterService.noConnectionModal.subscribe(status => {
+      if (!status) {
+        this.changeZIndex();
+      }
+    })
+
+    this.pageChange(1);
+
+    RightSidebarLayoutStore.filterPageTag = 'am_audit_test_plan';
+    this._rightSidebarFilterService.setFiltersForCurrentPage([
+      'am_audit_test_plan_status_ids',
+      // 'department_ids',
+      'created_by_user_ids',
+    ]);
+  }
+
+  changeZIndex() {
+    if ($(this.formModal.nativeElement).hasClass('show')) {
+      this._renderer2.setStyle(this.formModal.nativeElement, 'z-index', 999999);
+      this._renderer2.setStyle(this.formModal.nativeElement, 'overflow', 'auto');
+    }
+  }
+
+  pageChange(newPage: number = null) {
+    this.setSubmenu();
+    AmAuditTestPlanStore.unsetAuditTestPlanId();
+    AmAuditTestPlanStore.loaded = false;
+    if (newPage) AmAuditTestPlanStore.setCurrentPage(newPage);
+    this._auditTestPlanService.getItems(false, 'status=all&am_audit_ids=' + AmAuditsStore.auditId).subscribe(res => {
+      this._utilityService.detectChanges(this._cdr);
+    })
+  }
+
+  setSubmenu(){
+    if(AmAuditsStore?.individualAuditDetails?.am_audit_field_work_status?.type!='completed' && AmAuditsStore.editAccessUser()){
+      var subMenuItems = [
+        { activityName: 'AM_AUDIT_TEST_PLAN_LIST', submenuItem: { type: 'refresh' } },
+        { activityName: 'AM_AUDIT_TEST_PLAN_LIST', submenuItem: { type: 'search' } },
+        { activityName: 'EXPORT_AM_AUDIT_TEST_PLAN', submenuItem: { type: 'export_to_excel' } },
+       
+        { activityName: 'CREATE_AM_AUDIT_TEST_PLAN', submenuItem: { type: 'new_modal' } },
+      ]
+    }
+    else{
+      var subMenuItems = [
+        { activityName: 'AM_AUDIT_TEST_PLAN_LIST', submenuItem: { type: 'refresh' } },
+        { activityName: 'AM_AUDIT_TEST_PLAN_LIST', submenuItem: { type: 'search' } },
+        { activityName: 'EXPORT_AM_AUDIT_TEST_PLAN', submenuItem: { type: 'export_to_excel' } },
+      ]
+    }
+
+    this._helperService.checkSubMenuItemPermissions(3600, subMenuItems);
+  }
+
+  gotoDetails(id) {
+    this._router.navigateByUrl('/audit-management/am-audits/' + AmAuditsStore.auditId + '/am-audit-test-plans/' + id)
+  }
+
+  openFormModal() {
+    this.testPlanObject.type = 'Add';
+    this.testPlanObject.values = null;
+    setTimeout(() => {
+      $(this.formModal.nativeElement).modal('show');
+    }, 50);
+    this._utilityService.detectChanges(this._cdr);
+  }
+
+
+  closeFormModal() {
+    this.testPlanObject.type = null;
+    // this.testPlanObject.requestType = '';
+    setTimeout(() => {
+      $(this.formModal.nativeElement).modal('hide');
+      $('.modal-backdrop').remove();
+    }, 100);
+    this._utilityService.detectChanges(this._cdr);
+  }
+
+
+  /**
+* Delete the audit test plan
+*/
+  delete(status) {
+    let type;
+    if (status && this.deleteObject.id) {
+      switch (this.deleteObject.type) {
+        case '': type = this._auditTestPlanService.delete(this.deleteObject.id);
+          break;
+
+      }
+
+      type.subscribe(resp => {
+        setTimeout(() => {
+          this._utilityService.detectChanges(this._cdr);
+          if (AmAuditTestPlanStore.currentPage > 1 && this.deleteObject.type == '') {
+            AmAuditTestPlanStore.currentPage = Math.ceil(AmAuditTestPlanStore.totalItems / 15);
+            this.pageChange(AmAuditTestPlanStore.currentPage);
+          }
+        }, 500);
+        this.clearDeleteObject();
+      }, (error => {
+        setTimeout(() => {
+          if (error.status == 405) {
+            this._utilityService.detectChanges(this._cdr);
+          }
+        }, 100);
+
+      }));
+    }
+    else {
+      this.clearDeleteObject();
+    }
+    setTimeout(() => {
+      $(this.deletePopup.nativeElement).modal('hide');
+    }, 250);
+
+  }
+
+  deleteTestPlan(id) {
+    this.deleteObject.id = id;
+    this.deleteObject.type = '';
+    this.deleteObject.subtitle = 'delete_am_audit_test_plan_subtitle';
+
+    $(this.deletePopup.nativeElement).modal('show');
+  }
+
+  clearDeleteObject() {
+
+    this.deleteObject.id = null;
+    this.deleteObject.subtitle = '';
+  }
+
+  getPopupDetails(user) {
+    let userDetailObject: any = {};
+    userDetailObject['first_name'] = user.created_by_first_name;
+    userDetailObject['last_name'] = user.created_by_last_name;
+    userDetailObject['designation'] = user.created_by_designation;
+    userDetailObject['department'] = user.created_by_department;
+    userDetailObject['image_token'] = user.created_by_image_token;
+    userDetailObject['mobile'] = user.created_by_user_mobile;
+    userDetailObject['email'] = user.created_by_user_email;
+    userDetailObject['id'] = user.created_by;
+    userDetailObject['status_id'] = user.created_by_status_id;
+
+    
+    return userDetailObject;
+
+  }
+
+
+  editTestPlan(id) {
+    AmAuditTestPlanStore.setAuditTestPlanId(id);
+    this._auditTestPlanService.getItem(id).subscribe(res => {
+
+      this.testPlanObject.values = {
+        id: id,
+        am_audit_id: AmAuditsStore.auditId,
+        description: res['description'],
+        title: res['title'],
+        control_ids: res['test_plan_controls'],
+        risk_ids: res['test_plan_risks'],
+        objective_ids: res['test_plan_objectives'],
+        documents: res['test_plan_documents'],
+        document_version_contents:res['test_plan_document_version_contents']
+
+      }
+      this.clearCommonFilePopupDocuments();
+      if (res['test_plan_documents']?.length > 0) {
+        this.setDocuments(res['test_plan_documents']);
+      }
+
+      this.testPlanObject.type = 'Edit';
+      // this.testPlanObject.requestType = 'request';
+
+      this._utilityService.detectChanges(this._cdr);
+      setTimeout(() => {
+        $(this.formModal.nativeElement).modal('show');
+      }, 100);
+
+    })
+  }
+
+
+  setDocuments(documents) {
+
+    let khDocuments = [];
+    documents.forEach(element => {
+      if (element.document_id) {
+        element?.kh_document?.versions?.forEach(innerElement => {
+
+          if (innerElement.is_latest) {
+            khDocuments.push({
+              ...innerElement,
+              'is_kh_document': true
+            })
+            fileUploadPopupStore.setUpdateFileArray({
+              'updateId': element.id,
+              ...innerElement
+
+            })
+          }
+
+        });
+      }
+      else {
+        if (element && element.token) {
+          var purl = this._auditManagementService.getThumbnailPreview('test-plan-document', element.token)
+          var lDetails = {
+            created_at: element.created_at,
+            created_by: element.created_by,
+            updated_at: element.updated_at,
+            updated_by: element.updated_by,
+            name: element.title,
+            ext: element.ext,
+            size: element.size,
+            url: element.url,
+            token: element.token,
+            thumbnail_url: element.thumbnail_url,
+            preview: purl,
+            id: element.id,
+            asset_id: element.asset_id,
+            'is_kh_document': false,
+          }
+        }
+        this._fileUploadPopupService.setSystemFile(lDetails, purl);
+
+      }
+
+    });
+    fileUploadPopupStore.setKHFile(khDocuments)
+    let submitedDocuments = [...fileUploadPopupStore.getKHFiles, ...fileUploadPopupStore.getSystemFile]
+    fileUploadPopupStore.setFilestoDisplay(submitedDocuments);
+
+  }
+
+  clearCommonFilePopupDocuments() {
+    fileUploadPopupStore.clearFilesToDisplay();
+    fileUploadPopupStore.clearKHFiles();
+    fileUploadPopupStore.clearSystemFiles();
+    fileUploadPopupStore.clearUpdateFiles();
+  }
+
+
+
+  ngOnDestroy() {
+    if (this.reactionDisposer) this.reactionDisposer();
+    SubMenuItemStore.makeEmpty();
+    this.idleTimeoutSubscription.unsubscribe();
+    this.networkFailureSubscription.unsubscribe();
+    AmAuditTestPlanStore.searchText = null;
+    SubMenuItemStore.searchText = null;
+    RightSidebarLayoutStore.showFilter = false;
+    this.filterSubscription.unsubscribe();
+    this.deleteEventSubscription.unsubscribe();
+    this.testPlanModal.unsubscribe();
+    NoDataItemStore.unsetNoDataItems();
+  }
+
+}

@@ -1,0 +1,77 @@
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source] = "popupObject"></app-delete-popup>
+  </div>
+  
+  <!------------------- Delete Confirmation Modal End --------------------------->
+
+<div class="widget bg-white" *mobxAutorun>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb cursor-pointer">
+            <li class="breadcrumb-item" [routerLink]="['/masters/event-monitoring']"><a>{{'event-monitoring' | translate}}</a></li>
+            <li class="breadcrumb-item active">{{'periodicity' | translate}}</li>
+        </ol>
+    </nav>
+    <!-- Nav tabs -->
+    <table class="table-master table"  *ngIf="PeriodicityMasterStore?.loaded && PeriodicityMasterStore.periodicity.length > 0">
+        <tr>
+            <th style="width: 9%; text-align: center;">{{'sl' | translate}}</th>
+            <th (click)="sortTitle('event_periodicity_language.title')" class="border-top-0 issue-list-org-tab-three pointer" style="width: 77%;"><span>{{'periodicity' | translate}}</span>
+                <img _ngcontent-twv-c17="" *ngIf="PeriodicityMasterStore.orderItem=='event_periodicity_language.title'" class="sort-down-pics pl-2" 
+                [attr.src]="PeriodicityMasterStore.orderBy=='desc' ? 
+                'assets/images/sort-up.png' : PeriodicityMasterStore.orderBy=='asc' ? 
+                'assets/images/sort-down.png' : 'assets/images/sort-empty.png'">
+            </th>
+            <th style="width: 14%;">{{'status' | translate}}</th>
+        </tr>
+        <ng-container>
+            <tr class="edit-and-delete-main" *ngFor="let row of PeriodicityMasterStore?.periodicity | paginate: {currentPage:PeriodicityMasterStore?.currentPage, itemsPerPage:PeriodicityMasterStore?.itemsPerPage,totalItems:PeriodicityMasterStore?.totalItems};let num = index">
+                <td style="text-align: center;">{{(PeriodicityMasterStore?.currentPage - 1) * PeriodicityMasterStore?.itemsPerPage + (num + 1)}}</td>
+                <td><a (click)="getPeriodicity(row.id)" [ngStyle] = "{ 'pointer-events' : AuthStore.getActivityPermission(1100,'UPDATE_EVENT_PERIODICITY') ? '' : 'none'}">{{row.event_periodicity_title}}</a></td>
+                <td style="padding:0.75rem">
+                    <div [attr.class]="'dot-div '+row.status_label">{{row.status}}</div>
+                    <div class="edit-option-show">
+                      <a *ngIf="AuthStore.getActivityPermission(1100,'UPDATE_EVENT_PERIODICITY')" (click) = "getPeriodicity(row.id)" [attr.title]="'edit' | translate"><i class="fas fa-pen pointer"></i></a>
+                      <a *ngIf="AuthStore.getActivityPermission(1100,'DELETE_EVENT_PERIODICITY')" (click) = "delete(row.id)" [attr.title]="'delete' | translate"><i class="fas fa-trash pointer"></i></a>
+                      <a *ngIf="row.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(1100,'ACTIVATE_EVENT_PERIODICITY')" [attr.title]="'activate' | translate" (click) = "activate(row.id)"><i class="fas fa-check pointer"></i></a>                 
+                      <a *ngIf="row.status_id == AppStore.activeStatusId && AuthStore.getActivityPermission(1100,'DEACTIVATE_EVENT_PERIODICITY')" [attr.title]="'deactivate' | translate" (click) = "deactivate(row.id)"><i class="fas fa-ban pointer"></i></a>
+                   </div>
+                  </td>
+
+            </tr>
+        </ng-container>
+    </table>
+    <p class="float-right" *ngIf="PeriodicityMasterStore?.loaded && PeriodicityMasterStore.totalItems > 0"><b>{{'total_Items' | translate}}:{{PeriodicityMasterStore?.totalItems}}</b></p>
+
+    <ng-container *mobxAutorun>
+        <div *ngIf="!PeriodicityMasterStore?.loaded">
+            <app-table-loader></app-table-loader>
+            
+        </div>
+        <app-no-data *ngIf = "PeriodicityMasterStore.periodicity.length == 0 && PeriodicityMasterStore.loaded == true"></app-no-data>
+  
+    </ng-container>
+
+    <div *ngIf="PeriodicityMasterStore.totalItems>PeriodicityMasterStore.itemsPerPage" class="col-sm-12">
+        <ul class="pagination justify-content-center mt-3">
+            <div class="list">
+                <pagination-controls [previousLabel]="'previous' | translate"  [nextLabel]="'next' | translate" (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+            </div>
+        </ul>
+    </div>
+
+   
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+    <button type="button" class="close" data-dismiss="modal" (click) ="closeFormModal()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+    <app-periodicity-modal *ngIf = "periodicityObject.type" [source] = "periodicityObject"></app-periodicity-modal>
+    
+
+</div>
+
+<div class="modal modal-style-1 email-popup-new fade" data-backdrop="static" data-keyboard="false"
+  id="email-notification-popup" #mailConfirmationPopup>
+  <app-mail-send-popup [source] = "mailConfirmationData"></app-mail-send-popup>
+</div>

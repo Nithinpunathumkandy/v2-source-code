@@ -1,0 +1,172 @@
+<!--add call-tree popup starts-->
+<!-- <div class="modal modal-style-1 popup-full-width fade show" id="add-call-tree" data-keyboard="false"
+data-backdrop="static"> -->
+<button type="button" class="close" (click) = "closeFormModal()"><i class="lni-close"></i><span>esc</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header">
+            <h4 class="modal-title pb-2">{{'add_new_user' | translate}}</h4>
+            <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
+        </div>
+        <!-- Modal body -->
+        <div class="modal-body form-body">
+        <p class="head-details">{{'call_tree_form_message' | translate}}</p>
+        <form [formGroup]="form" (ngSubmit)="save()">
+            <div class="row" *mobxAutorun>
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <div class="custom-control custom-radio custom-control-inline" (click) = "changeUserType('internal')">
+                            <input type="radio" class="custom-control-input" value="internal" name="customRadio" id="customRadio1" [ngModelOptions]="{standalone: true}" [(ngModel)] = "userType">
+                            <label class="custom-control-label" for="customRadio1">{{'calltree_internal_user' | translate}}</label>
+                        </div>
+                        <div class="custom-control custom-radio custom-control-inline" (click) = "changeUserType('external')">
+                            <input type="radio" class="custom-control-input" value="external" name="customRadio" id="customRadio2" [ngModelOptions]="{standalone: true}" [(ngModel)] = "userType">
+                            <label class="custom-control-label" for="customRadio2">{{'calltree_external_user' | translate}}</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-12 col-lg-12" *ngIf = "BcpCallTreeStore.BcpCallTree.length > 0">
+                    <div class="form-group">
+                        <label for="name">{{'reporting_to' | translate}}</label>
+                        <div class="clearfix">
+                            <div class="multiple-plain-ngselect">
+                                <!-- formControlName="user_id"  -->
+                                <ng-select [items]="BcpCallTreeStore.BcpCallTree" bindLabel="email"
+                                    bindValue = "id"
+                                    [placeholder]="'bcp_reporting_to_placeholder' | translate " 
+                                    formControlName="reporting_to"
+                                    [multiple]="false"
+                                    [searchFn] = "customTreeSearchFn"
+                                   >
+                                    <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                      <img *ngIf = "item?.image_token" class="ng-select-user-display" height="15" width="15" [attr.src]="createImagePreview('user-profile-picture',item.image_token)" onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                      <img *ngIf = "!item?.image_token" class="ng-select-user-display" height="15" width="15" [attr.src]="getDefaultImage('user-logo')"/>
+                                      <b *ngIf = "item.first_name" style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b><b *ngIf = "item.external_user_name" style="padding-left: 3px;">{{getStringsFormatted([item.external_user_name],50,' ') | titlecase}}</b><span aria-hidden="true" (click) = "clear(item)" style="border:none;" class="ng-value-icon left">×</span>
+                                   </ng-template>
+                                   <ng-template ng-option-tmp let-item="item" let-index="index">
+                                      <div class="user-post-department-pic">
+                                         <img *ngIf = "item?.image_token" class="ng-select-user-display" height="25" width="25" [attr.src]="createImagePreview('user-profile-picture',item.image_token)" onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                         <img *ngIf = "!item?.image_token" class="ng-select-user-display" height="25" width="25" [attr.src]="getDefaultImage('user-logo')"/>
+                                      </div>
+                                      <div *ngIf = "item.first_name" class="user-post-department-div">
+                                         <b>{{getStringsFormatted([item.first_name,item.last_name],35,' ') | titlecase}}</b>
+                                         <!-- <p class="user-post-department-multiple">{{getStringsFormatted([item.designation_title,' '+item.department],35,',')}}</p> -->
+                                      </div>
+                                      <div *ngIf = "item.external_user_name" class="user-post-department-div">
+                                        <b>{{getStringsFormatted([item.external_user_name],35,' ') | titlecase}}</b>
+                                        <!-- <p class="user-post-department-multiple">{{getStringsFormatted([item.designation_title,' '+item.department],35,',')}}</p> -->
+                                     </div>
+                                    </ng-template>
+                                </ng-select>
+                            </div>
+                        </div>
+                        <p class="form-error pt-1" *ngIf="formErrors && formErrors.reporting_to">
+                            {{formErrors.reporting_to}}</p>
+                    </div>
+                </div>
+
+                <div class="col-sm-12 col-lg-12" *ngIf = "userType == 'internal'">
+                    <div class="form-group">
+                        <label for="name">{{'user' | translate}}<span class="form-error">*</span></label>
+                        <div class="clearfix">
+                            <div class="multiple-plain-ngselect">
+                                <!-- formControlName="user_id"  -->
+                                <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                                    bindValue = "id"
+                                    [placeholder]="'select_user' | translate " 
+                                    formControlName="user_id"
+                                    [multiple]="false"
+                                    (clear)="getUsers()" 
+                                    (search)="searchUsers($event)" 
+                                    (open)="getUsers()"
+                                    [searchFn]="customSearchFn">
+                                    <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                      <img *ngIf = "item?.image_token" class="ng-select-user-display" height="15" width="15" [attr.src]="createImagePreview('user-profile-picture',item.image_token)" onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                      <img *ngIf = "!item?.image_token" class="ng-select-user-display" height="15" width="15" [attr.src]="getDefaultImage('user-logo')"/>
+                                      <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,' ') | titlecase}}</b><span aria-hidden="true" (click) = "clear(item)" style="border:none;" class="ng-value-icon left">×</span>
+                                   </ng-template>
+                                   <ng-template ng-option-tmp let-item="item" let-index="index">
+                                      <div class="user-post-department-pic">
+                                         <img *ngIf = "item?.image_token" class="ng-select-user-display" height="25" width="25" [attr.src]="createImagePreview('user-profile-picture',item.image_token)" onerror = "this.src='/assets/images/user-demo2.png'"/>
+                                         <img *ngIf = "!item?.image_token" class="ng-select-user-display" height="25" width="25" [attr.src]="getDefaultImage('user-logo')"/>
+                                      </div>
+                                      <div class="user-post-department-div">
+                                         <b>{{getStringsFormatted([item.first_name,item.last_name],35,' ') | titlecase}}</b>
+                                         <p class="user-post-department-multiple">{{getStringsFormatted([item.designation_title,' '+item.department],35,',')}}</p>
+                                      </div>
+                                   </ng-template>
+                                </ng-select>
+                            </div>
+                        </div>
+                        <p class="form-error pt-1" *ngIf="formErrors&&formErrors.user_id">
+                            {{formErrors.user_id}}</p>
+                    </div>
+                </div>
+
+                <ng-container *ngIf = "userType == 'external'">
+                    <div class="col-sm-12 col-lg-6">
+                        <div class="form-group">
+                            <label for="name">{{'name' | translate}}<span class="form-error">*</span></label>
+    
+                            <input type="text" formControlName="name" class="form-control" [attr.placeholder]="'bcp_write_user_name' | translate">
+                            <p class="form-error pt-1" *ngIf="formErrors&&formErrors.name">
+                                {{formErrors.name}}</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-lg-6">
+                        <div class="form-group">
+                            <label for="name">{{'designation' | translate}}<span class="form-error">*</span></label>
+    
+                            <input type="text" class="form-control" formControlName="designation" [attr.placeholder]="'bcp_write_user_designation' | translate">
+                            <p class="form-error pt-1" *ngIf="formErrors&&formErrors.designation">
+                                {{formErrors.designation}}</p>
+                        </div>
+                    </div>
+    
+                    <div class="col-sm-12 col-lg-6">
+                        <div class="form-group">
+                            <label for="name">{{'email' | translate}}<span class="form-error">*</span></label>
+    
+                            <input type="text" class="form-control" formControlName="email" [attr.placeholder]="'bcp_write_user_email' | translate">
+                            <p class="form-error pt-1" *ngIf="formErrors&&formErrors.email">
+                                {{formErrors.email}}</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-lg-6">
+                        <div class="form-group">
+                            <label for="name">{{'phone' | translate}}<span class="form-error">*</span></label>
+    
+                            <input type="text" class="form-control" formControlName="mobile" [attr.placeholder]="'bcp_write_user_phone' | translate">
+                            <p class="form-error pt-1" *ngIf="formErrors&&formErrors.mobile">
+                                {{formErrors.mobile}}</p>
+                        </div>
+                    </div>
+                </ng-container>
+
+            </div>
+
+     
+
+   
+
+
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="d-block justify-content-left border-0 mt-3">
+                        <button type="button" data-toggle="modal"
+                            class="btn btn-active" [disabled]="form.invalid || AppStore.loading" (click) = "save()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('save') }}</button>
+                        <button type="button" [disabled]="form.invalid || AppStore.loading" data-toggle="modal" (click) = "save(true)" class="btn">{{  AppStore.loading  ? getButtonText('loading') : getButtonText('save_close')}}</button>
+                        <button type="button" data-toggle="modal" (click) = "closeFormModal()"
+                            class="btn">{{'cancel' | translate}}</button>
+                    </div>
+                </div>
+            </div>
+            </form>
+        </div>
+        <!-- Modal footer -->
+    </div>
+</div>
+<!-- </div> -->
+<!--changing organization popup ends-->

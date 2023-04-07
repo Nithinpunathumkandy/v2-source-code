@@ -1,0 +1,66 @@
+<div class="widget bg-white">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item pointer" [routerLink]="['/masters/strategy-management']"><a>{{'strategic_management' | translate}}</a></li>
+            <li class="breadcrumb-item active">{{'strategy_performances' | translate}}</li>
+        </ol>
+    </nav>
+
+    <table class="table-master table" *ngIf="StrategyPerformancesMasterStore?.loaded && StrategyPerformancesMasterStore.allItems.length > 0">
+
+
+        <tr>
+            <th style="width: 5%; text-align: center;" >{{'sl' | translate}}</th>
+            <th (click)="sortTitle('performances.title')" class="border-top-0 issue-list-org-tab-three pointer" style="width: 40%;"><span>{{'title' | translate}}</span>
+                <img _ngcontent-twv-c17="" *ngIf="StrategyPerformancesMasterStore.orderItem=='performances.title'" class="sort-down-pics pl-2" 
+                [attr.src]="StrategyPerformancesMasterStore.orderBy=='desc' ? 
+                'assets/images/sort-up.png' : StrategyPerformancesMasterStore.orderBy=='asc' ? 
+                'assets/images/sort-down.png' : 'assets/images/sort-empty.png'">
+            </th>
+
+
+            <th style="width: 10%;" >{{'status' | translate}}</th>
+
+        </tr>
+        <ng-container *mobxAutorun>
+
+
+
+            <tr class="edit-and-delete-main"
+                *ngFor="let row of StrategyPerformancesMasterStore.allItems| paginate: {currentPage:StrategyPerformancesMasterStore.currentPage, itemsPerPage:StrategyPerformancesMasterStore.itemsPerPage,totalItems:StrategyPerformancesMasterStore.totalItems};let num=index ">
+                <td style="text-align: center;">{{(StrategyPerformancesMasterStore.currentPage - 1) * StrategyPerformancesMasterStore.itemsPerPage + (num + 1)}}</td>
+                <td><a>{{row.title}}</a></td>
+                <td style="padding:0.75rem;" >
+                    <div [attr.class]="'dot-div '+row.status_label">{{row.status}}</div>
+                    <div class="edit-option-show">
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'UPDATE_KPI_TYPE')" (click)=" editPerformances(row.id)" [attr.title]="'edit' | translate" ><i class="fas fa-pen pointer"></i></a>
+                        <a  *ngIf="AuthStore.getActivityPermission(1100,'DELETE_KPI_TYPE')" (click)="delete(row.id)"  [attr.title]="'delete' | translate"><i class="fas fa-trash pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(1100,'ACTIVATE_KPI_TYPE')" (click)="activate(row.id)" [attr.title]="'activate' | translate"><i
+                                class="fas fa-check pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.activeStatusId && AuthStore.getActivityPermission(1100,'DEACTIVATE_KPI_TYPE')" (click)="deactivate(row.id)" [attr.title]="'deactivate' | translate"><i
+                                class="fas fa-ban pointer"></i></a>
+                    </div>
+                </td>
+
+            </tr>
+        </ng-container>
+    </table>
+    <p class="float-right" *ngIf="StrategyPerformancesMasterStore?.loaded && StrategyPerformancesMasterStore.totalItems > 0"><b>{{'total_Items' | translate}}:{{StrategyPerformancesMasterStore?.totalItems}}</b></p>
+
+    <ng-container *mobxAutorun>
+        <div *ngIf="!StrategyPerformancesMasterStore.loaded">
+            <app-table-loader></app-table-loader>
+        </div>
+        
+        <app-no-data *ngIf = "StrategyPerformancesMasterStore.totalItems == 0 && StrategyPerformancesMasterStore.loaded == true"></app-no-data>
+    </ng-container>
+
+    <div *ngIf="StrategyPerformancesMasterStore.totalItems > StrategyPerformancesMasterStore.itemsPerPage" class="col-sm-12">
+        <ul class="pagination justify-content-center mt-3">
+            <div class="list">
+                <pagination-controls [previousLabel]="'previous' | translate"  [nextLabel]="'next' | translate" (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls> 
+            </div>
+        </ul>
+    </div>
+</div>
+

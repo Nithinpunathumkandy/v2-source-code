@@ -1,0 +1,139 @@
+
+ <!-- <div class="modal modal-style-1 popup-full-width fade" id="compliance-history-popup" data-keyboard="false"  data-backdrop="static"> -->
+    <button type="button" class="close" data-dismiss="modal"><i class="lni-close"></i><span>{{'esc' | translate }}</span></button>
+    <div class="modal-dialog modal-lg modal-dialog-centered"
+    *ngIf="ComplianceRegisterStore?.complianceRegisterHistoryLoaded">
+      <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h4 class="modal-title">{{'compliance_status_history' | translate }}</h4>
+          <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
+        </div>
+        <!-- Modal body -->
+        <div class="modal-body form-body">
+          <p class="head-details">{{'compliance_status_history_message' | translate}}</p>
+
+          <div class="row">
+             <div class="col-sm-12" >
+                <div class="compliance-history-box cmn-bdr widg-padding-cmn-small b0rder-radius mb-3"
+                   *ngFor="let history of ComplianceRegisterStore.statusHistory; let index=index">
+                   <div class="row align-items-center mb-3">
+                      <div class="col-lg-6 col-md-6 col-6">
+                         <div class="d-flex flex-row user-list-sm p-0">
+                            <!-- <app-user-popup-box
+                            [source]=" getCreatedByPopupDetails(history,history?.created_at)">
+                           </app-user-popup-box> -->
+                           <img *ngIf="history?.created_by_image_token"
+                           [attr.src]="createImagePreview('user-profile-picture',history?.created_by_image_token)"
+                           width="40px" height="40px" class="rounded-circle" onerror = "this.src='/assets/images/user-demo2.png'">
+                        <img *ngIf="!history?.created_by_image_token" [attr.src]="getDefaultImage('user-logo')"
+                           width="40px" height="40px" class="rounded-circle" onerror = "this.src='/assets/images/user-demo2.png'">
+                        <div>
+                           <h6>{{history?.created_by_first_name}}&nbsp;
+                              {{history?.created_by_last_name}}</h6>
+                           <span>
+                              {{history?.created_by_designation}}
+                              | {{'created_on' | translate }}
+                              {{getTimezoneFormatted(history?.created_at) | date:
+                              OrganizationGeneralSettingsStore.organizationSettings?.date_time_format}}</span>
+
+                        </div>
+                        </div>
+                      </div>
+                      
+                      <div class="col-lg-6 col-md-6 col-6 text-right">
+                        <div 
+                        [ngClass]="getStatusColorKey(history.compliance_status_label)"> {{history?.compliance_status_title}}</div>
+                         <!-- <p class="dot-color-p mb-0"><span [attr.class]="'dot-div '+history?.compliance_status_label"></span>{{history?.compliance_status_title}}</p> -->
+                      </div>
+                   </div>
+                   <p style="white-space: pre-wrap;">{{history?.comment ? history?.comment:AppStore.noContentText}} </p>
+                      <h6 class="" *ngIf="history?.documents?.length > 0">{{'attachments' | translate}}</h6>
+                                    <!-- <p >{{AppStore.noContentText}}</p> -->
+                                <!-- <ng-container *ngIf="ComplianceRegisterStore.ComplianceRegisterDetailsList?.documents.length==0">
+                                        <ul class="banking-issue">
+                                            <li style="padding-left: 15px;" class="clearfix">
+                                               <a> {{AppStore.noContentText}}</a>
+                                            </li>
+                                        </ul>
+                                    </ng-container> -->
+                
+                                <div class="thumb-pics-bg thumb-pics-col-3 thumb-pics-fix-text clearfix edit-and-delete-main"
+                                      *ngFor="let d of history.documents">
+                                        <!-- <div class="edit-option-show" style="margin: -10px -25px 0 0;">
+                                            <a ><i class="fas fa-download pointer" [attr.title]="'download_all' | translate" (click) = "downloadAllAttachments(ComplianceRegisterStore?.ComplianceRegisterDetailsList?.id)"></i></a>
+                                         </div> -->
+                                    <div class="thumb-pics" 
+                                                   >
+                                                    <div class="upload-pics upload-pics-small edit-option"
+                                                    (click)="viewStatusDocument('compliance-status-document',history,d)">
+                                                        <div class="browse-form-pic"
+                                                            [ngStyle]="{'background': 'url(' + createImageUrl('compliance-status-document',d.token) + '), url(' + getDefaultImage('no-preview') + ') no-repeat 0 0 / cover '}">
+                                                        </div>
+                                                        <div class="browse-form-name clearfix">
+                                                            <div class="float-left">
+                                                                <h6 [attr.title]="d.title">
+                                                                    {{d?.title?.length > 25 ? d?.title?.substring(0,25)+' ...': d?.title}}
+                                                                </h6>
+                                                                <span>{{d?.size/1048576 | number:'0.2-2'}}MB</span>
+                                                            </div>
+                                                            <div class="browse-logo">
+                                                                <img *ngIf="checkExtension(d.ext,'image') != -1"
+                                                                    src="/assets/images/md-jpg.png">
+                                                                <img *ngIf="checkExtension(d.ext,'doc') != -1"
+                                                                    src="/assets/images/word-icone.png">
+                                                                <img *ngIf="checkExtension(d.ext,'pdf') != -1"
+                                                                    src="/assets/images/pdf-icone.png">
+                                                                <img *ngIf="checkExtension(d.ext,'excel') != -1"
+                                                                    src="/assets/images/excel-icone.png">
+                                                                <img *ngIf="checkExtension(d.ext,'video') != -1"
+                                                                    src="/assets/images/md-video.png">
+                                                                <img *ngIf="checkExtension(d.ext,'audio') != -1"
+                                                                    src="/assets/images/md-audio.png">
+                                                                <img *ngIf="checkExtension(d.ext,'ppt') != -1"
+                                                                    src="/assets/images/md-ppt.png">
+                                                            </div>
+                                                        </div>
+                                                        <div class="edit-option-show-inner" style="margin: 0 -8px 0 0;">
+                                                            <a><i class="fas fa-download" [attr.title]="'download' | translate"
+                                                                    (click)="downloadComplianceStatusDocument('compliance-status-document',history,d)"></i></a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                
+                                        </div>
+
+                </div>
+
+             </div>
+          </div>
+          
+
+         <!-- <div class="row">   
+            <div class="col-sm-12">
+              <div class="d-block justify-content-left border-0 mt-3">
+                <button type="button" data-dismiss="modal" class="btn btn-primary mr-2">{{'close' | translate }}</button>
+              </div>
+            </div>
+          </div> -->
+        </div>
+        <!-- Modal footer --> 
+      </div>
+    </div>
+  <!-- </div> -->
+  <ng-container *mobxAutorun>
+    <div *ngIf="!ComplianceRegisterStore?.complianceRegisterHistoryLoaded">
+        <app-compliance-status-history-loader></app-compliance-status-history-loader>
+    </div>
+ </ng-container>
+
+<!-- preview component for image preview -->
+<div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup" data-keyboard="false"
+    data-backdrop="static" #filePreviewModal *mobxAutorun>
+    <!-- <button type="button" class="close"  (click)="closePreviewModal($event)"><i
+            class="lni-close"></i><span>{{'esc' | translate}}</span></button> -->
+    <app-compliance-mangement-preview
+        *ngIf="previewObject"
+        [source]="previewObject" >
+    </app-compliance-mangement-preview>
+</div>

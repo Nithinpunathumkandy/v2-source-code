@@ -1,0 +1,90 @@
+<div class="widget bg-white">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item pointer" [routerLink]="['/masters/mrm']"><a>{{'mrm' | translate}}</a></li>
+            <li class="breadcrumb-item active">{{'meeting_agenda' | translate}}</li>
+        </ol>
+    </nav>
+    <table class="table-master table" *ngIf="MeetingAgendaMasterStore?.loaded && MeetingAgendaMasterStore.allItems.length > 0">
+        <tr>
+            <th style="width: 5%; text-align: center;">{{'sl' | translate}}</th>
+            <th (click)="sortTitle('meeting_agendas.title')" class="border-top-0 issue-list-org-tab-three pointer" style="width: 83%;"><span>{{'meeting_agenda' | translate}}</span>
+                <img _ngcontent-twv-c17="" *ngIf="MeetingAgendaMasterStore.orderItem=='meeting_agendas.title'" class="sort-down-pics pl-2" 
+                [attr.src]="MeetingAgendaMasterStore.orderBy=='desc' ? 
+                'assets/images/sort-up.png' : MeetingAgendaMasterStore.orderBy=='asc' ? 
+                'assets/images/sort-down.png' : 'assets/images/sort-empty.png'">
+
+
+            </th>
+           
+
+            
+            <th style="width: 12%; text-align: center;">{{'status' | translate}}</th>
+        </tr>
+        <ng-container *mobxAutorun>
+            <tr class="edit-and-delete-main" *ngFor="let row of MeetingAgendaMasterStore?.allItems | paginate: {currentPage:MeetingAgendaMasterStore?.currentPage, itemsPerPage:MeetingAgendaMasterStore?.itemsPerPage,totalItems:MeetingAgendaMasterStore?.totalItems}; let num = index">
+                <td style="text-align: center;">{{(MeetingAgendaMasterStore?.currentPage - 1) * MeetingAgendaMasterStore?.itemsPerPage + (num + 1)}}</td>
+                <td><a (click)="getMeetingAgenda(row.id)" [ngStyle] = "{ 'pointer-events' : AuthStore.getActivityPermission(1100,'UPDATE_MEETING_AGENDA') ? '' : 'none'}">{{row.title}}</a></td>
+                
+              
+                <td style="padding:0.75rem; text-align: center;" >
+                    <div [attr.class]="'dot-div '+row.status_label">{{row.status}}</div>
+                    <div class="edit-option-show" >
+                        
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'UPDATE_MEETING_AGENDA')" (click)=" getMeetingAgenda(row.id)" [attr.title]="'edit' | translate"><i class="fas fa-pen pointer"></i></a>
+                        <a *ngIf="AuthStore.getActivityPermission(1100,'DELETE_MEETING_AGENDA')" (click)="delete(row.id)" [attr.title]="'delete' | translate"><i class="fas fa-trash pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.inActiveStatusId && AuthStore.getActivityPermission(1100,'ACTIVATE_MEETING_AGENDA')" (click)="activate(row.id)" [attr.title]="'activate' | translate"><i
+                                class="fas fa-check pointer"></i></a>
+                        <a *ngIf="row.status_id == AppStore.activeStatusId && AuthStore.getActivityPermission(1100,'DEACTIVATE_MEETING_AGENDA')" (click)="deactivate(row.id)" [attr.title]="'deactivate' | translate"><i
+                                class="fas fa-ban pointer"></i></a>
+                    </div>
+                </td>           
+            </tr>
+        </ng-container>
+    </table>
+    <p class="float-right" *ngIf="MeetingAgendaMasterStore?.loaded && MeetingAgendaMasterStore.totalItems > 0"><b>{{'total_Items' | translate}}:{{MeetingAgendaMasterStore?.totalItems}}</b></p>
+
+    <ng-container *mobxAutorun>
+        <div *ngIf="!MeetingAgendaMasterStore.loaded">
+            <app-table-loader></app-table-loader>
+        </div>
+        <app-no-data *ngIf = "MeetingAgendaMasterStore.allItems.length == 0 && MeetingAgendaMasterStore.loaded == true"></app-no-data>
+   
+    </ng-container>
+
+    <!-- <div *ngIf = "MeetingAgendaMasterStore.totalItems == 0 && MeetingAgendaMasterStore.loaded == true" class="no-policy-demo-text bg-white d-flex align-items-center w-100 mt-2" style="height: 200px">
+        <div class="no-policy-demo">
+           <div class="no-file-icon">
+             <i class="far fa-file"></i>
+           </div>
+           <h6 class="bold mb-0">Nothing To Show</h6>
+        </div>
+     </div> -->
+
+    <div *ngIf="MeetingAgendaMasterStore.totalItems>MeetingAgendaMasterStore.itemsPerPage" class="col-sm-12">
+        <ul class="pagination justify-content-center mt-3">
+            <div class="list">
+                <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate" (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls> 
+            </div>
+        </ul>
+    </div>
+</div>
+<!-- Modal part -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+   
+    <app-meeting-agenda-modal *ngIf="meetingAgendaObject.type" [source]="meetingAgendaObject">
+
+    </app-meeting-agenda-modal>
+
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+
+<div class="modal modal-style-1 email-popup-new fade" data-backdrop="static" data-keyboard="false"
+  id="email-notification-popup" #mailConfirmationPopup>
+  <app-mail-send-popup [source] = "mailConfirmationData"></app-mail-send-popup>
+</div>

@@ -1,0 +1,102 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navigationBar *mobxAutorun>
+
+    <app-sub-menu></app-sub-menu>
+    <div class="module-name-block module-name-block-space float-left">
+		<a class="dropdown module-title" >{{'am_audit_csa'|translate}}</a>
+	  </div>
+
+</nav>
+<main class="mt-3 acl-page" *mobxAutorun>
+    <div class="container-fluid">
+    <app-filter-menu></app-filter-menu>
+    <div class="row"  *ngIf="AmCSAStore?.loaded && AmCSAStore?.csa?.length > 0">
+        <div class="col-sm-12">
+            <div class="full-width-table mb-3">
+                <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll">
+                    <thead>
+                        <tr>
+                            <th class="border-top-0 text-center" width="2%">#</th>
+                            <th (click)="sortTitle('reference_code')" class="border-top-0 pointer" width="8%"><span>{{'reference_code' | translate}}</span>
+                                <img _ngcontent-twv-c17="" style="margin-left: 6px;" *ngIf="AmCSAStore.orderItem=='reference_code'"
+                                [attr.src]="AmCSAStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"  class="sort-down-pics">
+                            </th>
+                            <th (click)="sortTitle('title')" class="border-top-0 pointer" width="46%"><span>{{'title' | translate}}</span>
+                                <img _ngcontent-twv-c17="" style="margin-left: 6px;" *ngIf="AmCSAStore.orderItem=='title'"
+                                [attr.src]="AmCSAStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"  class="sort-down-pics">
+                            </th>
+                            <th (click)="sortTitle('department_title')" class="border-top-0 pointer" width="18%"><span>{{'department' | translate}}</span>
+                                <img _ngcontent-twv-c17="" style="margin-left: 6px;" *ngIf="AmCSAStore.orderItem=='department_title'"
+                                [attr.src]="AmCSAStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"  class="sort-down-pics">
+                            </th>
+                            
+                            <th (click)="sortTitle('am_audit_control_self_assessment_status_title')" class="border-top-0 text-center pointer" width="10%"><span>{{'status' | translate}}</span>
+                                <img _ngcontent-twv-c17="" style="margin-left: 6px;" *ngIf="AmCSAStore.orderItem=='am_audit_control_self_assessment_status_title'"
+                                [attr.src]="AmCSAStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"  class="sort-down-pics">
+                            </th>
+                       
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="edit-and-delete-main"
+                            *ngFor="let csa of AmCSAStore?.csa | paginate: {currentPage:AmCSAStore?.currentPage, itemsPerPage:AmCSAStore?.itemsPerPage,totalItems:AmCSAStore?.totalItems}; let num = index">
+                            <td class="pointer text-center" (click)="gotoDetails(csa)">{{(AmCSAStore?.currentPage
+                                -1) * AmCSAStore?.itemsPerPage + (num +
+                                1)}}</td>
+                                <td class="pointer" (click)="gotoDetails(csa)">#{{csa.reference_code}}</td>
+                           
+                            <td class="pointer" (click)="gotoDetails(csa)"><div [attr.title]="csa.title" class="elips-2">{{csa.title}}</div></td>
+                            
+                            <td class="pointer" (click)="gotoDetails(csa)">
+                                {{csa.department_title?csa.department_title:AppStore.noContentText}}
+                            </td>
+                            <td class="pointer text-center"><div [ngClass]="'dot-div '+csa.am_audit_control_self_assessment_status_label">{{csa.am_audit_control_self_assessment_status_title}}</div>
+                                <div class="edit-option-show" style="margin: 30px 0 0 0; " *ngIf="csa.am_audit_control_self_assessment_status_type!='completed'">
+                                    <!-- edit-and-delete starts -->
+                                    <a (click)="editCSA(csa.id)"><i class="fas fa-pen"></i></a>
+                                    <a (click)="deleteCSA(csa.id)"><i class="fas fa-trash"></i></a>
+                                </div><!-- edit-and-delete end -->
+                            </td>
+                        </tr>
+
+
+                    </tbody>
+                </table>
+            </div>
+            <p class="float-right bold mb-0" *ngIf="AmCSAStore?.loaded && AmCSAStore.totalItems > 0">
+                {{'total_Items' | translate}}:{{AmCSAStore?.totalItems}}</p>
+
+        </div>
+        <div *ngIf="AmCSAStore.totalItems>AmCSAStore.itemsPerPage" class="col-sm-12">
+            <ul class="pagination justify-content-center mt-3">
+                <div class="list">
+                    <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"
+                        (pageChange)="pageChange($event)" class="my-pagination"></pagination-controls>
+                </div>
+            </ul>
+        </div>
+
+    </div>
+    <ng-container *ngIf="AmCSAStore?.loaded && AmCSAStore?.csa?.length==0">
+        <app-no-data [border]="false"></app-no-data>
+    </ng-container>
+    <ng-container *mobxAutorun>
+        <app-five-column-loader *ngIf="!AmCSAStore?.loaded"></app-five-column-loader>
+    </ng-container>
+</div>
+</main>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" data-backdrop="static" data-keyboard="false" #deletePopup>
+    <app-delete-popup [source]="deleteObject"></app-delete-popup>
+</div>
+
+<!------------------- Delete Confirmation Modal End --------------------------->
+
+
+<div class="modal modal-style-1 popup-full-width fade" id="new-audit-programme-popup" data-keyboard="false"
+    data-backdrop="static" #formModal style=" overflow: hidden auto;">
+    <app-am-csa-modal *ngIf="CSAObject.type" [source]="CSAObject">
+    </app-am-csa-modal>
+</div>

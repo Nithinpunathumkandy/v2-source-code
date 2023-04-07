@@ -1,0 +1,1223 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navBar>
+   <app-breadcrumb-menu></app-breadcrumb-menu>
+   <app-sub-menu>-</app-sub-menu>
+</nav>
+<main class="mt-3 organization-page" *mobxAutorun>
+   <div class="container-fluid">
+      <div class="organization-form-page">
+         <form id="regForm" [formGroup]="form" class="organization-multi-stup-form multi-stup-form-common">
+            <!-- Circles which indicates the steps of the form: -->
+            <div id="header-sroll-form" class="form-indicates-sec clearfix" #formSteps >
+               <span class="step pointer" (click)="changeStep(0)" style="width:33.33% !important"><span class="multi-form-nbr">1</span>{{'info' |
+                  translate}}</span>
+               <span class="step pointer" (click)="changeStep(1)" style="width:33.33% !important"><span class="multi-form-nbr">2</span>
+                  <span *ngIf="StrategyInitiativeStore.is_mileStoneReq == 1">{{'sm_milestones' | translate}}</span>
+                  <span *ngIf="StrategyInitiativeStore.is_mileStoneReq == 2">{{'action_plans' | translate}}</span>
+                  <span *ngIf="StrategyInitiativeStore.is_mileStoneReq == 3">{{'basic' | translate}}</span>
+               </span>
+               <span class="step pointer" (click)="changeStep(2)" style="width:33.33% !important"><span class="multi-form-nbr">3</span>{{'preview'
+                  | translate}}</span>
+            </div>
+            <!-- One "tab" for each step in the form: -->
+            <div class="tab">
+               <!-- tab start -->
+
+               <div class="row">
+                  <div class="col-lg-6 col-sm-12">
+                     <div class="form-group">
+                        <label for="name">{{'strategy_profile' | translate}}<span class="form-error">*</span></label>
+                        <div class="clearfix d-flex">
+                           <div class="multiple-plain-ngselect select-width-plus w-100">
+                              <ng-select [placeholder]="'choose_strategy_profile' | translate" [multiple]="false"
+                                 formControlName="strategy_profile_id" bindLabel="title"
+                                 [items]="StrategyStore.allItems" bindLabel="title" (change)="changeProfile()"
+                                 (search)="serarchProfile($event)" (open)="openProfile()" (clear)="closeProfile()">
+                                 <ng-option *ngFor="let type of StrategyStore.allItems">
+                                    {{type.title}}
+                                 </ng-option>
+                                 <!-- <ng-template ng-option-tmp let-item="item" let-index="index">
+                                   {{item.title.length > 80 ? item.title.substring(0,80)+'...' : item.title}}
+                              
+                             </ng-template> -->
+                              </ng-select>
+                           </div>
+                           <p class="form-error pt-1" *ngIf="formErrors && formErrors.strategy_profile_id">
+                              {{formErrors.strategy_profile_id}}
+                           </p>
+                        </div>
+                     </div>
+                  </div>
+
+                  <div class="col-lg-6 col-sm-12" *ngIf="OrganizationModulesStore.checkIndividualSubModule(3200,53001)">
+                     <div class="form-group">
+                        <label for="name">{{'focus_area' | translate}}</label>
+                        <div class="clearfix d-flex">
+                           <div class="multiple-plain-ngselect select-width-plus w-100">
+                              <ng-select [placeholder]="'select_focus_area' | translate" [multiple]="true"
+                                 formControlName="strategy_profile_focus_area_ids" [items]="StrategyStore.focusAreas"
+                                 bindLabel="title" (open)="openFocus()"
+                                 (clear)="openFocus()">
+                                 <ng-option *ngFor="let type of StrategyStore.focusAreas">
+                                    {{type.title}}
+                                 </ng-option>
+
+                              </ng-select>
+                           </div>
+                           <p class="form-error pt-1" *ngIf="formErrors && formErrors.strategy_profile_focus_area_ids">
+                              {{formErrors.strategy_profile_focus_area_ids}}
+
+                        </div>
+                     </div>
+                  </div>
+
+                  <div class="col-sm-12" *ngIf="OrganizationModulesStore.checkIndividualSubModule(3200,53101)">
+                     <div class="form-group">
+                        <label for="name">{{'objectives' | translate}}</label>
+                        <div class="clearfix d-flex">
+                           <div class="multiple-plain-ngselect select-width-plus w-100">
+                              <ng-select [placeholder]="'choose_objective' | translate" [multiple]="true"
+                                 formControlName="strategy_profile_objective_ids" bindLabel="title"
+                                 [items]="StrategyStore.objectives" (change)="changeObjective()"
+                                 (open)="openObjective()" (clear)="openObjective()">
+                                 <ng-option *ngFor="let type of StrategyStore.objectives">
+                                    {{type.title}}
+                                 </ng-option>
+
+                              </ng-select>
+                           </div>
+                           <p class="form-error pt-1" *ngIf="formErrors && formErrors.strategy_profile_objective_ids">
+                              {{formErrors.strategy_profile_objective_ids}}
+                           </p>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+
+               <div class="row">
+                  <div class="col-sm-12" *ngIf="StrategyStore.kpis?.length > 0">
+                     <div class="form-group">
+                        <label for="name">{{'kpi_measures' | translate}}<span class="form-error">*</span></label>
+                        <div class="audit-form-table w-100">
+                           <table *ngIf="StrategyStore.kpis?.length > 0"
+                              class="table table-bordered ordinary-table audit-page-table mb-0 table-scroll">
+                              <thead>
+                                 <tr>
+                                    <th class="border-top-0" width="8%">
+                                       <label class="container2 float-left"
+                                          style="margin-top: 2px; padding-left: 22px;">
+                                          <input [checked]="checkedAll()" (change)="selectAllKpi($event)"
+                                             type="checkbox">
+                                          <span class="checkmark"></span>
+                                       </label>#
+                                    </th>
+                                    <th class="border-top-0" width="50%">KPI</th>
+                                    <th class="border-top-0" width="14%">{{'minimum_value' | translate}}</th>
+                                    <th class="border-top-0" width="14%">{{'maximum_value' | translate}}</th>
+                                    <th class="border-top-0" width="14%">{{'target' | translate}}</th>
+                                 </tr>
+                              </thead>
+                              <tbody>
+                                 <tr *ngFor="let k of StrategyStore.kpis;let num = index">
+                                    <td>
+                                       <label class="container2 float-left"
+                                          style="margin-top: 2px; padding-left: 22px;">
+                                          <input type="checkbox" [id]="k.id" [name]="k.kpi_title"
+                                             [checked]="checkSelectedStatus(k.id)" (change)="selectKpi($event,k,num)">
+                                          <span class="checkmark"></span>
+                                       </label>
+                                       {{num+1}}
+                                    </td>
+                                    <td>{{k.kpi_title}}</td>
+                                    <td>{{k.minimum ? k.minimum : AppStore.noContentText}}</td>
+                                    <td>{{k.maximum ? k.maximum : AppStore.noContentText}}</td>
+                                    <td>{{k.target ? k.target : AppStore.noContentText}} {{k.target ? k.target_unit_title : ''}}</td>
+                                 </tr>
+
+                              </tbody>
+                           </table>
+
+
+                        </div>
+                     </div>
+                  </div>
+               </div>
+
+               <div class="row">
+                  <div class="col-lg-4 col-sm-12">
+                     <div class="form-group">
+                        <label for="name">{{'action' | translate}}</label>
+                        <div class="clearfix d-flex">
+                           <div class="multiple-plain-ngselect select-width-plus w-100">
+                              <ng-select [placeholder]="'select_action' | translate" [multiple]="false"
+                                 formControlName="strategy_initiative_action_id" bindLabel="title"
+                                 [items]="StrategyInitiativeActionsMasterStore?.allItems" (open)="openAction()"
+                                 (clear)="openAction()">
+                                 <ng-option *ngFor="let type of StrategyInitiativeActionsMasterStore?.allItems">
+                                    {{type.title}}
+                                 </ng-option>
+
+                              </ng-select>
+                              <p class="form-error pt-1" *ngIf="formErrors && formErrors.strategy_initiative_action_id">
+                                 {{formErrors.strategy_initiative_action_id}}
+                              </p>
+                           </div>
+                           <button class="btn multi-add-user ml-2" data-toggle="modal" (click)="addNewActioItem()"
+                              style="width: 42px;"><i class="fas fa-plus"></i></button>
+
+                        </div>
+
+                     </div>
+                  </div>
+                  <div class="col-lg-8 col-sm-12">
+                     <div class="form-group">
+                        <label for="name">{{'title' | translate}}<span class="form-error">*</span></label>
+                        <input type="text" formControlName="title" class="form-control"
+                           [placeholder]="'sm_initiative_title'| translate">
+                        <p class="form-error pt-1" *ngIf="formErrors && formErrors.title">{{formErrors.title}}
+                        </p>
+                     </div>
+
+                  </div>
+                  <div class="col-sm-12">
+                     <div class="form-group">
+                        <label for="name">{{'description' | translate}}</label>
+                        <textarea class="form-control " formControlName="description" rows="3" id="comment"
+                           [placeholder]="'sm_initiative_description'| translate"></textarea>
+                     </div>
+                  </div>
+                  <div class="col-sm-6">
+                     <div class="form-group">
+                        <label for="name">{{'start_date' | translate}}<span class="form-error">*</span></label>
+                        <div class="input-group">
+                           <!-- (focus) = "d.toggle()" -->
+                           <input class="form-control" id="start_date" [placeholder]="'select_start_date' | translate"
+                              name="start_date" ngbDatepicker #s="ngbDatepicker" formControlName="start_date">
+                           <div class="input-group-append">
+                              <button class="btn btn-outline-secondary calendar" (click)="s.toggle()" type="button"><i
+                                    class="fas fa-calendar-alt"></i></button>
+                           </div>
+                        </div>
+                        <p class="form-error pt-1" *ngIf="formErrors && formErrors.start_date">{{formErrors.start_date}}
+                        </p>
+                     </div>
+                  </div>
+                  <div class="col-sm-6">
+                     <div class="form-group">
+                        <label for="name">{{'end_date' | translate}}<span class="form-error">*</span></label>
+                        <div class="input-group">
+                           <!-- (focus) = "d.toggle()" -->
+                           <input class="form-control" id="end_date" [placeholder]="'select_end_date' | translate"
+                              name="end_date" ngbDatepicker #e="ngbDatepicker" formControlName="end_date"
+                              [minDate]="form.value.start_date">
+                           <div class="input-group-append">
+                              <button class="btn btn-outline-secondary calendar" (click)="e.toggle()" type="button"><i
+                                    class="fas fa-calendar-alt"></i></button>
+                           </div>
+                           <p class="form-error pt-1" *ngIf="formErrors && formErrors.end_date">{{formErrors.end_date}}
+                           </p>
+
+                        </div>
+
+                     </div>
+                  </div>
+
+                  <div class="col-lg-6 col-sm-12" *ngIf="StrategyManagementSettingStore?.strategyManagementSettings?.is_weightage">
+                     <div class="form-group">
+                        <label for="name">{{'weightage' | translate}}<span class="form-error">*</span></label>
+                        <input formControlName="weightage" type="text" class="form-control"
+                           [placeholder]="'enter_weightage' | translate">
+                        <p class="form-error pt-1" *ngIf="formErrors && formErrors.weightage">{{formErrors.weightage}}
+                        </p>
+                        <p class="form-error pt-1" *ngIf="form?.get('weightage').invalid && form.value.weightage">
+                           {{'numeric_value' | translate}}</p>
+                     </div>
+
+
+                  </div>
+                  <div class="col-lg-6 col-sm-12">
+                     <div class="form-group">
+                        <label for="name">{{'budget' |
+                           translate}}({{OrganizationGeneralSettingsStore?.organizationSettings?.currency}})</label>
+                        <input type="text" formControlName="budget" class="form-control"
+                           [placeholder]="'sm_budget_placeholder' | translate">
+                        <p class="form-error pt-1" *ngIf="formErrors && formErrors.budget">{{formErrors.budget}}</p>
+                        <p class="form-error pt-1" *ngIf="form?.get('budget').invalid && form.value.budget">
+                           {{'numeric_value' | translate}}e</p>
+                     </div>
+
+
+                  </div>
+
+                  <div class="col-lg-6 col-sm-12">
+                     <div class="form-group">
+                        <label for="name">{{'responsible_users' | translate}}<span class="form-error">*</span></label>
+                        <div class="clearfix d-flex">
+                           <div class="multiple-plain-ngselect w-100">
+                              <ng-select [items]="UsersStore.usersList" bindLabel="email"
+                                 [placeholder]="'select_responsible_users' | translate" multiple="true"
+                                 formControlName="responsible_user_ids" (open)="getUsers()" (clear)="getUsers()"
+                                 [searchFn]="customSearchFn">
+                                 <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                    <img *ngIf="item.image_token" height="15" width="15"
+                                       [attr.src]="createImagePreview('user-profile-picture',item.image_token)"
+                                       onerror="this.src='/assets/images/user-demo2.png'" />
+                                    <img *ngIf="!item.image_token" height="15" width="15"
+                                       [attr.src]="getDefaultImage('user-logo')" />
+                                    <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,'
+                                       ') | titlecase}}</b><span aria-hidden="true" (click)="clear(item)"
+                                       style="border:none;" class="ng-value-icon left">×</span>
+                                 </ng-template>
+                                 <ng-template ng-option-tmp let-item="item" let-index="index">
+                                    <div class="user-post-department-pic">
+                                       <img *ngIf="item.image_token" height="25" width="25"
+                                          [attr.src]="createImagePreview('user-profile-picture',item.image_token)"
+                                          onerror="this.src='/assets/images/user-demo2.png'" />
+                                       <img *ngIf="!item.image_token" height="25" width="25"
+                                          [attr.src]="getDefaultImage('user-logo')" />
+                                    </div>
+                                    <div class="user-post-department-div">
+                                       <b>{{getStringsFormatted([item.first_name,item.last_name],50,' ') |
+                                          titlecase}}</b>
+                                       <p class="user-post-department-multiple">
+                                          {{getStringsFormatted([item?.designation_title,' '+item?.department],50,',')}}
+                                       </p>
+                                    </div>
+                                 </ng-template>
+                              </ng-select>
+                              <p class="form-error pt-1" *ngIf="formErrors && formErrors.responsible_user_id">
+                                 {{formErrors.responsible_user_id}}
+                              </p>
+                           </div>
+
+                        </div>
+                     </div>
+                  </div>
+                  <div class="col-lg-6 col-sm-12">
+                     <div class="form-group">
+                        <label for="name">{{'review_frequency' | translate}}<span class="form-error">*</span></label>
+                        <div class="clearfix d-flex">
+                           <div class="multiple-plain-ngselect select-width-plus w-100">
+                              <ng-select [placeholder]="'select_review_frequency' | translate" [multiple]="false"
+                                 formControlName="strategy_review_frequency_id" bindLabel="title"
+                                 [items]="StrategyInitiativeReviewFrequencyMasterStore?.allItems"
+                                 (open)="openFrequncy()" (clear)="openFrequncy()">
+                                 <ng-option *ngFor="let type of StrategyInitiativeReviewFrequencyMasterStore?.allItems">
+                                    {{type.title}}
+                                 </ng-option>
+
+                              </ng-select>
+                              <p class="form-error pt-1" *ngIf="formErrors && formErrors.strategy_review_frequency_id">
+                                 {{formErrors.strategy_review_frequency_id}}
+                              </p>
+                           </div>
+
+                        </div>
+                     </div>
+                  </div>
+
+                  <div class="col-lg-6 col-sm-12">
+                     <div class="form-group">
+                        <label for="name">{{'review_users' | translate}}<span class="form-error">*</span></label>
+                        <div class="clearfix">
+                           <div class="dropdown-filter">
+                              <div class="multiple-plain-ngselect">
+                                 <ng-select [items]="StrategyStore.strategyProfileReviewUser" bindLabel="email"
+                                    multiple="true" formControlName="review_user_ids"
+                                    [placeholder]="'select_review_users' | translate" [searchFn]="customSearchFn"
+                                    (open)="openReviewUser()" (clear)="openReviewUser()">
+                                    <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                       <img *ngIf="item.image_token" class="ng-select-user-display" height="15"
+                                          width="15"
+                                          [attr.src]="createImageUrl('user-profile-picture',item.image_token)"
+                                          onerror="this.src='/assets/images/user-demo2.png'" />
+                                       <img *ngIf="!item.image_token" class="ng-select-user-display" height="15"
+                                          width="15" [attr.src]="getDefaultImage('user-logo')" />
+                                       <b style="padding-left: 3px">{{getStringsFormatted([item.first_name,item.last_name],50,'
+                                          ') | titlecase}}</b><span aria-hidden="true" (click)="clear(item)"
+                                          style="border: none" class="ng-value-icon left">×</span>
+                                    </ng-template>
+                                    <ng-template ng-option-tmp let-item="item" let-index="index">
+                                       <div class="user-post-department-pic">
+                                          <img *ngIf="item.image_token" class="ng-select-user-display" height="25"
+                                             width="25"
+                                             [attr.src]="createImageUrl('user-profile-picture',item.image_token)"
+                                             onerror="this.src='/assets/images/user-demo2.png'" />
+                                          <img *ngIf="!item.image_token" class="ng-select-user-display" height="25"
+                                             width="25" [attr.src]="getDefaultImage('user-logo')" />
+                                       </div>
+                                       <div class="user-post-department-div">
+                                          <b>{{getStringsFormatted([item.first_name,item.last_name],50,'
+                                             ') | titlecase}}</b>
+                                          <p class="user-post-department-multiple">
+                                             {{getStringsFormatted([item?.designation?.title,'
+                                             '+item?.department?.title],30,',')}}
+                                          </p>
+                                       </div>
+                                    </ng-template>
+                                 </ng-select>
+                              </div>
+                           </div>
+                           <p class="form-error pt-1" *ngIf="formErrors && formErrors.review_user_ids">
+                              {{formErrors.review_user_ids}}</p>
+                        </div>
+                     </div>
+                  </div>
+
+                  <div class="col-sm-12">
+                     <div class="form-group">
+                        <div class="custom-control pt-2 custom-radio">
+                           <input type="radio" (change)="changeMileStone(1)"
+                              [checked]="StrategyInitiativeStore.is_mileStoneReq == 1" class="custom-control-input"
+                              id="customRadio1" name="example1" value="customEx">
+                           <label class="custom-control-label" for="customRadio1"
+                              style="padding-top: 2px;">{{'milestone' | translate}}</label>
+
+                           <span class="pl-5">
+                              <input type="radio" (change)="changeMileStone(2)"
+                                 [checked]="StrategyInitiativeStore.is_mileStoneReq == 2" class="custom-control-input"
+                                 id="customRadio2" name="example1" value="customEx">
+                              <label class="custom-control-label" for="customRadio2"
+                                 style="padding-top: 2px;">{{'action_plan' | translate}}</label>
+                           </span>
+
+                           <span class="pl-5">
+                              <input type="radio" (change)="changeMileStone(3)"
+                                 [checked]="StrategyInitiativeStore.is_mileStoneReq == 3" class="custom-control-input"
+                                 id="customRadio3" name="example1" value="customEx">
+                              <label class="custom-control-label" for="customRadio3" style="padding-top: 2px;">{{'basic'
+                                 | translate}}</label>
+                           </span>
+
+                        </div>
+                     </div>
+                  </div>
+
+                  <div class="col-lg-6 col-sm-12" *ngIf="StrategyInitiativeStore.is_mileStoneReq == 3">
+                     <div class="form-group">
+                        <label for="name">{{'target' | translate}}</label>
+                        <input type="text" formControlName="target" class="form-control"
+                           [placeholder]="'enter_target' | translate">
+                        <p class="form-error pt-1" *ngIf="formErrors && formErrors.target">{{formErrors.target}}</p>
+                        <p class="form-error pt-1" *ngIf="form?.get('target').invalid && form.value.target">
+                           {{'numeric_value' | translate}}</p>
+                     </div>
+                  </div>
+
+                  <div class="col-lg-6 col-sm-12" *ngIf="StrategyInitiativeStore.is_mileStoneReq == 3">
+                     <div class="form-group">
+                        <label for="name">{{'target_unit' | translate}}</label>
+                        <div class="clearfix d-flex">
+                           <div class="multiple-plain-ngselect select-width-plus w-100">
+                              <ng-select [placeholder]="'select_target_unit' | translate" [multiple]="false"
+                                 formControlName="target_unit_id" bindLabel="title" [items]="UnitMasterStore.allItems"
+                                 (open)="openTargetUnit()" (clear)="openTargetUnit()">
+
+                                 <ng-option *ngFor="let type of UnitMasterStore.allItems">
+                                    {{type.title}}
+                                 </ng-option>
+
+                              </ng-select>
+                              <p class="form-error pt-1" *ngIf="formErrors && formErrors.target_unit_id">
+                                 {{formErrors.target_unit_id}}</p>
+                           </div>
+                           <button class="btn multi-add-user ml-2" data-toggle="modal" (click)=" addNewUnitItem()"
+                              style="width: 42px;"><i class="fas fa-plus"></i></button>
+
+                        </div>
+
+                     </div>
+                  </div>
+
+                  <div class="col-lg-6 col-sm-12" *ngIf="StrategyInitiativeStore.is_mileStoneReq == 3">
+                     <div class="form-group">
+                       <label for="name">{{'minimum_value' | translate}} (%)</label>
+                       <div class="plain-select input-add-report">
+                         <input type="text" class="form-control" formControlName="minimum"
+                           [placeholder]="'enter_minimum_value' | translate">
+                         <p class="form-error pt-1" *ngIf="form?.get('minimum').invalid && form.value.minimum">
+                           {{'numeric_value' | translate}}</p>
+                         <!-- <p class="form-error pt-1" *ngIf="form.value.aggregation_type_id == 2 && form.value.minimum > 99">
+                           {{'sm_kpi_min_value_validation' | translate}} 99</p> -->
+         
+                       </div>
+                     </div>
+                   </div>
+                   <div class="col-lg-6 col-sm-12" *ngIf="StrategyInitiativeStore.is_mileStoneReq == 3">
+                     <div class="form-group">
+                       <label for="name">{{'maximum_value' | translate}} (%)</label>
+                       <div class="plain-select input-add-report">
+                         <input type="text" class="form-control" formControlName="maximum"
+                           [placeholder]="'enter_maximum_value' | translate">
+                         <p class="form-error pt-1" *ngIf="form?.get('maximum').invalid && form.value.maximum">
+                           {{'numeric_value' | translate}}</p>
+                         <!-- <p class="form-error pt-1" *ngIf="form.value.aggregation_type_id == 2 && form.value.maximum > 100">
+                           {{'sm_kpi_min_value_validation' | translate}} 100</p> -->
+                       </div>
+                     </div>
+                   </div>
+
+                  <div class="col-lg-12 col-sm-12">
+                     <div class="form-group">
+                        <a class="text-light-blue" data-toggle="modal" (click)="organisationChanges()"
+                           style="border-bottom: 1px solid;">{{'change_organization_unit' | translate}}<span
+                              class="form-error">*</span></a>
+                     </div>
+                  </div>
+               </div>
+            </div>
+            <!-- tab end -->
+            <div class="tab">
+               <!-- tab start -->
+               <div class="our-company-milestones">
+
+                  <app-milestone-fom-loader *ngIf="!StrategyInitiativeStore.mileStonesLoaded">
+                  </app-milestone-fom-loader>
+
+                  <ng-container *mobxAutorun>
+                     <app-no-data
+                        *ngIf="(StrategyInitiativeStore.milesstones?.length == 0 && StrategyInitiativeStore.mileStonesLoaded && StrategyInitiativeStore.is_mileStoneReq == 1) || (StrategyInitiativeStore.is_mileStoneReq == 2 && StrategyInitiativeStore.actionPlans?.length == 0) ">
+                     </app-no-data>
+                  </ng-container>
+                  <div class="d-flex align-items-center w-100 mt-2 min-height-550"
+                     *ngIf="StrategyInitiativeStore.is_mileStoneReq == 3">
+                     <div class="no-policy-demo">
+                        <img
+                           [attr.src]="ThemeStructureSettingStore.themeStructureObject.empty_screen ? ThemeStructureSettingStore.themeStructureObject.empty_screen : '/assets/images/no-data-large-popup-icon.png'"
+                           onerror="this.src='assets/images/no-data-large-popup-icon.png'" style="width: 170px;" />
+                        <h6 class="bold mb-0">{{'is_milestone_action_plan_empty_screen' | translate}}</h6>
+                        <!-- <p class="mb-1">{{'common_nodata_subtitle' | translate}}</p>               -->
+                     </div>
+                  </div>
+                  <div class="bg-white"
+                     *ngIf="(StrategyInitiativeStore.milesstones?.length > 0 && StrategyInitiativeStore.mileStonesLoaded) || (StrategyInitiativeStore.is_mileStoneReq == 2 && StrategyInitiativeStore.actionPlans?.length > 0)">
+
+                     <div class="initiaves-dtl-boxes-main initiaves-dtl-boxes-last-plus">
+                        <div *ngIf="StrategyInitiativeStore.is_mileStoneReq == 1">
+                           <div class="initiaves-dtl-boxes d-flex edit-and-delete-main"
+                              *ngFor="let milestone of StrategyInitiativeStore.milesstones;let num = index">
+                              <div class="initiaves-dtl-boxes-left">
+                                 <div class="initiaves-dtl-boxes-nbr text-light-blue theme-border-color">{{num+1}}</div>
+                              </div>
+                              <div class="initiaves-dtl-boxes-right cmn-bdr widg-padding-cmn w-100">
+                                 <div class="edit-option-show" style="margin: 30px 0 0 0; ">
+                                    <a *ngIf="AuthStore.getActivityPermission(3200, 'DELETE_STRATEGY_INITIATIVE_MILESTONE')"
+                                       (click)="editMileStone(milestone.id)"><i class="fas fa-pen"></i></a>
+                                    <a *ngIf="AuthStore.getActivityPermission(3200, 'UPDATE_STRATEGY_INITIATIVE_MILESTONE')"
+                                       (click)="deleteMileStone(milestone.id)"><i class="fas fa-trash"></i></a>
+                                    <!-- <a><i class="far fa-times-circle"></i></a> -->
+                                 </div>
+                                 <h6>{{milestone.title}}</h6>
+                                 <hr class="mt-0 mb-3">
+                                 <div class="row">
+                                    <div class="col-xl-10 col-lg-10 col-sm-12">
+                                       <p style="white-space: pre-wrap;">{{milestone.description ? milestone.description
+                                          : AppStore.noContentText}}</p>
+
+                                       <div class="row">
+                                          <div class="col-lg-4 col-sm-6">
+                                             <h6>{{'start_date' | translate}}</h6>
+                                             <p>{{milestone.start_date | date:
+                                                OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                             </p>
+                                          </div>
+                                          <div class="col-lg-4 col-sm-6">
+                                             <h6>{{'end_date' | translate}}</h6>
+                                             <p>{{milestone.end_date | date:
+                                                OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</p>
+                                          </div>
+                                          <div class="col-lg-4 col-sm-6">
+                                             <h6>{{'budget' | translate}}</h6>
+                                             <p>{{OrganizationGeneralSettingsStore?.organizationSettings?.currency}}
+                                                {{milestone.budget}} </p>
+                                          </div>
+                                       </div>
+
+
+                                    </div>
+                                    <div class="col-xl-2 col-lg-2 col-sm-12 budget-initives-sec">
+                                       <div class="row align-items-center h-100">
+
+                                          <div class="col-sm-12">
+                                             <div
+                                                [ngClass]="milestone.score && milestone.score > 50 ? 'progress-circle over50 p'+milestone.score : (milestone.score && milestone.score < 50 ? 'progress-circle p'+milestone.score : 'progress-circle p0')">
+                                                <span>{{milestone.score ? milestone.score : '0' }} %</span>
+                                                <div class="left-half-clipper">
+                                                   <div class="first50-bar"></div>
+                                                   <div class="value-bar"></div>
+                                                </div>
+                                             </div>
+                                             <div class="budget-total-score-sec text-center mt-3">
+                                                <!-- <h3>{{milestone.score ? milestone.score : '0' }}/<span>100</span></h3> -->
+                                                <p class="mb-0">{{'completed'| translate}}</p>
+                                             </div>
+                                          </div>
+                                       </div>
+
+                                    </div>
+                                 </div>
+
+                                 <div class="row">
+                                    <div class="col-sm-12">
+                                       <h6>{{'action_plans' | translate}}
+                                          <button type="button" (click)="openActionPlanModal(milestone.id)" class="btn btn-active btn-small ml-3">{{'add' | translate}}</button></h6>
+                                       <!-- <h6>{{'action_plans' | translate}}</h6>
+                                       <button type="button"
+                                          data-toggle="modal" (click)="openActionPlanModal(milestone.id)" class="btn btn-active btn-small ml-3">{{'add' | translate}}</button> -->
+                                       <div class="audit-form-table w-100 not-fixed-table">
+                                          <table *ngIf="StrategyInitiativeStore.actionPlans?.length > 0"
+                                             class="table table-bordered ordinary-table audit-page-table mb-4 table-scroll">
+                                             <thead>
+                                                <tr>
+                                                   <th class="border-top-0 text-center" width="4%">#</th>
+                                                   <th class="border-top-0" width="31%">{{'title' | translate}}</th>
+                                                   <th class="border-top-0" width="15%">{{'target' | translate}}</th>
+                                                   <th class="border-top-0" width="15%">{{'start_date' | translate}}
+                                                   </th>
+                                                   <th class="border-top-0" width="15%">{{'end_date' | translate}}</th>
+                                                   <th class="border-top-0" width="20%">{{'responsible_users' |
+                                                      translate}}</th>
+                                                </tr>
+                                             </thead>
+                                             <tbody>
+                                                <tr class="edit-and-delete-main"
+                                                   *ngFor="let plans of StrategyInitiativeStore.actionPlans;let num = index">
+                                                   <td class="text-center">{{num+1}}</td>
+                                                   <td>{{plans.title}}</td>
+                                                   <td>{{plans.target ? plans.target :AppStore.noContentText}} {{plans.target ? plans.target_unit_title : ''}}</td>
+                                                   <td>{{plans.start_date | date:
+                                                      OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                   </td>
+                                                   <td>{{plans.start_date | date:
+                                                      OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                   </td>
+                                                   <td>
+
+                                                      <div class="user-multiple">
+                                                         <ul class="arci-user-tab-dtl workflow-lst-pics-loop clearfix">
+                                                            <li class="rounde-hov-bg"
+                                                               *ngFor="let user of responsibleOthers(plans.responsible_users)">
+                                                               <!-- <a>
+                                                                  <app-user-popup-box [source]="getPopupDetails(user)"
+                                                                     [showName]="true" [activateButtons]="false">
+                                                                  </app-user-popup-box>
+                                                                  
+                                                               </a> -->
+                                                               <div class="label-and-user-pic">
+                                                                  <div  class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                                                                  <app-user-popup-box [source]="getPopupDetails(user)" [showName]="true" [activateButtons]="false"></app-user-popup-box>
+                                                                   </div>
+                                                              </div>
+                                                            </li>
+
+                                                            <li class="rounde-hov-bg"
+                                                               *ngIf="plans.responsible_users?.length > 3">
+                                                               <a><span class="more-users" data-toggle="modal"
+                                                                     (click)="openResponsibleUsersModal(plans.responsible_users)">..{{plans.responsible_users?.length
+                                                                     - 3}}</span></a>
+                                                            </li>
+                                                         </ul>
+                                                      </div>
+
+                                                      <!-- <div class="edit-option-show" style="margin: 30px 0 0 0; ">
+                                                         <a><i class="far fa-times-circle"></i></a>
+                                                      </div> -->
+                                                      <div class="edit-option-show" style="margin: 30px 0 0 0; ">
+                                                         <a (click)="editActionPlan(plans,milestone.id)"><i class="fas fa-pen"></i></a>                 
+                                                     </div>
+                                                   </td>
+                                                </tr>
+
+
+
+                                             </tbody>
+                                          </table>
+                                          <table
+                                             *ngIf="StrategyInitiativeStore.is_mileStoneReq == 1 && milestone.strategy_initiative_milestone_action_plans?.length > 0"
+                                             class="table table-bordered ordinary-table audit-page-table mb-0 table-scroll">
+                                             <thead>
+                                                <tr>
+                                                   <th class="border-top-0 text-center" width="2%">#</th>
+                                                   <th class="border-top-0" width="35%">{{'title' | translate}}</th>
+                                                   <th class="border-top-0" width="15%">{{'target' | translate}} </th>
+                                                   <th class="border-top-0" width="15%">{{'start_date' | translate}}
+                                                   </th>
+                                                   <th class="border-top-0" width="15%">{{'end_date' | translate}}</th>
+                                                   <th class="border-top-0" width="18%">{{'responsible_user' |
+                                                      translate}}</th>
+                                                </tr>
+                                             </thead>
+                                             <tbody>
+                                                <tr
+                                                   *ngFor="let plan of milestone.strategy_initiative_milestone_action_plans;let num = index">
+                                                   <td class="text-center">{{num+1}}</td>
+                                                   <td>{{plan.title}}</td>
+                                                   <td>{{plan.target ? plan.target : AppStore.noContentText}} {{plan.target ? plan.target_unit_title : ''}}</td>
+                                                   <td>{{plan.start_date | date:
+                                                      OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                   </td>
+                                                   <td>{{plan.end_date | date:
+                                                      OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                   </td>
+                                                   <td>
+
+                                                      <div class="user-multiple">
+                                                         <ul class="arci-user-tab-dtl workflow-lst-pics-loop clearfix">
+                                                            <li class="rounde-hov-bg"
+                                                               *ngFor="let user of responsibleOthers(plan.responsible_users)">
+                                                               <a>
+                                                                  <app-user-popup-box [source]="getPopupDetails(user)"
+                                                                     [showName]="false" [activateButtons]="false">
+                                                                  </app-user-popup-box>
+                                                               </a>
+                                                            </li>
+                                                            <li class="rounde-hov-bg"
+                                                               *ngIf="plan.responsible_users?.length > 3">
+                                                               <a><span class="more-users" data-toggle="modal"
+                                                                     (click)="openResponsibleUsersModal(plan.responsible_users)">{{plan.responsible_users?.length
+                                                                     - 3 }}..</span></a>
+                                                            </li>
+                                                         </ul>
+                                                      </div>
+                                                      <div class="edit-option-show" style="margin: 30px 0 0 0; ">
+                                                         <a (click)="editActionPlan(plan,milestone.id)"><i class="fas fa-pen"></i></a>                 
+                                                     </div>
+                                                   </td>
+                                                </tr>
+
+                                             </tbody>
+                                          </table>
+
+                                       </div>
+
+                                    </div>
+                                 </div>
+
+                              </div>
+                           </div>
+                        </div>
+                        <!-- action plan -->
+                        <div class="initiaves-dtl-boxes d-flex edit-and-delete-main"
+                           *ngIf="StrategyInitiativeStore.is_mileStoneReq == 2 && StrategyInitiativeStore.actionPlans?.length > 0 ">
+                           <div class="radius-15 cmn-bdr widg-padding-cmn w-100">
+                              <div class="row">
+                                 <div class="col-xl-10 col-lg-10 col-sm-12">
+
+                                 </div>
+
+                              </div>
+
+                              <div class="row">
+                                 <div class="col-sm-12">
+                                    <div class="d-flex mb-2">
+                                       <div class="w-100 mr-3">
+                                          <h6 class="pt-2 mb-0">{{'action_plans' | translate}}</h6>
+                                       </div>
+                                       <button type="button" (click)="openActionPlanOrMileStone()"
+                                          class="btn btn-small">{{'add'| translate}}</button>
+
+                                    </div>
+
+                                    <div class="audit-form-table w-100 not-fixed-table">
+                                       <table
+                                          *ngIf="StrategyInitiativeStore.is_mileStoneReq == 2 && actionPlanArray?.length > 0"
+                                          class="table table-bordered ordinary-table audit-page-table mb-0 table-scroll">
+                                          <thead>
+                                             <tr>
+                                                <th class="border-top-0 text-center" width="4%">#</th>
+                                                <th class="border-top-0" width="31%">{{'title'| translate}}</th>
+                                                <th class="border-top-0" width="15%">{{'target'| translate}}</th>
+                                                <th class="border-top-0" width="15%">{{'start_date'| translate}}</th>
+                                                <th class="border-top-0" width="15%">{{'end_date'| translate}}</th>
+                                                <th class="border-top-0" width="20%">{{'responsible_user'| translate}}
+                                                </th>
+                                             </tr>
+                                          </thead>
+                                          <tbody>
+                                             <tr class="edit-and-delete-main"
+                                                *ngFor="let plans of actionPlanArray;let num = index">
+                                                <td class="text-center">{{num+1}}</td>
+                                                <td>{{plans.title}}</td>
+                                                <td>{{plans.target ? plans.target : AppStore.noContentText}} {{plans.target ? plans.target_unit_title : ''}}</td>
+                                                <td>{{plans.start_date | date:
+                                                   OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                </td>
+                                                <td>{{plans.start_date | date:
+                                                   OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                </td>
+                                                <td>
+                                                   <div *ngIf="plans.responsible_users?.length == 1"
+                                                      class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                                                      <img
+                                                         *ngIf="plans.responsible_users[0]?.image_token ? plans.responsible_users[0]?.image_token : plans.responsible_user_id?.image_token "
+                                                         height="30px" width="30px"
+                                                         [attr.src]="createImagePreview('user-profile-picture',plans.responsible_users[0]?.image_token? plans.responsible_users[0]?.image_token : plans.responsible_user_id?.image_token)"
+                                                         onerror="this.src='/assets/images/user-demo2.png'" />
+                                                      <img *ngIf="!plans.responsible_users[0]?.image_token"
+                                                         height="30px" width="30px"
+                                                         [attr.src]="getDefaultImage('user-logo')" />
+
+                                                      <div class="pointer">
+                                                         <h6>{{plans.responsible_users[0].first_name ?
+                                                            plans.responsible_users[0].first_name :
+                                                            plans.responsible_user_id.first_name }}
+                                                            {{plans.responsible_users[0].last_name ?
+                                                            plans.responsible_users[0].last_name :
+                                                            plans.responsible_user_id.last_name }}</h6>
+                                                         <span>{{plans.responsible_users[0]?.designation_title ?
+                                                            plans.responsible_users[0]?.designation_title :
+                                                            plans.responsible_users[0].designation?.title }}</span>
+                                                      </div>
+                                                   </div>
+                                                   <div class="user-multiple"
+                                                      *ngIf="plans.responsible_users?.length > 1">
+                                                      <ul class="arci-user-tab-dtl workflow-lst-pics-loop clearfix">
+                                                         <li class="rounde-hov-bg"
+                                                            *ngFor="let user of responsibleOthers(plans.responsible_users)">
+                                                            <a>
+                                                               <app-user-popup-box [source]="getPopupDetails(user)"
+                                                                  [showName]="false" [activateButtons]="false">
+                                                               </app-user-popup-box>
+                                                            </a>
+                                                         </li>
+
+                                                         <li class="rounde-hov-bg"
+                                                            *ngIf="plans.responsible_users?.length > 3">
+                                                            <a><span class="more-users" data-toggle="modal"
+                                                                  (click)="openResponsibleUsersModal(plans.responsible_users)">..{{plans.responsible_users?.length
+                                                                  - 3}}</span></a>
+                                                         </li>
+                                                      </ul>
+                                                   </div>
+                                                   <div class="edit-option-show" style="margin: 30px 0 0 0; ">
+                                                      <a (click)="editActionPlan(plans)"><i class="fas fa-pen"></i></a>
+                                                      <a (click)="deletePlan(plans,num)"><i
+                                                            class="fas fa-trash"></i></a>
+                                                   </div>
+                                                </td>
+                                             </tr>
+
+
+
+                                          </tbody>
+                                       </table>
+                                    </div>
+
+                                 </div>
+                              </div>
+
+                           </div>
+                        </div>
+                        <!-- end action plan -->
+                     </div>
+                     <div data-toggle="modal"
+                        *ngIf="StrategyInitiativeStore.is_mileStoneReq == 1 && AuthStore.getActivityPermission(3200, 'CREATE_STRATEGY_INITIATIVE_MILESTONE')"
+                        (click)="openActionPlanOrMileStone()"
+                        class="initiaves-milestone-add-btn theme-border-color bg-light-blue pointer m-0"><i
+                           class="fas fa-plus"></i></div>
+                  </div>
+               </div>
+            </div>
+
+            <div class="tab">
+               <!-- tab start -->
+               <div class="bg-white">
+                  <div class="row">
+                     <div class="col-lg-12 col-sm-12">
+                        <div class="issue-top-sec">
+                           <div class="clearfix">
+
+                              <h5 class="d-inline-block cmn-head-style label-tag-style mr-2"><span
+                                    class="issue-smoal-head-text">#{{StrategyInitiativeStore.induvalInitiative?.reference_code
+                                    ? StrategyInitiativeStore.induvalInitiative?.reference_code : 'xxx'}}</span>
+                                 {{form.value.strategy_initiative_action_id?.title ?
+                                 form.value.strategy_initiative_action_id?.title : '' }} {{form.value.title ?
+                                 form.value.title : AppStore.noContentText }}<span
+                                    class="draft-tag label-tag-style-tag label-left-arow-tag d-inline-block status-tag-new-one ml-3">{{StrategyInitiativeStore.induvalInitiative?.strategy_initiative_status
+                                    ?
+                                    StrategyInitiativeStore.induvalInitiative?.strategy_initiative_status?.language[0].pivot.title
+                                    : 'New' }}</span></h5>
+                           </div>
+                           <div class="clearfix">
+                              <p class="label-tag-style mb-2"><i class="fas fa-calendar-alt date-pics-two"></i>
+                                 {{startDate | date:
+                                 OrganizationGeneralSettingsStore.organizationSettings?.date_format}} - {{endDate |
+                                 date:
+                                 OrganizationGeneralSettingsStore.organizationSettings?.date_format}} </p>
+                           </div>
+                           <p style="white-space: pre-wrap;">{{form.value.description ? form.value.description :
+                              AppStore.noContentText }} </p>
+                           <h5 class="mb-4" style="font-weight: 600;">{{'budget' | translate}} :
+                              {{OrganizationGeneralSettingsStore?.organizationSettings?.currency}} {{form.value.budget ?
+                              form.value.budget : AppStore.noContentText}} </h5>
+                        </div>
+
+                        <div class="row">
+                           <div class="col-lg-4 col-sm-6">
+                              <h6>{{'strategy_profile' | translate}}</h6>
+                              <p>{{form.value.strategy_profile_id ?
+                                 form.value.strategy_profile_id.title:AppStore.noContentText}}</p>
+                           </div>
+                           <!-- <div class="col-lg-4 col-sm-6" *ngIf="OrganizationModulesStore.checkIndividualSubModule(3200,53001)">
+                              <h6>{{'focus_area' | translate}}</h6>
+                              <p *ngFor="let focus of form.value.strategy_profile_focus_area_ids">{{focus?.title}}</p>
+                           </div> -->
+                        </div>
+                        <div class="row" *ngIf="OrganizationModulesStore.checkIndividualSubModule(3200,53101)">
+                           <div class="col-lg-12">
+                              <div class="user-details-page mt-2">
+                                 <div class="right-block p-0">
+                                    <h5 class="mt-0"> <span>{{'objectives' | translate}} & KPIs </span> </h5>
+                                 </div>
+                              </div>
+                              <!-- <h5 class="cmn-head-style">Objectives & KPIs</h5> -->
+                              <!-- <h6 *ngFor="let objective of form.value.strategy_profile_objective_ids">{{objective?.title}}</h6> -->
+                              <ul class="arrowlist mt-0 p-0" *ngIf="kpiArray">
+                                 <li *ngFor="let kpi of kpiArray">{{kpi.kpi_title}}</li>
+
+                              </ul>
+                           </div>
+                        </div>
+                        <div class="row">
+                           <div class="col-lg-4 col-sm-6" *ngIf="StrategyInitiativeStore.is_mileStoneReq == 3">
+                              <h6>{{'target' | translate}} </h6>
+                              <p>{{form.value.target ? form.value.target : AppStore.noContentText}}</p>
+                           </div>
+                           <div class="col-lg-4 col-sm-6" *ngIf="StrategyInitiativeStore.is_mileStoneReq == 3">
+                              <h6>{{'target_value' | translate}}</h6>
+                              <p>{{form.value.target_unit_id ? form.value.target_unit_id.title:AppStore.noContentText}}
+                              </p>
+                           </div>
+                           <div class="col-lg-4 col-sm-6" *ngIf="StrategyManagementSettingStore?.strategyManagementSettings?.is_weightage">
+                              <h6>{{'weightage' | translate}}</h6>
+                              <p>{{form.value.weightage ? form.value.weightage : AppStore.noContentText }}</p>
+                           </div>
+                           <div class="col-lg-4 col-sm-6"
+                              *ngIf="OrganizationLevelSettingsStore.organizationLevelSettings?.is_subsidiary">
+                              <h6>{{'subsidiary' | translate}}</h6>
+                              <p>{{form.value.organization_ids?
+                                 getArrayFormatedString('title',form.value.organization_ids) : AppStore.noContentText}}
+                              </p>
+                           </div>
+                           <div class="col-lg-4 col-sm-6"
+                              [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_division ? 'none':'block'}">
+                              <h6>{{'division' | translate}}</h6>
+                              <p>{{form.value.division_ids?
+                                 getArrayFormatedString('title',form.value.division_ids):AppStore.noContentText}}</p>
+                           </div>
+                           <div class="col-lg-4 col-sm-6"
+                              [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_department ? 'none':'block'}">
+                              <h6>{{'department' | translate}}</h6>
+                              <p>{{form.value.department_ids?
+                                 getArrayFormatedString('title',form.value.department_ids):AppStore.noContentText}}
+                              </p>
+                           </div>
+                           <div class="col-lg-4 col-sm-6"
+                              [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_section ? 'none':'block'}">
+                              <h6>{{'section' | translate}}</h6>
+                              <p>{{form.value.section_ids?
+                                 getArrayFormatedString('title',form.value.section_ids):AppStore.noContentText}}</p>
+                           </div>
+                           <div class="col-lg-4 col-sm-6"
+                              [ngStyle]="{display: !OrganizationLevelSettingsStore.organizationLevelSettings?.is_sub_section ? 'none':'block'}">
+                              <h6>{{'sub_section' | translate}}</h6>
+                              <p>{{form.value.sub_section_ids?
+                                 getArrayFormatedString('title',form.value.sub_section_ids):AppStore.noContentText}}
+                              </p>
+                           </div>
+                           <div class="col-lg-4 col-sm-6">
+                              <h6>{{'review_frequency' | translate}}</h6>
+                              <p>{{form.value.strategy_review_frequency_id ?
+                                 form.value.strategy_review_frequency_id.title:AppStore.noContentText}}</p>
+                           </div>
+
+
+                        </div>
+                        <h6>{{'responsible_user' | translate}}</h6>
+                        <div class="row" *ngIf="form.value.responsible_user_ids">
+                           <div class="col-lg-4 col-sm-6" *ngFor="let user of form.value.responsible_user_ids">
+                              <div class="label-and-user-pic">
+                                 <div
+                                    class="d-flex flex-row user-list-sm user-box-smol-round user-box-smol-round-table-scrol rounde-hov-bg">
+                                    <app-user-popup-box [source]="getPopupDetails(user)" [showName]="true"
+                                       [activateButtons]="false">
+                                    </app-user-popup-box>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                        <p *ngIf="!form.value.responsible_user_ids">{{AppStore.noContentText}}</p>
+
+                     </div>
+
+                  </div>
+
+                  <div class="bg-white"
+                     *ngIf="(StrategyInitiativeStore.milesstones?.length > 0 && StrategyInitiativeStore.mileStonesLoaded) || (StrategyInitiativeStore.is_mileStoneReq == 2 && StrategyInitiativeStore.actionPlans?.length > 0)">
+                     <div
+                        [ngClass]="StrategyInitiativeStore.milesstones?.length == 1 ? 'initiaves-dtl-boxes-main initiaves-dtl-boxes-single' : 'initiaves-dtl-boxes-main'">
+                        <div class="initiaves-dtl-boxes d-flex edit-and-delete-main"
+                           *ngFor="let milestone of StrategyInitiativeStore.milesstones;let num = index">
+                           <div class="initiaves-dtl-boxes-left">
+                              <div class="initiaves-dtl-boxes-nbr text-light-blue theme-border-color">{{num+1}}</div>
+                           </div>
+                           <div class="initiaves-dtl-boxes-right cmn-bdr widg-padding-cmn w-100">
+                              <h6>{{milestone.title}}</h6>
+                              <hr class="mt-0 mb-3">
+                              <div class="row">
+                                 <div class="col-xl-10 col-lg-10 col-sm-12">
+                                    <p style="white-space: pre-wrap;">{{milestone.description ? milestone.description :
+                                       AppStore.noContentText}}</p>
+
+                                    <div class="row">
+                                       <div class="col-lg-4 col-sm-6">
+                                          <h6>{{'start_date' | translate}}</h6>
+                                          <p>{{milestone.start_date | date:
+                                             OrganizationGeneralSettingsStore.organizationSettings?.date_format}} </p>
+                                       </div>
+                                       <div class="col-lg-4 col-sm-6">
+                                          <h6>{{'end_date' | translate}}</h6>
+                                          <p>{{milestone.end_date | date:
+                                             OrganizationGeneralSettingsStore.organizationSettings?.date_format}}</p>
+                                       </div>
+                                       <div class="col-lg-4 col-sm-6">
+                                          <h6>{{'budget' | translate}}</h6>
+                                          <p>{{OrganizationGeneralSettingsStore?.organizationSettings?.currency}}
+                                             {{milestone.budget}} </p>
+                                       </div>
+                                    </div>
+
+
+                                 </div>
+                                 <div class="col-xl-2 col-lg-2 col-sm-12 budget-initives-sec">
+                                    <div class="row align-items-center h-100">
+
+                                       <div class="col-sm-12">
+                                          <div
+                                             [ngClass]="milestone.score && milestone.score > 50 ? 'progress-circle over50 p'+milestone.score : (milestone.score && milestone.score < 50 ? 'progress-circle p'+milestone.score : 'progress-circle p0')">
+                                             <span>{{milestone.score ? milestone.score : '0' }} %</span>
+                                             <div class="left-half-clipper">
+                                                <div class="first50-bar"></div>
+                                                <div class="value-bar"></div>
+                                             </div>
+                                          </div>
+                                          <div class="budget-total-score-sec text-center mt-3">
+                                             <!-- <h3>{{milestone.score ? milestone.score : '0' }}/<span>100</span></h3> -->
+                                             <p class="mb-0">{{'completed'| translate}}</p>
+                                          </div>
+                                       </div>
+                                    </div>
+
+                                 </div>
+                              </div>
+
+                              <div class="row">
+                                 <div class="col-sm-12">
+                                    <h6>{{'action_plans' | translate}}</h6>
+                                    <div class="audit-form-table w-100 not-fixed-table">
+                                       <table *ngIf="milestone.strategy_initiative_milestone_action_plans?.length > 0"
+                                          class="table table-bordered ordinary-table audit-page-table mb-0 table-scroll">
+                                          <thead>
+                                             <tr>
+                                                <th class="border-top-0 text-center" width="2%">#</th>
+                                                <th class="border-top-0" width="35%">{{'title' | translate}}</th>
+                                                <th class="border-top-0" width="15%">{{'target' | translate}} </th>
+                                                <th class="border-top-0" width="15%">{{'start_date' | translate}}</th>
+                                                <th class="border-top-0" width="15%">{{'end_date' | translate}}</th>
+                                                <th class="border-top-0" width="18%">{{'responsible_user' | translate}}
+                                                </th>
+                                             </tr>
+                                          </thead>
+                                          <tbody>
+                                             <tr
+                                                *ngFor="let plan of milestone.strategy_initiative_milestone_action_plans;let num = index">
+                                                <td class="text-center">{{num+1}}</td>
+                                                <td>{{plan.title}}</td>
+                                                <td>{{plan.target ? plan.target : AppStore.noContentText}} {{plan.target ? plan.target_unit_title : ''}}</td>
+                                                <td>{{plan.start_date | date:
+                                                   OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                </td>
+                                                <td>{{plan.end_date | date:
+                                                   OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                </td>
+                                                <td>
+
+                                                   <div class="user-multiple">
+                                                      <ul class="arci-user-tab-dtl workflow-lst-pics-loop clearfix">
+                                                         <li class="rounde-hov-bg"
+                                                            *ngFor="let user of responsibleOthers(plan.responsible_users)">
+                                                            <a>
+                                                               <app-user-popup-box [source]="getPopupDetails(user)"
+                                                                  [showName]="false" [activateButtons]="false">
+                                                               </app-user-popup-box>
+                                                            </a>
+                                                         </li>
+                                                         <li class="rounde-hov-bg"
+                                                            *ngIf="plan.responsible_users.length > 3">
+                                                            <a><span class="more-users" data-toggle="modal"
+                                                                  (click)="openResponsibleUsersModal(plan.responsible_users)">{{plan.responsible_users?.length
+                                                                  - 3 }}..</span></a>
+                                                         </li>
+                                                      </ul>
+                                                   </div>
+
+                                                </td>
+                                             </tr>
+
+                                          </tbody>
+                                       </table>
+                                       <p *ngIf="milestone.strategy_initiative_milestone_action_plans?.length == 0">{{AppStore.noContentText}}</p>
+                                    </div>
+
+                                 </div>
+                              </div>
+
+                           </div>
+                        </div>
+                        <!-- action plan -->
+                        <div class="initiaves-dtl-boxes d-flex edit-and-delete-main"
+                           *ngIf="StrategyInitiativeStore.is_mileStoneReq == 2 && StrategyInitiativeStore.actionPlans?.length > 0">
+                           <!-- <div class="initiaves-dtl-boxes-left">
+                              <div class="initiaves-dtl-boxes-nbr text-light-blue theme-border-color"></div>
+                           </div> -->
+                           <div class="radius-15 cmn-bdr widg-padding-cmn w-100">
+
+                              <!-- <h6>{{milestone.title}}</h6> -->
+                              <hr class="mt-0 mb-3">
+                              <div class="row">
+                                 <div class="col-xl-10 col-lg-10 col-sm-12">
+
+
+
+                                 </div>
+
+                              </div>
+
+                              <div class="row">
+                                 <div class="col-sm-12">
+                                    <h6>{{'action_plans' | translate}}</h6>
+                                    <div class="audit-form-table w-100 not-fixed-table">
+                                       <table
+                                          *ngIf="StrategyInitiativeStore.is_mileStoneReq == 2 && StrategyInitiativeStore.actionPlans?.length > 0"
+                                          class="table table-bordered ordinary-table audit-page-table mb-4 table-scroll">
+                                          <thead>
+                                             <tr>
+                                                <th class="border-top-0 text-center" width="4%">#</th>
+                                                <th class="border-top-0" width="31%">{{'title'| translate}}</th>
+                                                <th class="border-top-0" width="15%">{{'target'| translate}}</th>
+                                                <th class="border-top-0" width="15%">{{'start_date'| translate}}</th>
+                                                <th class="border-top-0" width="15%">{{'end_date'| translate}}</th>
+                                                <th class="border-top-0" width="20%">{{'responsible_user'| translate}}
+                                                </th>
+                                             </tr>
+                                          </thead>
+                                          <tbody>
+                                             <tr class="edit-and-delete-main"
+                                                *ngFor="let plans of StrategyInitiativeStore.actionPlans;let num = index">
+                                                <td class="text-center">{{num+1}}</td>
+                                                <td>{{plans.title}}</td>
+                                                <td>{{plans.target ? plans.target : AppStore.noContentText}} {{plans.target ? plans.target_unit_title : ''}}</td>
+                                                <td>{{plans.start_date | date:
+                                                   OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                </td>
+                                                <td>{{plans.start_date | date:
+                                                   OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                </td>
+                                                <td>
+
+                                                   <div class="user-multiple">
+                                                      <ul class="arci-user-tab-dtl workflow-lst-pics-loop clearfix">
+                                                         <li class="rounde-hov-bg"
+                                                            *ngFor="let user of responsibleOthers(plans.responsible_users)">
+                                                            <a>
+                                                               <app-user-popup-box [source]="getPopupDetails(user)"
+                                                                  [showName]="false" [activateButtons]="false">
+                                                               </app-user-popup-box>
+                                                            </a>
+                                                         </li>
+
+                                                         <li class="rounde-hov-bg"
+                                                            *ngIf="plans.responsible_users?.length > 3">
+                                                            <a><span class="more-users" data-toggle="modal"
+                                                                  (click)="openResponsibleUsersModal(plans.responsible_users)">..{{plans.responsible_users?.length
+                                                                  - 3}}</span></a>
+                                                         </li>
+                                                      </ul>
+                                                   </div>
+
+                                                </td>
+                                             </tr>
+
+
+
+                                          </tbody>
+                                       </table>
+                                       <p *ngIf="StrategyInitiativeStore.is_mileStoneReq == 2 && StrategyInitiativeStore.actionPlans?.length == 0">{{AppStore.noContentText}}</p>
+                                    </div>
+
+                                 </div>
+                              </div>
+
+                           </div>
+                        </div>
+                        <!-- end action plan -->
+                     </div>
+                  </div>
+               </div>
+            </div><!-- tab end -->
+
+            <div style="overflow:auto;">
+               <div class="form-next-page-btns" style="float:left;">
+                  <button class="btn btn-active" type="button" id="nextBtn"
+                     [disabled]="AppStore.loading||!checkFormObject() || !kpiArray"
+                     (click)="nextPrev(1,true)">{{getButtonText(nextButtonText)}}</button>
+                  <button class="btn" type="button" id="prevBtn" (click)="saveTabDetails()"
+                     [disabled]="AppStore.loading||!checkFormObject() || !kpiArray">{{getButtonText('save')}}</button>
+                  <button class="btn" type="button" (click)="cancel()">{{currentTab == 2 ? getButtonText('close') : getButtonText('cancel')}}</button>
+               </div>
+            </div>
+
+         </form>
+      </div>
+   </div>
+</main>
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopup data-backdrop="static" data-keyboard="false">
+   <app-delete-popup [source]="deleteObjects"></app-delete-popup>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" id="add-milestone-popup" data-keyboard="false"
+   data-backdrop="static" #milestoneModal>
+   <app-new-milestone [source]="milestoneObject" *ngIf="milestoneObject.type"></app-new-milestone>
+</div>
+<!-----------------------Form Modal Start--------------------------->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static"
+   #organisationChangeFormModal *mobxAutorun>
+   <app-organisation-change-modal *ngIf="openModelPopup" [source]="form.value"
+      (organizationChangeEvent)="closeModal($event)"></app-organisation-change-modal>
+</div>
+<!-----------------------Form Modal End--------------------------->
+<!-- unit modal -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formModal>
+   <app-unit-modal *ngIf="unitObject.type" [source]="unitObject"></app-unit-modal>
+</div>
+
+<!-- action modal -->
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #formActionModal>
+   <app-strategy-initiative-actions-modal *ngIf="strategyInitiativeActionsObject.type"
+      [source]="strategyInitiativeActionsObject">
+   </app-strategy-initiative-actions-modal>
+</div>
+
+<!-- responsible user popup -->
+<div class="modal modal-style-1 popup-full-width fade" id="add-milestone-popup" data-keyboard="false"
+   data-backdrop="static" #otherResponsibleUsers>
+   <app-other-responsible-users-modal [source]="otherResponsibleUsersObject" *ngIf="otherResponsibleUsersObject.type">
+   </app-other-responsible-users-modal>
+</div>
+
+<!-- Action Plan -->
+<div class="modal modal-style-1 popup-full-width fade" id="add-actionplan-popup" data-keyboard="false"
+   data-backdrop="static" #actionPlanModal>
+   <app-add-action-plan [source]="actionPlanObject" *ngIf="actionPlanObject.type"></app-add-action-plan>
+</div>

@@ -1,0 +1,153 @@
+<div #plainDev></div>
+
+      <div class="audit-program-box audit-page-table-main" *mobxAutorun>
+        <div class="row">
+           <div class="col-sm-12 full-width-table">
+            <table *ngIf="KpiStore.kpiReviews.length > 0 " class="table table-bordered ordinary-table audit-page-table mb-3 table-scroll">
+                <thead>
+                    <tr>
+                        <th class="border-top-0 text-center" width="2%">#</th>
+
+                        <th class="border-top-0" width="15%">{{'frequency' | translate}}</th>
+                        <th class="border-top-0" width="8%">{{'achieved' | translate}}</th>
+                        <th class="border-top-0" width="8%">{{'target' | translate}}</th>
+                        <th class="border-top-0" width="22%">{{'justifications' | translate}}</th>
+                        <th class="border-top-0" width="15%">{{'attachement' | translate}}</th>
+                        <th class="border-top-0" width="10%">{{'status' | translate}}</th> 
+                         <th class="border-top-0" width="20%">{{'renew' | translate}}</th>
+
+                        
+
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let f of KpiStore.kpiReviews| paginate: {currentPage:KpiStore.currentPageRev, itemsPerPage:KpiStore.itemsPerPageRev,totalItems:KpiStore.totalItemsRev};let num = index" class="edit-option">
+                        <td class="text-center">{{(KpiStore.currentPageRev - 1) * KpiStore.itemsPerPageRev + (num + 1)}}</td>
+
+                        <td>{{f.review_frequency}}</td>
+                        <td>{{StrategyManagementSettingStore?.strategyManagementSettings?.is_weightage_fraction
+                          ? (f.actual_value ? f.actual_value : AppStore.noContentText) : f.actual_value? (f.actual_value | number : '1.0-0') :
+                          AppStore.noContentText}} {{f.actual_value ? KpiStore.induvalKpi?.target_unit_id?.title : ''}}</td>
+                        <!-- <td>{{f.actual_value ? f.actual_value : AppStore.noContentText}}{{ f.actual_value ?  KpiStore.induvalKpi?.target_unit_id?.title : ''}}</td> -->
+                        <!-- <td>{{f.kpi_target ? f.kpi_target : AppStore.noContentText}}{{ f.kpi_target ?  KpiStore.induvalKpi?.target_unit_id?.title : ''}}</td> -->
+                        <td>{{StrategyManagementSettingStore?.strategyManagementSettings?.is_weightage_fraction
+                          ? (f.kpi_target ? f.kpi_target : AppStore.noContentText) : f.kpi_target? (f.kpi_target | number : '1.0-0') :
+                          AppStore.noContentText}} {{f.kpi_target ? KpiStore.induvalKpi?.target_unit_id?.title : ''}}</td>
+                        <td>{{f.justification ? f.justification : AppStore.noContentText}}</td>
+                        <td>
+                          <p *ngIf="f.strategy_review_frequency_target_documents.length == 0">{{AppStore.noContentText}}</p>
+                            <div *ngIf="f.strategy_review_frequency_target_documents.length == 1" class="d-flex align-items-center">
+                                <img *ngIf="!f.strategy_review_frequency_target_documents[0].document_id" [src]="createImageUrl('kpi-measure',f.strategy_review_frequency_target_documents[0].token)" (click)="viewKpiDocument('kpi-document',f.strategy_review_frequency_target_documents[0],f.id,f.strategy_review_frequency_target_documents[0])" class="img-fluid" style="width: 30px; height: 26px;cursor: pointer;">
+                                <img *ngIf="f.strategy_review_frequency_target_documents[0].document_id" [src]="createImageUrl('document-version', getToken(f.strategy_review_frequency_target_documents[0]).token)" (click)="viewKpiDocument('document-version',f.strategy_review_frequency_target_documents[0],f.id,getToken(f.strategy_review_frequency_target_documents[0]))" class="img-fluid" style="width: 30px; height: 26px;cursor: pointer;">
+
+                                <div  class="w-100 ml-2">
+                                    <p *ngIf="!f.strategy_review_frequency_target_documents[0].document_id" class="mb-0">{{f.strategy_review_frequency_target_documents[0].title ? f.strategy_review_frequency_target_documents[0].title : AppStore.noContentText }} {{f.strategy_review_frequency_target_documents[0].size ? f.strategy_review_frequency_target_documents[0].size : ""}}</p>
+                                    <p *ngIf="f.strategy_review_frequency_target_documents[0].document_id" class="mb-0">{{getToken(f.strategy_review_frequency_target_documents[0]).title ? getToken(f.strategy_review_frequency_target_documents[0]).title : AppStore.noContentText }} {{getToken(f.strategy_review_frequency_target_documents[0]).size ? getToken(f.strategy_review_frequency_target_documents[0]).size : ""}}</p>
+
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-center ml-3">
+                              <div *ngIf="f.strategy_review_frequency_target_documents.length > 1">
+                                <div  class="row">
+                                  <div  *ngFor="let doc of reviewDocuments(f.strategy_review_frequency_target_documents)">
+                                    <img *ngIf="!doc.document_id && AuthStore.getActivityPermission(3200, 'PREVIEW_STRATEGY_REVIEW_DOCUMENT_FILE')"  (click)="viewKpiDocument('kpi-document',doc,f.id,doc)" [src]="createImageUrl('kpi-measure',doc.token)" class="img-fluid" style="width: 30px; height: 26px;">
+                                    <img *ngIf="doc.document_id && AuthStore.getActivityPermission(3200, 'PREVIEW_STRATEGY_REVIEW_DOCUMENT_FILE')"  (click)="viewKpiDocument('document-version',doc,f.id,getToken(doc))" [src]="createImageUrl('document-version',getToken(doc).token )" class="img-fluid" style="width: 30px; height: 26px;">
+
+                                  </div>
+                                </div>
+
+                              </div>
+                              
+
+                              <div *ngIf="f.strategy_review_frequency_target_documents.length > 3" class="attachment-more9">
+                                  <p  (click)="openOtherDocumentsModal(f.strategy_review_frequency_target_documents,f.id)" class="mb-0">{{f.strategy_review_frequency_target_documents.length - 3}}..</p>
+                              </div>
+
+                          </div>
+
+                      
+                        </td>
+                       
+
+                        <td>
+                          <div [attr.class]="'dot-div '+f?.label+'-dot'">{{f.status_title}}</div> 
+                        </td>
+                          <td class="text-center">
+                            
+                                  <!-- <button [ngStyle]="{ 'cursor': !responsibleUser() || f?.type !='draft' || !f?.actual_value ? 'unset' :'pointer'}"  [disabled]="!isUser() || f?.type !='draft' || !f?.actual_value" class="btn btn-small float-none" (click)="submitKpiForReview(f.id)">Submit</button>
+                                  
+                                  <button [ngStyle]="{ 'cursor': !isUser() || f?.type !='in-review' || !f?.actual_value ? 'unset' :'pointer'}" [disabled]="!isUser() || f?.type !='in-review' || !f?.actual_value" class="btn btn-small btn-green-hov float-none" (click)="approveWorkflow('approve',f.id)">Approve</button>
+                                  
+                                  <button [ngStyle]="{ 'cursor': !isUser() || f?.type !='in-review' || !f?.actual_value ? 'unset' :'pointer'}" [disabled]="!isUser() || f?.type !='in-review' || !f?.actual_value" class="btn btn-small btn-orange-hov float-none" (click)="approveWorkflow('revert',f.id)">Revert</button> -->
+
+                                  <button [ngStyle]="{ 'cursor': !responsibleUser() || f?.type !='draft' || !f?.actual_value ? 'unset' :'pointer'}"  *ngIf="responsibleUser() && f?.type =='draft' && f?.actual_value && KpiStore.induvalKpi?.strategy_profile_objective_kpi_status?.type !='closed'" class="btn btn-small float-none" (click)="submitKpiForReview(f.id)" 
+                                  [disabled]="AppStore.loading">{{'submit' | translate}}</button>
+                                  
+                                  <button [ngStyle]="{ 'cursor': !isUser() || f?.type !='in-review' || !f?.actual_value ? 'unset' :'pointer'}" *ngIf="isUser() && f?.type =='in-review' && f?.actual_value && KpiStore.induvalKpi?.strategy_profile_objective_kpi_status?.type !='closed'" class="btn btn-small btn-green-hov float-none" (click)="approveWorkflow('approve',f.id)"
+                                  [disabled]="AppStore.loading">{{'approve' | translate}}</button>
+                                  
+                                  <button [ngStyle]="{ 'cursor': !isUser() || f?.type !='in-review' || !f?.actual_value ? 'unset' :'pointer'}" *ngIf="isUser() && f?.type =='in-review' && f?.actual_value && KpiStore.induvalKpi?.strategy_profile_objective_kpi_status?.type !='closed'" class="btn btn-small btn-orange-hov float-none" (click)="approveWorkflow('revert',f.id)"
+                                  [disabled]="AppStore.loading">{{'revert' | translate}}</button>
+                                  <div class="edit-option-show-inner">
+                                    <a *ngIf="responsibleUser() && f?.type =='draft' && KpiStore.induvalKpi?.strategy_profile_objective_kpi_status?.type !='closed'" (click)="openKpiMesureModal(f)"><i class="fas fa-pen"></i></a>
+                                    
+                                    <a class="pointer" [attr.title]="'Review History'|translate" (click)="openHistoryPopup(f)"><i
+                                      class="fas fa-history"></i></a> 
+                                </div>
+                              
+                           </td>
+                    </tr>
+               
+
+
+                </tbody>
+            </table>
+              <ng-container *mobxAutorun>
+               <div *ngIf="!KpiStore.loaded">
+                  <app-profile-list-loader></app-profile-list-loader>
+              </div>
+               <app-no-data *ngIf = "KpiStore.kpiReviews.length == 0 && KpiStore.loaded == true"></app-no-data>
+             </ng-container>
+           </div>           
+        </div>
+      </div>
+
+
+  <div class="modal modal-style-1 popup-full-width fade" id="add-new-notes-popup" data-keyboard="false"
+  data-backdrop="static" #kpiMesure>
+  <app-add-review-modal *ngIf="kpiMesureObject.type" [source]="kpiMesureObject" [freequency]="
+  "></app-add-review-modal>
+</div>
+
+<!-- responsible user popup -->
+<div class="modal modal-style-1 popup-full-width fade" id="add-milestone-popup" data-keyboard="false"
+data-backdrop="static" #otherDocumentes>
+<app-other-documents-modal [source] = "otherDocumentesObject" *ngIf = "otherDocumentesObject.type"></app-other-documents-modal>
+</div>
+
+<!-- preview -->
+<div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup" data-keyboard="false"
+data-backdrop="static" #filePreviewModal *mobxAutorun>
+<button type="button" class="close" data-dismiss="modal" (click)="closePreviewModal($event)"><i
+    class="lni-close"></i><span>esc</span></button>
+<app-preview-modal *ngIf="previewObject" [source]="previewObject" (close)="closePreviewModal($event)">
+</app-preview-modal>
+</div>
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+<app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>
+
+<ng-container>
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #commentModal>
+  <app-kpi-workflow-comment *ngIf="KpiWorkflowStore.commentForm">
+  </app-kpi-workflow-comment>
+</div>
+</ng-container>
+
+
+<div class="modal modal-style-1 popup-full-width fade" id="process-popup" data-keyboard="false" data-backdrop="static"
+#workflowHistory *mobxAutorun>
+<app-kpi-workflow-history *ngIf="workflowHistoryOpened == true"></app-kpi-workflow-history>
+</div>

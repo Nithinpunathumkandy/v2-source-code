@@ -1,0 +1,412 @@
+<div #plainDev></div>
+<nav class="edit-bar" data-toggle="affix" #navigationBar *mobxAutorun>
+    <app-breadcrumb-menu></app-breadcrumb-menu>
+    <div class="dropdown edit-dropdown d-lg-none drop-menu-left-head">
+        <a class="btn btn-primary float-left three-dots-dropdown dropdown-toggle"
+            data-toggle="dropdown">{{AppStore.pageTitle}}<i class="fas fa-chevron-circle-down ml-2"></i></a>
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+            <a class="dropdown-item active" data-toggle="pill" routerLinkActive="active"
+                [routerLinkActiveOptions]="{exact: true}"
+                [routerLink]="['/audit-management/am-audits/',AmAuditsStore.auditId,'/am-audit-information-request/',informationRequestId]">{{'info'
+                |
+                translate}}</a>
+        </div>
+    </div>
+    <!-- END FOR SMALL SCREENS -->
+
+    <!-- START FOR NORMAL SCREEN -->
+
+    <ul class="nav nav-pills float-left  d-none d-lg-block" role="tablist">
+        <li class="nav-item"> <a class="nav-link nav-link-show" data-toggle="tab" data-original-title="Customer"
+                [routerLink]="['/audit-management/am-audits/',AmAuditsStore.auditId,'/am-audit-information-request/',informationRequestId]"
+                routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"> {{'info' |
+                translate}}</a>
+        </li>
+
+    </ul>
+    <app-sub-menu></app-sub-menu>
+
+</nav>
+
+<main class="audit-program-details-page mt-3">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="widget">
+                    <div class="tab-content">
+                        <div class="bg-white widg-padding-cmn" *mobxAutorun>
+                            <ng-container>
+                                <app-am-audit-plan-info-loader *ngIf="!AmAuditInformationRequestStore.individual_request_loaded">
+                                </app-am-audit-plan-info-loader>
+                            </ng-container>
+                            <div class="min-height-83" *ngIf="AmAuditInformationRequestStore.individual_request_loaded">
+                                <div class="issue-top-sec mb-3">
+                                    <div class="clearfix">
+                                        <h5 class="d-inline-block cmn-head-style label-tag-style">
+                                            #{{AmAuditInformationRequestStore?.requestDetails?.reference_code}} <span
+                                                [ngClass]="'draft-tag draft-tag-'+AmAuditInformationRequestStore?.requestDetails?.am_audit_information_request_status?.label+' label-tag-style-tag label-left-arow-tag d-inline-block status-tag-new-one'">{{AmAuditInformationRequestStore?.requestDetails?.am_audit_information_request_status?.language[0]?.pivot?.title}}
+                                            </span>
+                                        </h5>
+                                    </div>
+                                </div>
+
+
+                                <div
+                                    [ngClass]="AmAuditInformationRequestStore?.requestDetails?.information_request_responses?.length>0?'information-box':'information-box left-border-remove'">
+                                    <div class="d-flex">
+                                        <img [attr.src]="AmAuditInformationRequestStore?.requestDetails?.created_by?.image?.token ? createImageUrl('user',AmAuditInformationRequestStore?.requestDetails?.created_by?.image?.token) : getDefaultImage()"
+                                            class="rounded-circle rounde-hov cmn-bdr-img"
+                                            width="40px" height="40px">
+                                        <div class="ml-2 w-100">
+                                            <div class="information-box-content">
+                                                <!-- information-box-content start -->
+                                                <div class="new-size-text mb-2">
+                                                    <h6 class="font-weight-600 mb-1">
+                                                        {{AmAuditInformationRequestStore?.requestDetails?.created_by?.first_name}}
+                                                        {{AmAuditInformationRequestStore?.requestDetails?.created_by?.last_name}}
+                                                        <span
+                                                            class="riben-tag riben-tag-light-green">{{'request'|translate}}</span>
+                                                    </h6>
+                                                    <p class="mb-0">
+                                                        {{AmAuditInformationRequestStore?.requestDetails?.created_by?.designation}}
+                                                        |
+                                                        {{AmAuditInformationRequestStore?.requestDetails?.created_at|date:OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                    </p>
+                                                </div>
+                                                <p class="image-width-texteditor table table-bordered border-none text-editor-content bullet-point-list ordinary-table"
+                                                    [innerHTML]="AmAuditInformationRequestStore?.requestDetails?.description | safeHtml">
+                                                </p>
+                                                <!-- {{}}</p> -->
+                                                <h6 class="mt-3">Support Files</h6>
+                                                <div class="thumb-pics-bg thumb-pics-col-5 clearfix thumb-pics-fix-text"
+                                                    style="padding-top: 0"
+                                                    *ngIf="AmAuditInformationRequestStore?.requestDetails?.information_request_documents?.length>0">
+                                                    <div class="thumb-pics"
+                                                        *ngFor="let docs of AmAuditInformationRequestStore?.requestDetails?.information_request_documents;let i = index">
+
+                                                        <!-- System Files Starts Here -->
+                                                        <div class="upload-pics edit-option" *ngIf="!docs?.document_id"
+                                                            (click)="viewDocument('information-request',docs,docs)">
+                                                            <div class="browse-form-pic"
+                                                                [ngStyle]="{'background': 'url('+createImageUrl('information-request',docs?.token)+') no-repeat'}">
+                                                            </div>
+                                                            <div class="browse-form-name clearfix">
+                                                                <div class="float-left">
+                                                                    <h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}
+                                                                    </h6>
+                                                                    <span>{{docs.size/1048576 |
+                                                                        number:'0.2-2'}}MB</span><span
+                                                                        class="text-blue bold pl-2">{{'system'|translate}}</span>
+                                                                </div>
+                                                                <div class="browse-logo">
+                                                                    <img *ngIf="checkExtension(docs.ext,'image') != -1"
+                                                                        class="folder-picher"
+                                                                        src="/assets/images/jpg-icone.png">
+                                                                    <img *ngIf="checkExtension(docs.ext,'doc') != -1"
+                                                                        class="folder-picher"
+                                                                        src="/assets/images/word-icone.png">
+                                                                    <img *ngIf="checkExtension(docs.ext,'pdf') != -1"
+                                                                        class="folder-picher"
+                                                                        src="/assets/images/pdf-icone.png">
+                                                                    <img *ngIf="checkExtension(docs.ext,'excel') != -1"
+                                                                        class="folder-picher"
+                                                                        src="/assets/images/excel-icone.png">
+                                                                    <img *ngIf="checkExtension(docs.ext,'video') != -1"
+                                                                        class="folder-picher"
+                                                                        src="/assets/images/md-video.png">
+                                                                    <img *ngIf="checkExtension(docs.ext,'audio') != -1"
+                                                                        class="folder-picher"
+                                                                        src="/assets/images/md-audio.png">
+                                                                    <img *ngIf="checkExtension(docs.ext,'ppt') != -1"
+                                                                        class="folder-picher"
+                                                                        src="/assets/images/md-ppt.png">
+                                                                </div>
+                                                            </div>
+                                                            <div class="edit-option-show-inner"
+                                                                style="margin: 0 -8px 0 0;">
+                                                                <a><i class="fas fa-download"
+                                                                        (click)="downloadDocumentFile('information-request',docs)"></i></a>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- System Files Starts Here -->
+                                                        <!-- KnowledgeHub Files Starts Here -->
+                                                        <div class="upload-pics edit-option" *ngIf="docs.document_id">
+
+                                                            <div *ngFor="let mainDoc of docs?.kh_document?.versions"
+                                                                (click)="viewDocument('document-version',docs,mainDoc)">
+                                                                <div *ngIf="mainDoc.is_latest">
+                                                                    <div class="browse-form-pic"
+                                                                        [ngStyle]="{'background': 'url('+createImageUrl('document-version',mainDoc?.token)+') no-repeat'}">
+                                                                    </div>
+                                                                    <div class="browse-form-name clearfix">
+                                                                        <div class="float-left">
+                                                                            <h6>{{mainDoc.title}}
+                                                                            </h6>
+                                                                            <span>{{mainDoc.size/1048576 |
+                                                                                number:'0.2-2'}}MB</span><span
+                                                                                class="text-blue bold pl-2">{{'knowledge_hub'|translate}}
+                                                                            </span>
+                                                                        </div>
+                                                                        <div class="browse-logo">
+                                                                            <img *ngIf="checkExtension(mainDoc.ext,'image') != -1"
+                                                                                class="folder-picher"
+                                                                                src="/assets/images/jpg-icone.png">
+                                                                            <img *ngIf="checkExtension(mainDoc.ext,'doc') != -1"
+                                                                                class="folder-picher"
+                                                                                src="/assets/images/word-icone.png">
+                                                                            <img *ngIf="checkExtension(mainDoc.ext,'pdf') != -1"
+                                                                                class="folder-picher"
+                                                                                src="/assets/images/pdf-icone.png">
+                                                                            <img *ngIf="checkExtension(mainDoc.ext,'excel') != -1"
+                                                                                class="folder-picher"
+                                                                                src="/assets/images/excel-icone.png">
+                                                                            <img *ngIf="checkExtension(mainDoc.ext,'video') != -1"
+                                                                                class="folder-picher"
+                                                                                src="/assets/images/md-video.png">
+                                                                            <img *ngIf="checkExtension(mainDoc.ext,'audio') != -1"
+                                                                                class="folder-picher"
+                                                                                src="/assets/images/md-audio.png">
+                                                                            <img *ngIf="checkExtension(mainDoc.ext,'ppt') != -1"
+                                                                                class="folder-picher"
+                                                                                src="/assets/images/md-ppt.png">
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="edit-option-show-inner"
+                                                                        style="margin: 0 -8px 0 0;">
+                                                                        <a><i class="fas fa-download"
+                                                                                (click)="downloadDocumentFile('document-version',docs,mainDoc)"></i></a>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+
+                                                        </div>
+                                                        <!-- KnowledgeHub Files Ends Here -->
+
+                                                    </div>
+                                                </div>
+                                                <p
+                                                    *ngIf="AmAuditInformationRequestStore?.requestDetails?.information_request_documents?.length==0">
+                                                    {{AppStore.noContentText}}
+                                                </p>
+                                                <div class="mb-3"
+                                                    *ngIf="AmAuditInformationRequestStore?.requestDetails?.am_audit_information_request_status?.type != 'closed' && AuthStore.user?.id==AmAuditInformationRequestStore?.requestDetails?.to_user?.id && AmAuditsStore?.individualAuditDetails?.am_audit_field_work_status?.type!='completed'">
+                                                    <a class="comment-btns-cmn" data-toggle="modal"
+                                                        (click)="openResponseModal(AmAuditInformationRequestStore?.requestDetails)"><i
+                                                            class="fas fa-reply-all"></i>{{'reply'|translate}}</a>
+                                                </div>
+
+                                            </div><!-- information-box-content end -->
+                                            <!-- left-border-remove -->
+                                            <!-- <div class="ml-40"> -->
+                                                <div [ngClass]="reply.children?.length>0?'information-box pt-3':'information-box pt-3 left-border-remove'" *ngFor="let reply of AmAuditInformationRequestStore?.requestDetails?.information_request_responses">
+                                                    <!-- information-box start -->
+                                                    <div class="d-flex  edit-and-delete-main">
+                                                        <img [attr.src]="reply?.created_by?.image?.token ? createImageUrl('user',reply?.created_by?.image?.token) : getDefaultImage()"
+                                                            class="rounded-circle rounde-hov cmn-bdr-img"
+                                                            width="40px" height="40px">
+                                                        <div class="ml-2 w-100">
+                                                            <div class="information-box-content">
+                                                                <!-- information-box-content start -->
+                                                                <div class="new-size-text mb-2">
+                                                                    <h6 class="font-weight-600 mb-1">
+                                                                        {{reply.created_by?.first_name}}
+                                                                        {{reply.created_by?.last_name}} <span
+                                                                            class="riben-tag riben-tag-blue">{{getButtonText(reply.type)}}</span>
+                                                                    </h6>
+
+                                                                    <p class="mb-0">
+                                                                        {{reply.created_by?.designation?.title}} |
+                                                                        {{reply.created_at|date:OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                                                    </p>
+                                                                    <div class="edit-option-show"
+                                                                        style="margin: 30px 0 0 0; "
+                                                                        *ngIf="AmAuditInformationRequestStore?.requestDetails?.am_audit_information_request_status?.type != 'closed' && reply.created_by?.id == AuthStore.user?.id && AmAuditsStore?.individualAuditDetails?.am_audit_field_work_status?.type!='completed'">
+                                                                        <!-- edit-and-delete starts -->
+                                                                        <a (click)="editInformationRequest(reply)"><i
+                                                                                class="fas fa-pen"></i></a>
+                                                                        <a (click)="deleteInformationRequest(reply.id)"><i
+                                                                                class="fas fa-trash"></i></a>
+                                                                    </div>
+
+                                                                </div>
+                                                                <p class="image-width-texteditor table table-bordered border-none text-editor-content bullet-point-list ordinary-table"
+                                                                    [innerHTML]="reply?.description | safeHtml"></p>
+
+                                                                <!-- <p style="white-space: pre-line;">{{reply?.description}}</p> -->
+
+                                                                <h6 class="mt-3">{{'support_files'|translate}}</h6>
+                                                                <div class="thumb-pics-bg thumb-pics-col-5 clearfix thumb-pics-fix-text"
+                                                                    *ngIf="reply.documents?.length>0">
+                                                                    <div class="thumb-pics"
+                                                                        *ngFor="let docs of reply.documents;let j = index">
+
+                                                                        <!-- System Files Starts Here -->
+                                                                        <div class="upload-pics edit-option"
+                                                                            *ngIf="!docs?.document_id"
+                                                                            (click)="viewDocument('information-request',docs,docs)">
+                                                                            <div class="browse-form-pic"
+                                                                                [ngStyle]="{'background': 'url('+createImageUrl('information-request',docs?.token)+') no-repeat'}">
+                                                                            </div>
+                                                                            <div class="browse-form-name clearfix">
+                                                                                <div class="float-left">
+                                                                                    <h6>{{docs.title?docs.title:docs.name?docs.name:docs.version_title?docs.version_title:"NA"}}
+                                                                                    </h6>
+                                                                                    <span>{{docs.size/1048576 |
+                                                                                        number:'0.2-2'}}MB</span><span
+                                                                                        class="text-blue bold pl-2">{{'system'|translate}}</span>
+                                                                                </div>
+                                                                                <div class="browse-logo">
+                                                                                    <img *ngIf="checkExtension(docs.ext,'image') != -1"
+                                                                                        class="folder-picher"
+                                                                                        src="/assets/images/jpg-icone.png">
+                                                                                    <img *ngIf="checkExtension(docs.ext,'doc') != -1"
+                                                                                        class="folder-picher"
+                                                                                        src="/assets/images/word-icone.png">
+                                                                                    <img *ngIf="checkExtension(docs.ext,'pdf') != -1"
+                                                                                        class="folder-picher"
+                                                                                        src="/assets/images/pdf-icone.png">
+                                                                                    <img *ngIf="checkExtension(docs.ext,'excel') != -1"
+                                                                                        class="folder-picher"
+                                                                                        src="/assets/images/excel-icone.png">
+                                                                                    <img *ngIf="checkExtension(docs.ext,'video') != -1"
+                                                                                        class="folder-picher"
+                                                                                        src="/assets/images/md-video.png">
+                                                                                    <img *ngIf="checkExtension(docs.ext,'audio') != -1"
+                                                                                        class="folder-picher"
+                                                                                        src="/assets/images/md-audio.png">
+                                                                                    <img *ngIf="checkExtension(docs.ext,'ppt') != -1"
+                                                                                        class="folder-picher"
+                                                                                        src="/assets/images/md-ppt.png">
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="edit-option-show-inner"
+                                                                                style="margin: 0 -8px 0 0;">
+                                                                                <a><i class="fas fa-download"
+                                                                                        (click)="downloadDocumentFile('information-request',docs)"></i></a>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <!-- System Files Starts Here -->
+                                                                        <!-- KnowledgeHub Files Starts Here -->
+                                                                        <div class="upload-pics edit-option"
+                                                                            *ngIf="docs.document_id">
+
+                                                                            <div *ngFor="let mainDoc of docs?.kh_document?.versions"
+                                                                                (click)="viewDocument('document-version',docs,mainDoc)">
+                                                                                <div *ngIf="mainDoc.is_latest">
+                                                                                    <div class="browse-form-pic"
+                                                                                        [ngStyle]="{'background': 'url('+createImageUrl('document-version',mainDoc?.token)+') no-repeat'}">
+                                                                                    </div>
+                                                                                    <div
+                                                                                        class="browse-form-name clearfix">
+                                                                                        <div class="float-left">
+                                                                                            <h6>{{mainDoc.title}}
+                                                                                            </h6>
+                                                                                            <span>{{mainDoc.size/1048576
+                                                                                                |
+                                                                                                number:'0.2-2'}}MB</span><span
+                                                                                                class="text-blue bold pl-2">{{'knowledge_hub'|translate}}
+                                                                                            </span>
+                                                                                        </div>
+                                                                                        <div class="browse-logo">
+                                                                                            <img *ngIf="checkExtension(mainDoc.ext,'image') != -1"
+                                                                                                class="folder-picher"
+                                                                                                src="/assets/images/jpg-icone.png">
+                                                                                            <img *ngIf="checkExtension(mainDoc.ext,'doc') != -1"
+                                                                                                class="folder-picher"
+                                                                                                src="/assets/images/word-icone.png">
+                                                                                            <img *ngIf="checkExtension(mainDoc.ext,'pdf') != -1"
+                                                                                                class="folder-picher"
+                                                                                                src="/assets/images/pdf-icone.png">
+                                                                                            <img *ngIf="checkExtension(mainDoc.ext,'excel') != -1"
+                                                                                                class="folder-picher"
+                                                                                                src="/assets/images/excel-icone.png">
+                                                                                            <img *ngIf="checkExtension(mainDoc.ext,'video') != -1"
+                                                                                                class="folder-picher"
+                                                                                                src="/assets/images/md-video.png">
+                                                                                            <img *ngIf="checkExtension(mainDoc.ext,'audio') != -1"
+                                                                                                class="folder-picher"
+                                                                                                src="/assets/images/md-audio.png">
+                                                                                            <img *ngIf="checkExtension(mainDoc.ext,'ppt') != -1"
+                                                                                                class="folder-picher"
+                                                                                                src="/assets/images/md-ppt.png">
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="edit-option-show-inner"
+                                                                                        style="margin: 0 -8px 0 0;">
+                                                                                        <a><i class="fas fa-download"
+                                                                                                (click)="downloadDocumentFile('document-version',docs,mainDoc)"></i></a>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+
+
+                                                                        </div>
+                                                                        <!-- KnowledgeHub Files Ends Here -->
+
+                                                                    </div>
+
+                                                                </div>
+                                                                <p *ngIf="reply.documents?.length==0">
+                                                                    {{AppStore.noContentText}}
+                                                                </p>
+
+                                                                <div class="mb-3"
+                                                                    *ngIf="AmAuditInformationRequestStore?.requestDetails?.am_audit_information_request_status?.type != 'closed' && AuthStore.user?.id==reply?.to_user_id && AmAuditsStore?.individualAuditDetails?.am_audit_field_work_status?.type!='completed'">
+                                                                    <a class="comment-btns-cmn" data-toggle="modal"
+                                                                        (click)="openResponseModal(reply)"><i
+                                                                            class="fas fa-reply-all"></i>{{'reply' |
+                                                                        translate }}</a>
+                                                                </div>
+
+                                                            </div> <!-- information-box-content end -->
+
+
+                                                            <app-request-child-data *ngIf="reply.children"
+                                                                [childData]="reply.children"></app-request-child-data>
+
+
+                                                        </div>
+                                                    </div>
+
+                                                </div> <!-- information-box end -->
+                                            <!-- </div> -->
+
+
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="modal modal-style-1 popup-full-width fade"
+                            style="overflow: hidden auto; z-index: 999999;" data-keyboard="false" data-backdrop="static"
+                            #formModal *mobxAutorun>
+                            <app-information-request-add-modal *ngIf="requestObject.type" [source]="requestObject">
+                            </app-information-request-add-modal>
+                        </div>
+
+
+                        <div class="modal modal-style-1 fade" id="delete-popup" #deletePopup data-backdrop="static"
+                            data-keyboard="false">
+                            <app-delete-popup [source]="deleteObject"></app-delete-popup>
+                        </div>
+
+                        <div class="modal modal-style-1 popup-full-width fade popup-new-type" id="add-three-popup"
+                            data-keyboard="false" data-backdrop="static" #filePreviewModal *mobxAutorun>
+                            <button type="button" class="close" (click)="closePreviewModal($event)"><i
+                                    class="lni-close"></i><span>esc</span></button>
+                            <app-am-preview-modal *ngIf="previewObject" [source]="previewObject"
+                                (close)="closePreviewModal($event)">
+                            </app-am-preview-modal>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>

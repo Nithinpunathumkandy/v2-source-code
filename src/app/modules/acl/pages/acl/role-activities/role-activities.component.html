@@ -1,0 +1,346 @@
+<nav class="edit-bar" data-toggle="affix" scrollPoint #navigationBar *mobxAutorun>
+    <app-breadcrumb-menu></app-breadcrumb-menu>
+ </nav>
+<main class="mt-4 acl-page" *mobxAutorun>
+    <div class="container-fluid">
+
+        <div class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    <div class="clearfix">
+                        <div class="multiple-plain-ngselect">
+                            <ng-select [attr.placeholder]="'select_role' | translate" [multiple]="false" searchable="true"
+                            [(ngModel)]="roleId" (search)="searchRole($event)"
+                            (clear)="getRoles()" (open)="getRoles()" (change) = "getRoleActivities()">
+                            <ng-option [value]="type.id" *ngFor="let type of AclStore.aclRoles">
+                              {{type.title}}
+                            </ng-option>
+                          </ng-select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="common-tab-md clearfix tab-same-height mb-3" *ngIf="AclStore.role_loaded"> 
+
+            <div class="tab-common-left-md"> 
+
+              <div class=" issues-tab"><!-- tab menu start --> 
+
+                <ul class="nav nav-tabs nav-tabs--vertical nav-tabs--left vertical-tab" role="navigation"> 
+
+                  <li class="nav-item" *ngFor="let module_group of AclStore.roleActivities; let i=index;"> 
+                    <a (click)="setModuleGroup(i)" [ngClass]="i==0?'nav-link active':'nav-link'" href="#fit-tab-one" data-toggle="tab" role="tab" aria-controls="lorem" aria-selected="true" data-original-title="" title="">{{module_group.module_group}}</a> 
+
+                  </li> 
+
+                  
+
+                </ul> 
+
+              </div>
+
+            </div> 
+
+     
+
+     
+
+            <div class="tab-common-left-content-m"> 
+
+              <div class="tab-content widg-padding-cmn bg-white cmn-bdr"> 
+
+                <div class="tab-pane fade active show" id="fit-tab-one" role="tabpanel">  
+
+                    <div class="widget bg-white full-width-table mb-3">
+                            
+                        <table class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll"
+                        [ngStyle]= "{ 'pointer-events' : isPasiveUserLogin() || roleId == passiveUser?.id ? 'none' : ''}">
+                            <thead>
+                                <tr>
+                                    <th class="border-top-0" width="15%">
+                                        <div class="row">
+
+                                            <div class="col-sm-6">{{'module' | translate}} </div>
+
+                                            <div class="col-sm-6 text-right"> <label
+                                                    class="container2 mt-1 float-right">
+                                                    <input type="checkbox" 
+                                                        [checked]="moduleEnabled" (change)="enableAll($event)">
+                                                    <span class="checkmark"></span></label>
+                                            </div>
+                                        </div>
+                                    </th>
+                                    <th class="border-top-0" width="55%">
+                                        <div class="row">
+                                            <div class="col text-center"> <i [attr.title]="'list' | translate" class="fas fa-list"></i> </div>
+                                            <div class="col text-center"> <i [attr.title]="'add' | translate" class="fas fa-plus"></i> </div>
+                                            <div class="col text-center"> <i [attr.title]="'details' | translate" class="fas fa-info"></i> </div>
+                                            <div class="col text-center"> <i [attr.title]="'update' | translate" class="fas fa-pencil-alt"></i> </div>
+                                            <div class="col text-center"> <i [attr.title]="'delete' | translate" class="fas fa-trash-alt"></i> </div>
+                                            <div class="col text-center" [attr.title]="'activate' | translate"> {{'on' | translate}} </div>
+                                            <div class="col text-center" [attr.title]="'deactivate' | translate"> {{'off' | translate}} </div>
+                                        </div>
+                                    </th>
+                                    <th class="border-top-0" width="14%">
+                                        <div class="row">
+                                            
+                                            <div class="col text-center"> <i [attr.title]="'genarate_template' | translate" class="fas fa-globe-americas"></i> </div>
+                                            
+                                            <div class="col text-center"> <i [attr.title]="'export' | translate" class="fas fa-share-square"></i> </div>
+                                            
+                                        </div>
+                                    </th>
+                                    <th class="border-top-0" width="10%">
+                                        <div class="text-center"> {{'all_permissions' | translate}}
+                                        </div>
+                                        
+                                    </th>
+
+                                </tr>
+                            </thead>
+                            <tbody *ngIf="AclStore?.roleActivities.length>0" >
+                                
+
+                                
+                                <tr *ngFor="let module of AclStore.roleActivities[groupIndex]?.modules;let j=index;">
+                                    <td>
+                                        <div class="row">
+                                            <div class="col-sm-8">{{module.module}} </div>
+                                            <div class="col-sm-4 text-right">
+                                                <label class="container2 mt-1 float-right">
+                                                    <input type="checkbox"  
+                                                    (change)="enable('module',$event,j)" [checked]="module.is_enabled">
+                                                    <span class="checkmark"></span></label>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td *ngIf="module.activity_type_groups.length>0">
+                                        <div class="row">
+                                            
+                                            <div class="col text-center">
+                                                <label class="container2 center-check-bx mt-1"
+                                                    *ngIf="checkActivityPresent(module.activity_type_groups[0]?.activities,'LIST')">
+                                                    <input type="checkbox" 
+                                                        (change)="changePermission(j,0,'LIST')"
+                                                        [checked]="checkActivityEnabled(module.activity_type_groups[0]?.activities,'LIST')">
+                                                    <span class="checkmark"></span></label>
+                                            </div>
+
+                                            <div class="col text-center ">
+                                                <label class="container2 center-check-bx mt-1"
+                                                    *ngIf="checkActivityPresent(module.activity_type_groups[0]?.activities,'CREATE')">
+                                                    <input type="checkbox"                                                            
+                                                        (change)="changePermission(j,0,'CREATE')"
+                                                        [checked]="checkActivityEnabled(module.activity_type_groups[0]?.activities,'CREATE')">
+                                                    <span class="checkmark"></span></label>
+                                            </div>
+
+                                            <div class="col text-center">
+                                                <label class="container2 center-check-bx mt-1"
+                                                    *ngIf="checkActivityPresent(module.activity_type_groups[0]?.activities,'DETAILS')">
+                                                    <input type="checkbox"                                                            
+                                                        (change)="changePermission(j,0,'DETAILS')"
+                                                        [checked]="checkActivityEnabled(module.activity_type_groups[0]?.activities,'DETAILS')">
+                                                    <span class="checkmark"></span></label>
+                                            </div>
+                                            <div class="col text-center">
+                                                <label class="container2 center-check-bx mt-1"
+                                                    *ngIf="checkActivityPresent(module.activity_type_groups[0]?.activities,'UPDATE')">
+                                                    <input type="checkbox"                                                            
+                                                        (change)="changePermission(j,0,'UPDATE')"
+                                                        [checked]="checkActivityEnabled(module.activity_type_groups[0]?.activities,'UPDATE')">
+                                                    <span class="checkmark"></span></label>
+                                            </div>
+                                            <div class="col text-center">
+                                                <label class="container2 center-check-bx mt-1 "
+                                                    *ngIf="checkActivityPresent(module.activity_type_groups[0]?.activities,'DELETE')">
+                                                    <input type="checkbox"                                                            
+                                                        (change)="changePermission(j,0,'DELETE')"
+                                                        [checked]="checkActivityEnabled(module.activity_type_groups[0]?.activities,'DELETE')">
+                                                    <span class="checkmark"></span></label>
+                                            </div>
+                                            <div class="col text-center">
+                                                <label class="container2 center-check-bx mt-1 "
+                                                    *ngIf="checkActivityPresent(module.activity_type_groups[0]?.activities,'ACTIVATE')">
+                                                    <input type="checkbox" 
+                                                        (change)="changePermission(j,0,'ACTIVATE')"
+                                                        [checked]="checkActivityEnabled(module.activity_type_groups[0]?.activities,'ACTIVATE')">
+                                                    <span class="checkmark"></span></label>
+                                            </div>
+                                            <div class="col text-center">
+                                                <label class="container2 center-check-bx mt-1 "
+                                                    *ngIf="checkActivityPresent(module.activity_type_groups[0]?.activities,'INACTIVATE')">
+                                                    <input type="checkbox" 
+                                                        (change)="changePermission(j,0,'INACTIVATE')"
+                                                        [checked]="checkActivityEnabled(module.activity_type_groups[0]?.activities,'INACTIVATE')">
+                                                    <span class="checkmark"></span></label>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="row" *ngIf="module.activity_type_groups.length>1">
+                                            
+                                            <div class="col text-center ">
+                                                <label class="container2 center-check-bx mt-1"
+                                                    *ngIf="checkActivityPresent(module.activity_type_groups[1]?.activities,'TEMPLATE')">
+                                                    <input type="checkbox" 
+                                                        (change)="changePermission(j,1,'TEMPLATE')"
+                                                        [checked]="checkActivityEnabled(module.activity_type_groups[1]?.activities,'TEMPLATE')">
+                                                    <span class="checkmark"></span></label>
+                                            </div>
+                                            <div class="col text-center ">
+                                                <label class="container2 center-check-bx mt-1"
+                                                    *ngIf="checkActivityPresent(module.activity_type_groups[1]?.activities,'EXPORT')">
+                                                    <input type="checkbox" 
+                                                        (change)="changePermission(j,1,'EXPORT')"
+                                                        [checked]="checkActivityEnabled(module.activity_type_groups[1]?.activities,'EXPORT')">
+                                                    <span class="checkmark"></span></label>
+                                            </div>
+                                            
+                                        </div>
+                                    </td>
+                                    <td align="center">
+                                        <div class="edit-option-table">
+                                            <button type="button" data-toggle="modal"
+                                                (click)="openFormModal(j,module.activity_type_groups)"
+                                                class="edit-btn-table"><i class="fas fa-eye"></i></button>
+                                        </div>
+                                    </td>
+
+                                </tr>
+
+
+                            </tbody>
+
+                        </table>
+                        
+
+                    </div>
+                    <div class="row mt-3" *ngIf="(AclStore.roleActivities.length>0) && roleId!=null">
+                            
+                        <div class="col-md-12" (click)="submitData()" *ngIf = "AuthStore.getActivityPermission(200,'UPDATE_USER_ACTIVITY') && roleId != 1 && !isPasiveUserLogin() && roleId != passiveUser?.id ">
+                            <button type="button" class="btn">{{AppStore.loading?'Loading...':'Save'}}</button>
+                        </div>
+                    </div>
+
+                </div> 
+
+                <!-- <div class="tab-pane fade" id="fit-tab-two" role="tabpanel"> 
+
+                  222  
+
+                </div> 
+
+                <div class="tab-pane fade" id="fit-tab-three" role="tabpanel">  
+
+                    333 
+
+                </div>   -->
+
+              </div> 
+
+            </div> 
+
+          </div> 
+
+        <ng-container *mobxAutorun>
+            <div *ngIf="!AclStore.role_loaded">
+                <app-role-activities-loader></app-role-activities-loader>
+            </div>
+        </ng-container>
+
+       
+    </div>
+
+   
+</main>
+
+<div class="modal modal-style-1 fade popup-full-width" id="more-permission-popup" data-keyboard="false"  data-backdrop="static" #formModal>
+    <button type="button" class="close" (click)="closeFormModal()"><i class="lni-close"></i><span>esc</span></button>
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header">
+        
+        </div>
+        <!-- Modal body -->
+        <div class="modal-body form-body" *ngIf="groupIndex!=null">
+          
+          <div class="row" *ngFor="let group of moreActivity;let g=index">
+            <div class="col-sm-12">
+                <div class="head-and-check">
+                    <div class="Preview-checkbox clearfix">
+                       <label class="container2 remember-txt float-left">
+                       <input type="checkbox" [checked] = "checkGroupEnabled(g)" (change)="enableGroupActivity(g,$event)">
+                       <span class="checkmark"></span>{{group.activity_type_group}}</label>
+                    </div>
+                 </div>
+                <!-- <div class="user-details-page mt-2">
+                    <div class="right-block p-0">
+                        <h5 class="mt-0 mb-3 bold"> <span> {{AclStore.roleActivities[groupIndex].module_group}} - {{AclStore.roleActivities[groupIndex].modules[moduleIndex].module}} - {{group.activity_type_groups}} </span> </h5>
+                    </div>
+                </div> -->
+                <div class="row">
+                    <div class="col-md-3 col-6"
+                        *ngFor="let row of group.activities;let i=index">
+                        <div class="form-group">
+                            <!-- <label class="container2 center-check-bx mt-1 ">
+                                <label for="name" class="mb-0">{{row.activity_title}}</label></label>
+                            <div class="col text-center acl-popup-check">
+                                <label class="container2 center-check-bx mt-1 ">
+                                    <input type="checkbox"
+                                        (change)="morePermissionChange(row.activity_type_title,$event)"
+                                        [checked]="checkMoreActivityEnabled(group.activities,row.activity_type_title)">
+                                    <span class="checkmark"></span></label>
+                            </div> -->
+                            <div class="Preview-checkbox clearfix new-check-box">
+                                <label class="container2 remember-txt float-left mb-0 font-normal">
+                                <input type="checkbox" (change)="morePermissionChange(row.activity_id,g,i,$event)"
+                                [checked]="checkMoreActivityEnabled(group.activities,row.activity_id)">
+                                <span class="checkmark"></span>{{row.activity_title}}</label>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- <div class="user-details-page mt-2"
+                    *ngIf="UserAclStore.aclDetails[groupIndex].modules[moduleIndex].activity_type_groups.length>2">
+                    <div class="right-block p-0">
+                        <h5 class="mt-0 mb-3 bold"> <span> More Permission </span> </h5>
+                    </div>
+                </div> -->
+                <!-- <div class="row">
+                    <div class="col-md-3 col-6"
+                        *ngFor="let row of UserAclStore.aclDetails[groupIndex].modules[moduleIndex].activities;let i=index">
+                        <div class="form-group" *ngIf="(i>7)">
+                            <label class="container2 center-check-bx mt-1 ">
+                                <label for="name" class="mb-0">{{row.activity_type_title}}</label></label>
+                            <div class="col text-center acl-popup-check">
+                                <label class="container2 center-check-bx mt-1 ">
+                                    <input type="checkbox"
+                                        (change)="morePermissionChange(row.activity_type_title,$event)"
+                                        [checked]="checkActivityEnabled(activity,row.activity_type_title)">
+                                    <span class="checkmark"></span></label>
+                            </div>
+                        </div>
+                    </div>
+                </div> -->
+            </div>
+        </div>
+
+          <div class="row" *ngIf = "AuthStore.getActivityPermission(200,'UPDATE_USER_ACTIVITY')">
+            <div class="col-sm-12">
+              <div class="d-block justify-content-left border-0 mt-3">
+                <button type="button" data-toggle="modal" (click)="save()" class="btn ordinary-btn mr-3 btn-active">{{AppStore.loading?'Loading...':'Save'}}</button>
+                <button type="button" data-toggle="modal" (click)="save(true)" class="btn ordinary-btn mr-3">{{AppStore.loading?'Loading...':'Save & Close'}}</button>
+                <button type="button" data-toggle="modal" (click)="closeFormModal()" class="btn ordinary-btn mr-2">{{AppStore.loading?'Loading...':'Cancel'}}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Modal footer -->
+      </div>
+    </div>
+  </div>
+  <!-- More Permission popup End --> 

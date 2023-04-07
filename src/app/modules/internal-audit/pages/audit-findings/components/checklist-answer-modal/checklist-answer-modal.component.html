@@ -1,0 +1,155 @@
+<button type="button" class="close" (click)="cancel()"><i class="lni-close"></i><span>{{'esc' | translate}}</span></button>
+<div class="modal-dialog modal-xl modal-dialog-centered">
+   <div class="modal-content">
+      <!-- Modal Header -->
+      <div class="modal-header">
+         <h4 class="modal-title">{{'choose_checklist' | translate}}</h4>
+         <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
+         <!-- " -->
+      </div>
+      <!-- Modal body -->
+      <div class="modal-body form-body">
+         <p class="head-details">
+         </p>
+
+         <div class="row">
+            <div class="col-sm-12 col-lg-6">
+               <div class="form-group">
+
+                  <form class="form-control issue-select-process-search bg-white search-popup-new">
+                     <input type="text" (keyup)="searchInChecklistAnswers($event)" placeholder="Search In Checklist.." name="search" class="search-process">
+                     <button type="submit" style="width: 40px;"><i class="fa fa-search"></i></button>
+
+                  </form>
+
+
+               </div>
+
+
+
+
+            </div>
+
+
+
+
+
+
+         </div>
+         <div class="audit-form-table w-100">
+            <div class="row">
+               <div class="col-sm-12 full-width-table">
+                  <table class="table table-bordered ordinary-table audit-page-table mb-2 table-scroll">
+                     <thead>
+                        <tr>
+                           <th class="border-top-0" width="5%">
+                              <label class="container2 float-left" style="margin-top: 2px; padding-left: 22px;">
+                                 <input type="checkbox" [checked]="allChecklist" (change)="checkAll($event)">
+                                 <span class="checkmark"></span>
+                              </label>
+                              #
+                           </th>
+
+                           <th class="border-top-0" width="10%">{{'ref_no' | translate}}</th>
+                           <th class="border-top-0" width="20%">{{ 'auditable_items' | translate }}</th>
+                           <th class="border-top-0" width="42%">{{'question' | translate}}</th>
+                           <th class="border-top-0" width="18%">{{'answers' | translate}}</th>
+                           <th class="border-top-0" width="10%">{{'view_more' | translate}}</th>
+                        </tr>
+                     </thead>
+                     <tbody>
+                        <ng-container *mobxAutorun>
+                           <tr *ngFor="let answers of ChecklistsAnswersListStore.allItems | paginate
+                           : {
+                               currentPage: ChecklistsAnswersListStore?.currentPage,
+                               itemsPerPage: ChecklistsAnswersListStore?.itemsPerPage,
+                               totalItems: ChecklistsAnswersListStore?.totalItems
+                             }; let num=index">
+                              <td class="pointer">
+                                 <label class="container2 float-left" style="margin-top: 2px; padding-left: 22px;">
+                                    <input type="checkbox" [id]="answers.id" [name]="answers.name"
+                                    [checked] = "checkSelectedStatus(answers.id)"
+                                    (change)="selectChecklists($event,answers, num)">
+                                    <span class="checkmark"></span>
+                                 </label>
+                                {{(ChecklistsAnswersListStore?.currentPage - 1) *
+                                 ChecklistsAnswersListStore?.itemsPerPage +
+                                   (num + 1)}} 
+                              </td>
+
+
+                              <td *ngIf="answers?.auditable_item!=null">#{{answers?.auditable_item?.reference_code}}
+                              </td>
+                              <td *ngIf="answers?.auditable_item==null">{{AppStore.noContentText}}</td>
+                              <td>{{answers.auditable_item?.title ? answers.auditable_item?.title : AppStore.noContentText}}</td>
+                              <td>{{answers?.checklist?.title}}</td>
+                              <td *ngFor="let qst of answers?.audit_checklist_answer_key?.language">
+
+                                 <div *ngIf="qst.pivot?.audit_checklist_answer_key_id==4" class="dot-div orange-dot">{{qst.pivot?.title}}</div>
+                                 <div *ngIf="qst.pivot?.audit_checklist_answer_key_id==2" class="dot-div green-dot">{{qst.pivot?.title}}</div>
+                                 <div *ngIf="qst.pivot?.audit_checklist_answer_key_id==3" class="dot-div red-dot">{{qst.pivot?.title}}</div>
+                                 <div *ngIf="qst.pivot?.audit_checklist_answer_key_id==1" class="dot-div yellow-dot">{{qst.pivot?.title}}</div>
+                              </td>
+                              <td><button type="button" class="btn btn-small" data-toggle="modal" (click)="viewSingleChecklist(answers.id)" data-target="#view-more-checklist-popup" wfd-id="408">View More</button></td>
+                           </tr>
+
+                        </ng-container>
+
+                     </tbody>
+                  </table>
+
+
+               </div>
+
+            </div>
+
+            <div *ngIf="ChecklistsAnswersListStore.totalItems > ChecklistsAnswersListStore.itemsPerPage && ChecklistsAnswersListStore?.loaded"
+               class="col-sm-12">
+               <ul class="pagination justify-content-center mt-3">
+                   <div class="list">
+                       <pagination-controls (pageChange)="pageChange($event)" class="my-pagination">
+                       </pagination-controls>
+                   </div>
+               </ul>
+           </div>
+
+
+            <app-no-data-list [source]="checklistAnswerEmptyList"
+               *ngIf="ChecklistsAnswersListStore.allItems.length == 0 && ChecklistsAnswersListStore?.loaded">
+            </app-no-data-list>
+
+         </div>
+
+
+
+
+
+
+         <div class="row mt-3">
+            <div class="col-sm-12">
+               <div class="d-block justify-content-left border-0 mt-3">
+                  <button type="button" data-toggle="modal" [disabled]="checklistsArray.length==0" (click)="save()"
+                     data-target="#signal-lost" class="btn btn-active">{{'add' | translate}}</button>
+                  <button type="button" data-toggle="modal" data-target="#signal-lost"
+                     [disabled]="checklistsArray.length==0" (click)="save(true)" class="btn">Add &amp; Close</button>
+                  <button type="button" data-toggle="modal" data-target="#error-message" (click)="cancel()"
+                     class="btn">{{'cancel' | translate}}</button>
+               </div>
+            </div>
+         </div>
+      </div>
+      <!-- Modal footer -->
+
+   </div>
+</div>
+
+
+<!--checklist single view modal -->
+
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #viewChecklists>
+   <app-checklist-single-view-modal *ngIf="checklistObject.type" [source]="checklistObject">
+
+   </app-checklist-single-view-modal>
+
+</div>

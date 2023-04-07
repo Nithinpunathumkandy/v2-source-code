@@ -1,0 +1,126 @@
+<button type="button" class="close" data-dismiss="modal" (click)="cancel()"><i
+    class="lni-close"></i><span>esc</span></button>
+<div class="modal-dialog modal-xl modal-dialog-centered" *mobxAutorun>
+    <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header">
+            <h4 class="modal-title">{{'project_modal_title' | translate}} {{projectsModalTitle?.component | translate}}</h4>
+
+        </div>
+        <!-- Modal body -->
+        <div class="modal-body form-body add-profie-org-pup">
+            <!-- <p class="head-details">Review and select project to link them with management review meeting plans.</p> -->
+            <p class="head-details">{{'project_modal_message' | translate}} {{projectsModalTitle?.component | translate}}.</p>
+            <div class="row">
+                <div class="col-sm-12 col-lg-6">
+                    <div class="form-group">
+                        <label for="name">{{'search' | translate}}</label>
+                        <!-- <form class="form-control issue-select-process-search bg-white">
+                            <input type="text" placeholder="Search.." (change)="searchIssue($event,'text')"
+                                name="search" class="search-process">
+                            <button type="submit"><i class="fa fa-search"></i></button>
+                        </form> -->
+                        <form class="form-control issue-select-process-search bg-white search-popup-new" (submit) = "searchProject($event)">
+                            <input type="text" [(ngModel)] = "searchText" [placeholder]="'search_here' | translate" name="search" (keyup) = "searchProject($event)" class="search-process" autocomplete="off">
+                            <a class="search-clear-btn" (click) = "clear()" *ngIf = "searchText">X</a>
+                            <button type="submit" (click) = "searchProject($event)" style="width: 40px;"><i class="fa fa-search"></i></button>
+                          </form>
+                    </div>
+                </div>
+            </div>
+
+                
+                
+              
+                
+
+            <div class="audit-form-table w-100">
+                <table class="table table-bordered ordinary-table table-hover issue-list-table-org mb-1">
+                    <thead>
+                        <tr>
+                            <th class="border-top-0 issue-list-org-tab-one" width="5%">
+                                <!-- <div class="container2"> -->
+                                    <label class="container2 float-left" style="margin-top: 2px; padding-left: 22px;"><input type="checkbox" id="selectall"
+                                        (change)="selectAllProjects($event)"/>
+                                        <span class="checkmark" style="cursor: pointer;"></span>#</label>
+                                 
+                                <!-- </div> -->
+                            </th>
+                            <!-- <th class="border-top-0 issue-list-org-tab-two pointer"
+                            (click)="sortTitle('location_title')" width="15%">{{'sl' | translate}}
+                                <img [attr.src]="LocationMasterStore.orderBy=='desc' ? 
+                                'assets/images/sort-up.png' : LocationMasterStore.orderBy=='asc' ? 
+                                'assets/images/sort-down.png' : 'assets/images/sort-empty.png'">
+                            </th> -->
+                            <th class="border-top-0 issue-list-org-tab-three pointer" width="55%"
+                                >{{'title' | translate}} 
+                                <!-- <img
+                                    *ngIf="IssueListStore.orderItem == 'organization_issues.title'"
+                                    [attr.src]="IssueListStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                    class="sort-down-pics"> -->
+                                </th>
+                                <th style="width: 15%;" >{{'project_manager' | translate}}</th>
+                                <th class="text-center" style="width: 15%;" >{{'member_count' | translate}}</th>
+                            <th style="width: 10%;" >{{'location' | translate}}</th>
+                            
+                            
+                           
+                        </tr>
+                    </thead>
+
+                    <ng-container *mobxAutorun>
+
+
+
+                        <tr class="edit-and-delete-main"
+                        *ngFor = "let row of BusinessProjectsStore?.projectDetails | paginate: { id: 'projects-modal', currentPage:BusinessProjectsStore?.currentPage, itemsPerPage:BusinessProjectsStore?.itemsPerPage,totalItems:BusinessProjectsStore?.totalItems};let num = index">
+                            <td style="text-align: center;">
+                                <!-- <div class="container2"> -->
+                                    <label class="container2 float-left" style="margin-top: 2px; padding-left: 22px;"><input   type="checkbox" [checked]="projectPresent(row.id)"
+                                            (change)="projectSelected(row)" class="case" name="case" />
+                                        <span 
+                                            class="checkmark" style="cursor: pointer;"></span>{{(BusinessProjectsStore?.currentPage - 1) * BusinessProjectsStore?.itemsPerPage + (num + 1)}}</label>
+                                <!-- </div> -->
+                                <!-- {{(LocationMasterStore.currentPage - 1) * LocationMasterStore.itemsPerPage + (num + 1)}} -->
+                            </td>
+                            <td>{{row.title}}</td>
+                            <td>{{row.project_manager_first_name?row.project_manager_first_name:AppStore.noContentText}}{{row.project_manager_last_name}}</td>
+                            <td class="text-center" style="padding:0.75rem;" >
+                                <div>{{row.member_count?row.member_count:AppStore.noContentText}}</div>
+                            </td>
+                            <td>{{row.location_title?row.location_title:AppStore.noContentText}}</td>
+                            
+            
+                        </tr>
+                    </ng-container>
+                    
+                  
+
+                </table>
+                <app-no-data-list *ngIf="BusinessProjectsStore?.loaded && BusinessProjectsStore?.projectDetails.length == 0"  [source]="emptyProjects"></app-no-data-list>
+               
+
+            </div>
+             
+            <div class="col-sm-12" *ngIf="BusinessProjectsStore?.totalItems > BusinessProjectsStore?.itemsPerPage">
+                <ul class="pagination justify-content-center mt-3">
+                    <div class="list">
+                        <pagination-controls (pageChange)="pageChange($event)" id="projects-modal" class="my-pagination">
+                        </pagination-controls>
+                    </div>
+                </ul>
+            </div>
+
+            <div class="d-block justify-content-left border-0 mt-3">
+                <button type="button" data-toggle="modal"
+                    class="btn btn-active" (click)="save()" [disabled]="selectedProject.length==0">{{AppStore.loading?getButtonText('loading'):getButtonText('add')}}</button>
+                <button type="button" data-toggle="modal" class="btn"
+                    (click)="save(true)" [disabled]="selectedProject.length==0">{{AppStore.loading?getButtonText('loading'):getButtonText('add_close')}}</button>
+                <button type="button" data-toggle="modal" class="btn"
+                (click)="cancel()">{{AppStore.loading?getButtonText('loading'):getButtonText('cancel')}}</button>
+            </div>
+
+        
+        <!-- Modal footer -->
+    </div>
+</div>

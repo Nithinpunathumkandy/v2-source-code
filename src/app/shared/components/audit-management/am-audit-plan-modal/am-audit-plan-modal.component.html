@@ -1,0 +1,128 @@
+        <button type="button" class="close" (click)="confirmCancel()"><i class="lni-close"></i><span>esc</span></button>
+        <div class="modal-dialog modal-lg modal-dialog-centered" *mobxAutorun>
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <h4 class="modal-title">{{auditPlanSource?.type=='Add'?getButtonText('am_new_audit_plan_settings'):getButtonText('am_edit_audit_plan_settings')}}</h4>
+                 </div>
+                <!-- Modal body -->
+                <div class="modal-body form-body">
+                    <p class="head-details">{{'am_audit_plan_settings_descrption'|translate}}</p>
+                    <form [formGroup]="form">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                            <label for="name">{{'am_audit_category' | translate}}<sup>*</sup></label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect">
+                                    <ng-select [placeholder]="'am_select_audit_category'|translate"
+                                        [multiple]="false" 
+                                        bindLabel="title" 
+                                        bindValue="id"
+                                        [closeOnSelect]="true" 
+                                        searchable="true" 
+                                        formControlName="am_audit_category_id"
+                                        (search)="searchAuditCategory($event)" 
+                                        (clear)="getAuditCategory()"
+                                        (open)="getAuditCategory()" 
+                                        autocomplete="new-password">
+                                        <ng-option [value]="cat.id" *ngFor="let cat of AmAuditCategoryMasterStore.allItems">
+                                            {{cat.title}}
+                                        </ng-option>
+                                     
+                                    </ng-select>
+                                </div>
+                            </div>
+                            <p class="form-error pt-1" *ngIf="formErrors && formErrors.am_audit_category_id">
+                                {{formErrors.am_audit_category_id}}</p>
+                        </div>
+                        </div>
+
+                         <div class="col-lg-4 col-sm-12">
+                            <div class="form-group">
+                            <label for="name">{{'am_frequency' | translate}}<sup>*</sup></label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect">
+                                    <ng-select [placeholder]="'am_select_frequency'|translate"
+                                        [multiple]="false" 
+                                        bindLabel="title" 
+                                        bindValue="id"
+                                        [closeOnSelect]="true" 
+                                        searchable="true" 
+                                        formControlName="am_annual_plan_frequency_id"
+                                        (search)="searchAnnualPlan($event)" 
+                                        (clear)="getAnnualPlan()"
+                                        (open)="getAnnualPlan()" 
+                                        autocomplete="new-password">
+                                        <ng-option [value]="frequency.id" *ngFor="let frequency of AnnualPlanFrequencyMasterStore.allItems">
+                                            {{frequency.title}}
+                                        </ng-option>
+                                       
+                                    </ng-select>
+                                </div>
+                            </div>
+                            <p class="form-error pt-1" *ngIf="formErrors && formErrors.am_annual_plan_frequency_id">
+                                {{formErrors.am_annual_plan_frequency_id}}</p>
+                        </div>
+                        </div>
+
+                        <div class="col-lg-4 col-sm-6">
+                        <div class="form-group">
+                            <label for="name">{{'start_date' | translate}}<sup>*</sup></label>
+                            <div class="input-group date-picker input-clear-btn-main">
+                                <input formControlName="start_date" class="form-control bg-white"
+                                    placeholder="yyyy-mm-dd" id="start_date" [readonly]="true"
+                                    [maxDate]="{year: form.value.end_date?.year?this.form.value.end_date?.year:null, month: form.value.end_date?.month?this.form.value.end_date?.month:null, day: form.value.end_date?.day?this.form.value.end_date?.day:null}"
+                                    ngbDatepicker #startInput="ngbDatepicker"><span *ngIf="form.value.start_date"
+                                    aria-hidden="true" (click)="clear('start_date')" style="border:none;"
+                                    class="input-clear-btn">×</span>
+
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary calendar" (click)="startInput.toggle()"
+                                        type="button"><i class="fas fa-calendar-alt"></i></button>
+                                </div>
+                             </div>
+                            <p class="form-error pt-1" *ngIf="formErrors&&formErrors.start_date">
+                                {{formErrors.start_date[0]}}</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-sm-6">
+                        <div class="form-group">
+                            <label for="name">{{'end_date' | translate}}<sup>*</sup></label>
+                            <div class="input-group date-picker input-clear-btn-main">
+                                <!-- <input formControlName="end_date" class="form-control cal4"
+                                    placeholder="Enter Field Name"> -->
+                                <input formControlName="end_date" class="form-control bg-white"
+                                    placeholder="yyyy-mm-dd" id="end_date" ngbDatepicker [readonly]="true"
+                                    [minDate]="{year: this.form.value.start_date?.year, month: this.form.value.start_date?.month, day: this.form.value.start_date?.day}"
+                                    #endInput="ngbDatepicker"><span aria-hidden="true"
+                                    *ngIf="form.value.end_date" (click)="clear('end_date')"
+                                    style="border:none;" class="input-clear-btn">×</span>
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary calendar" (click)="endInput.toggle()"
+                                        type="button"><i class="fas fa-calendar-alt"></i></button>
+                                </div>
+                            </div>
+                            <p class="form-error pt-1" *ngIf="formErrors&&formErrors.end_date">
+                                {{formErrors.end_date[0]}}</p>
+                        </div>
+                    </div>
+
+
+                        <div class="col-sm-12">
+                            <div class="d-block justify-content-left border-0 mt-3">
+                                <button type="button" data-toggle="modal" (click)="save()" [disabled]="AppStore.loading || form.invalid" class="btn mr-3 btn-active">{{AppStore.loading?getButtonText('loading'):getButtonText('save')}}</button>
+                                <button type="button" data-toggle="modal" (click)="save(true)" [disabled]="AppStore.loading || form.invalid" class="btn mr-3">{{AppStore.loading?getButtonText('loading'):getButtonText('save_close')}}</button>
+                                <button type="button" data-toggle="modal" (click)="confirmCancel()" class="btn mr-2" [disabled]="AppStore.loading">{{AppStore.loading?getButtonText('loading'):getButtonText('cancel')}}</button>
+                            </div>
+                        </div>
+                    </div>
+                    </form>
+                </div>
+                <!-- Modal footer -->
+            </div>
+        </div>
+
+        <div class="modal modal-style-1 fade" id="delete-popup" #cancelPopup data-backdrop="static" data-keyboard="false">
+            <app-delete-popup [source]="confirmationObject"></app-delete-popup>
+        </div>

@@ -1,0 +1,150 @@
+<app-audit-program-plans-loader *ngIf="AuditPlanStore?.loaded == false"> </app-audit-program-plans-loader>
+<div class="widget">
+    <div class="audit-page-table-main">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="full-width-table">
+                    <table class="table table-bordered ordinary-table table-hover issue-list-table-org mb-4"
+                        *ngIf="AuditPlanStore?.loaded==true && AuditPlanStore.allItems.length>0">
+                        <tr *ngIf="AuditPlanStore.allItems.length>0">
+                            <th style="width: 3%; text-align: center;">{{'sl' | translate}}</th>
+                            <th style="width: 10%;">
+                                <span>{{'ref_no' | translate}}</span>
+                            </th>
+                            <!-- <th style="width: 13%;" 
+                                    >
+                                    <span>Audit Program</span>
+                                </th> -->
+                            <th style="width: 35%;">
+                                <span>{{'title' | translate}}</span>
+                            </th>
+                            <th style="width: 20%;">{{'audit_leader' | translate}}</th>
+                            <th style="width: 12%;">
+                                <span>{{'start_date' | translate}}</span>
+                            </th>
+                            <th style="width: 12%;">
+                                <span> {{'end_date' | translate}}</span>
+                            </th>
+                            <th style="width: 8%; text-align: center;">{{'status' | translate}}</th>
+                        </tr>
+                        <ng-container *mobxAutorun>
+                            <tr *ngFor="let row of AuditPlanStore.allItems| paginate: {currentPage:AuditPlanStore.currentPage, itemsPerPage:AuditPlanStore.itemsPerPage,totalItems:AuditPlanStore.totalItems};let num=index "
+                                class="cursor-pointer tr-action edit-and-delete-main">
+                                <td style="text-align: center;" class="cursor-pointer"
+                                    (click)="gotToAuditPlanDetails(row.id)">
+                                    {{(AuditPlanStore.currentPage - 1) * AuditPlanStore.itemsPerPage + (num + 1)}}
+                                </td>
+                                <td class="cursor-pointer" (click)="gotToAuditPlanDetails(row.id)">
+                                    #{{row.audit_plan_reference}}</td>
+                                <!-- <td class="cursor-pointer" (click)="gotToAuditPlanDetails(row.id)" title="{{row.audit_program_title}}">
+                                        {{row.audit_program_title}}
+                                        </td> -->
+                                <td class="cursor-pointer" (click)="gotToAuditPlanDetails(row.id)"
+                                    title="{{row.title}}">
+
+                                    {{row.title}}
+                                </td>
+                                <td>
+                                    <app-user-popup-box [source]="getAuditLeaderDetails(row)"></app-user-popup-box>
+                                </td>
+                                <td style="padding:0.75rem;" (click)="gotToAuditPlanDetails(row.id)">
+                                    {{row.start_date | date:
+                                    OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                </td>
+                                <td style="padding:0.75rem;" (click)="gotToAuditPlanDetails(row.id)">
+                                    {{row.end_date | date:
+                                    OrganizationGeneralSettingsStore.organizationSettings?.date_format}}
+                                </td>
+                                <td class="text-center">
+                                    <div
+                                        [ngClass]="row.audit_plan_status_id == 1 ? 'dot-div red-dot' : row.audit_plan_status_id == 2 ? 'dot-div green-dot' : 'dot-div orange-dot' ">
+                                        {{row.audit_plan_status_language_title}}</div>
+
+                                    <div class="edit-option-show">
+                                        <a title="Edit"
+                                            *ngIf="row.audit_plan_status_id != 2 && AuthStore.getActivityPermission(1000,'UPDATE_AUDIT_PLAN')"
+                                            (click)="editAuditPlan(row.id)"><i class="fas fa-pen pointer"></i></a>
+                                        <a (click)="delete(row.id)"
+                                            *ngIf="AuthStore.getActivityPermission(1000,'DELETE_AUDIT_PLAN')"
+                                            title="Delete"><i class="fas fa-trash pointer"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </ng-container>
+                    </table>
+                </div>
+                <ng-container *mobxAutorun>
+                    <div *ngIf="!AuditPlanStore.loaded">
+                        <app-auditable-item-loader></app-auditable-item-loader>
+                    </div>
+                    <app-no-data *ngIf="AuditPlanStore.totalItems == 0 && AuditPlanStore.loaded == true"></app-no-data>
+                </ng-container>
+
+                <div *ngIf="AuditPlanStore.totalItems>AuditPlanStore.itemsPerPage" class="col-sm-12">
+                    <ul class="pagination justify-content-center mt-3">
+                        <div class="list">
+                            <pagination-controls (pageChange)="pageChange($event)" class="my-pagination">
+                            </pagination-controls>
+                        </div>
+                    </ul>
+                </div>
+            </div>
+            <!-- <div class="col-sm-12">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item"><a class="page-link" href="javascript:void(0);"><i
+                                class="fas fa-chevron-left"></i></a></li>
+                    <li class="page-item"><a class="page-link active" href="javascript:void(0);">1</a></li>
+                    <li class="page-item"><a class="page-link" href="javascript:void(0);">2</a></li>
+                    <li class="page-item"><a class="page-link" href="javascript:void(0);"><i
+                                class="fas fa-chevron-right"></i></a></li>
+                    <li class="page-item"><input type="text" class="pagination-input" placeholder="100">
+                    </li>
+                    <li class="page-item"><a class="page-link per-page">Per Page</a></li>
+                </ul>
+            </div> -->
+        </div>
+    </div>
+
+    <div class="widg-padding-cmn bg-white" *ngIf="AuditPlanStore.totalItems > 0 && AuditPlanStore.loaded == true">
+        <div class="row">
+            <div class="col-lg-12 col-sm-12">
+                <h6 class="mb-3">{{'by_department' | translate}}</h6>
+                <div class="audit-by-department-chart">
+                    <div class="audit-by-deparment-chart-pic text-center mt-5">
+                        <div id="chartColumndiv" style="width: 100%; height: 300px"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr class="mt-5 mb-4">
+        <h6 class="mb-3">{{'by_leader' | translate}}</h6>
+        <div class="row">
+            <div class="col-lg-3 col-sm-12">
+            </div>
+            <div class="col-lg-6 col-sm-12">
+                <div class="row d-flex align-items-center">
+                    <div class="col-md-6">
+                        <div class="chart-audit-program-round">
+                            <div id="piechartdiv" style="width: 210%; height: 300px"></div>
+                        </div>
+                    </div>
+                    <!-- <div class="col-md-6">
+                        <div class="chart-info-sec">
+                            <h5><span class="dot-div blue-dot"></span>Thompson </h5>
+                            <h5><span class="dot-div light-violet-dot"></span>Antony Park </h5>
+                            <h5><span class="dot-div dark-violet-dot"></span>Aby Martin </h5>
+                            <a href="#" class="view-more-pestel-box">View More</a>
+                        </div>
+                    </div> -->
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!------------------- Delete Confirmation Modal Start --------------------------->
+
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>

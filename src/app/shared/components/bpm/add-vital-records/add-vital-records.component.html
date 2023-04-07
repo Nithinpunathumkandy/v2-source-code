@@ -1,0 +1,323 @@
+<button type="button" class="close" (click)="closeModal()" data-dismiss="modal"><i class="lni-close"></i><span>esc</span></button>
+<div class="modal-dialog modal-lg modal-dialog-centered" #formModal>
+    <div class="modal-content" *mobxAutorun>
+        <!-- Modal Header -->
+        <div class="modal-header">
+            <h4 class="modal-title">Add Vital Records</h4>
+            <!-- <button type="button" class="close" data-dismiss="modal">&times;</button> -->
+
+        </div>
+        <!-- Modal body -->
+        <div class="modal-body form-body">
+            <p class="head-details">{{'vital_details'|translate}}</p>
+            <form [formGroup]="form">
+                <div class="row">
+                    <div class="col-lg-12 col-sm-12">
+                        <div class="form-group">
+                            <label>{{'vital_record_name'|translate}}<span class="form-error">*</span> </label>
+                            <input type="text" class="form-control" formControlName="vital_record_name"
+                                [placeholder]="'vr_add_placeholder_name' | translate">
+                            <p style="color: red;" *ngIf="processCatFormErros&&processCatFormErros.title">
+                                    {{processCatFormErros.title[0]}}</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label>{{'storage_type'|translate}}<span class="form-error">*</span></label>
+                            <div class="clearfix d-flex">
+                                <div class="multiple-plain-ngselect w-100">
+                                    <ng-select [placeholder]="'vr_add_placeholder_storage_type' | translate" [multiple]="false"
+                                        formControlName="storage_type"
+                                        (clear)="getStorageType();" (open)="getStorageType()">
+                                        <ng-option [value]="type.id"
+                                            *ngFor="let type of StorageTypesMasterStore.StorageTypes">
+                                            {{type.title.length > 50 ? type.title.substring(0,50)+'...' :
+                                            type.title}}
+                                        </ng-option>
+                                    </ng-select>
+                                </div>
+                                <button class="btn multi-add-user ml-2" *ngIf = "AuthStore.getActivityPermission(100,'CREATE_STORAGE_TYPE')" (click)="openstorageTypeModal()" style="width: 42px;"><i
+                                    class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label>{{'storage_location'|translate}}<span class="form-error">*</span></label>
+                            <div class="clearfix d-flex">
+                                <div class="multiple-plain-ngselect w-100">
+                                    <ng-select [placeholder]="'vr_add_placeholder_storage_location' | translate" [multiple]="false"
+                                        formControlName="storage_location"
+                                        (clear)="getStorageLocation();" (open)="getStorageLocation()">
+                                        <ng-option [value]="type.id"
+                                            *ngFor="let type of StorageLocationMasterStore.StorageLocation">
+                                            {{type.title.length > 50 ? type.title.substring(0,50)+'...' :
+                                            type.title}}
+                                        </ng-option>
+                                    </ng-select>
+                                </div>
+                                <button class="btn multi-add-user ml-2" *ngIf = "AuthStore.getActivityPermission(100,'CREATE_STORAGE_LOCATION')" (click)="openstorageLocationModal('location')" style="width: 42px;"><i
+                                    class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label>{{'backup_storage'|translate}}</label>
+                            <div class="clearfix d-flex">
+                                <div class="multiple-plain-ngselect w-100">
+                                    <ng-select [placeholder]="'vr_add_placeholder_backup_storage' | translate" [multiple]="false"
+                                        formControlName="backup_storage"
+                                        (clear)="getStorageLocation();" (open)="getStorageLocation()">
+                                        <ng-option [value]="type.id"
+                                            *ngFor="let type of StorageLocationMasterStore.StorageLocation">
+                                            {{type.title.length > 50 ? type.title.substring(0,50)+'...' :
+                                            type.title}}
+                                        </ng-option>
+                                    </ng-select>
+                                </div>
+                                <button class="btn multi-add-user ml-2" *ngIf = "AuthStore.getActivityPermission(100,'CREATE_STORAGE_LOCATION')" (click)="openstorageLocationModal('backup')" style="width: 42px;"><i
+                                    class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label>{{'person_responsible'|translate}}</label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect ">
+                                    <ng-select [items]="UsersStore.usersList" bindLabel="email" [multiple]="false"
+                                        [placeholder]="'vr_add_placeholder_person_responsible'|translate"
+                                        formControlName="person_responsible" (clear)="getUsers()"
+                                        (search)="searchUers($event)" (open)="getUsers()"
+                                        autocomplete="new-password" [searchFn]="customSearchFn">
+
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            <img *ngIf="item.image_token" class="ng-select-user-display" height="15"
+                                                width="15" [attr.src]="createImagePreview(item?.image_token)"
+                                                onerror="this.src='/assets/images/user-demo2.png'" />
+                                            <img *ngIf="!item.image_token" class="ng-select-user-display"
+                                                height="15" width="15" [attr.src]="getDefaultImage('user-logo')" />
+                                            <b style="padding-left: 3px;">{{getStringsFormatted([item.first_name,item.last_name],50,'
+                                                ') | titlecase}}</b><span aria-hidden="true" (click)="clear(item)"
+                                                style="border:none;" class="ng-value-icon left">×</span>
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-index="index">
+                                            <div class="user-post-department-pic">
+                                                <img *ngIf="item.image_token" class="ng-select-user-display"
+                                                    height="25" width="25"
+                                                    [attr.src]="createImagePreview(item?.image_token)"
+                                                    onerror="this.src='/assets/images/user-demo2.png'" />
+                                                <img *ngIf="!item.image_token" class="ng-select-user-display"
+                                                    height="25" width="25"
+                                                    [attr.src]="getDefaultImage('user-logo')" />
+                                            </div>
+                                            <div class="user-post-department-div">
+                                                <b>{{getStringsFormatted([item.first_name,item.last_name],50,' ') |
+                                                    titlecase}}</b>
+                                                <p class="user-post-department-multiple">
+                                                    {{getStringsFormatted([item.designation_title,'
+                                                    '+item.department],50,',')}}</p>
+                                            </div>
+                                        </ng-template>
+                                    </ng-select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label>{{'periodic_backup'|translate}} </label>
+                            <div class="clearfix d-flex">
+                                <div class="multiple-plain-ngselect w-100">
+                                    <ng-select [placeholder]="'vr_add_placeholder_periodic_backup' | translate" [multiple]="false"
+                                        formControlName="periodic_backup"
+                                        (clear)="getPeriodicBackup();" (open)="getPeriodicBackup()">
+                                        <ng-option [value]="type.id"
+                                            *ngFor="let type of PeriodicBackupMasterStore.PeriodicBackup">
+                                            {{type.title.length > 50 ? type.title.substring(0,50)+'...' :
+                                            type.title}}
+                                        </ng-option>
+                                    </ng-select>
+                                </div>
+                                <!-- <button class="btn multi-add-user ml-2" *ngIf = "AuthStore.getActivityPermission(100,'CREATE_PERIODIC_BACKUP')" (click)="openPeriodicBackup()" style="width: 42px;"><i
+                                    class="fas fa-plus"></i></button> -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label>{{'frequancy_backup'|translate}}</label>
+                            <div class="clearfix d-flex">
+                                <div class="multiple-plain-ngselect w-100">
+                                    <ng-select [placeholder]="'vr_add_placeholder_frequency_backup' | translate" [multiple]="false"
+                                        formControlName="frequancy_backup" [readonly]="!form.value.periodic_backup"
+                                        (clear)="getFrequencyBackup();" (open)="getFrequencyBackup()">
+                                        <ng-option [value]="type.id"
+                                            *ngFor="let type of FrequencyBackupMasterStore.FrequencyBackup">
+                                            {{type.title.length > 50 ? type.title.substring(0,50)+'...' :
+                                            type.title}}
+                                        </ng-option>
+                                    </ng-select>
+                                </div>
+                                <button class="btn multi-add-user ml-2" *ngIf = "AuthStore.getActivityPermission(100,'CREATE_BACKUP_FREQUENCY')" (click)="openbackupFrequencyModal()" style="width: 42px;"><i
+                                    class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label>{{'backup_offsite'|translate}}</label>
+                            <div class="clearfix d-flex">
+                                <div class="multiple-plain-ngselect w-100">
+                                    <ng-select [placeholder]="'vr_add_placeholder_backup_at_offsite' | translate" [multiple]="false"
+                                        formControlName="backup_offsite"
+                                        (clear)="getBackupAtOffsite();" (open)="getBackupAtOffsite()">
+                                        <ng-option [value]="type.id"
+                                            *ngFor="let type of BackupAtOffsiteStatusesMasterStore.backupAtOffsiteStatuses">
+                                            {{type.title.length > 50 ? type.title.substring(0,50)+'...' :
+                                            type.title}}
+                                        </ng-option>
+                                    </ng-select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label>{{'record_retention_policy'|translate}} </label>
+                            <div class="clearfix d-flex">
+                                <div class="multiple-plain-ngselect w-100">
+                                    <ng-select [placeholder]="'vr_add_placeholder_record_retention_policy' | translate" [multiple]="false"
+                                        formControlName="record_retention_policy"
+                                        (clear)="getRecordRetentionPolicy();" (open)="getRecordRetentionPolicy()">
+                                        <ng-option [value]="type.id"
+                                            *ngFor="let type of RecordRetentionPoliciesMasterStore.RecordRetentionPolicies">
+                                            {{type.title.length > 50 ? type.title.substring(0,50)+'...' :
+                                            type.title}}
+                                        </ng-option>
+                                    </ng-select>
+                                </div>
+                                <button class="btn multi-add-user ml-2" *ngIf = "AuthStore.getActivityPermission(100,'CREATE_RECORD_RETENTION_POLICY')" (click)="openRecordRetentionModal()" style="width: 42px;"><i
+                                    class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="col-lg-12 col-sm-12">
+                        <div class="form-group">
+                            <label>{{'details_backup_offsite'|translate}} </label>
+                            <textarea class="form-control" rows="2" formControlName="details_backup_offsite"
+                                [placeholder]="'vital_record_add_placeholder_details_of_backup_at_offsite'|translate"></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label>{{'availability_storing_documents'|translate}}</label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect ">
+                                    <ng-select [placeholder]="'availability_storing_documents' | translate"
+                                        [multiple]="false" searchable="true"
+                                        formControlName="availability_storing_documents">
+                                        <ng-option [value]="type" *ngFor="let type of AprDemoStore.backupOffsite">
+                                            {{type.value.length > 50 ? type.value.substring(0,50)+'...' :
+                                            type.value}}
+                                        </ng-option>
+                                    </ng-select>
+                                </div>
+                            </div>
+                        </div>
+                    </div> -->
+                    <!-- <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label>Recovery & Verificatio Procedure</label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect ">
+                                    <ng-select [placeholder]="'recovery_verififcarion_process' | translate"
+                                        [multiple]="false" searchable="true"
+                                        formControlName="recovery_verififcarion_process">
+                                        <ng-option [value]="type" *ngFor="let type of AprDemoStore.recordRetention">
+                                            {{type.value.length > 50 ? type.value.substring(0,50)+'...' :
+                                            type.value}}
+                                        </ng-option>
+                                    </ng-select>
+                                </div>
+                            </div>
+                        </div>
+                    </div> -->
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label>{{'single_point_failures'|translate}}</label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect ">
+                                    <ng-select [placeholder]="'vr_add_placeholder_is_this_a_single_point_failure' | translate"
+                                        [multiple]="false" searchable="true" formControlName="single_point_failure">
+                                        <ng-option [value]="type.id" *ngFor="let type of AprDemoStore.backupOffsite">
+                                            {{type.value.length > 50 ? type.value.substring(0,50)+'...' :
+                                            type.value}}
+                                        </ng-option>
+                                    </ng-select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-sm-12">
+                        <div class="form-group">
+                            <label>Fireproof & Heat Resisitant Cabin</label>
+                            <div class="clearfix">
+                                <div class="multiple-plain-ngselect ">
+                                    <ng-select [placeholder]="'vr_add_placeholder_fireproof_cabin' | translate"
+                                        [multiple]="false" searchable="true" formControlName="is_fireproof_cabin">
+                                        <ng-option [value]="type.id" *ngFor="let type of AprDemoStore.backupOffsite">
+                                            {{type.value.length > 50 ? type.value.substring(0,50)+'...' :
+                                            type.value}}
+                                        </ng-option>
+                                    </ng-select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <div class="d-block justify-content-left border-0 mt-3">
+                <button type="button" data-toggle="modal" [disabled]="form.invalid" (click)="saveVitalCategory()" class="btn btn-active">{{AppStore.loading  ? getButtonText('loading') : getButtonText('save')}}</button>
+                <button type="button" data-toggle="modal" [disabled]="form.invalid" (click)="saveVitalCategory(true)" class="btn">{{  AppStore.loading  ? getButtonText('loading') : getButtonText('save_close') }}</button>
+                <button type="button" data-toggle="modal" (click)="closeModal()" data-target="#error-message" class="btn">{{  AppStore.loading  ? getButtonText('loading') : getButtonText('cancel') }}</button>
+            </div>
+
+        </div>
+        <!-- Modal footer -->
+    </div>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #storageTypeModal>
+    <app-storage-types-modal *ngIf="storageTypesObject.type"
+        [source]="storageTypesObject">
+    </app-storage-types-modal>
+</div>
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #storageLocationModal>
+    <app-storage-locations-modal *ngIf="storageLocationsObject.type"
+        [source]="storageLocationsObject">
+    </app-storage-locations-modal>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #backupFrequencyModal>
+    <app-backup-frequencies-modal *ngIf="backupFrequencyObject.type"
+        [source]="backupFrequencyObject">
+    </app-backup-frequencies-modal>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #recordRetentionModal>
+    <app-record-retention-policies-modal *ngIf="RecordRetentionPoliciesObject.type"
+        [source]="RecordRetentionPoliciesObject">
+    </app-record-retention-policies-modal>
+</div>
+
+<div class="modal modal-style-1 popup-full-width fade" data-keyboard="false" data-backdrop="static" #periodicModal>
+    <app-periodic-backup-modal *ngIf="periodicBackupObject.type"
+        [source]="periodicBackupObject">
+    </app-periodic-backup-modal>
+</div>

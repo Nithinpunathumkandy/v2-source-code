@@ -1,0 +1,368 @@
+
+<div 
+class="tab-pane tab-edit-class" id="risk-mapping" *mobxAutorun>
+<app-no-data
+*ngIf="MsAuditStore?.individualMsAuditDetails?.ms_audit_plan?.ms_auditschedules.length == 0">
+</app-no-data>
+<div class="common-tab-md tab-same-height clearfix" *ngIf="MsAuditStore?.individualMsAuditDetails?.ms_audit_plan?.ms_auditschedules.length" >
+    <div class="tab-common-left-md">
+        <div class=" issues-tab">
+            <ul class="nav nav-tabs nav-tabs--vertical nav-tabs--left vertical-tab" role="navigation">
+                <li (click)="getScheduleDetails(row?.id)" *ngFor="let row of MsAuditStore?.individualMsAuditDetails?.ms_audit_plan?.ms_auditschedules"
+                
+                class="nav-item"> 
+               
+                <a [ngClass]="{'active': MsAuditSchedulesStore?.msAuditSchedulesId === row.id}" [attr.href]="'#'+row.id" class="nav-link "
+                        data-toggle="tab" role="tab" aria-controls="ipsum" aria-selected="false"> {{row?.title}}</a></li>
+               
+            </ul>
+        </div>
+    </div>
+     
+    <div class="tab-common-left-content-m bg-white cmn-bdr p-3 min-height-83">
+        <div class="tab-content">
+            <div [ngClass]="{'active show': MsAuditSchedulesStore?.msAuditSchedulesId  == row.id}" class="tab-pane fade 
+            " 
+            *ngFor="let row of MsAuditStore?.individualMsAuditDetails?.ms_audit_plan?.ms_auditschedules"
+            [attr.id]="row.id" role="tabpanel">
+            
+            <div class="audit-form-table w-100 not-fixed-table mb-3">
+                <table
+                    class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll"
+                    *ngIf="AuditCheckListStore.loaded &&AuditCheckListStore._auditCheckLists.length > 0">
+                    <thead>
+                        <tr>
+                            <th class="border-top-0 text-center" width="2%">#</th>
+
+                            <th class="border-top-0" width="40%"
+                                (click)="sortTitle('checklist.title')">
+                                <span>{{'ms_audit_question' | translate}}</span>
+                                <img _ngcontent-twv-c17=""
+                                    *ngIf="AuditCheckListStore.orderItem=='checklist.title'"
+                                    [attr.src]="AuditCheckListStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                    class="sort-down-pics ml-2">
+
+                            </th>
+                            <th class="border-top-0" width="12%">{{'ms_type' | translate}}
+                            </th>
+
+                            <th class="border-top-0" width="23%">{{'ms_type_clauses' | translate}}
+                            </th>
+
+                           
+                            
+                            
+
+                            <th class="border-top-0 text-center" width="10%">{{'answer' | translate}}
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr (click)="viewAnswer(items)" class="pointer edit-and-delete-main"
+                            *ngFor="let items of AuditCheckListStore._auditCheckLists | paginate: {currentPage:AuditCheckListStore.currentPage, itemsPerPage:AuditCheckListStore.itemsPerPage,totalItems:AuditCheckListStore.totalItems};let mIndex=index">
+                            <td class="text-center">{{
+                                (AuditCheckListStore?.currentPage - 1) *
+                                AuditCheckListStore?.itemsPerPage +
+                                (mIndex + 1)
+                            }}</td>
+                            <td style="white-space: pre-wrap;">{{items?.title ? items?.title
+                                :AppStore.noContentText }}</td>
+                                <td>
+                                    <!-- <label class="outline-tag">123</label>
+                                    <label class="outline-tag">123</label> -->
+                                    <!-- <ul class="arrowlist m-0 p-0" *ngIf="items?.ms_types">
+                                        <li *ngFor="let msType of items?.ms_types.split(',') ">
+                                            {{msType}}</li>
+                                    </ul> -->
+                                    <div class="" *ngIf="items?.ms_types">
+                                        <ul class="arrowlist m-0 p-0" *ngIf="items?.ms_types.split(',').length>0 && selectedIndexMsType!=mIndex" >
+                                            <li
+                                                *ngFor="let clause of items?.ms_types.split(',') | slice:0:2">
+                                                {{clause}}</li>
+                                        </ul>
+                                    
+    
+                                    <ul class="arrowlist m-0 p-0" *ngIf="items?.ms_types.split(',').length>2 && selectedIndexMsType==mIndex">
+                                        <li
+                                            *ngFor="let clause of items?.ms_types.split(',') ">
+                                            {{clause}}</li>
+                                    </ul>
+                                   
+                                   
+                                    <div  *ngIf="items?.ms_types.split(',').length>2">
+    
+                                        <!-- <button (click)="readMore(num,'more');" *ngIf="selectedIndex!=num" type="submit" class="px-2 pt-1 pb-1 btn btn-active">{{'read_more' | translate}}</button> -->
+                                        <a (click)="readMoreMsType(mIndex,'more',$event);" *ngIf="selectedIndexMsType!=mIndex" class="view-more-pestel-box pointer view-more-doted">{{'view_more' | translate}}</a>
+                                        <a (click)="readMoreMsType(mIndex,'less',$event);" *ngIf="selectedIndexMsType==mIndex" class="view-more-pestel-box pointer view-more-doted">{{'view_less' | translate}}</a>
+                                        <!-- <button (click)="readMore(num,'less');" *ngIf="selectedIndex==num" type="submit" class="px-2 pt-1 pb-1 btn btn-active">{{'read_less' | translate}}</button> -->
+                                      
+                                    </div>
+                                    </div>
+                                    <ng-container *ngIf="!items?.ms_types">
+                                        {{AppStore.noContentText}}
+                                    </ng-container>
+                                </td>
+                                <td>
+                                    <div class="" *ngIf="items?.clause_titles">
+                                        <ul class="arrowlist m-0 p-0" *ngIf="items?.clause_titles && items?.clause_titles.split(',').length>0 && selectedIndex!=mIndex" >
+                                            <li
+                                                *ngFor="let clause of items?.clause_titles.split(',') | slice:0:2">
+                                                {{clause}}</li>
+                                        </ul>
+                                    
+    
+                                    <ul class="arrowlist m-0 p-0" *ngIf="items?.clause_titles && items?.clause_titles.split(',').length>2 && selectedIndex==mIndex">
+                                        <li
+                                            *ngFor="let clause of items?.clause_titles.split(',') ">
+                                            {{clause}}</li>
+                                    </ul>
+                                   
+                                   
+                                    <div  *ngIf="items?.clause_titles.split(',').length>2">
+    
+                                        <!-- <button (click)="readMore(num,'more');" *ngIf="selectedIndex!=num" type="submit" class="px-2 pt-1 pb-1 btn btn-active">{{'read_more' | translate}}</button> -->
+                                        <a (click)="readMore(mIndex,'more',$event);" *ngIf="selectedIndex!=mIndex" class="view-more-pestel-box pointer view-more-doted">{{'view_more' | translate}}</a>
+                                        <a (click)="readMore(mIndex,'less',$event);" *ngIf="selectedIndex==mIndex" class="view-more-pestel-box pointer view-more-doted">{{'view_less' | translate}}</a>
+                                        <!-- <button (click)="readMore(num,'less');" *ngIf="selectedIndex==num" type="submit" class="px-2 pt-1 pb-1 btn btn-active">{{'read_less' | translate}}</button> -->
+                                      
+                                    </div>
+                                    </div>
+                                    
+                                <ng-container *ngIf="!items?.clause_titles">
+                                    {{AppStore.noContentText}}
+                                </ng-container>
+                                </td>
+                            
+                           
+                            <td class="text-center">
+        
+                                    <p *ngIf="items?.is_view_answer == 1 && items?.is_conformance == 1" class="text-green" >
+                                        {{'available'| translate}}
+                                    </p> 
+                                    <p *ngIf="items?.is_view_answer == 1 && items?.is_conformance == 0" class="text-red" >
+                                        {{'not_available'| translate}}
+                                    </p> 
+                                    <p *ngIf="items?.is_view_answer == 0 && items?.is_conformance == 0"  >
+                                        {{AppStore.noContentText}}
+                                    </p> 
+                                   
+                                <div class="edit-option-show" style="margin: 46px 0 0 0;" *ngIf="isAuditors()|| isAuditLeader() || AuthStore.isRoleChecking('super-admin')">
+                                    <!-- edit-and-delete starts -->
+                                    <a *ngIf="AuthStore.getActivityPermission(3700,'UPDATE_MS_AUDIT_CHECKLIST') && items?.is_view_answer == 1 && 
+                                    MsAuditSchedulesStore.individualMsAuditSchedulesDetails?.schedule_status?.type=='audited'"
+                                    (click)="answerAdd($event,items)"><i
+                                        class="fas fa-pen"></i></a>
+
+                                <a *ngIf="AuthStore.getActivityPermission(3700,'UPDATE_MS_AUDIT_CHECKLIST') && items?.is_view_answer == 0 && 
+                                MsAuditSchedulesStore.individualMsAuditSchedulesDetails?.schedule_status?.type=='audited'"
+                                (click)="answerAdd($event,items)"><i
+                                    class="fas fa-plus"></i></a>
+
+                                    
+                                    <a *ngIf="AuthStore.getActivityPermission(3700,'DELETE_MS_AUDIT_CHECKLIST')"
+                                        (click)="deleteCheckList(items?.id)"><i
+                                            class="fas fa-trash"></i></a>
+                                </div>
+                            </td>
+
+                        </tr>
+                    </tbody>
+                </table>
+                <app-no-data
+                    *ngIf="AuditCheckListStore._auditCheckLists.length == 0 && AuditCheckListStore.loaded == true">
+                </app-no-data>
+            </div>
+
+            <div *ngIf="AuditCheckListStore.totalItems>AuditCheckListStore.itemsPerPage && AuditCheckListStore.loaded && AuditCheckListStore._auditCheckLists.length > 0"
+                class="col-sm-12">
+                <ul class="pagination justify-content-center mt-3">
+                    <div class="list">
+                        <pagination-controls [previousLabel]="'previous' | translate" [nextLabel]="'next' | translate"  class="my-pagination" (pageChange)="pageChange($event)">
+                        </pagination-controls>
+                    </div>
+                </ul>
+            </div>
+
+            <ng-container *mobxAutorun>
+                <div *ngIf="!AuditCheckListStore.loaded">
+                    <app-loader-list></app-loader-list>
+                </div>
+            </ng-container>
+            </div>
+        </div>
+    </div>
+</div>
+  
+</div>
+
+<!-- <div class="row">
+    <div class="col-md-12" *ngIf="AuthStore.getActivityPermission(3700,'MS_AUDIT_CHECKLIST_DETAILS')">
+        <div *ngIf="AuditCheckListStore.loaded && AuthStore.getActivityPermission(3700,'MS_AUDIT_CHECKLIST_DETAILS')"
+            class="user-details-page mt-0 card-accordion-new">
+            <div class="user-settings">
+
+                <div class="widget access-settings">
+                    <div>
+                        <div *ngIf="AuditCheckListStore.msAuditChecckLists.length > 0" id="accordion">
+                            <div *ngFor="let process of AuditCheckListStore.msAuditChecckLists| paginate: {currentPage:AuditCheckListStore.currentPage, itemsPerPage:AuditCheckListStore.itemsPerPage,totalItems:AuditCheckListStore.totalItems};let mIndex=index"
+                                class="card access-main-card">
+                                <div class="card-header card-hov-effect">
+                                    <a data-toggle="collapse"
+                                        [ngClass]="AuditCheckListStore.defaultSelected == mIndex ? 'card-link font-weight-bold full-line-click' : 'card-link font-weight-bold full-line-click collapsed'"
+                                        (click)="selectedIndexChange(mIndex,process.process_id)">
+                                        {{process.process_title ? process.process_title :AppStore.noContentText }}
+                                    </a>
+                                </div>
+                                <div id="collapseOne1"
+                                    [ngClass]="selectedIndex == mIndex ? 'collapse show cmn-bdr-top ' : 'collapse cmn-bdr-top'"
+                                    data-parent="#collapseOne1">
+                                    <div class="card-body">
+                                        <div
+                                            class="cmn-bdr bg-white widg-padding-cmn-small pt-2 pb-2 d-flex mb-3 align-items-center">
+                                            <h6 class="mb-0 w-100">Choose checklist</h6>
+                                            <div class="text-right ml-2" style="width: 100px;">
+                                                <button 
+                                                    (click)="chooseCheckList()" type="button" class="btn btn-small"
+                                                    data-toggle="modal" data-target="#choose-checklist-popup"
+                                                    style="margin: 0 !important;">Choose</button>
+                                            </div>
+                                        </div>
+                                        <div class="audit-form-table w-100 not-fixed-table mb-0">
+                                            <table
+                                                class="table table-bordered ordinary-table audit-page-table mb-1 table-scroll"
+                                                *ngIf="AuditCheckListStore.checkListLoaded &&AuditCheckListStore.auditChecckLists.length > 0">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="border-top-0" width="2%">#</th>
+
+                                                        <th class="border-top-0" width="35%"
+                                                            (click)="sortTitle('checklist.title')">
+                                                            <span>{{'ms_audit_question' | translate}}</span>
+                                                            <img _ngcontent-twv-c17=""
+                                                                *ngIf="AuditCheckListStore.orderItem=='checklist.title'"
+                                                                [attr.src]="AuditCheckListStore.orderBy == 'asc'?'assets/images/sort-down.png':'assets/images/sort-up.png'"
+                                                                class="sort-down-pics ml-2">
+
+                                                        </th>
+
+                                                        <th class="border-top-0" width="18%">{{'clauses' | translate}}
+                                                        </th>
+
+                                                        <th class="border-top-0" width="12%">{{'ms_type' | translate}}
+                                                        </th>
+                                                        
+                                                        
+
+                                                        <th class="border-top-0" width="20%">{{'answer' | translate}}
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr (click)="viewAnswer(items)" class="pointer edit-and-delete-main"
+                                                        *ngFor="let items of AuditCheckListStore.auditChecckLists;let num=index">
+                                                        <td>{{num + 1}}</td>
+                                                        <td style="white-space: pre-wrap;">{{items?.title ? items?.title
+                                                            :AppStore.noContentText }}</td>
+                                                            <td>
+                                                                <ul class="arrowlist m-0 p-0" *ngIf="items?.clause_titles">
+                                                                    <li
+                                                                        *ngFor="let clause of items?.clause_titles.split(',') ">
+                                                                        {{clause}}</li>
+                                                                </ul>
+                                                                <ng-container *ngIf="!items?.clause_titles">
+                                                                    {{AppStore.noContentText}}
+                                                                </ng-container>
+                                                            </td>
+                                                        <td>
+                                                            
+                                                            <ul class="arrowlist m-0 p-0" *ngIf="items?.ms_types">
+                                                                <li *ngFor="let msType of items?.ms_types.split(',') ">
+                                                                    {{msType}}</li>
+                                                            </ul>
+                                                            <ng-container *ngIf="!items?.ms_types">
+                                                                {{AppStore.noContentText}}
+                                                            </ng-container>
+                                                        </td>
+                                                       
+                                                        
+
+                                                        <td class="text-center">
+                                                            
+                                                                <p [ngClass]="items?.is_view_answer == 1? 'text-green' : 'text-red'">
+                                                                    {{items?.is_view_answer == 1 ? 'Available' : 'Not Available'}}</p>
+                                                            <div class="edit-option-show" style="margin: 46px 0 0 0; ">
+                                                                
+                                                                <a *ngIf="AuthStore.getActivityPermission(3700,'UPDATE_MS_AUDIT_CHECKLIST') && items?.is_view_answer == 1"
+                                                                (click)="answerAdd($event,items)"><i
+                                                                    class="fas fa-pen"></i></a>
+
+                                                            <a *ngIf="AuthStore.getActivityPermission(3700,'UPDATE_MS_AUDIT_CHECKLIST') && items?.is_view_answer == 0"
+                                                            (click)="answerAdd($event,items)"><i
+                                                                class="fas fa-plus"></i></a>
+
+                                                                
+                                                                <a *ngIf="AuthStore.getActivityPermission(3700,'DELETE_MS_AUDIT_CHECKLIST')"
+                                                                    (click)="deleteCheckList(items?.id)"><i
+                                                                        class="fas fa-trash"></i></a>
+                                                            </div>
+                                                        </td>
+
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            <app-no-data
+                                                *ngIf="AuditCheckListStore.auditChecckLists.length == 0 && AuditCheckListStore.checkListLoaded == true">
+                                            </app-no-data>
+                                        </div>
+
+                                        <ng-container *mobxAutorun>
+                                            <div *ngIf="!AuditCheckListStore.checkListLoaded">
+                                                <app-loader-list></app-loader-list>
+                                            </div>
+                                        </ng-container>
+
+                                    </div>
+
+                                </div>
+                            </div>
+
+
+                        </div>
+                        <app-no-data
+                        *ngIf="AuditCheckListStore.msAuditChecckLists.length == 0 && AuditCheckListStore.loaded == true">
+                    </app-no-data>
+
+                    </div>
+                    
+                </div>
+
+            </div>
+        </div>
+        <ng-container>
+            <app-ms-audit-checklist-loader *ngIf="!AuditCheckListStore.loaded">
+            </app-ms-audit-checklist-loader>
+        </ng-container>
+    </div>
+</div> -->
+
+<div class="modal modal-style-1 popup-full-width fade" #addAnswer data-keyboard="false" data-backdrop="static">
+    <app-checklist-add-answer *ngIf="addAnswerPopup.type" [source]="addAnswerPopup">
+    </app-checklist-add-answer>
+</div>
+<div class="modal modal-style-1 popup-full-width fade" #chooseChecklist data-keyboard="false" data-backdrop="static">
+    <app-choose-check-list *ngIf="chooseCheckListObject.type" [source]="chooseCheckListObject">
+    </app-choose-check-list>
+</div>
+<div class="modal modal-style-1 popup-full-width fade" #viewAnswers data-keyboard="false" data-backdrop="static">
+    <app-check-list-view-answer *ngIf="viewAnswerPopup.type" [source]="viewAnswerPopup">
+    </app-check-list-view-answer>
+</div>
+<!-- check list add model -->
+<div style="overflow: auto;" class="modal modal-style-1 popup-full-width fade" data-keyboard="false"
+    data-backdrop="static" #formModal>
+    <app-add-check-list *ngIf="msAuditChecklistObject.type" [source]="msAuditChecklistObject"></app-add-check-list>
+</div>
+<!------------------- Delete Confirmation Modal Start --------------------------->
+<div class="modal modal-style-1 fade" id="delete-popup" #confirmationPopUp data-backdrop="static" data-keyboard="false">
+    <app-delete-popup [source]="popupObject"></app-delete-popup>
+</div>

@@ -1,0 +1,1730 @@
+<ng-container *mobxAutorun>
+    <!-- <div #content class="content">
+       
+        <p>
+            Start editing to see some magic happen :)
+        </p>
+    </div>
+    
+    <button (click)="exportRiskAssessment()">make pdf</button> -->
+    <div class="tab-pane tab-edit-class" id="assessment" #assessment>
+        <div 
+            *ngIf="RiskAssessmentStore.loaded && RisksStore.individualRiskDetails?.is_analysis_performed==1 && AuthStore.getActivityPermission(900,'RISK_ANALYSIS_LIST')">
+            <!-- <div class="processes-issue audit-processes-issue clearfix cmn-bdr mb-3"
+            *ngIf="RisksStore?.individualRiskDetails?.is_analysis_performed==1">
+            <h5><img src="/assets/images/search-info.png">You can update the risk assessment from here</h5>
+            <div class="float-right">
+                <a data-toggle="modal" data-target="#perform-now-popup" (click)="openPerformPopup()"
+                    class="btn">{{'perform_now' | translate}}</a>
+            </div>
+        </div> -->
+        <div class="bg-white widg-padding-cmn mb-3">
+            <div class="row">
+                <div class="col-lg-4 col-sm-6">
+                    <h4 class="head-three relative pr-4">
+                        {{RiskAssessmentStore.riskAssessmentDetails.risk_analysis.likelihood.language[0].pivot.title}}
+                        ({{RiskAssessmentStore.riskAssessmentDetails.risk_analysis.likelihood.score}}) <a
+                            class="close-text-box" style="cursor: auto;">{{RisksStore.calculationMethod?.is_addition?'+':RisksStore.calculationMethod?.is_multiplication?'x':RisksStore.calculationMethod?.is_substraction?'-':'/'}}</a>
+                    </h4>
+                    <h5>{{'likelihood'|translate}}</h5>
+                    <div class="small-text-p">
+                        <p>
+                            {{RiskAssessmentStore.riskAssessmentDetails.risk_analysis.likelihood.language[0].pivot.timeframe}}{{RiskAssessmentStore.riskAssessmentDetails.risk_analysis.likelihood.probability}}
+                        </p>
+                    </div>
+                    
+
+                    <h5 style="font-size: 14px;" class="mt-2" *ngIf="RiskAssessmentStore.riskAssessmentDetails.risk_analysis.likelihood_justification!=null">
+                        {{'justification'|translate}}:<span class="font-normal small-text ml-2" style="white-space: pre-line;">{{RiskAssessmentStore.riskAssessmentDetails.risk_analysis.likelihood_justification}} </span>
+                    </h5>
+
+                </div>
+                <div class="col-lg-4 col-sm-6">
+                    <h4 class="head-three relative pr-4">
+                        {{RiskAssessmentStore.riskAssessmentDetails.risk_analysis.impact.language[0].pivot.title}}
+                        ({{RiskAssessmentStore.riskAssessmentDetails.risk_analysis.impact.score}}) </h4>
+                    <h5> {{'impact'|translate}}</h5>
+                    <!-- <p class="small-text" style="white-space: pre-wrap;">
+                    *{{RiskAssessmentStore.riskAssessmentDetails.risk_analysis.impact.language[0].pivot.description}}
+                </p> -->
+                    <p class="text-editor-content bullet-point-list pt-1 small-text-p mb-3"
+                        [innerHTML]="RiskAssessmentStore.riskAssessmentDetails.risk_analysis.impact.language[0].pivot.description | safeHtml">
+            </p>
+            <h5 style="font-size: 14px;" class="mt-2" *ngIf="RiskAssessmentStore.riskAssessmentDetails.risk_analysis.impact_justification!=null">
+                {{'justification'|translate}}:<span class="font-normal small-text ml-2" style="white-space: pre-line;">{{RiskAssessmentStore.riskAssessmentDetails.risk_analysis.impact_justification}} </span>
+            </h5>
+
+
+                </div>
+                <div class="col-lg-4 col-sm-12">
+                    <div class="small-rate-box d-flex">
+
+                        <div
+                            [ngClass]="'risk-rating-box risk-rating-box-small w-100 risk-rating-box-color bg-'+getAnalysisScoreClass(RiskAssessmentStore.riskAssessmentDetails.risk_analysis.risk_score)">
+                            <h3 class="text-white">
+                                {{RiskAssessmentStore.riskAssessmentDetails.risk_analysis.risk_rating.language[0].pivot.title}}
+                                ({{RiskAssessmentStore.riskAssessmentDetails.risk_analysis.risk_score}})</h3>
+                            <p class="text-white mb-0">{{'risk_rating' | translate}} ({{'risk_score' | translate}})
+                            </p>
+                        </div>
+                    </div>
+                </div>    
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-8 col-sm-12 padding-right-0">
+                <div class="bg-white widg-padding-cmn">
+                <h6 *ngIf="RiskAssessmentStore.loaded && RisksStore.individualRiskDetails?.is_analysis_performed==1">
+                    {{'control_analysis' | translate}}</h6>
+                <div class="row"
+                    *ngIf="RiskAssessmentStore.loaded && RiskAssessmentStore?.riskAssessmentDetails?.risk_analysis && RiskAssessmentStore.loaded && RisksStore.individualRiskDetails?.is_analysis_performed==1 && (RiskAssessmentStore.riskAssessmentDetails?.risk_analysis?.process_details?.length>0 || RiskAssessmentStore.riskAssessmentDetails?.risk_controls?.length>0)">
+                    <div class="col-md-12">
+                        <div class="panel-group panel-drop-sections pt-0" id="jd" role="tablist"
+                            aria-multiselectable="true">
+                            <div class="panel panel-default"
+                                *ngFor="let process of RiskAssessmentStore.riskAssessmentDetails?.risk_analysis?.process_details">
+                                <div [ngClass]="activeProcess==process.id || openAll==true?'panel-heading active':'panel-heading'"
+                                    role="tab" id="headingOne" (click)="openProcess(process.id)">
+                                    <div class="panel-title relative">
+                                        <a role="button" data-toggle="collapse" [attr.href]="'#'+process.id"
+                                            aria-expanded="false" aria-controls="collapseOne" class="collapsed">
+                                            <h5 class="width96pc mt-0 bold pr-155"
+                                                [attr.title]="process.title?.length>50?process.title:''">
+                                                #{{process.reference_code}}
+                                                - {{process.title?.length>50?process.title.substring(0,50)+'...' :
+                                                process.title}} <span class="drop-down-icone"><i
+                                                        class="fas fa-chevron-down"></i></span> </h5>
+                                        </a>
+                                        <span class="accordion-score-right"
+                                            *ngIf="process.pivot.old_control_efficiency_score && RiskManagementSettingStore.loaded && RiskManagementSettingStore.riskManagementSettings.is_control_efficiency">{{'score'
+                                            | translate}}: <span class="text-light-blue bold" style="font-size: 18px;">
+                                                {{process.pivot.old_control_efficiency_score}}%</span></span>
+                                    </div>
+                                </div>
+                                <div [attr.id]="process.id" *ngIf="openAll==false"
+                                    [ngClass]="activeProcess==process.id?'drop-detail-sec panel-collapse collapse show':'drop-detail-sec panel-collapse collapse'"
+                                    role="tabpanel" aria-labelledby="headingOne" data-parent="#ceo504" style="">
+                                    <div class="panel-body bg-white">
+                                        <div class="drop-detail-sec">
+    
+                                            <ul class="banking-issue list-and-btn"
+                                                *ngIf="!getProcessControlLengthByProcess(RiskAssessmentStore.riskProcessDetails)">
+                                                <li class="clearfix relative"
+                                                    *ngFor="let pr of RiskAssessmentStore.riskProcessDetails">
+                                                    <a>{{pr.control.title}}
+                                                        <small
+                                                            [ngClass]="'dot-div '+pr.old_control_efficiency.label+' info-text pl-3'"
+                                                            *ngIf="pr?.old_control_efficiency && RiskManagementSettingStore.loaded && RiskManagementSettingStore.riskManagementSettings.is_control_efficiency">{{pr?.old_control_efficiency?.language[0].pivot.title}}</small></a><small
+                                                        class="list-right-score">{{pr.old_control_efficiency.score}}%</small>
+                                                </li>
+    
+                                            </ul>
+                                            <ng-container
+                                                *ngIf="getProcessControlLengthByProcess(RiskAssessmentStore.riskProcessDetails)">
+                                                <!-- {{AppStore.noContentText}} -->
+                                                <app-no-data-list [source]="controlEmptyList" [border]=false [height]=false>
+                                                </app-no-data-list>
+                                            </ng-container>
+                                        </div>
+                                    </div>
+                                </div>
+    
+                                <div [attr.id]="process.id" *ngIf="openAll==true"
+                                    [ngClass]="openAll==true?'drop-detail-sec panel-collapse collapse show':'drop-detail-sec panel-collapse collapse'"
+                                    role="tabpanel" aria-labelledby="headingOne" data-parent="#ceo504" style="">
+                                    <div class="panel-body bg-white">
+                                        <div class="drop-detail-sec">
+    
+                                            <ul class="banking-issue list-and-btn" *ngIf="process.controls?.length>0">
+                                                <li class="clearfix relative" *ngFor="let pr of process.controls">
+                                                    <a>{{pr.title}}
+                                                    </a>
+                                                </li>
+    
+                                            </ul>
+                                            <ng-container
+                                                *ngIf="getProcessControlLengthByProcess(RiskAssessmentStore.riskProcessDetails)">
+                                                <!-- {{AppStore.noContentText}} -->
+                                                <app-no-data-list [source]="controlEmptyList" [border]=false [height]=false>
+                                                </app-no-data-list>
+                                            </ng-container>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- controls without process start -->
+                            <div class="panel panel-default"
+                                *ngIf="RiskAssessmentStore?.riskAssessmentDetails?.risk_controls?.length>0">
+                                <div [ngClass]="activeProcess=='control' || openAll==true?'panel-heading active':'panel-heading'"
+                                    role="tab" id="headingOne" (click)="setActiveProcess('control')">
+                                    <div class="panel-title relative">
+                                        <a role="button" data-toggle="collapse" [attr.href]="'#control'"
+                                            aria-expanded="false" aria-controls="collapseOne" class="collapsed">
+                                            <h5 class="width96pc mt-0 bold">
+                                                {{'other_controls'|translate}} <span class="drop-down-icone"><i
+                                                        class="fas fa-chevron-down"></i></span> </h5>
+                                        </a>
+                                        <!-- <span class="accordion-score-right"
+                                        *ngIf="process.pivot.old_control_efficiency_score && RiskManagementSettingStore.loaded && RiskManagementSettingStore.riskManagementSettings.is_control_efficiency">{{'score'
+                                        | translate}}: <span class="text-light-blue bold" style="font-size: 18px;">
+                                            {{process.pivot.old_control_efficiency_score}}%</span></span> -->
+                                    </div>
+                                </div>
+                                <div [attr.id]="'control'"
+                                    [ngClass]="activeProcess=='control' || openAll==true?'drop-detail-sec panel-collapse collapse show':'drop-detail-sec panel-collapse collapse'"
+                                    role="tabpanel" aria-labelledby="headingOne" data-parent="#ceo504" style="">
+                                    <div class="panel-body bg-white">
+                                        <div class="drop-detail-sec">
+    
+                                            <ul class="banking-issue list-and-btn"
+                                                *ngIf="RiskAssessmentStore?.riskAssessmentDetails?.risk_controls?.length>0">
+                                                <li class="clearfix relative"
+                                                    *ngFor="let control of RiskAssessmentStore?.riskAssessmentDetails?.risk_controls">
+                                                    <a>{{control.title}}
+                                                        <small
+                                                            [ngClass]="'dot-div '+control.pivot?.old_control_efficiency_measure_label+' info-text pl-3'"
+                                                            *ngIf="control?.pivot?.old_control_efficiency_measure_id && RiskManagementSettingStore.loaded && RiskManagementSettingStore.riskManagementSettings.is_control_efficiency">{{control.pivot.old_control_efficiency_measure_title}}</small></a><small
+                                                        class="list-right-score">{{control.pivot.old_control_efficiency_measure_score?control.pivot.old_control_efficiency_measure_score:0}}%</small>
+                                                </li>
+    
+                                            </ul>
+                                            <ng-container
+                                                *ngIf="RiskAssessmentStore?.riskAssessmentDetails?.risk_controls?.length==0">
+                                                <!-- {{AppStore.noContentText}} -->
+                                                <app-no-data-list [source]="controlEmptyList" [border]=false [height]=false>
+                                                </app-no-data-list>
+                                            </ng-container>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Controls without process end -->
+    
+    
+                        </div>
+    
+                    </div>
+    
+                    
+                </div>
+                <div class="row"
+                    *ngIf="RiskAssessmentStore.loaded && RisksStore.individualRiskDetails?.is_analysis_performed==1&&RiskAssessmentStore.riskAssessmentDetails?.risk_analysis?.process_details.length==0 && RiskAssessmentStore.riskAssessmentDetails?.risk_controls.length==0">
+                    <div class="col-md-12">
+                        <!-- {{AppStore.noContentText}} -->
+                        <!-- <app-no-data [height]=true [border]=false></app-no-data> -->
+                        <app-no-data-list [source]="processEmptyList" [height]="true" [border]=false></app-no-data-list>
+    
+                    </div>
+                </div>
+            </div>
+            </div>
+            <div class="col-lg-4 col-sm-12"
+            *ngIf="RiskAssessmentStore.loaded && RisksStore.individualRiskDetails?.is_analysis_performed==1 && (RiskAssessmentStore.riskAssessmentDetails?.risk_analysis?.process_details.length>0 || RiskAssessmentStore.riskAssessmentDetails?.risk_controls?.length>0 )
+            && RiskManagementSettingStore.loaded && RiskManagementSettingStore.riskManagementSettings.is_control_efficiency">
+            <div class="bg-white widg-padding-cmn-small mb-3">
+                <h6>{{'control_efficiency' | translate}}</h6>
+                <hr class="mt-0 mb-3">
+
+                <div
+                    [ngClass]="RiskAssessmentStore.riskAssessmentDetails.risk_analysis.total_control_efficiency_score>50?'progress-circle progress-circle-big-one  over50 p'+RiskAssessmentStore.riskAssessmentDetails.risk_analysis.total_control_efficiency_score:'progress-circle progress-circle-big-one  p'+RiskAssessmentStore.riskAssessmentDetails.risk_analysis.total_control_efficiency_score">
+                    <span>{{RiskAssessmentStore.riskAssessmentDetails.risk_analysis.total_control_efficiency_score!=null?RiskAssessmentStore.riskAssessmentDetails.risk_analysis.total_control_efficiency_score:0}}%</span>
+                    <div class="left-half-clipper">
+                        <div class="first50-bar"></div>
+                        <div class="value-bar"></div>
+                    </div>
+                </div>
+
+            </div>
+            </div>
+            <div class="col-lg-4 col-sm-12"
+                    *ngIf="RiskAssessmentStore.loaded && RisksStore.individualRiskDetails?.is_analysis_performed==1 && (RiskAssessmentStore.riskAssessmentDetails?.risk_analysis?.process_details?.length ==0 && RiskAssessmentStore.riskAssessmentDetails?.risk_controls?.length ==0 )
+                && RiskManagementSettingStore.loaded && RiskManagementSettingStore.riskManagementSettings.is_control_efficiency">
+                <div class="bg-white widg-padding-cmn-small mb-3">
+                <h6>{{'control_efficiency' | translate}}</h6>
+                <hr class="mt-0 mb-3">
+                <div class="bg-white widg-padding-cmn-small mb-3">
+                <app-context-no-data [sourceData] = "getNoDataSource('center')"></app-context-no-data>
+            </div>
+        </div>
+                </div>
+        </div>
+            
+
+
+        </div>
+
+        <ng-container *mobxAutorun>
+            <div
+                *ngIf="(RisksStore.individual_risk_loaded && RisksStore.individualRiskDetails?.is_analysis_performed && !RiskAssessmentStore.loaded) || !RisksStore.individual_risk_loaded">
+                <app-risk-assessment-loader></app-risk-assessment-loader>
+            </div>
+        </ng-container>
+
+        <ng-container *mobxAutorun>
+            <app-no-data
+                *ngIf="RisksStore.individual_risk_loaded && RisksStore?.individualRiskDetails?.is_analysis_performed!=1"
+                [border]=false></app-no-data>
+        </ng-container>
+    </div>
+</ng-container>
+
+    <div class="modal modal-style-1 fade popup-full-width small-step-form-popup" id="perform-now-popup"
+        data-keyboard="false" data-backdrop="static" #performPopup *mobxAutorun>
+        <button type="button" class="close" (click)="confirmCancel()"><i class="lni-close"></i><span>{{'esc' |
+                translate}}</span></button>
+        <div class="modal-dialog step-popup-modal">
+            <div class="modal-content">
+                <!-- Modal body -->
+                <div class="modal-body form-body">
+
+
+                    <!-- multistep form -->
+                    <div class="step-form-small">
+                        <form id="msform">
+                            <!-- progressbar -->
+                            <div class="small-step-progressbar-main">
+                                <ul id="progressbar">
+                                    <li class="active"></li>
+                                    <li></li>
+                                    <li></li>
+                                    <li></li>
+                                    <li
+                                        *ngIf="RiskManagementSettingStore.loaded && RiskManagementSettingStore.riskManagementSettings.is_control_efficiency">
+                                    </li>
+                                    <li></li>
+                                </ul>
+                            </div>
+                            <!-- fieldsets -->
+                            <fieldset>
+                                <h2 class="fs-title">{{'risk_context' | translate}}</h2>
+
+                                <div class="mb-4">
+                                    <div class="issuue-new-style p-0">
+                                        <div class="issue-top-sec">
+                                            <div class="clearfix">
+                                                <h5 class="d-inline-block cmn-head-style label-tag-style"><span
+                                                        class="issue-smoal-head-text bold">#{{RisksStore.individualRiskDetails?.reference_code?RisksStore.individualRiskDetails?.reference_code:'xxxx'}}</span>
+                                                    <span
+                                                        class="issue-smoal-head-text bold">{{RisksStore.individualRiskDetails?.title?RisksStore.individualRiskDetails?.title:AppStore.noContentText}}</span>
+                                                    <!-- <span class="issue-smoal-head-text">
+                                                    {{RisksStore.individualRiskDetails?.issueDomains.length>0?getArrayFormatedString('title',RisksStore.individualRiskDetails?.issueDomains):AppStore.noContentText}}</span> -->
+                                                    <span
+                                                        *ngFor="let types of RisksStore.individualRiskDetails?.risk_types"
+                                                        class="risk-type-bx in-ex-sec">
+                                                        <i><img
+                                                                [attr.src]="types.is_internal == 1 ? 'assets/images/internal.svg' : 'assets/images/external.svg'" style="width: 15px;"></i>&nbsp;{{types.language[0].pivot.title}}&nbsp;
+                                                    </span>
+                                                </h5>
+                                                <!-- [attr.src]="types == 'Internal' ? 'assets/images/risk-type-icon.png' : 'assets/images/risk-type-icon-two.png'" -->
+                                            </div>
+                                            <!-- <p style="white-space: pre-wrap;">
+                                            {{RisksStore.individualRiskDetails?.description?RisksStore.individualRiskDetails?.description:AppStore.noContentText}}
+                                        </p> -->
+                                            <div class="image-width-texteditor table table-bordered border-none text-editor-content bullet-point-list ordinary-table pt-1"
+                                                [innerHTML]="RisksStore.individualRiskDetails?.risk_observation | safeHtml"></div>
+
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-2 mt-2"
+                                        *ngIf="OrganizationGeneralSettingsStore?.organizationSettings?.is_ms_type">
+                                        <label class="outline-tag"
+                                            *ngFor="let type of RisksStore.individualRiskDetails?.ms_type_organizations">{{type.ms_type.title}}
+                                            <span>V.{{type.ms_type_version.title}}</span>
+                                        </label>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <h6>{{rm_risk_description|translate}}</h6>
+                                            <p style="white-space:pre-line">
+                                                {{RisksStore.individualRiskDetails?.description?RisksStore.individualRiskDetails?.description:AppStore.noContentText}}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <!-- <div class="row">
+                                <div class="col-md-10">
+                                    <h6>Root Cause</h6>
+                                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
+                                        incididunt.Lorem ipsum dolor sit amet, consectetur adipisicing lit, sed do eiusmod </p>
+                                </div>
+                            </div> -->
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <h6>{{'impacts'|translate}}</h6>
+                                            <!-- <p style="white-space:pre-line">
+                                            {{RisksStore.individualRiskDetails?.impact?RisksStore.individualRiskDetails?.impact:AppStore.noContentText}}
+                                        </p> -->
+                                            <ul class="arrowlist pl-0 mt-2"
+                                                *ngIf="RisksStore.individualRiskDetails?.risk_impacts?.length>0">
+
+                                                <li class="clearfix"
+                                                    *ngFor="let impact of RisksStore.individualRiskDetails?.risk_impacts">
+                                                    <a>{{impact.title}}</a>
+                                                </li>
+
+                                            </ul>
+                                            <p *ngIf="RisksStore.individualRiskDetails?.risk_impacts?.length==0">
+                                                {{AppStore.noContentText}}</p>
+
+                                        </div>
+                                        <div class="col-md-4">
+                                            <h6>{{risk_causes|translate}}</h6>
+                                            <ul class="arrowlist pl-0 mt-2"
+                                                *ngIf="RisksStore.individualRiskDetails?.risk_causes?.length>0">
+
+                                                <li class="clearfix"
+                                                    *ngFor="let cause of RisksStore.individualRiskDetails.risk_causes">
+                                                    <a>{{cause.title}}</a>
+                                                </li>
+
+                                            </ul>
+                                            <p *ngIf="RisksStore.individualRiskDetails?.risk_causes?.length==0">
+                                                {{AppStore.noContentText}}</p>
+
+                                        </div>
+                                        <div class="col-md-4">
+                                            <h6>{{'risk_source'|translate}}</h6>
+                                            <p>{{RisksStore.individualRiskDetails?.risk_sources?.length>0?getArrayFormatedString('title',RisksStore.individualRiskDetails?.risk_sources):AppStore.noContentText}}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <!-- <div class="row">
+                                        <div class="col-md-12">
+                                            <h6>{{'risk_causes'|translate}}</h6>
+                                            <ul class="arrowlist pl-0 mt-2"
+                                                *ngIf="RisksStore.individualRiskDetails.risk_causes?.length>0">
+
+                                                <li class="clearfix"
+                                                    *ngFor="let cause of RisksStore.individualRiskDetails.risk_causes">
+                                                    <a>{{cause.title}}</a>
+                                                </li>
+
+                                            </ul>
+                                            <p *ngIf="RisksStore.individualRiskDetails.risk_causes?.length==0">
+                                                {{AppStore.noContentText}}</p>
+
+                                        </div>
+                                    </div> -->
+
+                                    <div class="row">
+                                        <!-- <div class="col-md-4">
+                                        <h6>{{'issue_domains' | translate}}</h6>
+                                        <p>{{RisksStore.individualRiskDetails?.issueDomains.length>0?getArrayFormatedString('title',RisksStore.individualRiskDetails?.issueDomains):AppStore.noContentText}}
+                                        </p>
+                                    </div> -->
+                                        <!-- <div class="col-md-4">
+                                            <h6>{{'risk_source'|translate}}</h6>
+                                            <p>{{RisksStore.individualRiskDetails?.risk_sources?.length>0?getArrayFormatedString('title',RisksStore.individualRiskDetails?.risk_sources):AppStore.noContentText}}
+                                            </p>
+                                        </div> -->
+
+                                        <div class="col-md-4">
+                                            <h6>{{'risk_category' | translate}}</h6>
+                                            <p>{{RisksStore.individualRiskDetails?.risk_category?.title?RisksStore.individualRiskDetails?.risk_category?.title:AppStore.noContentText}}
+                                            </p>
+                                        </div>
+
+                                        <!-- <div class="col-md-4">
+                                        <h6>Risk Library</h6>
+                                        <p>{{RisksStore.individualRiskDetails?.risk_library?RisksStore.individualRiskDetails?.risk_library.title:AppStore.noContentText}}
+                                        </p>
+                                    </div> -->
+                                        <div class="col-md-4">
+                                            <h6>{{'risk_types' | translate}}</h6>
+                                            <p *ngFor="let types of RisksStore.individualRiskDetails?.risk_types"
+                                                class="risk-type-bx risk-type-bx-drop">
+                                                <i><img
+                                                        [attr.src]="types.is_internal == 1 ? 'assets/images/internal.svg' : 'assets/images/external.svg'" style="width: 15px;"></i>&nbsp;{{types.language[0]?.pivot?.title}}&nbsp;
+                                            </p>
+                                            <p *ngIf="RisksStore.individualRiskDetails?.risk_types?.length==0">{{AppStore.noContentText}}</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <h6>{{'risk_areas' | translate}}</h6>
+                                            <p>{{RisksStore.individualRiskDetails?.risk_areas.length>0?getArrayFormatedString('title',RisksStore.individualRiskDetails?.risk_areas):AppStore.noContentText}}
+                                            </p>
+                                        </div>
+                                        <!-- <div class="col-md-4">
+                                        <h6>{{'risk_control_plan' | translate}}</h6>
+                                        <p>{{RisksStore.individualRiskDetails?.risk_control_plan?.language[0].pivot.title?RisksStore.individualRiskDetails?.risk_control_plan?.language[0].pivot.title:AppStore.noContentText}}
+                                        </p>
+                                    </div> -->
+
+
+                                    </div>
+
+                                    <!-- <div class="row">
+                                        <div class="col-md-4">
+                                            <h6>{{'organizations' | translate}}</h6>
+                                            <p>{{RisksStore.individualRiskDetails?.organizations.length>0?getArrayFormatedString('title',RisksStore.individualRiskDetails?.organizations):AppStore.noContentText}}
+                                            </p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <h6>{{'divisions' | translate}}</h6>
+                                            <p>{{RisksStore.individualRiskDetails?.divisions.length>0?getArrayFormatedString('title',RisksStore.individualRiskDetails?.divisions):AppStore.noContentText}}
+                                            </p>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <h6>{{'departments' | translate}}</h6>
+                                            <p>{{RisksStore.individualRiskDetails?.departments.length>0?getArrayFormatedString('title',RisksStore.individualRiskDetails?.departments):AppStore.noContentText}}
+                                            </p>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <h6>{{'sections' | translate}}</h6>
+                                            <p>{{RisksStore.individualRiskDetails?.sections.length>0?getArrayFormatedString('title',RisksStore.individualRiskDetails?.sections):AppStore.noContentText}}
+                                            </p>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <h6>{{'sub_sections' | translate}}</h6>
+                                            <p>{{RisksStore.individualRiskDetails?.sub_sections.length>0?getArrayFormatedString('title',RisksStore.individualRiskDetails?.sub_sections):AppStore.noContentText}}
+                                            </p>
+                                        </div>
+                                    </div> -->
+
+                                    <!-- <div class="row">
+                                        <div class="col-md-12">
+                                            <h6>Context</h6>
+                                            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt.Lorem ipsum dolor sit amet, consectetur adipisicing
+                                                lit, sed do eiusmod tempor incididunt.Lorem ipsum dolor sit amet, onsectetur adipisicing elit, sed do eiusmod Lorem ipsum</p>
+                                        </div>
+                                    </div> -->
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <h6>{{'responsible_users' | translate}}</h6>
+                                            <div class="row">
+                                                <div class="col-sm-2 animation-pulse"
+                                                    *ngFor="let user of RisksStore.individualRiskDetails?.responsible_users;let i=index">
+
+
+                                                    
+                                                    <app-user-popup-box [source]="getPopupDetails(user)"
+                                                        [activateButtons]="false" [showName]=false>
+                                                    </app-user-popup-box>
+                                                </div>
+                                            </div>
+                                            <p *ngIf="RisksStore.individualRiskDetails?.responsible_users.length==0">
+                                                {{AppStore.noContentText}}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="label-and-user-pic">
+                                            <h6>{{'risk_owner' | translate}}</h6>
+
+                                            <div class="row" *ngIf="RisksStore.individualRiskDetails?.risk_owner">
+                                                <div class="col-sm-12 animation-pulse">
+                                                    <app-user-popup-box [activateButtons]="false"
+                                                        [source]="getOwnerPopupDetails(RisksStore.individualRiskDetails?.risk_owner)">
+                                                    </app-user-popup-box>
+                                                </div>
+                                            </div>
+                                        </div>
+                                            
+                                                    <p *ngIf="!RisksStore.individualRiskDetails?.risk_owner">
+                                                        {{AppStore.noContentText}}
+                                                    </p>
+                                                    
+                                                
+                                        </div>
+                                    </div>
+
+
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <h6>{{'risk_existing_controls' | translate}}</h6>
+                                            <div 
+                                                *ngIf="RisksStore.individualRiskDetails?.processes.length>0">
+                                                <ul class="arrowlist mt-0 p-0"
+                                                    *ngFor="let process of RisksStore.individualRiskDetails?.processes">
+                                                    <div *ngIf="process.controls?.length>0">
+                                                        <li class="clearfix" *ngFor="let control of process.controls">
+                                                            <a>{{control.title}}</a>
+                                                        </li>
+                                                    </div>
+
+
+                                                </ul>
+
+                                            </div>
+
+                                            <!-- Mapped Controls-->
+                                            <div 
+                                                *ngIf="RisksStore.individualRiskDetails?.controls?.length>0">
+                                                <ul class="arrowlist mt-0 p-0">
+                                                    <li class="clearfix"
+                                                        *ngFor="let control of RisksStore.individualRiskDetails?.controls">
+                                                        <a>
+                                                            {{control.title}}</a>
+                                                    </li>
+
+                                                </ul>
+
+                                            </div>
+                                            <!-- End of mapped controls-->
+                                            <ng-container
+                                                *ngIf="(RisksStore.individualRiskDetails?.processes.length==0 || getProcessControlLength(RisksStore.individualRiskDetails?.processes)) && ((!RisksStore.individualRiskDetails?.controls) || RisksStore.individualRiskDetails?.controls.length==0)">
+                                                <p>
+                                                    {{AppStore.noContentText}}
+                                                </p>
+                                            </ng-container>
+                                        </div>
+                                    </div>
+
+
+                                </div>
+
+
+
+
+                                <input type="button" name="next" class="next action-button btn-active" value="Next" />
+                                <input type="button" name="cancel" (click)="confirmCancel()"
+                                    class="cancel action-button mr-2" value="Cancel" />
+                            </fieldset>
+                            <fieldset>
+                                <h2 class="fs-title">{{'impact' | translate}}</h2>
+
+                                <div class="mb-5">
+                                    <div class="issuue-new-style p-0">
+                                        <div class="issue-top-sec">
+                                            <div class="clearfix">
+                                                <h5 class="d-inline-block cmn-head-style label-tag-style"><span
+                                                        class="issue-smoal-head-text bold">#{{RisksStore.individualRiskDetails?.reference_code?RisksStore.individualRiskDetails?.reference_code:'xxxx'}}</span>
+                                                    <span
+                                                        class="issue-smoal-head-text bold">{{RisksStore.individualRiskDetails?.title?RisksStore.individualRiskDetails?.title:AppStore.noContentText}}</span>
+                                                    <!-- <span
+                                                    class="issue-smoal-head-text">
+                                                    {{RisksStore.individualRiskDetails?.issueDomains.length>0?getArrayFormatedString('title',RisksStore.individualRiskDetails?.issueDomains):AppStore.noContentText}}</span> -->
+                                                    <span
+                                                        *ngFor="let types of RisksStore.individualRiskDetails?.risk_types"
+                                                        class="risk-type-bx in-ex-sec">
+                                                        <i><img
+                                                                [attr.src]="types.is_internal == 1 ? 'assets/images/internal.svg' : 'assets/images/external.svg'" style="width: 15px;"></i>&nbsp;{{types.language[0].pivot.title}}&nbsp;
+                                                    </span>
+                                                </h5>
+                                            </div>
+                                            <!-- <p style="white-space: pre-wrap;">
+                                            {{RisksStore.individualRiskDetails?.description?RisksStore.individualRiskDetails?.description:AppStore.noContentText}}
+                                        </p> -->
+                                            <div class="text-editor-content bullet-point-list pt-1" *ngIf="RisksStore.individualRiskDetails?.description"
+                                                [innerHTML]="RisksStore.individualRiskDetails?.description | safeHtml"></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- <hr class="mt-4 mb-4"> -->
+                                    <div class="mb-2 mt-2"> <label
+                                            [ngClass]="activeImpact?.id == impact.id?'outline-tag pointer active':'outline-tag pointer'"
+                                            *ngFor="let impact of ImpactStore.impactDetails"
+                                            (click)="setActiveImpact(impact)">{{impact.risk_matrix_impact_title}}
+                                            ({{impact.score}})</label>
+                                    </div>
+
+                                    <h6>{{'description' | translate}}</h6>
+                                    <!-- <p style="white-space: pre-wrap;">
+                                    {{activeImpact?.risk_matrix_impact_description?activeImpact?.risk_matrix_impact_description:activeImpact?.language[0].pivot.description}}
+                                </p> -->
+                                    <p
+                                        [innerHTML]="activeImpact?.risk_matrix_impact_description?activeImpact?.risk_matrix_impact_description:activeImpact?.language[0].pivot.description?activeImpact?.language[0].pivot.description:AppStore.noContentText">
+                                    </p>
+                                    <h6>{{'impact_guidelines' | translate}}</h6>
+                                    <p *ngFor="let categories of filterdOptions[0]?.risk_categories">{{categories?.risk_category}}-{{categories?.description}}</p>
+                                    <!-- <div class="col-sm-12"> -->
+                                    <div class="form-group">
+                                        <h6>{{'justification' | translate}}</h6>
+                                        <textarea rows="3" id="impactComment" class="form-control"
+                                            [(ngModel)]="impactJustification"
+                                            placeholder="Enter your justification here"
+                                            name="impactJustification"></textarea>
+                                    </div>
+                                    <!-- </div> -->
+
+
+
+                                </div>
+                                <h6>{{'incidents' | translate}}</h6>
+                                <div class="row">
+                                <div class="col-sm-12 full-width-table">
+                                <table class="table table-bordered ordinary-table table-hover issue-list-table-org mb-4">
+                                    <th>{{'sl' | translate}}</th>
+                                    <th>{{'title' | translate}}</th>
+                                    <th>{{'description' | translate}}</th>
+                                    <tr *ngFor="let item of RisksStore?.individualRiskDetails?.incidents;let i = index">
+                                        <td width="5%">{{i+1}}</td>
+                                        <td width="35%">{{item.title}}</td>
+                                        <td width="60%">{{item.description}}</td>
+                                    </tr>
+                                </table>
+                                </div>
+                                </div>
+
+
+                                
+                                <input type="button" name="next" [disabled]="activeImpact==null"
+                                    class="next action-button btn-active" value="Next" />
+                                <input type="button" name="previous" class="previous action-button mr-2"
+                                    value="Previous" />
+                                <input type="button" name="cancel" (click)="confirmCancel()"
+                                    class="cancel action-button mr-2" value="Cancel" />
+                            </fieldset>
+                            <fieldset>
+                                <h2 class="fs-title">{{'assessment_likelihood' | translate}}</h2>
+
+                                <div class="mb-5">
+                                    <div class="issuue-new-style p-0">
+                                        <div class="issue-top-sec">
+                                            <div class="clearfix">
+                                                <h5 class="d-inline-block cmn-head-style label-tag-style"><span
+                                                        class="issue-smoal-head-text bold">#{{RisksStore.individualRiskDetails?.reference_code?RisksStore.individualRiskDetails?.reference_code:'xxxx'}}</span>
+                                                    <span
+                                                        class="issue-smoal-head-text bold">{{RisksStore.individualRiskDetails?.title?RisksStore.individualRiskDetails?.title:AppStore.noContentText}}</span>
+                                                    <!-- <span
+                                                    class="issue-smoal-head-text">
+                                                    {{RisksStore.individualRiskDetails?.issueDomains.length>0?getArrayFormatedString('title',RisksStore.individualRiskDetails?.issueDomains):AppStore.noContentText}}</span> -->
+                                                    <span
+                                                        *ngFor="let types of RisksStore.individualRiskDetails?.risk_types"
+                                                        class="risk-type-bx in-ex-sec">
+                                                        <i><img
+                                                                [attr.src]="types.is_internal == 1 ? 'assets/images/internal.svg' : 'assets/images/external.svg'" style="width: 15px;"></i>&nbsp;{{types.language[0].pivot.title}}&nbsp;
+                                                    </span>
+                                                </h5>
+                                            </div>
+                                            <!-- <p style="white-space: pre-wrap;">
+                                            {{RisksStore.individualRiskDetails?.description?RisksStore.individualRiskDetails?.description:AppStore.noContentText}}
+                                        </p> -->
+                                            <div class="text-editor-content bullet-point-list pt-1" *ngIf="RisksStore.individualRiskDetails?.description"
+                                                [innerHTML]="RisksStore.individualRiskDetails?.description | safeHtml"></div>
+
+
+
+                                        </div>
+                                    </div>
+
+                                    <!-- <hr class="mt-4 mb-4"> -->
+                                    <div class="mb-3 mt-2"> <label
+                                            [ngClass]="activeLikelihood?.id == likelihood.id?'outline-tag active pointer':'outline-tag pointer'"
+                                            *ngFor="let likelihood of LikelihoodStore.likelihoodDetails"
+                                            (click)="setActiveLikelihood(likelihood)">{{likelihood.risk_matrix_likelihood_title}}
+                                            ({{likelihood.score}})</label>
+                                    </div>
+
+                                    <h6>{{'timeframe' | translate}} </h6>
+                                    <p>{{activeLikelihood?.risk_matrix_likelihood_timeframe?activeLikelihood?.risk_matrix_likelihood_timeframe:activeLikelihood?.language[0].pivot.timeframe}}
+                                    </p>
+
+                                    <h6>{{'probability' | translate}}</h6>
+                                    <p> {{activeLikelihood?.probability}}</p>
+
+                                    <div class="form-group">
+                                        <h6>{{'justification' | translate}}</h6>
+                                        <textarea class="form-control" rows="3" id="comment"
+                                            [(ngModel)]="likelihoodJustification"
+                                            placeholder="Enter your justification here"
+                                            name="likelihoodJustification"></textarea>
+                                    </div>
+                                </div>
+                                <h6>{{'incidents' | translate}}</h6>
+                                <div class="row">
+                                <div class="col-sm-12 full-width-table">
+                                <table class="table table-bordered ordinary-table table-hover issue-list-table-org mb-4">
+                                    <th>{{'sl' | translate}}</th>
+                                    <th>{{'title' | translate}}</th>
+                                    <th>{{'description' | translate}}</th>
+                                    <tr *ngFor="let item of RisksStore?.individualRiskDetails?.incidents;let i = index">
+                                        <td width="5%">{{i+1}}</td>
+                                        <td width="35%">{{item.title}}</td>
+                                        <td width="60%">{{item.description}}</td>
+                                    </tr>
+                                </table>
+                                </div>
+                                </div>
+
+                                <input type="button" name="next" [disabled]="activeLikelihood==null"
+                                    class="next action-button btn-active" value="Next" />
+                                <input type="button" name="previous" class="previous action-button mr-2"
+                                    value="Previous" />
+                                <input type="button" name="cancel" (click)="confirmCancel()"
+                                    class="cancel action-button mr-2" value="Cancel" />
+                            </fieldset>
+                            <fieldset>
+                                <h2 class="fs-title">{{'risk_rating' | translate}}</h2>
+
+                                <div class="mb-5">
+
+                                    <div class="bg-main cmn-bdr widg-padding-cmn-small mb-4 pb-2">
+                                        <div class="row">
+                                            <div class="col-lg-4 col-sm-6" *ngIf="activeLikelihood">
+                                                <h4 class="head-three relative pr-4">
+                                                    {{activeLikelihood?.risk_matrix_likelihood_title?activeLikelihood?.risk_matrix_likelihood_title:activeLikelihood?.language[0]?.pivot?.title}}
+                                                    ({{activeLikelihood?.score}}) <a class="close-text-box">{{RisksStore.calculationMethod?.is_addition?'+':RisksStore.calculationMethod?.is_multiplication?'x':RisksStore.calculationMethod?.is_substraction?'-':'/'}}</a>
+                                                </h4>
+                                                <h5>{{'likelihood' | translate}}</h5>
+                                                <div class="small-text-p">
+                                                    <p>
+                                                        {{activeLikelihood?.risk_matrix_likelihood_timeframe?activeLikelihood?.risk_matrix_likelihood_timeframe:activeLikelihood?.language[0]?.pivot?.timeframe?activeLikelihood?.language[0].pivot.timeframe:''}}
+                                                        {{activeLikelihood?.probability}}</p>
+                                                </div>
+                                                
+                                                    <h5 style="font-size: 14px;" class="mt-2" *ngIf="likelihoodJustification && likelihoodJustification!=''">
+                                                        {{'justification'|translate}}
+                                                    </h5>
+                                                    <div class="small-text-p" *ngIf="likelihoodJustification && likelihoodJustification!=''">
+                                                        <p style="white-space: pre-line;">{{likelihoodJustification}}</p>
+                                                    </div>
+                                            </div>
+                                            <div class="col-lg-4 col-sm-6" *ngIf="activeImpact">
+                                                <h4 class="head-three relative pr-4">
+                                                    {{activeImpact?.risk_matrix_impact_title?activeImpact?.risk_matrix_impact_title:activeImpact?.language[0]?.pivot?.title}}
+                                                    ({{activeImpact?.score}}) </h4>
+                                                <h5> {{'impact'|translate}}</h5>
+                                                <!-- <p class="small-text" style="white-space: pre-wrap;">
+                                                *{{activeImpact?.risk_matrix_impact_description?activeImpact?.risk_matrix_impact_description:activeImpact?.language[0].pivot.description?activeImpact?.language[0].pivot.description:''}}
+                                            </p> -->
+                                                
+                                                    <p class="small-text-p" [innerHTML]="activeImpact?.risk_matrix_impact_description?activeImpact?.risk_matrix_impact_description:activeImpact?.language[0]?.pivot?.description?activeImpact?.language[0].pivot.description:''">
+                                                        
+                                                    </p>
+                                       
+                                                <h5 style="font-size: 14px;" class="mt-2" *ngIf="impactJustification && impactJustification!=''">
+                                                    {{'justification'|translate}}
+                                                </h5>
+                                                <div class="small-text-p" *ngIf="impactJustification && impactJustification!=''">
+                                                    <p style="white-space: pre-line;">{{impactJustification}}</p>
+                                                </div>
+
+                                            </div>
+                                            <div class="col-lg-4 col-sm-12" *ngIf="activeImpact && activeLikelihood">
+                                                <div class="small-rate-box">
+                                                    <div
+                                                        [ngClass]="'risk-rating-box mb-3 risk-rating-box-small risk-rating-box-color bg-'+getRiskClass(false)">
+                                                        <h3 class="text-white">
+                                                            {{getRiskClass(true)}}
+                                                            ({{RisksStore.calculationMethod?.is_addition?activeImpact?.score+activeLikelihood?.score:RisksStore.calculationMethod?.is_multiplication?activeImpact?.score*activeLikelihood?.score:RisksStore.calculationMethod?.is_substraction?activeImpact?.score>activeLikelihood?.score?activeImpact?.score-activeLikelihood?.score:activeLikelihood?.score-activeImpact?.score:activeLikelihood?.score>activeImpact?.score?activeLikelihood?.score/activeImpact?.score:activeImpact?.score/activeLikelihood?.score}})
+                                                           </h3>
+                                                        <p class="text-white mb-0">{{'risk_rating'| translate}}
+                                                            ({{'risk_score'| translate}})</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="risk-score-box">
+                                        <h6 class="bold">{{'risk_score' | translate}} = ({{'likelihood' | translate}} {{RisksStore.calculationMethod?.is_addition?'+':RisksStore.calculationMethod?.is_multiplication?'x':RisksStore.calculationMethod?.is_substraction?'-':'/'}}
+                                            {{'impact' | translate}})</h6>
+                                        <h5 *ngFor="let rating of RiskRatingMasterStore.allItems"
+                                            [ngClass]="'font-normal risk-color-'+getScoreClass(rating)">
+                                            <div *ngIf="rating.risk_rating_values">
+                                                <span
+                                                    [ngClass]="'risk-score-indication bg-'+rating.label"></span>{{rating.title}}
+                                                ({{getFormatedValue(',',rating.risk_rating_values)}})
+
+                                            </div>
+                                        </h5>
+                                        <!-- <h5
+                                        [ngClass]="(activeImpact?.score*activeLikelihood?.score)>10 && !((activeImpact?.score*activeLikelihood?.score)>15)?'medium':''">
+                                        <span class="risk-score-indication bg-dark-orange"></span>Medium (11-15)</h5>
+                                    <h5 [ngClass]="(activeImpact?.score*activeLikelihood?.score)>15?'high':''">
+                                        <span class="risk-score-indication bg-dark-red"></span><span>High
+
+                                            (16-25)</span>
+                                            !((activeImpact?.score*activeLikelihood?.score)>10)?'low':''
+                                    </h5> -->
+                                    </div>
+
+                                    <div class="risk-score-box mt-4">
+                                        <h6 class="bold">{{'risk_treatment' | translate}}</h6>
+                                        <h5 *ngFor="let rating of RiskRatingMasterStore.allItems"
+                                            [ngClass]="'font-normal risk-color-'+getScoreClass(rating)"><span
+                                                *ngIf="rating.risk_rating_values"
+                                                [ngClass]="'risk-score-indication bg-'+rating.label"></span>{{rating.risk_rating_values?rating.risk_treatment:''}}
+                                        </h5>
+                                        <!-- <h5
+                                        [ngClass]="(activeImpact?.score*activeLikelihood?.score)>10 && !((activeImpact?.score*activeLikelihood?.score)>15)?'medium':''">
+                                        <span class="risk-score-indication bg-dark-orange"></span>Actively manage /
+                                        monitor at the Sector Head & Project Steering Committee</h5>
+                                    <h5 [ngClass]="(activeImpact?.score*activeLikelihood?.score)>15?'high':''">
+                                        <span class="risk-score-indication bg-dark-red"></span><span>Requires
+                                            an appropriate treatment and response at the Project Steering Committee, and
+                                            Executive Management and Risk Committee (EMRC) level with progress reporting
+                                            to the Secretary General</span>
+                                    </h5> -->
+                                    </div>
+
+                                </div>
+
+
+                                <input type="button" name="next" class="next action-button btn-active" value="Next" />
+                                <input type="button" name="previous" class="previous action-button mr-2"
+                                    value="Previous" />
+                                <input type="button" name="cancel" (click)="confirmCancel()"
+                                    class="cancel action-button mr-2" value="Cancel" />
+                            </fieldset>
+                            <fieldset
+                                *ngIf="RiskManagementSettingStore.loaded && RiskManagementSettingStore.riskManagementSettings.is_control_efficiency">
+                                <h2 class="fs-title">{{'control_efficiency' | translate}}</h2>
+
+                                <div class="mb-5" *ngIf="!(RisksStore.individualRiskDetails?.is_analysis_performed)">
+                                    <div
+                                        *ngFor="let process of RisksStore.individualRiskDetails?.processes;let p=index">
+                                        <div class="d-flex" *ngIf="process.controls && process.controls?.length>0">
+                                            <h6 class="bold cmn-head-style w-100"
+                                                [attr.title]="process.title?.length>50?process.title:''">
+                                                {{process.reference_code}} -
+                                                {{process.title?.length>50?process.title.substring(0,50)+'...' :
+                                                process.title}}</h6><span style="width:100px;">Score: <span
+                                                    class="text-light-blue bold"
+                                                    style="font-size: 18px;">{{getScorePercentage(process)>0?getScorePercentage(process):0}}%</span></span>
+                                        </div>
+                                        <div *ngIf="process.controls?.length>0">
+                                            <div class="control-efficiency-box cmn-bdr p-3 mb-3"
+                                                *ngFor="let control of process.controls;let c=index">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="w-100">
+                                                        <div class="Preview-block pt-0">
+                                                            <div class="Preview-checkbox clearfix">
+                                                                <label class="container2 remember-txt float-left">
+                                                                    <input type="checkbox"  [checked]="selectedControl(p,c)" (change)="setSelectedControl(p,c,$event)">
+                                                                    <span class="checkmark"></span> {{control.title}}</label>
+                                                            </div>
+                                                        </div>
+                                                        <!-- <p class="icon-with-text-new"><span><input type="checkbox"
+                                                        [checked]="selectedControl(p,c)" (change)="setSelectedControl(p,c,$event)">
+                                                         </span>{{control.title}}
+                                                    </p> -->
+
+                                                        <div class="mt-2"> <label
+                                                                [ngClass]="control?.activeControlEfficiency?.id==measure.id?'outline-tag pointer active':'outline-tag pointer'"
+                                                                (click)="setActiveControlEfficiency(measure,p,c)"
+                                                                *ngFor="let measure of ControlEfficiencyMeasuresMasterStore.allItems">{{measure.control_efficiency_measure_title}}</label>
+
+                                                        </div>
+
+                                                    </div>
+                                                    <small
+                                                        class="btn btn-small btn-active">{{control?.activeControlEfficiency?.score?control?.activeControlEfficiency?.score:0}}%</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Mapped Control start -->
+
+                                    <div class="d-flex" *ngIf="RisksStore.individualRiskDetails?.controls?.length>0">
+                                        <h6 class="bold cmn-head-style w-100">{{'other_controls' | translate}}</h6><span
+                                            style="width:100px;">{{'score'|translate}}: <span class="text-light-blue bold"
+                                                style="font-size: 18px;">{{getScorePercentage(RisksStore.individualRiskDetails?.controls,true)>0?getScorePercentage(RisksStore.individualRiskDetails?.controls,true):0}}%</span></span>
+                                    </div>
+
+                                    <div class="control-efficiency-box cmn-bdr p-3 mb-3"
+                                        *ngFor="let control of RisksStore.individualRiskDetails?.controls;let c=index">
+                                        <div class="d-flex align-items-center">
+                                            <div class="w-100">
+                                                <p class="icon-with-text-new" style="color: #33475b;"><span><i
+                                                            class="fas fa-question-circle"></i></span>{{control.title}}
+                                                </p>
+
+                                                <div class="mt-2"> <label
+                                                        [ngClass]="control?.activeControlEfficiency?.id==measure.id?'outline-tag pointer active':'outline-tag pointer'"
+                                                        (click)="setActiveControlEfficiency(measure,null,c,true)"
+                                                        *ngFor="let measure of ControlEfficiencyMeasuresMasterStore.allItems">{{measure.control_efficiency_measure_title}}</label>
+
+                                                </div>
+
+                                            </div>
+                                            <small
+                                                class="btn btn-small btn-active">{{control?.activeControlEfficiency?.score?control?.activeControlEfficiency?.score:0}}%</small>
+                                        </div>
+                                    </div>
+
+
+                                    <!-- Mapped control end -->
+
+                                </div>
+
+                                <div class="mb-5" *ngIf="RisksStore?.individualRiskDetails?.is_analysis_performed">
+                                    <div
+                                        *ngFor="let process of RiskAssessmentStore?.riskAssessmentDetails?.risk_processes;let p=index">
+                                        <div class="d-flex" *ngIf="process.controls && process.controls?.length>0">
+                                            <h6 class="bold cmn-head-style w-100"
+                                                [attr.title]="process.process.title?.length>50?process.process.title:''">
+                                                {{process.process.reference_code}} -
+                                                {{process.process.title?.length>50?process.process.title.substring(0,50)+'...'
+                                                :
+                                                process.process.title}}</h6><span style="width:100px;">Score: <span
+                                                    class="text-light-blue bold"
+                                                    style="font-size: 18px;">{{getScorePercentage(process)>0?getScorePercentage(process):0}}%</span></span>
+                                        </div>
+                                        <div *ngIf="process.controls?.length>0">
+                                            <div class="control-efficiency-box cmn-bdr p-3 mb-3"
+                                                *ngFor="let control of process.controls;let cn=index">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="w-100">
+                                                        <p class="icon-with-text-new"><span><i
+                                                                    class="fas fa-question-circle"></i></span>{{control.control.title}}
+                                                        </p>
+
+                                                        <div class="mt-2"> <label
+                                                                [ngClass]="control.efficiency?.id==measure.id?'outline-tag pointer active':'outline-tag pointer'"
+                                                                (click)="setActiveControlEfficiency(measure,p,cn)"
+                                                                *ngFor="let measure of ControlEfficiencyMeasuresMasterStore.allItems">{{measure.control_efficiency_measure_title}}</label>
+
+                                                        </div>
+
+                                                    </div>
+                                                    <small
+                                                        class="btn btn-small btn-active">{{control?.efficiency?.score?control?.efficiency?.score:0}}%</small>
+                                                </div>
+                                            </div>
+                                        </div>
+
+
+                                    </div>
+
+                                    <!-- Mapped control section -->
+
+
+                                    <div class="d-flex"
+                                        *ngIf="RiskAssessmentStore?.riskAssessmentDetails?.risk_controls && RiskAssessmentStore?.riskAssessmentDetails?.risk_controls?.length>0">
+                                        <h6 class="bold cmn-head-style w-100">{{'other_controls' | translate}}</h6><span
+                                            style="width:100px;">{{'score'|translate}}: <span class="text-light-blue bold"
+                                                style="font-size: 18px;">{{getScorePercentage(RiskAssessmentStore?.riskAssessmentDetails?.risk_controls,true)>0?getScorePercentage(RiskAssessmentStore?.riskAssessmentDetails?.risk_controls,true):0}}%</span></span>
+                                    </div>
+                                    <div>
+                                        <div class="control-efficiency-box cmn-bdr p-3 mb-3"
+                                            *ngFor="let control of RiskAssessmentStore?.riskAssessmentDetails?.risk_controls;let cn=index">
+                                            <div class="d-flex align-items-center">
+                                                <div class="w-100">
+                                                    <p class="icon-with-text-new"><span><i
+                                                                class="fas fa-question-circle"></i></span>{{control.title}}
+                                                    </p>
+
+                                                    <div class="mt-2"> <label
+                                                            [ngClass]="control.pivot.old_control_efficiency_measure_id==measure.id?'outline-tag pointer active':'outline-tag pointer'"
+                                                            (click)="setActiveControlEfficiency(measure,null,cn,true)"
+                                                            *ngFor="let measure of ControlEfficiencyMeasuresMasterStore.allItems">{{measure.control_efficiency_measure_title}}</label>
+
+                                                    </div>
+
+                                                </div>
+                                                <small
+                                                    class="btn btn-small btn-active">{{control.pivot?.old_control_efficiency_measure_score?control.pivot?.old_control_efficiency_measure_score:0}}%</small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+
+                                    <!-- mapped control end -->
+                                </div>
+                                <ng-container
+                                    *ngIf="((RiskAssessmentStore?.loaded && RisksStore?.individualRiskDetails?.is_analysis_performed &&
+                                 ((RiskAssessmentStore?.riskAssessmentDetails?.risk_processes?.length==0  || 
+                                 controlLength(RiskAssessmentStore.riskAssessmentDetails?.risk_processes)==0 )&&RiskAssessmentStore?.riskAssessmentDetails?.risk_controls?.length==0)) || (RisksStore.individual_risk_loaded && !(RisksStore?.individualRiskDetails?.is_analysis_performed) &&
+                                  ((RisksStore.individualRiskDetails?.processes?.length==0 || controlLength(RisksStore.individualRiskDetails?.processes)==0)&& RisksStore.individualRiskDetails?.controls?.length==0)))">
+                                    <!-- <div class="mb-5">
+                                    {{AppStore.noContentText}}
+                                </div> -->
+                                    <div class="mb-5">
+                                        <app-report-no-data [source]="processEmptyList" [border]=false>
+                                        </app-report-no-data>
+                                    </div>
+                                </ng-container>
+
+
+                                
+                                <input type="button" name="next" [disabled]="activeControlEfficiency==null"
+                                    class="next action-button btn-active" value="Next" />
+                                <input type="button" name="previous" class="previous action-button mr-2"
+                                    value="Previous" />
+                                <input type="button" name="cancel" (click)="confirmCancel()"
+                                    class="cancel action-button mr-2" value="Cancel" />
+                            </fieldset>
+
+
+
+
+                            <fieldset>
+                                <h2 class="fs-title">{{'preview_save' | translate}}</h2>
+                                <div class="mb-5">
+                                    <div class="row">
+                                        <div class="col-lg-9 col-sm-12 padding-right-0">
+                                            <div class="issuue-new-style p-0">
+                                                <div class="issue-top-sec">
+                                                    <div class="clearfix">
+                                                        <h5 class="d-inline-block cmn-head-style label-tag-style"><span
+                                                                class="issue-smoal-head-text bold">#{{RisksStore.individualRiskDetails?.reference_code?RisksStore.individualRiskDetails?.reference_code:AppStore.noContentText}}</span>
+                                                            <span
+                                                                class="issue-smoal-head-text bold">{{RisksStore.individualRiskDetails?.title?RisksStore.individualRiskDetails?.title:AppStore.noContentText}}</span>
+                                                            <!-- <span class="issue-smoal-head-text">
+                                                            {{RisksStore.individualRiskDetails?.issueDomains.length>0?getArrayFormatedString('title',RisksStore.individualRiskDetails?.issueDomains):AppStore.noContentText}}</span> -->
+                                                            <span
+                                                                *ngFor="let types of RisksStore.individualRiskDetails?.risk_types"
+                                                                class="risk-type-bx in-ex-sec">
+                                                                <i><img
+                                                                        [attr.src]="types.is_internal == 1 ? 'assets/images/internal.svg' : 'assets/images/external.svg'" style="width: 15px;"></i>&nbsp;{{types.language[0].pivot.title}}&nbsp;
+                                                            </span>
+                                                        </h5>
+                                                        <!-- [attr.src]="types == 'Internal' ? 'assets/images/risk-type-icon.png' : 'assets/images/risk-type-icon-two.png'" -->
+                                                    </div>
+                                                    <!-- <p style="white-space: pre-wrap;">
+                                                    {{RisksStore.individualRiskDetails?.description?RisksStore.individualRiskDetails?.description:AppStore.noContentText}}
+                                                </p> -->
+                                                    <p class="image-width-texteditor table table-bordered border-none text-editor-content bullet-point-list ordinary-table"
+                                                        [innerHTML]="RisksStore.individualRiskDetails?.risk_observation | safeHtml">
+                                                    </p>
+
+                                                </div>
+                                            </div>
+
+                                            <div class="mb-2 mt-2"
+                                                *ngIf="OrganizationGeneralSettingsStore?.organizationSettings?.is_ms_type">
+                                                <label class="outline-tag"
+                                                    *ngFor="let type of RisksStore.individualRiskDetails?.ms_type_organizations">{{type.ms_type.title}}
+                                                    <span>V.{{type.ms_type_version.title}}</span>
+                                                </label>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <h6>{{rm_risk_description|translate}}</h6>
+                                                    <p style="white-space:pre-line">
+                                                        {{RisksStore.individualRiskDetails?.description?RisksStore.individualRiskDetails?.description:AppStore.noContentText}}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <!-- <div class="row">
+                                        <div class="col-md-10">
+                                            <h6>Root Cause</h6>
+                                            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
+                                                incididunt.Lorem ipsum dolor sit amet, consectetur adipisicing lit, sed do eiusmod </p>
+                                        </div>
+                                    </div> -->
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <h6>{{'impacts'|translate}}</h6>
+                                                    <!-- <p style="white-space:pre-line">
+                                                    {{RisksStore.individualRiskDetails?.impact?RisksStore.individualRiskDetails?.impact:AppStore.noContentText}}
+                                                </p> -->
+                                                    <ul class="arrowlist pl-0 mt-2"
+                                                        *ngIf="RisksStore.individualRiskDetails.risk_impacts?.length>0">
+
+                                                        <li class="clearfix"
+                                                            *ngFor="let impact of RisksStore.individualRiskDetails.risk_impacts">
+                                                            <a>{{impact.title}}</a>
+                                                        </li>
+
+                                                    </ul>
+                                                    <p *ngIf="RisksStore.individualRiskDetails.risk_impacts?.length==0">
+                                                        {{AppStore.noContentText}}</p>
+
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <h6>{{risk_causes|translate}}</h6>
+                                                    <ul class="arrowlist pl-0 mt-2"
+                                                        *ngIf="RisksStore.individualRiskDetails.risk_causes?.length>0">
+
+                                                        <li class="clearfix"
+                                                            *ngFor="let cause of RisksStore.individualRiskDetails.risk_causes">
+                                                            <a>{{cause.title}}</a>
+                                                        </li>
+
+                                                    </ul>
+                                                    <p *ngIf="RisksStore.individualRiskDetails.risk_causes?.length==0">
+                                                        {{AppStore.noContentText}}</p>
+
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <h6>{{'risk_source'|translate}}</h6>
+                                                    <p>{{RisksStore.individualRiskDetails?.risk_sources?.length>0?getArrayFormatedString('title',RisksStore.individualRiskDetails?.risk_sources):AppStore.noContentText}}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <!-- <div class="row">
+                                                <div class="col-md-12">
+                                                    <h6>{{'risk_causes'|translate}}</h6>
+                                                    <ul class="arrowlist pl-0 mt-2"
+                                                        *ngIf="RisksStore.individualRiskDetails.risk_causes?.length>0">
+
+                                                        <li class="clearfix"
+                                                            *ngFor="let cause of RisksStore.individualRiskDetails.risk_causes">
+                                                            <a>{{cause.title}}</a>
+                                                        </li>
+
+                                                    </ul>
+                                                    <p *ngIf="RisksStore.individualRiskDetails.risk_causes?.length==0">
+                                                        {{AppStore.noContentText}}</p>
+
+                                                </div>
+                                            </div> -->
+
+
+                                            <div class="row">
+                                                <!-- <div class="col-md-4">
+                                                    <h6>{{'risk_source'|translate}}</h6>
+                                                    <p>{{RisksStore.individualRiskDetails?.risk_sources?.length>0?getArrayFormatedString('title',RisksStore.individualRiskDetails?.risk_sources):AppStore.noContentText}}
+                                                    </p>
+                                                </div> -->
+                                                <!-- <div class="col-md-4">
+                                                <h6>{{'issue_domains' | translate}}</h6>
+                                                <p>{{RisksStore.individualRiskDetails?.issueDomains.length>0?getArrayFormatedString('title',RisksStore.individualRiskDetails?.issueDomains):AppStore.noContentText}}
+                                                </p>
+                                            </div> -->
+                                                <div class="col-md-4">
+                                                    <h6>{{'risk_category' | translate}}</h6>
+                                                    <p>{{RisksStore.individualRiskDetails?.risk_category?.title?RisksStore.individualRiskDetails?.risk_category?.title:AppStore.noContentText}}
+                                                    </p>
+                                                </div>
+
+                                                <!-- <div class="col-md-4">
+                                                <h6>Risk Library</h6>
+                                                <p>{{RisksStore.individualRiskDetails?.risk_library?RisksStore.individualRiskDetails?.risk_library.title:AppStore.noContentText}}
+                                                </p>
+                                            </div> -->
+                                                <div class="col-md-4">
+                                                    <h6>{{'risk_types' | translate}}</h6>
+                                                    <p *ngFor="let types of RisksStore.individualRiskDetails?.risk_types"
+                                                        class="risk-type-bx risk-type-bx-drop">
+                                                        <i><img
+                                                                [attr.src]="types.is_internal == 1 ? 'assets/images/internal.svg' : 'assets/images/external.svg'" style="width: 15px;"></i>&nbsp;{{types.language[0].pivot.title}}&nbsp;
+                                                    </p>
+                                                    <p *ngIf="RisksStore.individualRiskDetails?.risk_types?.length==0">{{AppStore.noContentText}}</p>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <h6>{{'risk_areas' | translate}}</h6>
+                                                    <p>{{RisksStore.individualRiskDetails?.risk_areas.length>0?getArrayFormatedString('title',RisksStore.individualRiskDetails?.risk_areas):AppStore.noContentText}}
+                                                    </p>
+                                                </div>
+                                                <!-- <div class="col-md-4">
+                                                <h6>{{'risk_control_plan' | translate}}</h6>
+                                                <p>{{RisksStore.individualRiskDetails?.risk_control_plan?.language[0].pivot.title?RisksStore.individualRiskDetails?.risk_control_plan?.language[0].pivot.title:AppStore.noContentText}}
+                                                </p>
+                                            </div> -->
+
+
+                                            </div>
+
+                                            <!-- <div class="row">
+                                                <div class="col-md-4">
+                                                    <h6>{{'organizations' | translate}}</h6>
+                                                    <p>{{RisksStore.individualRiskDetails?.organizations.length>0?getArrayFormatedString('title',RisksStore.individualRiskDetails?.organizations):AppStore.noContentText}}
+                                                    </p>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <h6>{{'divisions' | translate}}</h6>
+                                                    <p>{{RisksStore.individualRiskDetails?.divisions.length>0?getArrayFormatedString('title',RisksStore.individualRiskDetails?.divisions):AppStore.noContentText}}
+                                                    </p>
+                                                </div>
+
+                                                <div class="col-md-4">
+                                                    <h6>{{'departments' | translate}}</h6>
+                                                    <p>{{RisksStore.individualRiskDetails?.departments.length>0?getArrayFormatedString('title',RisksStore.individualRiskDetails?.departments):AppStore.noContentText}}
+                                                    </p>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <h6>{{'sections' | translate}}</h6>
+                                                    <p>{{RisksStore.individualRiskDetails?.sections.length>0?getArrayFormatedString('title',RisksStore.individualRiskDetails?.sections):AppStore.noContentText}}
+                                                    </p>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <h6>{{'sub_sections' | translate}}</h6>
+                                                    <p>{{RisksStore.individualRiskDetails?.sub_sections.length>0?getArrayFormatedString('title',RisksStore.individualRiskDetails?.sub_sections):AppStore.noContentText}}
+                                                    </p>
+                                                </div>
+                                            </div> -->
+
+                                            <!-- <div class="row">
+                                        <div class="col-md-12">
+                                            <h6>Context</h6>
+                                            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt.Lorem ipsum dolor sit amet, consectetur adipisicing
+                                                lit, sed do eiusmod tempor incididunt.Lorem ipsum dolor sit amet, onsectetur adipisicing elit, sed do eiusmod Lorem ipsum</p>
+                                        </div>
+                                    </div> -->
+                                            <div class="row">
+                                                <div class="col-md-4">
+
+                                                    <h6>{{'responsible_users' | translate}}</h6>
+                                                    <div class="row">
+                                                        <div class="col-sm-2 animation-pulse"
+                                                            *ngFor="let user of RisksStore.individualRiskDetails?.responsible_users;let i=index">
+
+
+
+                                                            <app-user-popup-box [source]="getPopupDetails(user)"
+                                                                [activateButtons]="false" [showName]=false>
+                                                            </app-user-popup-box>
+                                                        </div>
+                                                    </div>
+                                                    <p
+                                                        *ngIf="RisksStore.individualRiskDetails?.responsible_users.length==0">
+                                                        {{AppStore.noContentText}}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div class="label-and-user-pic">
+                                                    <h6>{{'risk_owner' | translate}}</h6>
+
+                                                    <div class="row"
+                                                        *ngIf="RisksStore.individualRiskDetails?.risk_owner">
+                                                        <div class="col-sm-12 animation-pulse">
+                                                            <app-user-popup-box [activateButtons]="false"
+                                                                [source]="getOwnerPopupDetails(RisksStore.individualRiskDetails?.risk_owner)">
+                                                            </app-user-popup-box>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                  
+                                                        <p *ngIf="!RisksStore.individualRiskDetails?.risk_owner">
+                                                            {{AppStore.noContentText}}
+                                                        </p>
+                                                    
+
+
+                                                </div>
+                                            </div>
+
+
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <h6>{{'risk_existing_controls' | translate}}</h6>
+                                                    <div 
+                                                        *ngIf="RisksStore.individualRiskDetails?.processes.length>0">
+                                                        <ul class="arrowlist mt-0 p-0"
+                                                            *ngFor="let process of RisksStore.individualRiskDetails?.processes">
+                                                            <div *ngIf="process.controls?.length>0">
+                                                                <li class="clearfix"
+                                                                    *ngFor="let control of process.controls">
+                                                                    <a>{{control.title}}</a></li>
+                                                            </div>
+                                                        </ul>
+                                                    </div>
+
+                                                    <!-- Mapped Controls start -->
+                                                    <div 
+                                                        *ngIf="RisksStore.individualRiskDetails?.controls.length>0">
+                                                        <ul class="arrowlist mt-0 p-0">
+                                                            <li class="clearfix"
+                                                                *ngFor="let control of RisksStore.individualRiskDetails?.controls">
+                                                                <a>
+                                                                    {{control.title}}</a>
+                                                            </li>
+
+                                                        </ul>
+
+                                                    </div>
+                                                    <!-- Mapped controls end -->
+                                                    <p class="drop-detail-sec"
+                                                        *ngIf="(RisksStore.individualRiskDetails?.processes.length==0 || getProcessControlLength(RisksStore.individualRiskDetails?.processes)) && RisksStore.individualRiskDetails?.controls.length==0">
+                                                        {{AppStore.noContentText}}
+                                                    </p>
+                                                    <p class="form-error pt-1"
+                                                        *ngIf="formErrors && formErrors.risk_controls">
+                                                        {{formErrors.risk_controls}}</p>
+                                                </div>
+
+
+                                            </div>
+
+                                        </div>
+                                        <div class="col-lg-3 col-sm-12">
+                                            <div class="risk-rating-box bg-white p-3 mb-3">
+                                                <h6 class="text-left">{{'risk_analysis' | translate}}</h6>
+                                                <hr class="mt-0 mb-3">
+                                                <div 
+                                                [ngClass]="'risk-rating-box risk-rating-box-small w-100 risk-rating-box-color bg-'+getRiskClass(false)">
+                                                <h3 class="text-white">
+                                                    {{getRiskClass(true)}}
+                                                    ({{RisksStore.calculationMethod?.is_addition?activeImpact?.score+activeLikelihood?.score:RisksStore.calculationMethod?.is_multiplication?activeImpact?.score*activeLikelihood?.score:RisksStore.calculationMethod?.is_substraction?activeImpact?.score>activeLikelihood?.score?activeImpact?.score-activeLikelihood?.score:activeLikelihood?.score-activeImpact?.score:activeLikelihood?.score>activeImpact?.score?activeLikelihood?.score/activeImpact?.score:activeImpact?.score/activeLikelihood?.score}})
+                                                          
+                                                    <!-- ({{activeImpact?.score*activeLikelihood?.score}}) -->
+                                                </h3>
+                                                
+                                            </div>
+                                                <!-- <h3 [ngClass]="'text-'+getRiskClass(false)+' bold'">
+                                                    {{getRiskClass(true)}}
+                                                    ({{activeImpact?.score*activeLikelihood?.score}})</h3> -->
+                                                    <div class="text-center mt-3">
+                                                        <p class="cmn-bdr d-inline-block mb-0 p-2 mr-2 mb-2">{{'likelihood' | translate}} :
+                                                            {{activeLikelihood?.risk_matrix_likelihood_title?activeLikelihood?.risk_matrix_likelihood_title:activeLikelihood?.language[0]?.pivot?.title}}
+                                                            <span>({{activeLikelihood?.score}})</span>
+                                                        </p>
+                                                        <p class="cmn-bdr d-inline-block mb-0 p-2 mr-2 mb-2">{{'impact' | translate}} :
+                                                            {{activeImpact?.risk_matrix_impact_title?activeImpact?.risk_matrix_impact_title:activeImpact?.language[0]?.pivot?.title}}
+                                                            <span>({{activeImpact?.score}})</span>
+                                                        </p>
+                                                    </div>
+                                                
+
+
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                    <h6>{{'control_efficiency' | translate}}</h6>
+                                    <div class="row"
+                                        *ngIf="RisksStore.individualRiskDetails?.processes.length>0 || RisksStore.individualRiskDetails?.controls.length>0 ||
+                                     ((RiskAssessmentStore?.riskAssessmentDetails?.risk_processes?.length>0 || RiskAssessmentStore?.riskAssessmentDetails?.risk_controls?.length>0) &&RisksStore.individualRiskDetails?.is_analysis_performed)">
+                                        <div
+                                            [ngClass]="getControlEfficiencyAverage()>0?'col-lg-9 col-sm-12':'col-lg-12 col-sm-12'">
+                                            <div class="panel-group panel-drop-sections pt-0" id="jd" role="tablist"
+                                                aria-multiselectable="true"
+                                                *ngIf="!RisksStore.individualRiskDetails.is_analysis_performed">
+                                                <div class="panel panel-default"
+                                                    *ngFor="let process of RisksStore.individualRiskDetails?.processes">
+                                                    <div [ngClass]="activeProcess==process.id?'panel-heading active':'panel-heading'"
+                                                        role="tab" id="headingOne"
+                                                        (click)="setActiveProcess(process.id)">
+                                                        <div class="panel-title relative">
+                                                            <a role="button" data-toggle="collapse"
+                                                                [attr.href]="'#'+process.id" aria-expanded="false"
+                                                                aria-controls="collapseOne" class="collapsed">
+                                                                <h5 class="width96pc mt-0 bold pr-155"
+                                                                    [attr.title]="process.title?.length>50?process.title:''">
+                                                                    #{{process.reference_code}}
+                                                                    -
+                                                                    {{process.title?.length>50?process.title.substring(0,50)+'...'
+                                                                    :
+                                                                    process.title}} <span class="drop-down-icone"><i
+                                                                            class="fas fa-chevron-down"></i></span>
+                                                                </h5>
+                                                            </a>
+                                                            <span class="accordion-score-right"
+                                                                *ngIf="RiskManagementSettingStore.loaded && RiskManagementSettingStore.riskManagementSettings.is_control_efficiency && getScorePercentage(process)">{{'score'
+                                                                | translate}}:
+                                                                <span class="text-light-blue bold"
+                                                                    style="font-size: 18px;">{{getScorePercentage(process)>0?getScorePercentage(process):0}}%</span></span>
+                                                        </div>
+                                                    </div>
+                                                    <div [attr.id]="process.id"
+                                                        [ngClass]="activeProcess==process.id?'drop-detail-sec panel-collapse collapse show':'drop-detail-sec panel-collapse collapse'"
+                                                        role="tabpanel" aria-labelledby="headingOne"
+                                                        data-parent="#ceo504" style="">
+                                                        <div class="panel-body bg-white">
+                                                            <div class="drop-detail-sec">
+                                                                <ul class="banking-issue list-and-btn"
+                                                                    *ngIf="process.controls?.length>0">
+                                                                    <li class="clearfix relative"
+                                                                        *ngFor="let pControl of process.controls">
+                                                                        <a *ngIf="pControl.active && pControl.active==true">{{pControl.title}}
+                                                                            <div class="d-inline-block">
+                                                                                <small
+                                                                                    *ngIf="RiskManagementSettingStore.loaded && RiskManagementSettingStore.riskManagementSettings.is_control_efficiency"
+                                                                                    [ngClass]="'dot-div '+pControl.activeControlEfficiency?.label+' info-text pl-3'">{{pControl.activeControlEfficiency?.control_efficiency_measure_title}}</small>
+                                                                            </div>
+                                                                        </a><small *ngIf="pControl.active && pControl.active==true"
+                                                                            class="list-right-score">{{pControl.activeControlEfficiency?.score}}%</small>
+                                                                    </li>
+
+                                                                </ul>
+                                                                <ul class="banking-issue list-and-btn"
+                                                                    *ngIf="process.controls?.length==0">
+                                                                    <li class="clearfix relative">
+                                                                        <app-no-data-list [source]="controlEmptyList"
+                                                                            [border]=false [height]=false>
+                                                                        </app-no-data-list>
+                                                                    </li>
+                                                                </ul>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Mapped Controls start -->
+                                                <div class="panel panel-default"
+                                                    *ngIf="RisksStore.individualRiskDetails?.controls?.length>0">
+                                                    <div [ngClass]="activeProcess=='control'?'panel-heading active':'panel-heading'"
+                                                        role="tab" id="headingOne"
+                                                        (click)="setActiveProcess('control')">
+                                                        <div class="panel-title relative">
+                                                            <a role="button" data-toggle="collapse"
+                                                                [attr.href]="'#control'" aria-expanded="false"
+                                                                aria-controls="collapseOne" class="collapsed">
+                                                                <h5 class="width96pc mt-0 bold pr-155">{{'other_controls'|translate}}<span
+                                                                        class="drop-down-icone"><i
+                                                                            class="fas fa-chevron-down"></i></span>
+                                                                </h5>
+                                                            </a>
+                                                            <span class="accordion-score-right"
+                                                                *ngIf="RiskManagementSettingStore.loaded && RiskManagementSettingStore.riskManagementSettings.is_control_efficiency && getScorePercentage(RisksStore.individualRiskDetails?.controls,true)">{{'score'
+                                                                | translate}}:
+                                                                <span class="text-light-blue bold"
+                                                                    style="font-size: 18px;">{{getScorePercentage(RisksStore.individualRiskDetails?.controls,true)>0?getScorePercentage(RisksStore.individualRiskDetails?.controls,true):0}}%</span></span>
+                                                        </div>
+                                                    </div>
+                                                    <div [attr.id]="'control'"
+                                                        [ngClass]="activeProcess=='control'?'drop-detail-sec panel-collapse collapse show':'drop-detail-sec panel-collapse collapse'"
+                                                        role="tabpanel" aria-labelledby="headingOne"
+                                                        data-parent="#ceo504" style="">
+                                                        <div class="panel-body bg-white">
+                                                            <div class="drop-detail-sec">
+                                                                <ul class="banking-issue list-and-btn"
+                                                                    *ngIf="RisksStore.individualRiskDetails?.controls.length>0">
+                                                                    <li class="clearfix relative"
+                                                                        *ngFor="let pControl of RisksStore.individualRiskDetails?.controls">
+                                                                        <a>{{pControl.title}}
+                                                                            <div class="d-inline-block">
+                                                                                <small
+                                                                                    *ngIf="RiskManagementSettingStore.loaded && RiskManagementSettingStore.riskManagementSettings.is_control_efficiency"
+                                                                                    [ngClass]="'dot-div '+pControl.activeControlEfficiency?.label+' info-text pl-3'">{{pControl.activeControlEfficiency?.control_efficiency_measure_title}}</small>
+                                                                            </div>
+                                                                        </a><small
+                                                                            class="list-right-score">{{pControl.activeControlEfficiency?.score}}%</small>
+                                                                    </li>
+
+                                                                </ul>
+                                                                <ul class="banking-issue list-and-btn"
+                                                                    *ngIf="RisksStore.individualRiskDetails?.controls?.length==0">
+                                                                    <li class="clearfix relative">
+                                                                        <app-no-data-list [source]="controlEmptyList"
+                                                                            [border]=false [height]=false>
+                                                                        </app-no-data-list>
+                                                                    </li>
+                                                                </ul>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!-- Mapped controls end -->
+                                            </div>
+
+                                            <div class="panel-group panel-drop-sections pt-0" id="jd" role="tablist"
+                                                aria-multiselectable="true"
+                                                *ngIf="RisksStore?.individualRiskDetails?.is_analysis_performed">
+                                                <div class="panel panel-default"
+                                                    *ngFor="let process of RiskAssessmentStore.riskAssessmentDetails?.risk_processes">
+                                                    <div [ngClass]="activeProcess==process.process.id?'panel-heading active':'panel-heading'"
+                                                        role="tab" id="headingOne"
+                                                        (click)="setActiveProcess(process.process.id)">
+                                                        <div class="panel-title relative">
+                                                            <a role="button" data-toggle="collapse"
+                                                                [attr.href]="'#'+process.process.id"
+                                                                aria-expanded="false" aria-controls="collapseOne"
+                                                                class="collapsed">
+                                                                <h5 class="width96pc mt-0 bold pr-155"
+                                                                    [attr.title]="process.process.title?.length>50?process.process.title:''">
+                                                                    #{{process.process.reference_code}}
+                                                                    -
+                                                                    {{process.process.title?.length>50?process.process.title.substring(0,50)+'...'
+                                                                    :
+                                                                    process.process.title}} <span
+                                                                        class="drop-down-icone"><i
+                                                                            class="fas fa-chevron-down"></i></span>
+                                                                </h5>
+                                                            </a>
+                                                            <span class="accordion-score-right"
+                                                                *ngIf="RiskManagementSettingStore.loaded && RiskManagementSettingStore.riskManagementSettings.is_control_efficiency && getScorePercentage(process)">Score:
+                                                                <span class="text-light-blue bold"
+                                                                    style="font-size: 18px;">{{getScorePercentage(process)>0?getScorePercentage(process):0}}%</span></span>
+                                                        </div>
+                                                    </div>
+                                                    <div [attr.id]="process.process.id"
+                                                        [ngClass]="activeProcess==process.process.id?'drop-detail-sec panel-collapse collapse show':'drop-detail-sec panel-collapse collapse'"
+                                                        role="tabpanel" aria-labelledby="headingOne"
+                                                        data-parent="#ceo504" style="">
+                                                        <div class="panel-body bg-white">
+                                                            <div class="drop-detail-sec">
+                                                                <ul class="banking-issue list-and-btn"
+                                                                    *ngIf=" process.controls?.length>0">
+                                                                    <li class="clearfix relative"
+                                                                        *ngFor="let pr of process.controls">
+                                                                        <a>{{pr.control.title}}
+                                                                            <small
+                                                                                [ngClass]="'dot-div '+pr.efficiency.label+' info-text pl-3'"
+                                                                                *ngIf="pr.efficiency && RiskManagementSettingStore.loaded && RiskManagementSettingStore.riskManagementSettings.is_control_efficiency">{{pr.efficiency.control_efficiency_measure_title?pr.efficiency.control_efficiency_measure_title:pr.efficiency.language[0].pivot.title}}</small></a><small
+                                                                            class="list-right-score">{{pr.efficiency?.score?pr.efficiency?.score:0}}%</small>
+                                                                    </li>
+
+                                                                </ul>
+                                                                <ul class="banking-issue list-and-btn"
+                                                                    *ngIf="!process.controls || process.controls?.length==0">
+                                                                    <li class="clearfix relative">
+                                                                        <app-no-data-list [source]="controlEmptyList"
+                                                                            [border]=false [height]=false>
+                                                                        </app-no-data-list>
+                                                                    </li>
+                                                                </ul>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Mapped Controls Start -->
+                                                <div class="panel panel-default"
+                                                    *ngIf=" RiskAssessmentStore.riskAssessmentDetails?.risk_controls?.length>0">
+                                                    <div [ngClass]="activeProcess=='control'?'panel-heading active':'panel-heading'"
+                                                        role="tab" id="headingOne"
+                                                        (click)="setActiveProcess('control')">
+                                                        <div class="panel-title relative">
+                                                            <a role="button" data-toggle="collapse"
+                                                                [attr.href]="'#control'" aria-expanded="false"
+                                                                aria-controls="collapseOne" class="collapsed">
+                                                                <h5 class="width96pc mt-0 bold pr-155">
+                                                                    {{'other_controls'|translate}}<span class="drop-down-icone"><i
+                                                                            class="fas fa-chevron-down"></i></span>
+                                                                </h5>
+                                                            </a>
+                                                            <span class="accordion-score-right"
+                                                                *ngIf="RiskManagementSettingStore.loaded && RiskManagementSettingStore.riskManagementSettings.is_control_efficiency && getScorePercentage(RiskAssessmentStore.riskAssessmentDetails?.risk_controls,true)">Score:
+                                                                <span class="text-light-blue bold"
+                                                                    style="font-size: 18px;">{{getScorePercentage(RiskAssessmentStore.riskAssessmentDetails?.risk_controls,true)>0?getScorePercentage(RiskAssessmentStore.riskAssessmentDetails?.risk_controls,true):0}}%</span></span>
+                                                        </div>
+                                                    </div>
+                                                    <div [attr.id]="'control'"
+                                                        [ngClass]="activeProcess=='control'?'drop-detail-sec panel-collapse collapse show':'drop-detail-sec panel-collapse collapse'"
+                                                        role="tabpanel" aria-labelledby="headingOne"
+                                                        data-parent="#ceo504" style="">
+                                                        <div class="panel-body bg-white">
+                                                            <div class="drop-detail-sec">
+                                                                <ul class="banking-issue list-and-btn"
+                                                                    *ngIf=" RiskAssessmentStore.riskAssessmentDetails?.risk_controls?.length>0">
+                                                                    <li class="clearfix relative"
+                                                                        *ngFor="let pr of RiskAssessmentStore.riskAssessmentDetails?.risk_controls">
+                                                                        <a>{{pr.title}}
+                                                                            <small
+                                                                                [ngClass]="'dot-div '+pr.old_control_efficiency_measure_label+' info-text pl-3'"
+                                                                                *ngIf="pr.pivot?.old_control_efficiency_measure_id && RiskManagementSettingStore.loaded && RiskManagementSettingStore.riskManagementSettings.is_control_efficiency">{{pr.pivot?.old_control_efficiency_measure_title?pr.pivot?.old_control_efficiency_measure_title:''}}</small></a><small
+                                                                            class="list-right-score">{{pr.pivot?.old_control_efficiency_measure_score?pr.pivot?.old_control_efficiency_measure_score:0}}%</small>
+                                                                    </li>
+
+                                                                </ul>
+                                                                <ul class="banking-issue list-and-btn"
+                                                                    *ngIf="!RiskAssessmentStore.riskAssessmentDetails?.risk_controls || RiskAssessmentStore.riskAssessmentDetails?.risk_controls?.length==0">
+                                                                    <li class="clearfix relative">
+                                                                        <app-no-data-list [source]="controlEmptyList"
+                                                                            [border]=false [height]=false>
+                                                                        </app-no-data-list>
+                                                                    </li>
+                                                                </ul>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Mapped Controls End -->
+
+
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3 col-sm-12"
+                                            *ngIf="getControlEfficiencyAverage()>0 && RiskManagementSettingStore.loaded && RiskManagementSettingStore.riskManagementSettings.is_control_efficiency">
+                                            <div class="bg-white cmn-bdr p-2 pb-4">
+                                                <h6>{{'control_efficiency' | translate}}</h6>
+                                                <hr class="mt-0 mb-3">
+                                                <!-- <div class="progress-round blue progress-round-big">
+                                                <span class="progress-left">
+                                                    <span class="progress-bar"></span>
+                                                </span>
+                                                <span class="progress-right">
+                                                    <span class="progress-bar"></span>
+                                                </span>
+                                                <div class="progress-value">92%</div>
+                                            </div> -->
+                                                <div
+                                                    [ngClass]="getControlEfficiencyAverage()>50?'progress-circle progress-circle-big-one  over50 p'+getControlEfficiencyAverage():'progress-circle progress-circle-big-one  p'+getControlEfficiencyAverage()">
+                                                    <span>{{getControlEfficiencyAverage()!=null?getControlEfficiencyAverage():0}}%</span>
+                                                    <div class="left-half-clipper">
+                                                        <div class="first50-bar"></div>
+                                                        <div class="value-bar"></div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row"
+                                        *ngIf="(!(RisksStore.individualRiskDetails?.is_analysis_performed==1) && RisksStore.individualRiskDetails?.processes.length==0 && RisksStore.individualRiskDetails?.controls.length==0) || (RisksStore.individualRiskDetails?.is_analysis_performed && RiskAssessmentStore?.riskAssessmentDetails?.risk_processes?.length==0 && RiskAssessmentStore?.riskAssessmentDetails?.risk_controls?.length==0)">
+                                        <div class="col-md-12">
+                                            <p>
+                                                {{AppStore.noContentText}}
+                                            </p>
+                                            
+                                            <!-- <app-no-data-list [source]="processEmptyList"></app-no-data-list> -->
+                                        </div>
+                                        <!-- <div class="col-md-9"> {{AppStore.noContentText}}</div> -->
+                                    </div>
+
+
+
+                                </div>
+                                
+
+
+                                
+                                <input type="submit" name="submit" class="submit action-button btn-active"
+                                    (click)="submitAssessment()" [value]="AppStore.loading?getButtonText('loading'):getButtonText('save')" />
+                                <input type="button" name="previous" class="previous action-button mr-2"
+                                    [value]="AppStore.loading?getButtonText('loading'):getButtonText('previous')" />
+                                <input type="button" name="cancel" (click)="confirmCancel()"
+                                    class="cancel action-button mr-2"
+                                    [value]="AppStore.loading?getButtonText('loading'):getButtonText('cancel')" />
+                            </fieldset>
+                            <!-- <div style="overflow:auto;">
+                                <div class="form-next-page-btns pt-0 mt-3" style="float:left;">
+                                    <button class="btn" type="button" (click)="confirmCancel()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('cancel') }}</button>
+                                    <button class="btn" type="button" id="prevBtn" (click)="nextPrev(-1)"
+                                        [disabled]="AppStore.loading">{{getButtonText(previousButtonText)}}</button>
+                                    <button class="btn btn-active" type="button" id="nextBtn" (click)="nextPrev(1)"
+                                    [disabled]="AppStore.loading">{{getButtonText(nextButtonText)}}</button>
+                                </div>
+                            </div> -->
+
+                            <!-- <div style="overflow:auto;"> -->
+                            <!-- <div class="form-next-page-btns pt-0 mt-3" style="float:left;"> -->
+                            <!-- <button class="btn" type="button" (click)="confirmCancel()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('cancel') }}</button>
+                                        <button class="btn" type="button" id="prevBtn" (click)="nextPrev(-1)"
+                                            [disabled]="AppStore.loading">{{getButtonText(previousButtonText)}}</button>
+                                        <button class="btn btn-active" type="button" id="nextBtn" (click)="nextPrev(1)"
+                                        [disabled]="AppStore.loading">{{getButtonText(nextButtonText)}}</button> -->
+                            <!-- <div class="small-step-progressbar-main small-step-progressbar-and-controler">
+                                            <div class="small-step-progressbar-and-controler-inner clearfix">
+                                                <div class="small-step-control-btns">
+                                                    <button class="btn" type="button" (click)="confirmCancel()">{{ AppStore.loading  ? getButtonText('loading') : getButtonText('cancel') }}</button>
+                                                    <button class="btn" type="button" id="prevBtn" (click)="nextPrev(-1)"
+                                                        [disabled]="AppStore.loading">{{getButtonText(previousButtonText)}}</button>
+                                                    <button class="btn btn-active" type="button" id="nextBtn" (click)="nextPrev(1)"
+                                                    [disabled]="AppStore.loading">{{getButtonText(nextButtonText)}}</button>
+                                                 </div>
+                                                <ul id="progressbar" class="progressbar-indication">
+                                                    <li class="active"></li>
+                                                    <li></li>
+                                                    <li></li>
+                                                    <li></li>
+                                                    <li></li>
+                                                    <li></li>
+                                                </ul>
+                                            </div>
+                                        </div> -->
+                            <!-- </div> -->
+                            <!-- </div> -->
+
+                        </form>
+                    </div>
+
+
+
+
+
+                </div>
+                <!-- Modal footer -->
+            </div>
+        </div>
+    </div>
+    <!------------------- Cancel Confirmation Modal Start --------------------------->
+
+    <div class="modal modal-style-1 fade" id="delete-popup" #cancelPopup>
+        <app-delete-popup [source]="cancelObject"></app-delete-popup>
+    </div>
+
+    <!------------------- Cancel Confirmation Modal End --------------------------->
+
+    <div class="modal modal-style-1 image-download-popup-new fade" id="loadMe" aria-labelledby="loadMeLabel" tabindex="-1" role="dialog" #loaderPopUp>
+        <app-loader [source] = "downloadMessage"></app-loader>
+     </div>
+    
